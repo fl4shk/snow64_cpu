@@ -20,8 +20,8 @@
     ``r15`` (aka ``sp``)
 * Special Purpose Registers (32-bit)
     * ``s0`` (always zero), ``s1`` (aka ``pc``), ``s2`` (aka ``flags``),
-    ``s3`` (aka ``intstat``), 
-    ``s4``, ``s5``, ``s6``, ..., ``s13``, ``s14``, ``s15``
+    ``s3`` (aka ``intstat``), ``s4`` (aka ``hi``), ``s5`` (aka ``lo``), 
+    ``s6``, ``s7``, ... ``s13``, ``s14``, ``s15``
 <br>
 <br>
 * Group 0 Instructions
@@ -498,13 +498,15 @@
     * Opcode:  0b01110
     * Effect:  <code>dst <= Arg1 rotated right by Arg2;</code>
     * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
-* <b>umull</b> rsA, rsB, rsC
+* <b>umull</b> rsA, rsB
     * Opcode:  0b01111
-    * Effect:  <code>{rsA</code>
+    * Effect:  <code>{hi, lo} <= zero\_extend\_to\_64(rsA)
+    &ast; zero\_extend\_to\_64(rsB);</code>
     * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
-* <b>smull</b> rsA, rsB, rsC
+* <b>smull</b> rsA, rsB
     * Opcode:  0b01111
-    * Effect:  <code>{rsA</code>
+    * Effect:  <code>{hi, lo} <= sign\_extend\_to\_64(rsA) 
+    &ast; sign\_extend\_to\_64(rsB);</code>
     * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>ldbx</b> rsA, [rsB, rsC]
     * Opcode:  0b10001
