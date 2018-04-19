@@ -40,8 +40,10 @@
 #define SAY_WHICHFLAGSAFFECTED(which) Affects MDCODE(which) ``flags``.
 #define SAY_WHICHFLAGSCANBA(which) Can affect MDCODE(which) ``flags`` if ``f`` encoding bit == 1.
 #define SAY_WHICHFLAGSCBA2(which) Can affect MDCODE(which) ``flags`` fi ``f`` encoding bit == 1 **and** ``flags`` is the destination special register.
-#define ZEROEXT(stuff) CONCAT3(zero\\_extend\(,stuff,\))
-#define SIGNEXT(stuff) CONCAT3(sign\\_extend\(,stuff,\))
+#define ZEROEXT(stuff) CONCAT3(zero\\_extend\\_to\\_32\(,stuff,\))
+#define SIGNEXT(stuff) CONCAT3(sign\\_extend\\_to\\_32\(,stuff,\))
+#define ZEROEXT64(stuff) CONCAT3(zero\\_extend\\_to\\_64\(,stuff,\))
+#define SIGNEXT64(stuff) CONCAT3(sign\\_extend\\_to\\_64\(,stuff,\))
 
 #define DESCENC_OPCODE Opcode
 #define DESCENC_FLAGSAFF if 0, no flags affected.  1 otherwise.
@@ -466,23 +468,39 @@
     * ``z``:  DESCENC_EXTRAREGBIT(c,C)
 * ALU Instruction Addressing Modes:
     * ALU Instr Addressing Mode bits:  0b000
-        * <b>&lt;aluop&gt;</b> rsA, rsB, rsC
-            * Effect:  CODE(rsA <= rsB &lt;op&gt; rsC;)
+        * <b>&lt;aluop\\_non\\_cmp&gt;</b> rsA, rsB, rsC
+            * Arguments:  dst:  rsA, Arg1:  rsB, Arg2:  rsC
+        * <b>&lt;cmp&gt;</b> rsB, rsC
+            * Arguments:  Arg1:  rsB, Arg2:  rsC
     * ALU Instr Addressing Mode bits:  0b001
         * <b>&lt;aluop&gt;</b> rsA, [rsB, rsC]
-            * Effect:  CODE(rsA <= rsA &lt;op&gt; MEM4(rsB + rsC);)
+            * Arguments:  dst:  rsA, Arg1:  rsA, Arg2:  MEM(rsB + rsB)
+* Note:  "rsX" means "rX" **or** "sX"
+* Note:  If dst is ``flags``, then ``flags`` won't be written.
 * <b>add</b> ALUTHREEREGADDRMODE
     * Opcode:  0b00000
+    * Effect:  CODE(dst <= Arg1 + Arg2;)
+    * SAY_WHICHFLAGSCANBA(nvzc)
 * <b>sub</b> ALUTHREEREGADDRMODE
     * Opcode:  0b00001
-* <b>eh?</b> ALUTHREEREGADDRMODE
+    * Effect:  CODE(dst <= Arg1 - Arg2;)
+    * SAY_WHICHFLAGSCANBA(nvzc)
+* <b>cmp</b> ALUTHREEREGADDRMODE
     * Opcode:  0b00010
+    * Effect:  CODE(&lt;discard&gt; <= Arg1 - Arg2;)
+    * SAY_WHICHFLAGSCANBA(nvzc)
 * <b>and</b> ALUTHREEREGADDRMODE
     * Opcode:  0b00011
+    * Effect:  CODE(dst <= Arg1 &amp; Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
 * <b>orr</b> ALUTHREEREGADDRMODE
     * Opcode:  0b00100
+    * Effect:  CODE(dst <= Arg1 | Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
 * <b>xor</b> ALUTHREEREGADDRMODE
     * Opcode:  0b00101
+    * Effect:  CODE(dst <= Arg1 ^ Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
 * <b>ldrx</b> rsA, [rsB, rsC]
     * Opcode:  0b00110
     * Effect:  CODE(rsA <= MEM4(rsB + rsC);)
@@ -493,33 +511,61 @@
     * SAY_NOFLAGSAFFECTED
 * <b>adc</b> ALUTHREEREGADDRMODE
     * Opcode:  0b01000
+    * Effect:  CODE(dst <= Arg1 + Arg2 + FLAG(C);)
+    * SAY_WHICHFLAGSCANBA(nvzc)
 * <b>sbc</b> ALUTHREEREGADDRMODE
     * Opcode:  0b01001
+    * Effect:  CODE(dst <= Arg1 + (~Arg2) + FLAG(C);)
+    * SAY_WHICHFLAGSCANBA(nvzc)
 * <b>lsl</b> ALUTHREEREGADDRMODE
     * Opcode:  0b01010
+    * Effect:  CODE(dst <= Arg1 << Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
 * <b>lsr</b> ALUTHREEREGADDRMODE
     * Opcode:  0b01011
+    * Effect:  CODE(dst <= Arg1 logically right shifted by Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
 * <b>asr</b> ALUTHREEREGADDRMODE
     * Opcode:  0b01100
+    * Effect:  CODE(dst <= Arg1 arithmetic right shifted by Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
+* <b>rol</b> ALUTHREEREGADDRMODE
+    * Opcode:  0b01101
+    * Effect:  CODE(dst <= Arg1 rotated left by Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
+* <b>ror</b> ALUTHREEREGADDRMODE
+    * Opcode:  0b01110
+    * Effect:  CODE(dst <= Arg1 rotated right by Arg2;)
+    * SAY_WHICHFLAGSCANBA(nz)
+* <b>umull</b> rsA, rsB, rsC
+    * Opcode:  0b01111
+    * Effect:  CODE({rsA, rsB} <= {rsA, rsB} &ast; ZEROEXT64(rsC);)
+    * SAY_WHICHFLAGSCANBA(nz)
+* <b>smull</b> rsA, rsB, rsC
+    * Opcode:  0b01111
+    * Effect:  CODE({rsA, rsB} <= {rsA, rsB} &ast; SIGNEXT64(rsC);)
+    * SAY_WHICHFLAGSCANBA(nz)
 * <b>ldbx</b> rsA, [rsB, rsC]
-    * Opcode:  0b01101
+    * Opcode:  0b10001
     * Effect:  CODE(rsA <= ZEROEXT(MEM(rsB + rsC));)
+    * SAY_NOFLAGSAFFECTED
 * <b>ldsbx</b> rsA, [rsB, rsC]
-    * Opcode:  0b01101
+    * Opcode:  0b10010
     * Effect:  CODE(rsA <= SIGNEXT(MEM(rsB + rsC));)
     * SAY_NOFLAGSAFFECTED
 * <b>stbx</b> rsA, [rsB, rsC]
-    * Opcode:  0b01111
+    * Opcode:  0b10011
     * Effect:  CODE(MEM(rsB + rsC) <= (rsA[7:0]);)
     * SAY_NOFLAGSAFFECTED
 * <b>ldhx</b> rsA, [rsB, rsC]
-    * Opcode:  0b10000
+    * Opcode:  0b10100
     * Effect:  CODE(rsA <= ZEROEXT(MEM2(rsB + rsC));)
+    * SAY_NOFLAGSAFFECTED
 * <b>ldshx</b> rsA, [rsB, rsC]
-    * Opcode:  0b10000
+    * Opcode:  0b10101
     * Effect:  CODE(rsA <= SIGNEXT(MEM2(rsB + rsC));)
     * SAY_NOFLAGSAFFECTED
 * <b>sthx</b> rsA, [rsB, rsC]
-    * Opcode:  0b10010
+    * Opcode:  0b10110
     * Effect:  CODE(MEM2(rsB + rsC) <= (rsA[15:0]);)
     * SAY_NOFLAGSAFFECTED

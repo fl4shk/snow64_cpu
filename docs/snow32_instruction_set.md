@@ -151,35 +151,35 @@
     * ``i``:  16-bit immediate value
 * <b>addi</b> rA, rB, imm16
     * Opcode:  0b000
-    * Effect:  <code>rA <= rB + zero\_extend(imm16);</code>
+    * Effect:  <code>rA <= rB + zero\_extend\_to\_32(imm16);</code>
     * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>subi</b> rA, rB, imm16
     * Opcode:  0b001
-    * Effect:  <code>rA <= rB - zero\_extend(imm16);</code>
+    * Effect:  <code>rA <= rB - zero\_extend\_to\_32(imm16);</code>
     * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>cmpi</b> rA, imm16
     * Opcode:  0b010
-    * Effect:  <code>&lt;discard&gt; <= rA - zero\_extend(imm16);</code>
+    * Effect:  <code>&lt;discard&gt; <= rA - zero\_extend\_to\_32(imm16);</code>
     * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>andi</b> rA, rB, imm16
     * Opcode:  0b011
-    * Effect:  <code>rA <= rB &amp; zero\_extend(imm16);</code>
+    * Effect:  <code>rA <= rB &amp; zero\_extend\_to\_32(imm16);</code>
     * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>orri</b> rA, rB, imm16
     * Opcode:  0b100
-    * Effect:  <code>rA <= rB | zero\_extend(imm16);</code>
+    * Effect:  <code>rA <= rB | zero\_extend\_to\_32(imm16);</code>
     * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>xori</b> rA, rB, imm16
     * Opcode:  0b101
-    * Effect:  <code>rA <= rB ^ zero\_extend(imm16);</code>
+    * Effect:  <code>rA <= rB ^ zero\_extend\_to\_32(imm16);</code>
     * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>ldrxi</b> rA, [rB, imm16]
     * Opcode:  0b110
-    * Effect:  <code>rA <= four\_bytes\_in\_mem\_at(rB + zero\_extend(imm16));</code>
+    * Effect:  <code>rA <= four\_bytes\_in\_mem\_at(rB + zero\_extend\_to\_32(imm16));</code>
     * Doesn't affect ``flags``.
 * <b>strxi</b> rA, [rB, imm16]
     * Opcode:  0b111
-    * Effect:  <code>four\_bytes\_in\_mem\_at(rB + zero\_extend(imm16)) <= rA;</code>
+    * Effect:  <code>four\_bytes\_in\_mem\_at(rB + zero\_extend\_to\_32(imm16)) <= rA;</code>
     * Doesn't affect ``flags``.
 <br>
 <br>
@@ -192,11 +192,11 @@
     * ``i``:  16-bit immediate value
 * <b>adci</b> rA, rB, imm16
     * Opcode:  0b000
-    * Effect:  <code>rA <= rB + zero\_extend(imm16) + flags<sub>c</sub>;</code>
+    * Effect:  <code>rA <= rB + zero\_extend\_to\_32(imm16) + flags<sub>c</sub>;</code>
     * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>sbci</b> rA, rB, imm16
     * Opcode:  0b001
-    * Effect:  <code>rA <= rB + (~zero\_extend(imm16)) + flags<sub>c</sub>;</code>
+    * Effect:  <code>rA <= rB + (~zero\_extend\_to\_32(imm16)) + flags<sub>c</sub>;</code>
     * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>lsli</b> rA, rB, imm16
     * Opcode:  0b010
@@ -212,11 +212,11 @@
     * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>addsi</b> rA, sB, imm16
     * Opcode:  0b101
-    * Effect:  <code>rA <= sB + sign\_extend(imm16);</code>
+    * Effect:  <code>rA <= sB + sign\_extend\_to\_32(imm16);</code>
     * Doesn't affect ``flags``.
 * <b>cpysi</b> rA, imm16
     * Opcode:  0b110
-    * Effect:  <code>rA <= sign\_extend(imm16;)</code>
+    * Effect:  <code>rA <= sign\_extend\_to\_32(imm16;)</code>
     * Doesn't affect ``flags``.
 * <b>cpyihi</b> rA, imm16
     * Opcode:  0b111
@@ -230,7 +230,7 @@
     * ``i``:  8-bit immediate value
 * <b>bra</b> imm8
     * Opcode:  0b0000
-    * Effect:  <code>pc <= pc + sign\_extend(imm8;)</code>
+    * Effect:  <code>pc <= pc + sign\_extend\_to\_32(imm8;)</code>
     * Doesn't affect ``flags``.
 * <b>bnv</b> imm8
     * Opcode:  0b0001
@@ -238,23 +238,23 @@
     * Doesn't affect ``flags``.
 * <b>bne</b> imm8
     * Opcode:  0b0010
-    * Effect:  <code>if (flags<sub>z</sub> == 0) begin pc <= pc + sign\_extend(imm8);
+    * Effect:  <code>if (flags<sub>z</sub> == 0) begin pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Doesn't affect ``flags``.
 * <b>beq</b> imm8
     * Opcode:  0b0011
-    * Effect:  <code>if (flags<sub>z</sub> == 1) begin pc <= pc + sign\_extend(imm8);
+    * Effect:  <code>if (flags<sub>z</sub> == 1) begin pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Doesn't affect ``flags``.
 * <b>bcc</b> imm8
     * Opcode:  0b0100
-    * Effect:  <code>if (flags<sub>c</sub> == 0) begin pc <= pc + sign\_extend(imm8);
+    * Effect:  <code>if (flags<sub>c</sub> == 0) begin pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  unsigned less than
     * Doesn't affect ``flags``.
 * <b>bcs</b> imm8
     * Opcode:  0b0101
-    * Effect:  <code>if (flags<sub>c</sub> == 1) begin pc <= pc + sign\_extend(imm8);
+    * Effect:  <code>if (flags<sub>c</sub> == 1) begin pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  unsigned greater than or equal
     * Doesn't affect ``flags``.
@@ -262,7 +262,7 @@
     * Opcode:  0b0110
     * Effect:  <code>if ((flags<sub>c</sub> == 0) || (flags<sub>z</sub> == 1))
     begin 
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  unsigned less than or equal
     * Doesn't affect ``flags``.
@@ -270,7 +270,7 @@
     * Opcode:  0b0111
     * Effect:  <code>if (flags<sub>c</sub> == 1) &amp;&amp; flags<sub>z</sub> == 0) 
     begin 
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  unsigned greater than
     * Doesn't affect ``flags``.
@@ -278,35 +278,35 @@
     * Opcode:  0b1000
     * Effect:  <code>if (flags<sub>v</sub> == 0) 
     begin 
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Doesn't affect ``flags``.
 * <b>bvs</b> imm8
     * Opcode:  0b1001
     * Effect:  <code>if (flags<sub>v</sub> == 1) 
     begin 
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Doesn't affect ``flags``.
 * <b>bpl</b> imm8
     * Opcode:  0b1010
     * Effect:  <code>if (flags<sub>n</sub> == 0) 
     begin 
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Doesn't affect ``flags``.
 * <b>bmi</b> imm8
     * Opcode:  0b1011
     * Effect:  <code>if (flags<sub>n</sub> == 1) 
     begin 
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Doesn't affect ``flags``.
 * <b>blt</b> imm8
     * Opcode:  0b1100
     * Effect:  <code>if (flags<sub>n</sub> != flags<sub>v</sub>)
     begin
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  signed less than
     * Doesn't affect ``flags``.
@@ -314,7 +314,7 @@
     * Opcode:  0b1101
     * Effect:  <code>if (flags<sub>n</sub> == flags<sub>v</sub>)
     begin
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  signed greater than or equal
     * Doesn't affect ``flags``.
@@ -322,7 +322,7 @@
     * Opcode:  0b1110
     * Effect:  <code>if ((flags<sub>n</sub> != flags<sub>v</sub>) && (flags<sub>Z</sub> == 0))
     begin
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  signed less than
     * Doesn't affect ``flags``.
@@ -330,7 +330,7 @@
     * Opcode:  0b1111
     * Effect:  <code>if ((flags<sub>n</sub> == flags<sub>v</sub>) || (flags<sub>Z</sub> == 1))
     begin
-        pc <= pc + sign\_extend(imm8);
+        pc <= pc + sign\_extend\_to\_32(imm8);
     end</code>
     * Note:  signed greater than or equal
     * Doesn't affect ``flags``.
@@ -367,11 +367,11 @@
     * Doesn't affect ``flags``.
 * <b>ldb</b> rA, [rB]
     * Opcode:  0b0110
-    * Effect:  <code>rA <= zero\_extend(byte\_in\_mem\_at(rB));</code>
+    * Effect:  <code>rA <= zero\_extend\_to\_32(byte\_in\_mem\_at(rB));</code>
     * Doesn't affect ``flags``.
 * <b>ldsb</b> rA, [rB]
     * Opcode:  0b0111
-    * Effect:  <code>rA <= sign\_extend(byte\_in\_mem\_at(rB));</code>
+    * Effect:  <code>rA <= sign\_extend\_to\_32(byte\_in\_mem\_at(rB));</code>
     * Doesn't affect ``flags``.
 * <b>stb</b> rA, [rB]
     * Opcode:  0b1000
@@ -379,11 +379,11 @@
     * Doesn't affect ``flags``.
 * <b>ldh</b> rA, [rB]
     * Opcode:  0b1001
-    * Effect:  <code>rA <= zero\_extend(two\_bytes\_in\_mem\_at(rB));</code>
+    * Effect:  <code>rA <= zero\_extend\_to\_32(two\_bytes\_in\_mem\_at(rB));</code>
     * Doesn't affect ``flags``.
 * <b>ldsh</b> rA, [rB]
     * Opcode:  0b1010
-    * Effect:  <code>rA <= sign\_extend(two\_bytes\_in\_mem\_at(rB));</code>
+    * Effect:  <code>rA <= sign\_extend\_to\_32(two\_bytes\_in\_mem\_at(rB));</code>
     * Doesn't affect ``flags``.
 * <b>sth</b> rA, [rB]
     * Opcode:  0b1011
@@ -412,7 +412,7 @@
     * Encoding:  ``1110 iiii  iiii iiii  iiii iiii  iiii iiii``
     * ``i``:  28-bit immediate value
 * <b>callr</b> 
-    * Effect:  <code>lr <= pc + 2; pc <= pc + sign\_extend(imm28);</code>
+    * Effect:  <code>lr <= pc + 2; pc <= pc + sign\_extend\_to\_32(imm28);</code>
     * Doesn't affect ``flags``.
 <br>
 <br>
@@ -429,23 +429,39 @@
     * ``z``:  0 if ``c`` is for rC; 1 if ``c`` is for rC
 * ALU Instruction Addressing Modes:
     * ALU Instr Addressing Mode bits:  0b000
-        * <b>&lt;aluop&gt;</b> rsA, rsB, rsC
-            * Effect:  <code>rsA <= rsB &lt;op&gt; rsC;</code>
+        * <b>&lt;aluop\_non\_cmp&gt;</b> rsA, rsB, rsC
+            * Arguments:  dst:  rsA, Arg1:  rsB, Arg2:  rsC
+        * <b>&lt;cmp&gt;</b> rsB, rsC
+            * Arguments:  Arg1:  rsB, Arg2:  rsC
     * ALU Instr Addressing Mode bits:  0b001
         * <b>&lt;aluop&gt;</b> rsA, [rsB, rsC]
-            * Effect:  <code>rsA <= rsA &lt;op&gt; four\_bytes\_in\_mem\_at(rsB + rsC);</code>
+            * Arguments:  dst:  rsA, Arg1:  rsA, Arg2:  byte\_in\_mem\_at(rsB + rsB)
+* Note:  "rsX" means "rX" **or** "sX"
+* Note:  If dst is ``flags``, then ``flags`` won't be written.
 * <b>add</b> alu\_addressing\_mode
     * Opcode:  0b00000
+    * Effect:  <code>dst <= Arg1 + Arg2;</code>
+    * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>sub</b> alu\_addressing\_mode
     * Opcode:  0b00001
-* <b>eh?</b> alu\_addressing\_mode
+    * Effect:  <code>dst <= Arg1 - Arg2;</code>
+    * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
+* <b>cmp</b> alu\_addressing\_mode
     * Opcode:  0b00010
+    * Effect:  <code>&lt;discard&gt; <= Arg1 - Arg2;</code>
+    * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>and</b> alu\_addressing\_mode
     * Opcode:  0b00011
+    * Effect:  <code>dst <= Arg1 &amp; Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>orr</b> alu\_addressing\_mode
     * Opcode:  0b00100
+    * Effect:  <code>dst <= Arg1 | Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>xor</b> alu\_addressing\_mode
     * Opcode:  0b00101
+    * Effect:  <code>dst <= Arg1 ^ Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>ldrx</b> rsA, [rsB, rsC]
     * Opcode:  0b00110
     * Effect:  <code>rsA <= four\_bytes\_in\_mem\_at(rsB + rsC);</code>
@@ -456,33 +472,61 @@
     * Doesn't affect ``flags``.
 * <b>adc</b> alu\_addressing\_mode
     * Opcode:  0b01000
+    * Effect:  <code>dst <= Arg1 + Arg2 + flags<sub>C</sub>;</code>
+    * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>sbc</b> alu\_addressing\_mode
     * Opcode:  0b01001
+    * Effect:  <code>dst <= Arg1 + (~Arg2) + flags<sub>C</sub>;</code>
+    * Can affect ``nvzc`` ``flags`` if ``f`` encoding bit == 1.
 * <b>lsl</b> alu\_addressing\_mode
     * Opcode:  0b01010
+    * Effect:  <code>dst <= Arg1 << Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>lsr</b> alu\_addressing\_mode
     * Opcode:  0b01011
+    * Effect:  <code>dst <= Arg1 logically right shifted by Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>asr</b> alu\_addressing\_mode
     * Opcode:  0b01100
+    * Effect:  <code>dst <= Arg1 arithmetic right shifted by Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
+* <b>rol</b> alu\_addressing\_mode
+    * Opcode:  0b01101
+    * Effect:  <code>dst <= Arg1 rotated left by Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
+* <b>ror</b> alu\_addressing\_mode
+    * Opcode:  0b01110
+    * Effect:  <code>dst <= Arg1 rotated right by Arg2;</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
+* <b>umull</b> rsA, rsB, rsC
+    * Opcode:  0b01111
+    * Effect:  <code>{rsA</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
+* <b>smull</b> rsA, rsB, rsC
+    * Opcode:  0b01111
+    * Effect:  <code>{rsA</code>
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
 * <b>ldbx</b> rsA, [rsB, rsC]
-    * Opcode:  0b01101
-    * Effect:  <code>rsA <= zero\_extend(byte\_in\_mem\_at(rsB + rsC));</code>
+    * Opcode:  0b10001
+    * Effect:  <code>rsA <= zero\_extend\_to\_32(byte\_in\_mem\_at(rsB + rsC));</code>
+    * Doesn't affect ``flags``.
 * <b>ldsbx</b> rsA, [rsB, rsC]
-    * Opcode:  0b01101
-    * Effect:  <code>rsA <= sign\_extend(byte\_in\_mem\_at(rsB + rsC));</code>
+    * Opcode:  0b10010
+    * Effect:  <code>rsA <= sign\_extend\_to\_32(byte\_in\_mem\_at(rsB + rsC));</code>
     * Doesn't affect ``flags``.
 * <b>stbx</b> rsA, [rsB, rsC]
-    * Opcode:  0b01111
+    * Opcode:  0b10011
     * Effect:  <code>byte\_in\_mem\_at(rsB + rsC) <= (rsA[7:0]);</code>
     * Doesn't affect ``flags``.
 * <b>ldhx</b> rsA, [rsB, rsC]
-    * Opcode:  0b10000
-    * Effect:  <code>rsA <= zero\_extend(two\_bytes\_in\_mem\_at(rsB + rsC));</code>
+    * Opcode:  0b10100
+    * Effect:  <code>rsA <= zero\_extend\_to\_32(two\_bytes\_in\_mem\_at(rsB + rsC));</code>
+    * Doesn't affect ``flags``.
 * <b>ldshx</b> rsA, [rsB, rsC]
-    * Opcode:  0b10000
-    * Effect:  <code>rsA <= sign\_extend(two\_bytes\_in\_mem\_at(rsB + rsC));</code>
+    * Opcode:  0b10101
+    * Effect:  <code>rsA <= sign\_extend\_to\_32(two\_bytes\_in\_mem\_at(rsB + rsC));</code>
     * Doesn't affect ``flags``.
 * <b>sthx</b> rsA, [rsB, rsC]
-    * Opcode:  0b10010
+    * Opcode:  0b10110
     * Effect:  <code>two\_bytes\_in\_mem\_at(rsB + rsC) <= (rsA[15:0]);</code>
     * Doesn't affect ``flags``.
