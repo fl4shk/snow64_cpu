@@ -131,14 +131,14 @@
 * <b>mul</b> rA, rB
     * Opcode:  0b101
     * Effect:  <code>rA <= rA &ast; rB;</code>
-    * Doesn't affect ``flags``.
-* <b>cpy</b> rA, sB
+    * Can affect ``nz`` ``flags`` if ``f`` encoding bit == 1.
+* <b>cpy</b> rA, rB
     * Opcode:  0b110
-    * Effect:  <code>rA <= sB;</code>
+    * Effect:  <code>rA <= rB;</code>
     * Doesn't affect ``flags``.
-* <b>cpy</b> sA, rB
+* <b>cpy</b> sA, sB
     * Opcode:  0b111
-    * Effect:  <code>sA <= rB;</code>
+    * Effect:  <code>sA <= sB;</code>
     * Can affect ``nvzc`` ``flags`` fi ``f`` encoding bit == 1 **and** ``flags`` is the destination special register.
 <br>
 <br>

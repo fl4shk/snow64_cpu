@@ -170,14 +170,14 @@
 * <b>mul</b> rA, rB
     * Opcode:  0b101
     * Effect:  CODE(rA <= rA &ast; rB;)
-    * SAY_NOFLAGSAFFECTED
-* <b>cpy</b> rA, sB
+    * SAY_WHICHFLAGSCANBA(nz)
+* <b>cpy</b> rA, rB
     * Opcode:  0b110
-    * Effect:  CODE(rA <= sB;)
+    * Effect:  CODE(rA <= rB;)
     * SAY_NOFLAGSAFFECTED
-* <b>cpy</b> sA, rB
+* <b>cpy</b> sA, sB
     * Opcode:  0b111
-    * Effect:  CODE(sA <= rB;)
+    * Effect:  CODE(sA <= sB;)
     * SAY_WHICHFLAGSCBA2(nvzc)
 <br>
 <br>
