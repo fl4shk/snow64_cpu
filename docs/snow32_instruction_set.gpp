@@ -253,6 +253,7 @@
     * Opcode:  0b101
     * Effect:  CODE(rA <= sB + SIGNEXT(IMM(16));)
     * SAY_NOFLAGSAFFECTED
+    * Note:  This is mainly intended for using ``pc`` as ``sB``
 * <b>cpysi</b> rA, IMM(16)
     * Opcode:  0b110
     * Effect:  CODE(rA <= SIGNEXT(IMM(16);))
@@ -289,30 +290,30 @@
     * Opcode:  0b0100
     * Effect:  <code>if (FLAG(c) == 0) begin pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  unsigned less than
     * SAY_NOFLAGSAFFECTED
+    * Note:  unsigned less than
 * <b>bcs</b> IMM(8)
     * Opcode:  0b0101
     * Effect:  <code>if (FLAG(c) == 1) begin pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  unsigned greater than or equal
     * SAY_NOFLAGSAFFECTED
+    * Note:  unsigned greater than or equal
 * <b>bls</b> IMM(8)
     * Opcode:  0b0110
     * Effect:  <code>if ((FLAG(c) == 0) || (FLAG(z) == 1))
     begin 
         pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  unsigned less than or equal
     * SAY_NOFLAGSAFFECTED
+    * Note:  unsigned less than or equal
 * <b>bhi</b> IMM(8)
     * Opcode:  0b0111
     * Effect:  <code>if (FLAG(c) == 1) &amp;&amp; FLAG(z) == 0) 
     begin 
         pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  unsigned greater than
     * SAY_NOFLAGSAFFECTED
+    * Note:  unsigned greater than
 * <b>bvc</b> IMM(8)
     * Opcode:  0b1000
     * Effect:  <code>if (FLAG(v) == 0) 
@@ -347,32 +348,32 @@
     begin
         pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  signed less than
     * SAY_NOFLAGSAFFECTED
+    * Note:  signed less than
 * <b>bge</b> IMM(8)
     * Opcode:  0b1101
     * Effect:  <code>if (FLAG(n) == FLAG(v))
     begin
         pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  signed greater than or equal
     * SAY_NOFLAGSAFFECTED
+    * Note:  signed greater than or equal
 * <b>ble</b> IMM(8)
     * Opcode:  0b1110
     * Effect:  <code>if ((FLAG(n) != FLAG(v)) && (FLAG(Z) == 0))
     begin
         pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  signed less than
     * SAY_NOFLAGSAFFECTED
+    * Note:  signed less than
 * <b>bgt</b> IMM(8)
     * Opcode:  0b1111
     * Effect:  <code>if ((FLAG(n) == FLAG(v)) || (FLAG(Z) == 1))
     begin
         pc <= pc + SIGNEXT(IMM(8));
     end</code>
-    * Note:  signed greater than or equal
     * SAY_NOFLAGSAFFECTED
+    * Note:  signed greater than or equal
 <br>
 <br>
 * Group 6 Instructions
@@ -443,8 +444,8 @@
 * <b>add</b> pc, rA, rB
     * Opcode:  0b1111
     * Effect:  CODE(pc <= rA + rB;)
-    * Note:  Shorter encoding for equivalent Group 8 instruction
     * SAY_NOFLAGSAFFECTED
+    * Note:  Shorter encoding for equivalent Group 8 instruction
 <br>
 <br>
 * Group 7 Instruction
@@ -570,4 +571,42 @@
 * <b>sthx</b> rsA, [rsB, rsC]
     * Opcode:  0b10110
     * Effect:  CODE(MEM2(rsB + rsC) <= (rsA[15:0]);)
+    * SAY_NOFLAGSAFFECTED
+<br>
+<br>
+* Group 9 Instructions
+    * Encoding:  ``1111 0001  aaaa iiii``
+    * ``a``:  DESCENC_REG(A)
+    * ``i``:  DESCENC_SIMM(4)
+* <b>addsi</b> rA, IMM(4)
+    * Effect:  CODE(rA <= rA + SIGNEXT(IMM(4));)
+    * Note:  Mainly intended for pointer/counter incrementing/decrementing
+    * SAY_NOFLAGSAFFECTED
+<br>
+<br>
+* Group 10 Instructions
+    * Encoding:  ``1111 0010  aaaa iiii``
+    * ``a``:  DESCENC_SPECR(A)
+    * ``i``:  DESCENC_SIMM(4)
+* <b>addsi</b> sA, IMM(4)
+    * Effect:  CODE(sA <= sA + SIGNEXT(IMM(4));)
+    * SAY_NOFLAGSAFFECTED
+    * Note:  Mainly intended for pointer/counter incrementing/decrementing
+<br>
+<br>
+* Group 11 Instructions
+    * Encoding:  ``1111 0011  aaaa bbbb``
+    * ``a``:  DESCENC_REG(A)
+    * ``b``:  DESCENC_SPECR(B)
+* <b>cpy</b> rA, sB
+    * Effect:  CODE(rA <= sB;)
+    * SAY_NOFLAGSAFFECTED
+<br>
+<br>
+* Group 12 Instructions
+    * Encoding:  ``1111 0100  aaaa bbbb``
+    * ``a``:  DESCENC_SPECR(A)
+    * ``b``:  DESCENC_REG(B)
+* <b>cpy</b> sA, rB
+    * Effect:  CODE(sA <= rB;)
     * SAY_NOFLAGSAFFECTED

@@ -213,6 +213,7 @@
 * <b>addsi</b> rA, sB, imm16
     * Opcode:  0b101
     * Effect:  <code>rA <= sB + sign\_extend\_to\_32(imm16);</code>
+    * Note:  This is mainly intended for using ``pc`` as ``sB``
     * Doesn't affect ``flags``.
 * <b>cpysi</b> rA, imm16
     * Opcode:  0b110
@@ -531,4 +532,42 @@
 * <b>sthx</b> rsA, [rsB, rsC]
     * Opcode:  0b10110
     * Effect:  <code>two\_bytes\_in\_mem\_at(rsB + rsC) <= (rsA[15:0]);</code>
+    * Doesn't affect ``flags``.
+<br>
+<br>
+* Group 9 Instructions
+    * Encoding:  ``1111 0001  aaaa iiii``
+    * ``a``:  <code>rA</code> &emsp; &emsp; // register number "A"
+    * ``i``:  sign-extended 4-bits immediate value
+* <b>addsi</b> rA, imm4
+    * Effect:  <code>rA <= rA + sign\_extend\_to\_32(imm4);</code>
+    * Note:  Mainly intended for pointer incrementing/decrementing
+    * Doesn't affect ``flags``.
+<br>
+<br>
+* Group 10 Instructions
+    * Encoding:  ``1111 0010  aaaa iiii``
+    * ``a``:  <code>sA</code> &emsp; &emsp; // special register number "A"
+    * ``i``:  sign-extended 4-bits immediate value
+* <b>addsi</b> sA, imm4
+    * Effect:  <code>sA <= sA + sign\_extend\_to\_32(imm4);</code>
+    * Note:  Mainly intended for pointer incrementing/decrementing
+    * Doesn't affect ``flags``.
+<br>
+<br>
+* Group 11 Instructions
+    * Encoding:  ``1111 0011  aaaa bbbb``
+    * ``a``:  <code>rA</code> &emsp; &emsp; // register number "A"
+    * ``b``:  <code>sB</code> &emsp; &emsp; // special register number "B"
+* <b>cpy</b> rA, sB
+    * Effect:  <code>rA <= sB;</code>
+    * Doesn't affect ``flags``.
+<br>
+<br>
+* Group 12 Instructions
+    * Encoding:  ``1111 0100  aaaa bbbb``
+    * ``a``:  <code>sA</code> &emsp; &emsp; // special register number "A"
+    * ``b``:  <code>rB</code> &emsp; &emsp; // register number "B"
+* <b>cpy</b> sA, rB
+    * Effect:  <code>sA <= rB;</code>
     * Doesn't affect ``flags``.
