@@ -4,6 +4,14 @@ objs*/*
 objs_dis*/*
 asmouts*/*
 preprocs*/*
+assembler_disassembler/deps*/*
+assembler_disassembler/objs*/*
+assembler_disassembler/objs_dis*/*
+assembler_disassembler/asmouts*/*
+assembler_disassembler/preprocs*/*
+assembler_disassembler/frost32_cpu_assembler_disassembler*
+assembler_disassembler/src/gen_src/*
+assembler_disassembler/*.elf
 *.s.ignore
 *.s
 *.gdb_history*
@@ -11,8 +19,11 @@ preprocs*/*
 *types_*.taghl
 *.txt.ignore
 *.vvp
+*.vhd
+*.vcd
 testing/*
 a.out
 *.E
-*.pdf
 *.html
+hdl/v_outputs
+*.stp
