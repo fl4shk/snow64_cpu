@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/fl4shk/liborangepower.git
+	branch = master
+	commit = 183686489bd8c3033f807b4c9d0ad22104d09e16
+	parent = 6a3276a2bce584abb9b50dd2f526b0f6c674289f
+	cmdver = 0.3.1
