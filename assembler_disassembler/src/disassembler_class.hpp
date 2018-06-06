@@ -108,11 +108,13 @@ private:		// functions
 			u32 fill : 12;
 			s32 simm20 : 20;
 		} temp;
+
 		reg_a_index = get_bits_with_range(instruction, 27, 24);
 		opcode = get_bits_with_range(instruction, 23, 20);
 
 		temp.simm20 = get_bits_with_range(static_cast<s32>(instruction),
 			19, 0);
+		simm20 = temp.simm20;
 	}
 
 	inline void decode_group_2_instr(u32 instruction, u32& reg_a_index,

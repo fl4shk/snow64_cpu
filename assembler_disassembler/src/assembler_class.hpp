@@ -415,7 +415,7 @@ private:		// functions
 		{
 			struct
 			{
-				u8 fill : 12;
+				u32 fill : 12;
 				s32 simm20 : 20;
 			} temp;
 

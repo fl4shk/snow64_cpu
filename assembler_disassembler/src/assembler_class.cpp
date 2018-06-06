@@ -601,7 +601,7 @@ antlrcpp::Any Assembler::visitInstrOpGrp1OneRegOneInterruptsReg
 		opcode = get_instr_opcode_from_str(__encoding_stuff
 			.iog1_one_reg_one_ireta_map());
 	}
-	else if (ctx->TokIdstaReg())
+	else // if (ctx->TokIdstaReg())
 	{
 		opcode = get_instr_opcode_from_str(__encoding_stuff
 			.iog1_one_reg_one_idsta_map());
@@ -635,7 +635,7 @@ antlrcpp::Any Assembler::visitInstrOpGrp1OneInterruptsRegOneReg
 		opcode = get_instr_opcode_from_str(__encoding_stuff
 			.iog1_one_ireta_one_reg_map());
 	}
-	else if (ctx->TokIdstaReg())
+	else // if (ctx->TokIdstaReg())
 	{
 		opcode = get_instr_opcode_from_str(__encoding_stuff
 			.iog1_one_idsta_one_reg_map());
