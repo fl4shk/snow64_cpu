@@ -9,7 +9,7 @@ assembler_disassembler/objs*/*
 assembler_disassembler/objs_dis*/*
 assembler_disassembler/asmouts*/*
 assembler_disassembler/preprocs*/*
-assembler_disassembler/frost32_cpu_assembler_disassembler*
+assembler_disassembler/snow64_cpu_assembler_disassembler*
 assembler_disassembler/src/gen_src/*
 assembler_disassembler/*.elf
 *.s.ignore

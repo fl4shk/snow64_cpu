@@ -104,6 +104,8 @@ private:		// functions
 	template<typename CtxType>
 	auto get_reg_encodings(CtxType *ctx) const;
 
+	template<typename CtxType>
+	inline auto get_one_reg_encoding(CtxType *ctx) const;
 	inline auto get_one_reg_encoding(const std::string& reg_name) const;
 
 	//inline void encode_instr_opcode_group_0(u32 reg_a_index, 
@@ -523,6 +525,13 @@ private:		// functions
 	{
 		// sizeof(s32) is used because an instruction is encoded as 32-bit
 		return raw_immediate - __pc.curr - sizeof(s32);
+	}
+
+
+	inline auto get_instr_opcode_from_str
+		(const EncodingStuff::MapType& some_opcode_map)
+	{
+		return some_opcode_map.at(pop_str());
 	}
 
 };

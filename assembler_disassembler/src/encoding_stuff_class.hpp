@@ -64,13 +64,13 @@ private:		// variables
 
 	MapType __iog1_no_args_map;
 
-	MapType __iog1_one_reg_one_ie;
-	MapType __iog1_one_reg_one_ireta;
-	MapType __iog1_one_reg_one_idsta;
+	MapType __iog1_one_reg_one_ie_map;
+	MapType __iog1_one_reg_one_ireta_map;
+	MapType __iog1_one_reg_one_idsta_map;
 
-	MapType __iog1_one_ie_one_reg;
-	MapType __iog1_one_ireta_one_reg;
-	MapType __iog1_one_idsta_one_reg;
+	MapType __iog1_one_ie_one_reg_map;
+	MapType __iog1_one_ireta_one_reg_map;
+	MapType __iog1_one_idsta_one_reg_map;
 
 
 	// Group 2 (loads)
@@ -117,13 +117,13 @@ public:		// functions
 
 	gen_getter_by_con_ref(iog1_no_args_map);
 
-	gen_getter_by_con_ref(iog1_one_reg_one_ie);
-	gen_getter_by_con_ref(iog1_one_reg_one_ireta);
-	gen_getter_by_con_ref(iog1_one_reg_one_idsta);
+	gen_getter_by_con_ref(iog1_one_reg_one_ie_map);
+	gen_getter_by_con_ref(iog1_one_reg_one_ireta_map);
+	gen_getter_by_con_ref(iog1_one_reg_one_idsta_map);
 
-	gen_getter_by_con_ref(iog1_one_ie_one_reg);
-	gen_getter_by_con_ref(iog1_one_ireta_one_reg);
-	gen_getter_by_con_ref(iog1_one_idsta_one_reg);
+	gen_getter_by_con_ref(iog1_one_ie_one_reg_map);
+	gen_getter_by_con_ref(iog1_one_ireta_one_reg_map);
+	gen_getter_by_con_ref(iog1_one_idsta_one_reg_map);
 
 	// Group 2 (loads)
 	gen_getter_by_con_ref(iog2_ld_three_regs_one_simm12_map);

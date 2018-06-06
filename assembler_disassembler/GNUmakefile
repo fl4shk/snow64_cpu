@@ -27,7 +27,7 @@ endif
 
 # This is the name of the output file.  Change this if needed!
 #PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
-PROJ:=frost32_cpu_assembler_disassembler$(DEBUG_SUFFIX)
+PROJ:=snow64_cpu_assembler_disassembler$(DEBUG_SUFFIX)
 
 
 # Compilers and initial compiler flags

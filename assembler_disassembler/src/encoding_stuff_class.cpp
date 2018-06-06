@@ -88,13 +88,13 @@ EncodingStuff::EncodingStuff()
 	insert_map_entry(__iog1_no_args_map, "di", temp);
 	insert_map_entry(__iog1_no_args_map, "reti", temp);
 
-	insert_map_entry(__iog1_one_reg_one_ie, "cpy", temp);
-	insert_map_entry(__iog1_one_reg_one_ireta, "cpy", temp);
-	insert_map_entry(__iog1_one_reg_one_idsta, "cpy", temp);
+	insert_map_entry(__iog1_one_reg_one_ie_map, "cpy", temp);
+	insert_map_entry(__iog1_one_reg_one_ireta_map, "cpy", temp);
+	insert_map_entry(__iog1_one_reg_one_idsta_map, "cpy", temp);
 
-	insert_map_entry(__iog1_one_ie_one_reg, "cpy", temp);
-	insert_map_entry(__iog1_one_ireta_one_reg, "cpy", temp);
-	insert_map_entry(__iog1_one_idsta_one_reg, "cpy", temp);
+	insert_map_entry(__iog1_one_ie_one_reg_map, "cpy", temp);
+	insert_map_entry(__iog1_one_ireta_one_reg_map, "cpy", temp);
+	insert_map_entry(__iog1_one_idsta_one_reg_map, "cpy", temp);
 
 	// Group 2 (loads)
 	temp = 0;
@@ -193,12 +193,12 @@ void EncodingStuff::decode_iog1_instr_name_and_args_type(u32 sv_bit,
 	DECODE_ITERATION(iog1_rel_branch_map, ArgsType::RelBranch);
 	DECODE_ITERATION(iog1_jump_map, ArgsType::Jump);
 	DECODE_ITERATION(iog1_no_args_map, ArgsType::NoArgs);
-	DECODE_ITERATION(iog1_one_reg_one_ie, ArgsType::OneRegOneIe);
-	DECODE_ITERATION(iog1_one_reg_one_ireta, ArgsType::OneRegOneIreta);
-	DECODE_ITERATION(iog1_one_reg_one_idsta, ArgsType::OneRegOneIdsta);
-	DECODE_ITERATION(iog1_one_ie_one_reg, ArgsType::OneRegOneIe);
-	DECODE_ITERATION(iog1_one_ireta_one_reg, ArgsType::OneRegOneIreta);
-	DECODE_ITERATION(iog1_one_idsta_one_reg, ArgsType::OneRegOneIdsta);
+	DECODE_ITERATION(iog1_one_reg_one_ie_map, ArgsType::OneRegOneIe);
+	DECODE_ITERATION(iog1_one_reg_one_ireta_map, ArgsType::OneRegOneIreta);
+	DECODE_ITERATION(iog1_one_reg_one_idsta_map, ArgsType::OneRegOneIdsta);
+	DECODE_ITERATION(iog1_one_ie_one_reg_map, ArgsType::OneRegOneIe);
+	DECODE_ITERATION(iog1_one_ireta_one_reg_map, ArgsType::OneRegOneIreta);
+	DECODE_ITERATION(iog1_one_idsta_one_reg_map, ArgsType::OneRegOneIdsta);
 
 	instr_name = cstm_strdup("unknown_instruction");
 	args_type = ArgsType::Unknown;
