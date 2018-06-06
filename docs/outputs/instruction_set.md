@@ -5,99 +5,109 @@
 	* Addresses are 64-bit.
 	* Interrupts are supported (this may be a first for a LARs
 	architecture)
+	* Port-mapped I/O is supported (this may be a first for a LARs
+	architecture)
 <br><br>
 * Data LARs:
-<br><br>
-	typedef struct packed
-	<br>
-	{
 
-		// Data field
-		union packed
+		typedef struct packed
 		{
-			// This is possibly not valid SystemVerilog because of arrays
-			// inside a packed struct, but it makes for nice pseudocode
-			logic [7:0] data_8[0:31];
-
-			logic [15:0] data_16[0:15];
-
-			struct packed
+			// Data field
+			union packed
 			{
-				// sign bit, 1 means negative
-				logic sign;
+				// This is possibly not valid SystemVerilog because of
+				// arrays inside a packed struct, but it makes for nice
+				// pseudocode
+				logic [7:0] data_8[0:31];
 
-				// Exponent, +bias
-				logic [7:0] exp;
+				logic [15:0] data_16[0:15];
 
-				// Mantissa; normalized implies 1 MSB
-				logic [6:0] mant;
-			} data_float_16[0:15];
+				struct packed
+				{
+					// sign bit, 1 means negative
+					logic sign;
 
-			logic [31:0] data_32[0:7];
-			logic [63:0] data_64[0:3];
-		} data;
+					// Exponent, +bias
+					logic [7:0] exp;
 
-		// Note that this is a 64-bit structure
-		union packed
-		{
-			struct packed
+					// Mantissa; normalized implies 1 MSB
+					logic [6:0] mant;
+				} data_float_16[0:15];
+
+				logic [31:0] data_32[0:7];
+				logic [63:0] data_64[0:3];
+			} data;
+
+			// Note that this is a 64-bit structure
+			union packed
 			{
-				logic [31 - 5 : 0] base_ptr;
+				struct packed
+				{
+					logic [31 - 5 : 0] base_ptr;
 
-				logic [4:0] offset;
-			} addr_8;
+					logic [4:0] offset;
+				} addr_8;
 
-			// Used for both 16-bit integers and the half floats
-			struct packed
-			{
-				logic [31 - 4 : 0] base_ptr;
+				// Used for both 16-bit integers and the half floats
+				struct packed
+				{
+					logic [31 - 4 : 0] base_ptr;
 
-				logic [3:0] offset;
-			} addr_16;
+					logic [3:0] offset;
+				} addr_16;
 
-			struct packed
-			{
-				logic [31 - 3 : 0] base_ptr;
+				struct packed
+				{
+					logic [31 - 3 : 0] base_ptr;
 
-				logic [2:0] offset;
-			} addr_32;
+					logic [2:0] offset;
+				} addr_32;
 
-			struct packed
-			{
-				logic [31 - 2 : 0] base_ptr;
+				struct packed
+				{
+					logic [31 - 2 : 0] base_ptr;
 
-				logic [1:0] offset;
-			} addr_64;
-		} addr;
+					logic [1:0] offset;
+				} addr_64;
+			} addr;
 
-		// Integer Type (used when "is_float_16" is 1'b0):
-		// 2'b00:  8-bit
-		// 2'b01:  16-bit
-		// 2'b10:  32-bit
-		// 2'b11:  64-bit
-		logic [1:0] type_of_int;
+			// Integer Type (used when "is_float_16" is 1'b0):
+			// 2'b00:  8-bit
+			// 2'b01:  16-bit
+			// 2'b10:  32-bit
+			// 2'b11:  64-bit
+			logic [1:0] type_of_int;
 
-		// These are actually packed 16-bit floats, the implementing the
-		// high 16 bits of 32-bit IEEE float.
-		// "type_of_int" is ignored when "is_float_16" is 1'b1.
-		logic is_float_16;
+			// These are actually packed 16-bit floats, the implementing the
+			// high 16 bits of 32-bit IEEE float.
+			// "type_of_int" is ignored when "is_float_16" is 1'b1.
+			logic is_float_16;
 
-		// Unsigned:  1'b0
-		// Signed:  1'b1
-		// Note:  unsgn_or_sgn is ignored for floats
-		logic unsgn_or_sgn;
+			// Unsigned:  1'b0
+			// Signed:  1'b1
+			// Note:  unsgn_or_sgn is ignored for floats
+			logic unsgn_or_sgn;
 
-		// Data should be lazily stored to memory if this is 1'b1
-		// Otherwise, when this is 1'b0, data in this LAR is up to date
-		// with memory.
-		logic dirty;
+			// Data should be lazily stored to memory if this is 1'b1
+			// Otherwise, when this is 1'b0, data in this LAR is up to date
+			// with memory.
+			logic dirty;
 
-	} DataLar;
-<br><br>
+		} DataLar;
+<br>
 * Registers
 	* The DLARs themselves (there are 16, but this may be changed later):
-		* `d0` (always zero), `d1`, `d2`, `d3`,
-		`d4`, ..., `d15`
+		* `dzero` (always zero), 
+		* `du0`, `du1`, `du2`, `du3`
+		`du4`, `du5`, `du6`, `du7`,
+		`du8`, `du9`, `du10`, `du11`
+		(user registers)
+		* `dlr` (standard link register (hardware does not enforce
+		this))
+		* `dfp` (standard frame pointer (hardware does not enforce
+		this))
+		* `dsp` (standard stack pointer (hardware does not enforce
+		this))
 	* Other registers:
 		* `pc` (the program counter, 64-bit)
 		* `ie` (whether or not interrupts are enabled, 1-bit)
@@ -110,14 +120,13 @@
 * Note:  All invalid instructions are treated as NOPs.
 * ALU Instructions:  Opcode Group:  0b000
 	* Encoding:  `000t aaaa bbbb cccc  oooo iiii iiii iiii`
+		* `t`:  operation type:  if <code>0b0</code>:  scalar operation; 
+		else: vector operation
 		* `a`:  dDest
 		* `b`:  dSrc0
 		* `c`:  dSrc1
 		* `o`:  opcode
-		* `t`:  operation type:  
 		* `i`:  12-bit signed immediate
-		if 0b0:  scalar operation; 
-		else: vector operation
 	* Note:  For ALU instructions, any result that doesn't fit in the
 	destination will be truncated to fit into the destination.  This
 	affects both scalar and vector operations.
@@ -126,61 +135,61 @@
 	* Instructions:
 		* <b>add</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x0
-			* Scalar Mnemonic:  s.<code>add</code>
-			* Vector Mnemonic:  v.<code>add</code>
+			* Scalar Mnemonic:  <code>adds</code>
+			* Vector Mnemonic:  <code>addv</code>
 		* <b>sub</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x1
-			* Scalar Mnemonic:  s.<code>sub</code>
-			* Vector Mnemonic:  v.<code>sub</code>
+			* Scalar Mnemonic:  <code>subs</code>
+			* Vector Mnemonic:  <code>subv</code>
 		* <b>slt</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x2
-			* Scalar Mnemonic:  s.<code>slt</code>
-			* Vector Mnemonic:  v.<code>slt</code>
+			* Scalar Mnemonic:  <code>slts</code>
+			* Vector Mnemonic:  <code>sltv</code>
 			* Note:  set less than
 			* Note:  The signedness of dDest will be used for the operation
 		* <b>mul</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x3
-			* Scalar Mnemonic:  s.<code>mul</code>
-			* Vector Mnemonic:  v.<code>mul</code>
+			* Scalar Mnemonic:  <code>muls</code>
+			* Vector Mnemonic:  <code>mulv</code>
 			* Note:  If dDest has a larger size than both dSrc0 and dSrc1,
 			then the signedness used for the operation will be that of dDest
 			* Note:  This operation
 is not guaranteed to be single cycle, and thus pipeline stalls will be used
 		* <b>div</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x4
-			* Scalar Mnemonic:  s.<code>div</code>
-			* Vector Mnemonic:  v.<code>div</code>
+			* Scalar Mnemonic:  <code>divs</code>
+			* Vector Mnemonic:  <code>divv</code>
 			* Note:  This operation
 is not guaranteed to be single cycle, and thus pipeline stalls will be used
 		* <b>and</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x5
-			* Scalar Mnemonic:  s.<code>and</code>
-			* Vector Mnemonic:  v.<code>and</code>
+			* Scalar Mnemonic:  <code>ands</code>
+			* Vector Mnemonic:  <code>andv</code>
 			* Note:  For floats, this operation treats all operands as
 			16-bit signed integers.
 		* <b>orr</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x6
-			* Scalar Mnemonic:  s.<code>orr</code>
-			* Vector Mnemonic:  v.<code>orr</code>
+			* Scalar Mnemonic:  <code>orrs</code>
+			* Vector Mnemonic:  <code>orrv</code>
 			* Note:  For floats, this operation treats all operands as
 			16-bit signed integers.
 		* <b>xor</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x7
-			* Scalar Mnemonic:  s.<code>xor</code>
-			* Vector Mnemonic:  v.<code>xor</code>
+			* Scalar Mnemonic:  <code>xors</code>
+			* Vector Mnemonic:  <code>xorv</code>
 			* Note:  For floats, this operation treats all operands as
 			16-bit signed integers.
 		* <b>shl</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x8
-			* Scalar Mnemonic:  s.<code>shl</code>
-			* Vector Mnemonic:  v.<code>shl</code>
+			* Scalar Mnemonic:  <code>shls</code>
+			* Vector Mnemonic:  <code>shlv</code>
 			* Note:  Shift left
 			* Note:  For floats, this operation treats all operands as
 			16-bit signed integers.
 		* <b>shr</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x9
-			* Scalar Mnemonic:  s.<code>shr</code>
-			* Vector Mnemonic:  v.<code>shr</code>
+			* Scalar Mnemonic:  <code>shrs</code>
+			* Vector Mnemonic:  <code>shrv</code>
 			* Note:  Shift right
 			* Note:  dSrc0's signedness is used to determine the type of
 			right shift:  
@@ -193,105 +202,97 @@ is not guaranteed to be single cycle, and thus pipeline stalls will be used
 			16-bit signed integers.
 		* <b>inv</b> dDest, dSrc0
 			* Opcode:  0xa
-			* Scalar Mnemonic:  s.<code>inv</code>
-			* Vector Mnemonic:  v.<code>inv</code>
+			* Scalar Mnemonic:  <code>invs</code>
+			* Vector Mnemonic:  <code>invv</code>
 			* Note:  Bitwise invert
 			* Note:  For floats, this operation treats all operands as
 			16-bit signed integers.
 		* <b>not</b> dDest, dSrc0
 			* Opcode:  0xb
-			* Scalar Mnemonic:  s.<code>not</code>
-			* Vector Mnemonic:  v.<code>not</code>
+			* Scalar Mnemonic:  <code>nots</code>
+			* Vector Mnemonic:  <code>notv</code>
 			* Note:  Logical not
 		* <b>add</b> dDest, pc, simm12
 			* Opcode:  0xc
-			* Scalar Mnemonic:  s.<code>add</code>
-			* Vector Mnemonic:  v.<code>add</code>
+			* Scalar Mnemonic:  <code>adds</code>
+			* Vector Mnemonic:  <code>addv</code>
 			* Note:  This is useful for pc-relative loads, relative
 			branches, and for getting the return address of a subroutine
 			call into a LAR before jumping to a subroutine.
 <br><br>
 * Instructions for interacting with special-purpose registers:  
 Opcode Group:  0b001
-	* Encoding:  `0010 aaaa bbbb cccc  oooo iiii iiii iiii`
+	* Encoding:  `0010 aaaa oooo iiii  iiii iiii iiii iiii`
 		* `a`:  dA
-		* `b`:  dB
-		* `c`:  dC
 		* `o`:  opcode
-		* `i`:  12-bit signed immediate
+		* `i`:  20-bit signed immediate
 	* Note:  all instructions in group 0b001 are scalar operations.
 	* Note:  `dX.sdata` is simply the current scalar portion of the
 	data LAR called `dX`
 	* Instructions:
-		* <b>bne</b> dA, dB, simm12
+		* <b>btru</b> dA, simm20
 			* Opcode:  0x0
-			* Effect:  <code>if (dA.sdata != dB.sdata) 
-				pc <= pc + sign_extend_to_64(simm12);</code>
-			* Note:  It is suggested to have .sdata be at least as 
+			* Effect:  <code>if (dA.sdata != 0) 
+				pc <= pc + sign\_extend\_to\_64(simm20);</code>
+			* Note:  It is suggested to have dA.sdata be at least as 
 			large as the largest memory address (which might not be 64-bit
 			if there isnt enough physical memory for that')
-		* <b>beq</b> dA, dB, simm12
+		* <b>bfal</b> dA, simm20
 			* Opcode:  0x1
-			* Effect:  <code>if (dA.sdata == dB.sdata) 
-				pc <= pc + sign_extend_to_64(simm12);</code>
-			* Note:  It is suggested to have .sdata be at least as 
+			* Effect:  <code>if (dA.sdata == 0) 
+				pc <= pc + sign\_extend\_to\_64(simm20);</code>
+			* Note:  It is suggested to have dA.sdata be at least as 
 			large as the largest memory address (which might not be 64-bit
 			if there isnt enough physical memory for that')
-		* <b>jne</b> dA, dB, dC
+		* <b>jmp</b> dA
 			* Opcode:  0x2
-			* Effect:  <code>if (dA.sdata != dB.sdata) pc <= dC.sdata;</code>
+			* Effect:  <code>pc <= dA.sdata;</code>
 			* Note:  It is suggested to have dC.sdata be at least as 
 			large as the largest memory address (which might not be 64-bit
 			if there isnt enough physical memory for that')
-		* <b>jeq</b> dA, dB, dC
-			* Opcode:  0x3
-			* Effect:  <code>if (dA.sdata == dB.sdata) pc <= dC.sdata;</code>
-			* Note:  It is suggested to have dC.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
-		* <b>cpy</b> dA, ie
-			* Opcode:  0x4
-			* Effect:  <code>dA.sdata <= ie; // acts differently if dA is
-			tagged as a float</code>
-		* <b>cpy</b> ie, dA
-			* Opcode:  0x5
-			* Effect:  <code>ie <= (dA.sdata != 0);</code>
 		* <b>ei</b>
-			* Opcode:  0x6
+			* Opcode:  0x3
 			* Effect:  <code>ie <= 1'b1;</code>
 			* Note:  Enable interrupts
 		* <b>di</b>
-			* Opcode:  0x7
+			* Opcode:  0x4
 			* Effect:  <code>ie <= 1'b0;</code>
 			* Note:  Disable interrupts
+		* <b>reti</b>
+			* Opcode:  0x5
+			* Effect:  <code>ie <= 1'b1; pc <= ireta;</code>
+			* Note:  Return from an interrupt
+		* <b>cpy</b> dA, ie
+			* Opcode:  0x6
+			* Effect:  <code>dA.sdata <= ie; // acts differently if dA is
+			tagged as a float</code>
 		* <b>cpy</b> dA, ireta
-			* Opcode:  0x8
+			* Opcode:  0x7
 			* Effect:  <code>dA.sdata <= ireta;</code>
 			* Note:  It is suggested to have dA.sdata be at least as 
 			large as the largest memory address (which might not be 64-bit
 			if there isnt enough physical memory for that')
-		* <b>cpy</b> ireta, dA
-			* Opcode:  0x9
-			* Effect:  <code>ireta <= dA.sdata;</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
 		* <b>cpy</b> dA, idsta
-			* Opcode:  0xa
+			* Opcode:  0x8
 			* Effect:  <code>dA.sdata <= idsta;</code>
 			* Note:  It is suggested to have dA.sdata be at least as 
 			large as the largest memory address (which might not be 64-bit
 			if there isnt enough physical memory for that')
+		* <b>cpy</b> ie, dA
+			* Opcode:  0x9
+			* Effect:  <code>ie <= (dA.sdata != 0);</code>
+		* <b>cpy</b> ireta, dA
+			* Opcode:  0xa
+			* Effect:  <code>ireta <= dA.sdata;</code>
+			* Note:  It is suggested to have dA.sdata be at least as 
+			large as the largest memory address (which might not be 64-bit
+			if there isnt enough physical memory for that')
 		* <b>cpy</b> idsta, dA
-			* Opcode:  0xc
+			* Opcode:  0xb
 			* Effect:  <code>idsta <= dA.sdata;</code>
 			* Note:  It is suggested to have dA.sdata be at least as 
 			large as the largest memory address (which might not be 64-bit
 			if there isnt enough physical memory for that')
-		* <b>reti</b>
-			* Opcode:  0xd
-			* Effect:  <code>ie <= 1'b1; pc <= ireta;</code>
-			* Note:  Return from an interrupt
 <br><br>
 * Load Instructions:
 Opcode Group:  0b010
@@ -302,31 +303,31 @@ Opcode Group:  0b010
 		* `o`:  opcode
 		* `i`:  12-bit signed immediate
 	* Instructions:
-		* <b>ldu8</b> dDest, dSrc0, dSrc1, simm12
+		* <b>ldu8</b> dA, dB, dC, simm12
 			* Opcode:  0x0
 			* Note:  unsigned 8-bit integer(s)
-		* <b>lds8</b> dDest, dSrc0, dSrc1, simm12
+		* <b>lds8</b> dA, dB, dC, simm12
 			* Opcode:  0x1
 			* Note:  signed 8-bit integer(s)
-		* <b>ldu16</b> dDest, dSrc0, dSrc1, simm12
+		* <b>ldu16</b> dA, dB, dC, simm12
 			* Opcode:  0x2
 			* Note:  unsigned 16-bit integer(s)
-		* <b>lds16</b> dDest, dSrc0, dSrc1, simm12
+		* <b>lds16</b> dA, dB, dC, simm12
 			* Opcode:  0x3
 			* Note:  signed 16-bit integer(s)
-		* <b>ldu32</b> dDest, dSrc0, dSrc1, simm12
+		* <b>ldu32</b> dA, dB, dC, simm12
 			* Opcode:  0x4
 			* Note:  unsigned 32-bit integer(s)
-		* <b>lds32</b> dDest, dSrc0, dSrc1, simm12
+		* <b>lds32</b> dA, dB, dC, simm12
 			* Opcode:  0x5
 			* Note:  signed 32-bit integer(s)
-		* <b>ldu64</b> dDest, dSrc0, dSrc1, simm12
+		* <b>ldu64</b> dA, dB, dC, simm12
 			* Opcode:  0x6
 			* Note:  unsigned 64-bit integer(s)
-		* <b>lds64</b> dDest, dSrc0, dSrc1, simm12
+		* <b>lds64</b> dA, dB, dC, simm12
 			* Opcode:  0x7
 			* Note:  signed 64-bit integer(s)
-		* <b>ldf16</b> dDest, dSrc0, dSrc1, simm12
+		* <b>ldf16</b> dA, dB, dC, simm12
 			* Opcode:  0x8
 			* Note:  16-bit floating point number(s), the top 16 bits of a
 			standard 32-bit IEEE float.
@@ -334,37 +335,102 @@ Opcode Group:  0b010
 * Store Instructions:
 Opcode Group:  0b011
 	* Encoding:  `0110 aaaa bbbb cccc  oooo iiii iiii iiii`
-		* `a`:  dDest
-		* `b`:  dSrc0
-		* `c`:  dSrc1
+		* `a`:  dA
+		* `b`:  dB
+		* `c`:  dC
 		* `o`:  opcode
 		* `i`:  12-bit signed immediate
+	* Note:  These are actually type conversion instructions as actual
+	writes to memory are done lazily
 	* Instructions:
-		* <b>stu8</b> dDest, dSrc0, dSrc1, simm12
+		* <b>stu8</b> dA, dB, dC, simm12
 			* Opcode:  0x0
 			* Note:  unsigned 8-bit integer(s)
-		* <b>sts8</b> dDest, dSrc0, dSrc1, simm12
+		* <b>sts8</b> dA, dB, dC, simm12
 			* Opcode:  0x1
 			* Note:  signed 8-bit integer(s)
-		* <b>stu16</b> dDest, dSrc0, dSrc1, simm12
+		* <b>stu16</b> dA, dB, dC, simm12
 			* Opcode:  0x2
 			* Note:  unsigned 16-bit integer(s)
-		* <b>sts16</b> dDest, dSrc0, dSrc1, simm12
+		* <b>sts16</b> dA, dB, dC, simm12
 			* Opcode:  0x3
 			* Note:  signed 16-bit integer(s)
-		* <b>stu32</b> dDest, dSrc0, dSrc1, simm12
+		* <b>stu32</b> dA, dB, dC, simm12
 			* Opcode:  0x4
 			* Note:  unsigned 32-bit integer(s)
-		* <b>sts32</b> dDest, dSrc0, dSrc1, simm12
+		* <b>sts32</b> dA, dB, dC, simm12
 			* Opcode:  0x5
 			* Note:  signed 32-bit integer(s)
-		* <b>stu64</b> dDest, dSrc0, dSrc1, simm12
+		* <b>stu64</b> dA, dB, dC, simm12
 			* Opcode:  0x6
 			* Note:  unsigned 64-bit integer(s)
-		* <b>sts64</b> dDest, dSrc0, dSrc1, simm12
+		* <b>sts64</b> dA, dB, dC, simm12
 			* Opcode:  0x7
 			* Note:  signed 64-bit integer(s)
-		* <b>stf16</b> dDest, dSrc0, dSrc1, simm12
+		* <b>stf16</b> dA, dB, dC, simm12
 			* Opcode:  0x8
 			* Note:  16-bit floating point number(s), the top 16 bits of a
 			standard 32-bit IEEE float.
+<br><br>
+* Port-mapped Input/Output Instructions:
+Opcode Group:  0b100
+	* Encoding:  `100t aaaa bbbb oooo  iiii iiii iiii iiii`
+		* `t`:  operation type:  if <code>0b0</code>:  scalar operation; 
+		else: vector operation
+		* `a`:  dA
+		* `b`:  dB
+		* `o`:  opcode
+		* `i`:  16-bit signed immediate
+	* Note:  `dX.sdata` is simply the current scalar portion of the
+	data LAR called `dX`
+	* Note:  For the <code>in...</code> instructions, the entirety of
+	<code>dA.data</code> is set to the received data.  The type of <code>dA</code> is set
+	based upon the instruction opcode.
+	* Note:  For <code>outs</code>, <code>dA.sdata</code> is sent to the output port,
+	along with the type of data (in case the particular I/O port cares).
+	* Note:  For <code>outv</code>, the entirety of <code>dA.data</code> is sent to the
+	output port, along with the type of data (in case the particular I/O
+	port cares).
+	* Note:  For each of these instructions, the I/O address used is
+	computed by the formula
+	<code>cast\_to\_64(dB.sdata) + sign\_extend\_to\_64(simm16)</code>
+	* Instructions:
+		* <b>inu8</b> dA, dB, simm16
+			* Opcode:  0x0
+			* Note:  unsigned 8-bit integer(s)
+		* <b>ins8</b> dA, dB, simm16
+			* Opcode:  0x1
+			* Note:  signed 8-bit integer(s)
+		* <b>inu16</b> dA, dB, simm16
+			* Opcode:  0x2
+			* Note:  unsigned 16-bit integer(s)
+		* <b>ins16</b> dA, dB, simm16
+			* Opcode:  0x3
+			* Note:  signed 16-bit integer(s)
+		* <b>inu32</b> dA, dB, simm16
+			* Opcode:  0x4
+			* Note:  unsigned 32-bit integer(s)
+		* <b>ins32</b> dA, dB, simm16
+			* Opcode:  0x5
+			* Note:  signed 32-bit integer(s)
+		* <b>inu64</b> dA, dB, simm16
+			* Opcode:  0x6
+			* Note:  unsigned 64-bit integer(s)
+		* <b>ins64</b> dA, dB, simm16
+			* Opcode:  0x7
+			* Note:  signed 64-bit integer(s)
+		* <b>inf16</b> dA, dB, simm16
+			* Opcode:  0x8
+			* Note:  16-bit floating point number(s), the top 16 bits of a
+			standard 32-bit IEEE float.
+		* <b>out</b> (actual mnemonics below)
+			* Opcode:  0x9
+				* <b>outs</b> dA, dB, simm16
+					* `t`:  0
+					* Note:  <code>dA.sdata</code> is simply sent to the output
+					data bus.
+				* <b>outv</b> dA, dB, simm16
+					* `t`:  1
+					* Note:  The type of <code>dA</code> is ignored for this
+					operation as the entirety of the LAR is sent to the
+					port.

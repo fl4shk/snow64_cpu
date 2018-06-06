@@ -10,6 +10,7 @@ export VPATH := $(foreach DIR, $(SRC_DIRS), $(DIR))
 SOURCES := $(foreach DIR,$(SRC_DIRS), $(notdir $(wildcard $(DIR)/*.m4)))
 
 OUTPUTS := $(SOURCES:%.m4=$(OUTDIR)/%.md)
+PDFS := $(OUTPUTS:%.md=%.pdf)
 HTML := $(OUTPUTS:%.md=%.html)
 
 
@@ -21,6 +22,13 @@ all : all_pre $(OUTPUTS)
 all_pre :
 	@mkdir -p $(OUTDIR)
 
+.PHONY : pdfs
+pdfs : pdfs_pre $(PDFS)
+	@#
+
+.PHONY : pdfs_pre
+pdfs_pre : all_pre $(OUTPUTS)
+	@#
 
 .PHONY : html
 html : html_pre $(HTML)
@@ -40,9 +48,8 @@ html_pre : all_pre $(OUTPUTS)
 $(OUTPUTS) : $(OUTDIR)/%.md : %.m4
 	m4 $< > $@
 
-
-#$(PDFS) : %.pdf : %.md
-#	md2pdf $< > $@
+$(PDFS) : %.pdf : %.md
+	md2pdf $< > $@
 $(HTML) : %.html : %.md
 	markdown $< > $@
 
