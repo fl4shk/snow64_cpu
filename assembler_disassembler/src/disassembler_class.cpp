@@ -131,86 +131,86 @@ antlrcpp::Any Disassembler::visitLine
 				//	printout(*instr_name, " ", strappcom2(*reg_a_name, 
 				//		*reg_b_name, *reg_c_name));
 				//	break;
-				case EncodingStuff::ThreeRegsScalar:
+				case EncodingStuff::ArgsType::ThreeRegsScalar:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name, *reg_c_name));
 					break;
-				case EncodingStuff::TwoRegsScalar:
+				case EncodingStuff::ArgsType::TwoRegsScalar:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name));
 					break;
-				case EncodingStuff::OneRegOnePcOneSimm12Scalar:
+				case EncodingStuff::ArgsType::OneRegOnePcOneSimm12Scalar:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						"pc", simm12));
 					break;
 
-				case EncodingStuff::ThreeRegsVector:
+				case EncodingStuff::ArgsType::ThreeRegsVector:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name, *reg_c_name));
 					break;
-				case EncodingStuff::TwoRegsVector:
+				case EncodingStuff::ArgsType::TwoRegsVector:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name));
 					break;
-				case EncodingStuff::OneRegOnePcOneSimm12Vector:
+				case EncodingStuff::ArgsType::OneRegOnePcOneSimm12Vector:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						"pc", simm12));
 					break;
 
-				case EncodingStuff::RelBranch:
+				case EncodingStuff::ArgsType::RelBranch:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						simm20));
 					break;
-				case EncodingStuff::Jump:
+				case EncodingStuff::ArgsType::Jump:
 					printout(*instr_name, " ", *reg_a_name);
 					break;
 
-				case EncodingStuff::OneRegOneIe:
+				case EncodingStuff::ArgsType::OneRegOneIe:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						"ie"));
 					break;
-				case EncodingStuff::OneRegOneIreta:
+				case EncodingStuff::ArgsType::OneRegOneIreta:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						"ireta"));
 					break;
-				case EncodingStuff::OneRegOneIdsta:
+				case EncodingStuff::ArgsType::OneRegOneIdsta:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						"idsta"));
 					break;
-				case EncodingStuff::OneIeOneReg:
+				case EncodingStuff::ArgsType::OneIeOneReg:
 					printout(*instr_name, " ", strappcom2("ie",
 						*reg_a_name));
 					break;
-				case EncodingStuff::OneIretaOneReg:
+				case EncodingStuff::ArgsType::OneIretaOneReg:
 					printout(*instr_name, " ", strappcom2("ireta",
 						*reg_a_name));
 					break;
-				case EncodingStuff::OneIdstaOneReg:
+				case EncodingStuff::ArgsType::OneIdstaOneReg:
 					printout(*instr_name, " ", strappcom2("idsta",
 						*reg_a_name));
 					break;
-				case EncodingStuff::NoArgs:
+				case EncodingStuff::ArgsType::NoArgs:
 					printout(*instr_name);
 					break;
 
-				case EncodingStuff::LdThreeRegsOneSimm12:
+				case EncodingStuff::ArgsType::LdThreeRegsOneSimm12:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name, *reg_c_name, simm12));
 					break;
-				case EncodingStuff::StThreeRegsOneSimm12:
+				case EncodingStuff::ArgsType::StThreeRegsOneSimm12:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name, *reg_c_name, simm12));
 					break;
 
-				case EncodingStuff::InputTwoRegsOneSimm16:
+				case EncodingStuff::ArgsType::InputTwoRegsOneSimm16:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name, simm16));
 					break;
-				case EncodingStuff::OutputTwoRegsOneSimm16Scalar:
+				case EncodingStuff::ArgsType::OutputTwoRegsOneSimm16Scalar:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name, simm16));
 					break;
-				case EncodingStuff::OutputTwoRegsOneSimm16Vector:
+				case EncodingStuff::ArgsType::OutputTwoRegsOneSimm16Vector:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						*reg_b_name, simm16));
 					break;

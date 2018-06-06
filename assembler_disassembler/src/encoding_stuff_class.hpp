@@ -5,6 +5,8 @@
 
 #include "misc_includes.hpp"
 
+extern std::string* cstm_strdup(const std::string& to_dup);
+
 class EncodingStuff
 {
 public:		// enums

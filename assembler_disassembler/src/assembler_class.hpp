@@ -121,7 +121,7 @@ private:		// functions
 	//}
 
 	inline void encode_group_0_instr(u32 sv_bit, u32 reg_a_index,
-		u32 reg_b_index, u32 reg_c_index, s32 simm12)
+		u32 reg_b_index, u32 reg_c_index, u32 opcode, s32 simm12)
 	{
 		u64 to_gen = 0;
 
@@ -184,13 +184,18 @@ private:		// functions
 		gen_32(to_gen);
 	}
 
-	inline void encode_group_4_instr(u32 reg_a_index, u32 reg_b_index,
-		u32 opcode, s32 simm16)
+	inline void encode_group_4_instr(u32 sv_bit, u32 reg_a_index, 
+		u32 reg_b_index, u32 opcode, s32 simm16)
 	{
 		u64 to_gen = 0;
 
 		// Instruction group (0b100)
 		clear_and_set_bits(to_gen, 0b100, 31, 29);
+		clear_and_set_bits(to_gen, sv_bit, 28, 28);
+		clear_and_set_bits(to_gen, reg_a_index, 27, 24);
+		clear_and_set_bits(to_gen, reg_b_index, 23, 20);
+		clear_and_set_bits(to_gen, opcode, 19, 16);
+		clear_and_set_bits(to_gen, simm16, 15, 0);
 
 		gen_32(to_gen);
 	}
@@ -221,6 +226,46 @@ private:		// visitor functions
 		(AssemblerGrammarParser::DirectiveContext *ctx);
 
 	// instruction:
+	antlrcpp::Any visitInstrOpGrp0ThreeRegsScalar
+		(AssemblerGrammarParser::InstrOpGrp0ThreeRegsScalarContext *ctx);
+	antlrcpp::Any visitInstrOpGrp0TwoRegsScalar
+		(AssemblerGrammarParser::InstrOpGrp0TwoRegsScalarContext *ctx);
+	antlrcpp::Any visitInstrOpGrp0OneRegOnePcOneSimm12Scalar
+		(AssemblerGrammarParser
+		::InstrOpGrp0OneRegOnePcOneSimm12ScalarContext *ctx);
+
+	antlrcpp::Any visitInstrOpGrp0ThreeRegsVector
+		(AssemblerGrammarParser::InstrOpGrp0ThreeRegsVectorContext *ctx);
+	antlrcpp::Any visitInstrOpGrp0TwoRegsVector
+		(AssemblerGrammarParser::InstrOpGrp0TwoRegsVectorContext *ctx);
+	antlrcpp::Any visitInstrOpGrp0OneRegOnePcOneSimm12Vector
+		(AssemblerGrammarParser
+		::InstrOpGrp0OneRegOnePcOneSimm12VectorContext *ctx);
+
+	antlrcpp::Any visitInstrOpGrp1RelBranch
+		(AssemblerGrammarParser::InstrOpGrp1RelBranchContext *ctx);
+	antlrcpp::Any visitInstrOpGrp1Jump
+		(AssemblerGrammarParser::InstrOpGrp1JumpContext *ctx);
+
+	antlrcpp::Any visitInstrOpGrp1OneRegOneInterruptsReg
+		(AssemblerGrammarParser::InstrOpGrp1OneRegOneInterruptsRegContext
+		*ctx);
+	antlrcpp::Any visitInstrOpGrp1OneInterruptsRegOneReg
+		(AssemblerGrammarParser::InstrOpGrp1OneInterruptsRegOneRegContext
+		*ctx);
+	antlrcpp::Any visitInstrOpGrp1NoArgs
+		(AssemblerGrammarParser::InstrOpGrp1NoArgsContext *ctx);
+
+	antlrcpp::Any visitInstrOpGrp2LdThreeRegsOneSimm12
+		(AssemblerGrammarParser::InstrOpGrp2LdThreeRegsOneSimm12Context
+		*ctx);
+	antlrcpp::Any visitInstrOpGrp3StThreeRegsOneSimm12
+		(AssemblerGrammarParser::InstrOpGrp3StThreeRegsOneSimm12Context
+		*ctx);
+
+	antlrcpp::Any visitInstrOpGrp4IoTwoRegsOneSimm16
+		(AssemblerGrammarParser::InstrOpGrp4IoTwoRegsOneSimm16Context
+		*ctx);
 
 
 
@@ -362,7 +407,7 @@ private:		// functions
 	//u32 __get_reg_temp_index() const;
 
 	inline void __warn_if_simm20_out_of_range(ParserRuleContext* ctx,
-		s64 immediate)
+		s64 immediate, bool is_for_branch=false)
 	{
 		if (__pass)
 		{
@@ -379,9 +424,23 @@ private:		// functions
 
 			if (immediate != temp.simm20)
 			{
-				warn(ctx, sconcat("immediate value 0x", std::hex, immediate,
-					std::dec, " out of range for for 20-bit signed ",
-					"immediate."));
+				//warn(ctx, sconcat("immediate value 0x", std::hex, immediate,
+				//	std::dec, " out of range for for 20-bit signed ",
+				//	"immediate."));
+				if (!is_for_branch)
+				{
+					warn(ctx, sconcat("immediate value 0x", std::hex, 
+						immediate, std::dec, 
+						" out of range for for 20-bit signed ",
+						"immediate."));
+				}
+				else // if (is_for_branch)
+				{
+					warn(ctx, sconcat("branch offset 0x", std::hex,
+						immediate, std::dec, " out of range ",
+						"because it doesn't fit in a 20-bit signed ",
+						"immediate."));
+				}
 			}
 		}
 	}
@@ -458,6 +517,12 @@ private:		// functions
 					"immediate."));
 			}
 		}
+	}
+
+	inline s64 get_branch_offset(s64 raw_immediate) const
+	{
+		// sizeof(s32) is used because an instruction is encoded as 32-bit
+		return raw_immediate - __pc.curr - sizeof(s32);
 	}
 
 };
