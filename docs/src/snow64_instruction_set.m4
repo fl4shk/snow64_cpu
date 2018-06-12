@@ -257,7 +257,7 @@ OPCODE_GROUP(0b001)
 		* BOLD(jmp) dA
 			* OPCODE(0x2)
 			* Effect:  CODE(pc <= dA.sdata;)
-			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dC)
+			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
 		* BOLD(ei)
 			* OPCODE(0x3)
 			* Effect:  CODE(ie <= 1'b1;)

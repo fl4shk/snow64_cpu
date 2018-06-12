@@ -21,6 +21,7 @@ assembler_disassembler/*.elf
 *.vvp
 *.vhd
 *.vcd
+*.v
 testing/*
 a.out
 *.E

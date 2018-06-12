@@ -7,7 +7,8 @@ SRC_DIRS := src
 #end stuff
 
 # Prefix for output file name (change this if needed!)
-PROJ := $(shell basename $(CURDIR))
+#PROJ := $(shell basename $(CURDIR))
+PROJ := snow64_cpu
 
 # (System)Verilog Compiler
 VC := iverilog
@@ -15,7 +16,7 @@ VC := iverilog
 EXTRA_IVERILOG_OPTIONS:=-g2009 -DICARUS
 BUILD_VVP:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -o $(PROJ).vvp
 BUILD_VHDL:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvhdl -o $(PROJ).vhd
-BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tverilog -o $(PROJ).v
+BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvlog95 -o generated_verilog/$(PROJ).v
 PREPROCESS:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -E -o $(PROJ).E
 
 

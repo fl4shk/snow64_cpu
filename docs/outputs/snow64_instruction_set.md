@@ -247,7 +247,7 @@ Opcode Group:  0b001
 		* <b>jmp</b> dA
 			* Opcode:  0x2
 			* Effect:  <code>pc <= dA.sdata;</code>
-			* Note:  It is suggested to have dC.sdata be at least as 
+			* Note:  It is suggested to have dA.sdata be at least as 
 			large as the largest memory address (which might not be 64-bit
 			if there isnt enough physical memory for that')
 		* <b>ei</b>
