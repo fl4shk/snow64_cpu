@@ -10,47 +10,47 @@ module TestBench;
 	//	logic clk;
 	//} __locals;
 
-	localparam __WIDTH__ASR8_DATA_INOUT = 8;
-	localparam __MSB_POS__ASR8_DATA_INOUT
-		= `WIDTH2MP(__WIDTH__ASR8_DATA_INOUT);
+	localparam __WIDTH__ASR_DATA_INOUT = 16;
+	localparam __MSB_POS__ASR_DATA_INOUT
+		= `WIDTH2MP(__WIDTH__ASR_DATA_INOUT);
 
 	struct packed
 	{
-		logic [__MSB_POS__ASR8_DATA_INOUT:0] to_shift, amount;
-	} __in_asr8;
+		logic [__MSB_POS__ASR_DATA_INOUT:0] to_shift, amount;
+	} __in_asr;
 
 	struct packed
 	{
-		logic [__MSB_POS__ASR8_DATA_INOUT:0] data;
-	} __out_asr8;
+		logic [__MSB_POS__ASR_DATA_INOUT:0] data;
+	} __out_asr;
 
-	ArithmeticShiftRight #(.WIDTH__DATA_INOUT(__WIDTH__ASR8_DATA_INOUT))
-		__inst_asr8(.in_to_shift(__in_asr8.to_shift),
-		.in_amount(__in_asr8.amount), .out_data(__out_asr8.data));
+	ArithmeticShiftRight #(.WIDTH__DATA_INOUT(__WIDTH__ASR_DATA_INOUT))
+		__inst_asr(.in_to_shift(__in_asr.to_shift),
+		.in_amount(__in_asr.amount), .out_data(__out_asr.data));
 
-	logic [__WIDTH__ASR8_DATA_INOUT:0] __i, __j;
+	logic [__WIDTH__ASR_DATA_INOUT:0] __i, __j;
 
-	logic [__MSB_POS__ASR8_DATA_INOUT:0] __oracle_asr8_out_data;
+	logic [__MSB_POS__ASR_DATA_INOUT:0] __oracle_asr_out_data;
 
 	initial
 	begin
-		for (__i=0; !__i[__WIDTH__ASR8_DATA_INOUT]; __i=__i+1)
+		for (__i=0; !__i[__WIDTH__ASR_DATA_INOUT]; __i=__i+1)
 		begin
-			for (__j=0; !__j[__WIDTH__ASR8_DATA_INOUT]; __j=__j+1)
+			for (__j=0; !__j[__WIDTH__ASR_DATA_INOUT]; __j=__j+1)
 			begin
-				__in_asr8.to_shift = __i;
-				__in_asr8.amount = __j;
+				__in_asr.to_shift = __i;
+				__in_asr.amount = __j;
 				#1
 
-				__oracle_asr8_out_data 
-					= $signed(__in_asr8.to_shift) >>> __in_asr8.amount;
+				__oracle_asr_out_data 
+					= $signed(__in_asr.to_shift) >>> __in_asr.amount;
 
 				#1
-				if (__oracle_asr8_out_data != __out_asr8.data)
+				if (__oracle_asr_out_data != __out_asr.data)
 				begin
-					$display("asr8 wrong output data:  %h >>> %h, %h, %h",
-						__in_asr8.to_shift, __in_asr8.amount,
-						__out_asr8.data, __oracle_asr8_out_data);
+					$display("asr wrong output data:  %h >>> %h, %h, %h",
+						__in_asr.to_shift, __in_asr.amount,
+						__out_asr.data, __oracle_asr_out_data);
 				end
 			end
 		end

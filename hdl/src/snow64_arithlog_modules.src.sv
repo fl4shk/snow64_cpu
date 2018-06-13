@@ -57,10 +57,6 @@ module ArithmeticShiftRight #(parameter WIDTH__DATA_INOUT=64)
 	localparam __MSB_POS__OF_16 = `WIDTH2MP(__WIDTH__OF_16);
 	localparam __WIDTH__OF_8 = 8;
 	localparam __MSB_POS__OF_8 = `WIDTH2MP(__WIDTH__OF_8);
-	localparam __WIDTH__OF_4 = 4;
-	localparam __MSB_POS__OF_4 = `WIDTH2MP(__WIDTH__OF_4);
-	localparam __WIDTH__OF_2 = 2;
-	localparam __MSB_POS__OF_2 = `WIDTH2MP(__WIDTH__OF_2);
 
 	// Local variables
 	//logic [__MSB_POS__DATA_INOUT:0] __temp[0 : __LAST_INDEX__TEMP];
@@ -149,17 +145,6 @@ module ArithmeticShiftRight #(parameter WIDTH__DATA_INOUT=64)
 				`set_temp(1, __MSB_POS__OF_8);
 				`set_temp(2, __MSB_POS__OF_8);
 				`set_temp(3, __MSB_POS__OF_8);
-			end
-
-			__WIDTH__OF_4:
-			begin
-				`set_temp(1, __MSB_POS__OF_4);
-				`set_temp(2, __MSB_POS__OF_4);
-			end
-
-			__WIDTH__OF_2:
-			begin
-				`set_temp(1, __MSB_POS__OF_2);
 			end
 
 			default:
