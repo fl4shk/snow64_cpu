@@ -82,4 +82,13 @@ typedef struct packed
 //	logic [`MSB_POS__SNOW64_CPU_ALU_SHIFT_DATA_INOUT:0] data;
 //} PortOut_Shift;
 
+localparam WIDTH__OF_64 = 64;
+localparam MSB_POS__OF_64 = `WIDTH2MP(WIDTH__OF_64);
+localparam WIDTH__OF_32 = 32;
+localparam MSB_POS__OF_32 = `WIDTH2MP(WIDTH__OF_32);
+localparam WIDTH__OF_16 = 16;
+localparam MSB_POS__OF_16 = `WIDTH2MP(WIDTH__OF_16);
+localparam WIDTH__OF_8 = 8;
+localparam MSB_POS__OF_8 = `WIDTH2MP(WIDTH__OF_8);
+
 endpackage : PkgSnow64Alu

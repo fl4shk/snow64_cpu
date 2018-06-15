@@ -24,7 +24,8 @@ module TestBench;
 		logic [__MSB_POS__ASR_DATA_INOUT:0] data;
 	} __out_asr;
 
-	ArithmeticShiftRight #(.WIDTH__DATA_INOUT(__WIDTH__ASR_DATA_INOUT))
+	DebugArithmeticShiftRight
+		#(.WIDTH__DATA_INOUT(__WIDTH__ASR_DATA_INOUT))
 		__inst_asr(.in_to_shift(__in_asr.to_shift),
 		.in_amount(__in_asr.amount), .out_data(__out_asr.data));
 
