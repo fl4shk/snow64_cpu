@@ -1,31 +1,46 @@
 `include "src/snow64_alu_defines.header.sv"
 
-module SetLessThanUnsigned #(parameter WIDTH__DATA_INOUT=64)
-	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b, 
+//module SetLessThanUnsigned #(parameter WIDTH__DATA_INOUT=64)
+//	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b, 
+//	output logic out_data);
+//
+//	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
+//	logic [__MSB_POS__DATA_INOUT:0] __temp;
+//
+//	// 6502-style subtract
+//	assign {out_data, __temp} = in_a + (~in_b) 
+//		+ {{__MSB_POS__DATA_INOUT{1'b0}}, 1'b1};
+//endmodule
+
+//module SetLessThanSigned #(parameter WIDTH__DATA_INOUT=64)
+//	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b, 
+//	output logic out_data);
+//
+//	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
+//	logic [__MSB_POS__DATA_INOUT:0] __temp;
+//
+//	// 6502-style subtract
+//	assign __temp = in_a + (~in_b) + {{__MSB_POS__DATA_INOUT{1'b0}}, 1'b1};
+//
+//	// 6502-style "N" and "V" flags.
+//	assign out_data = (__temp[__MSB_POS__DATA_INOUT]
+//		^ ((in_a[__MSB_POS__DATA_INOUT] ^ in_b[__MSB_POS__DATA_INOUT])
+//		& (in_a[__MSB_POS__DATA_INOUT] ^ __temp[__MSB_POS__DATA_INOUT])));
+//endmodule
+
+//module SetLessThanUnsigned(input logic in_a_msb_pos, in_b_msb_pos,
+//	output logic out_data);
+//
+//endmodule
+
+module SetLessThanSigned
+	(input logic in_a_msb_pos, in_b_msb_pos, in_sub_result_msb_pos,
 	output logic out_data);
-
-	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
-	logic [__MSB_POS__DATA_INOUT:0] __temp;
-
-	// 6502-style subtract
-	assign {out_data, __temp} = in_a + (~in_b) 
-		+ {{__MSB_POS__DATA_INOUT{1'b0}}, 1'b1};
-endmodule
-
-module SetLessThanSigned #(parameter WIDTH__DATA_INOUT=64)
-	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b, 
-	output logic out_data);
-
-	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
-	logic [__MSB_POS__DATA_INOUT:0] __temp;
-
-	// 6502-style subtract
-	assign __temp = in_a + (~in_b) + {{__MSB_POS__DATA_INOUT{1'b0}}, 1'b1};
 
 	// 6502-style "N" and "V" flags.
-	assign out_data = (__temp[__MSB_POS__DATA_INOUT]
-		^ ((in_a[__MSB_POS__DATA_INOUT] ^ in_b[__MSB_POS__DATA_INOUT])
-		& (in_a[__MSB_POS__DATA_INOUT] ^ __temp[__MSB_POS__DATA_INOUT])));
+	assign out_data = (in_sub_result_msb_pos
+		^ ((in_a_msb_pos ^ in_b_msb_pos)
+		& (in_a_msb_pos ^ in_sub_result_msb_pos)));
 endmodule
 
 // Barrel shifters to compute arithmetic shift right.

@@ -4,7 +4,7 @@
 package PkgSnow64InstrDecoder;
 
 // Group 0 instructions:  ALU/FPU stuffs
-typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
+typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 {
 	Add_ThreeRegs,
 	Sub_ThreeRegs,
@@ -28,7 +28,7 @@ typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
 } Iog0Oper;
 
 // Group 1 instructions:  control flow and interrupts stuff
-typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
+typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 {
 	Btru_OneRegOneSimm20,
 	Bfal_OneRegOneSimm20,
@@ -52,7 +52,7 @@ typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
 } Iog1Oper;
 
 // Group 2 instructions:  loads
-typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
+typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 {
 	LdU8_ThreeRegsOneSimm12,
 	LdS8_ThreeRegsOneSimm12,
@@ -76,7 +76,7 @@ typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
 } Iog2Oper;
 
 // Group 3 instructions:  stores
-typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
+typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 {
 	StU8_ThreeRegsOneSimm12,
 	StS8_ThreeRegsOneSimm12,
@@ -100,7 +100,7 @@ typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
 } Iog3Oper;
 
 // Group 4 instructions:  port-mapped input and output
-typedef enum logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0]
+typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 {
 	InU8_TwoRegsOneSimm16,
 	InS8_TwoRegsOneSimm16,
@@ -134,20 +134,20 @@ localparam MSB_POS__INSTR = `WIDTH2MP(WIDTH__INSTR);
 localparam WIDTH__ADDR = `WIDTH__SNOW64_CPU_ADDR;
 localparam MSB_POS__ADDR = `WIDTH2MP(WIDTH__ADDR);
 
-localparam WIDTH__IOG0_SIMM12 = `WIDTH__SNOW64_CPU_IENC_IOG0_SIMM12;
-localparam WIDTH__IOG1_SIMM20 = `WIDTH__SNOW64_CPU_IENC_IOG1_SIMM20;
-localparam WIDTH__IOG2_SIMM12 = `WIDTH__SNOW64_CPU_IENC_IOG2_SIMM12;
-localparam WIDTH__IOG3_SIMM12 = `WIDTH__SNOW64_CPU_IENC_IOG3_SIMM12;
-localparam WIDTH__IOG4_SIMM16 = `WIDTH__SNOW64_CPU_IENC_IOG4_SIMM16;
+localparam WIDTH__IOG0_SIMM12 = `WIDTH__SNOW64_IENC_IOG0_SIMM12;
+localparam WIDTH__IOG1_SIMM20 = `WIDTH__SNOW64_IENC_IOG1_SIMM20;
+localparam WIDTH__IOG2_SIMM12 = `WIDTH__SNOW64_IENC_IOG2_SIMM12;
+localparam WIDTH__IOG3_SIMM12 = `WIDTH__SNOW64_IENC_IOG3_SIMM12;
+localparam WIDTH__IOG4_SIMM16 = `WIDTH__SNOW64_IENC_IOG4_SIMM16;
 
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_CPU_IENC_GROUP:0] group;
+	logic [`MSB_POS__SNOW64_IENC_GROUP:0] group;
 	logic op_type;
-	logic [`MSB_POS__SNOW64_CPU_IENC_REG_INDEX:0] 
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0] 
 		ra_index, rb_index, rc_index;
-	logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0] oper;
+	logic [`MSB_POS__SNOW64_IENC_OPCODE:0] oper;
 
 	// Simply sign extend the immediate value encoded into each
 	// instruction.
@@ -170,50 +170,50 @@ typedef struct packed
 typedef struct packed
 {
 	// "group" should be 3'b000
-	logic [`MSB_POS__SNOW64_CPU_IENC_GROUP:0] group;
+	logic [`MSB_POS__SNOW64_IENC_GROUP:0] group;
 	logic op_type;
-	logic [`MSB_POS__SNOW64_CPU_IENC_REG_INDEX:0]
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
 		ra_index, rb_index, rc_index;
-	logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0] oper;
-	logic [`MSB_POS__SNOW64_CPU_IENC_IOG0_SIMM12:0] simm12;
+	logic [`MSB_POS__SNOW64_IENC_OPCODE:0] oper;
+	logic [`MSB_POS__SNOW64_IENC_IOG0_SIMM12:0] simm12;
 } Iog0Instr;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_CPU_IENC_GROUP:0] group;
+	logic [`MSB_POS__SNOW64_IENC_GROUP:0] group;
 	logic fill;
-	logic [`MSB_POS__SNOW64_CPU_IENC_REG_INDEX:0] ra_index;
-	logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0] oper;
-	logic [`MSB_POS__SNOW64_CPU_IENC_IOG1_SIMM20:0] simm20;
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0] ra_index;
+	logic [`MSB_POS__SNOW64_IENC_OPCODE:0] oper;
+	logic [`MSB_POS__SNOW64_IENC_IOG1_SIMM20:0] simm20;
 } Iog1Instr;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_CPU_IENC_GROUP:0] group;
+	logic [`MSB_POS__SNOW64_IENC_GROUP:0] group;
 	logic fill;
-	logic [`MSB_POS__SNOW64_CPU_IENC_REG_INDEX:0]
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
 		ra_index, rb_index, rc_index;
-	logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0] oper;
-	logic [`MSB_POS__SNOW64_CPU_IENC_IOG2_SIMM12:0] simm12;
+	logic [`MSB_POS__SNOW64_IENC_OPCODE:0] oper;
+	logic [`MSB_POS__SNOW64_IENC_IOG2_SIMM12:0] simm12;
 } Iog2Instr;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_CPU_IENC_GROUP:0] group;
+	logic [`MSB_POS__SNOW64_IENC_GROUP:0] group;
 	logic fill;
-	logic [`MSB_POS__SNOW64_CPU_IENC_REG_INDEX:0]
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
 		ra_index, rb_index, rc_index;
-	logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0] oper;
-	logic [`MSB_POS__SNOW64_CPU_IENC_IOG3_SIMM12:0] simm12;
+	logic [`MSB_POS__SNOW64_IENC_OPCODE:0] oper;
+	logic [`MSB_POS__SNOW64_IENC_IOG3_SIMM12:0] simm12;
 } Iog3Instr;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_CPU_IENC_GROUP:0] group;
+	logic [`MSB_POS__SNOW64_IENC_GROUP:0] group;
 	logic op_type;
-	logic [`MSB_POS__SNOW64_CPU_IENC_REG_INDEX:0] ra_index, rb_index;
-	logic [`MSB_POS__SNOW64_CPU_IENC_OPCODE:0] oper;
-	logic [`MSB_POS__SNOW64_CPU_IENC_IOG4_SIMM16:0] simm16;
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0] ra_index, rb_index;
+	logic [`MSB_POS__SNOW64_IENC_OPCODE:0] oper;
+	logic [`MSB_POS__SNOW64_IENC_IOG4_SIMM16:0] simm16;
 } Iog4Instr;
 
 

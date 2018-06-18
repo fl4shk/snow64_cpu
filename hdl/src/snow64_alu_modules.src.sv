@@ -1,178 +1,153 @@
 `include "src/snow64_alu_defines.header.sv"
 
-
-module __RealSnow64Alu #(parameter WIDTH__DATA_INOUT=64)
-	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b,
-	input logic [__MSB_POS__DATA_INOUT:0] in_asr_result,
-	input logic [`MSB_POS__SNOW64_CPU_ALU_OPER:0] in_oper,
-	input logic in_signedness,
-	output logic [__MSB_POS__DATA_INOUT:0] out_data);
-
-	//import PkgSnow64Alu::*;
-	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
-
-	logic __out_slts;
-
-	SetLessThanSigned #(.WIDTH__DATA_INOUT(WIDTH__DATA_INOUT))
-		__inst_slts(.in_a(in_a), .in_b(in_b), .out_data(__out_slts));
+// 8-bit ALU with carry in, carry out, the size of the operands of the
+// overall operation, and an index indicating which sub ALU we are (used to
+// determine whether or not to use 'in.carry")
+module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
+	output PkgSnow64Alu::PortOut_SubAlu out);
 
 	struct packed
 	{
-		logic [__MSB_POS__DATA_INOUT:0] to_shift, amount;
-	} __in_asr;
+		logic in_actual_carry;
+	} __locals;
 
-	struct packed
-	{
-		logic [__MSB_POS__DATA_INOUT:0] data;
-	} __out_asr;
-
-	//ArithmeticShiftRight #(.WIDTH__DATA_INOUT(WIDTH__DATA_INOUT))
-	//	__inst_asr(.in_to_shift(__in_asr.to_shift),
-	//	.in_amount(__in_asr.amount),
-	//	.out_data(__out_asr.data));
-
-
-
-	// Assignments
+	// Determine if we need to use "in.carry"
 	always @(*)
 	begin
-		__in_asr.to_shift = in_a;
+		case (in.type_size)
+
+		// 8-bit operations don't care about "in.carry".
+		PkgSnow64Alu::TypSz8:
+		begin
+			__locals.in_actual_carry = 1'b0;
+		end
+
+		// For 16-bit operations, a sub ALU with an odd-numbered index will
+		// need to use "in.carry"
+		PkgSnow64Alu::TypSz16:
+		begin
+			if (in.index[0])
+			begin
+				__locals.in_actual_carry = in.carry;
+			end
+
+			// For 16-bit operations, an even-numbered indexed sub ALU
+			// doesn't care about "in.carry" because this architecture
+			else
+			begin
+				__locals.in_actual_carry = 1'b0;
+			end
+		end
+
+		// For 32-bit operations, we care about carry for only two cases:
+		// (in.index == 0) or (in.index == 4).
+		PkgSnow64Alu::TypSz32:
+		begin
+			if (in.index[1:0])
+			begin
+				__locals.in_actual_carry = in.carry;
+			end
+
+			else
+			begin
+				__locals.in_actual_carry = 1'b0;
+			end
+		end
+
+		// 64-bit operations do indeed care about carry, but only if the
+		// index is zero.
+		PkgSnow64Alu::TypSz64:
+		begin
+			if (in.index[2:0])
+			begin
+				__locals.in_actual_carry = in.carry;
+			end
+
+			else
+			begin
+				__locals.in_actual_carry = 1'b0;
+			end
+		end
+		endcase
 	end
 
 	always @(*)
 	begin
-		__in_asr.amount = in_b;
-	end
-
-	always @(*)
-	begin
-		case (in_oper)
-
+		case (in.oper)
 		PkgSnow64Alu::OpAdd:
 		begin
-			out_data = in_a + in_b;
+			{out.carry, out.data} = in.a + in.b
+				+ {{`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
+				__locals.in_actual_carry};
 		end
+
 		PkgSnow64Alu::OpSub:
 		begin
-			out_data = in_a - in_b;
+			{out.carry, out.data} = in.a + (~in.b)
+				+ {{`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
+				__locals.in_actual_carry};
 		end
-		PkgSnow64Alu::OpSlt:
-		begin
-			case (in_signedness)
-			// Unsigned
-			0:
-			begin
-				out_data = (in_a < in_b);
-			end
 
-			// Signed
-			1:
-			begin
-				out_data = __out_slts;
-			end
-			endcase
-		end
-		//PkgSnow64Alu::OpDummy0:
-		//begin
-		//end
-
-		//PkgSnow64Alu::OpDummy1:
+		//PkgSnow64Alu::OpSlt:
 		//begin
 		//end
 		PkgSnow64Alu::OpAnd:
 		begin
-			out_data = in_a & in_b;
+			out.carry = 0;
+			out.data = in.a & in.b;
 		end
 		PkgSnow64Alu::OpOrr:
 		begin
-			out_data = in_a | in_b;
+			out.carry = 0;
+			out.data = in.a | in.b;
 		end
 		PkgSnow64Alu::OpXor:
 		begin
-			out_data = in_a ^ in_b;
-		end
-
-		PkgSnow64Alu::OpShl:
-		begin
-			out_data = in_a << in_b;
-		end
-		PkgSnow64Alu::OpShr:
-		begin
-			case (in_signedness)
-			0:
-			begin
-				out_data = in_a >> in_b;
-			end
-
-			1:
-			begin
-				//out_data = $signed(in_a) >>> in_b;
-				//out_data = __out_asr.data;
-				out_data = in_asr_result;
-			end
-			endcase
+			out.carry = 0;
+			out.data = in.a ^ in.b;
 		end
 		PkgSnow64Alu::OpInv:
 		begin
-			out_data = ~in_a;
+			out.carry = 0;
+			out.data = ~in.a;
 		end
 		PkgSnow64Alu::OpNot:
 		begin
-			out_data = !in_a;
+			out.carry = 0;
+			out.data = !in.a;
 		end
 
 		PkgSnow64Alu::OpAddAgain:
 		begin
-			out_data = in_a + in_b;
-		end
-		//PkgSnow64Alu::OpDummy2:
-		//begin
-		//end
-		//PkgSnow64Alu::OpDummy3:
-		//begin
-		//end
-		//PkgSnow64Alu::OpDummy4:
-		//begin
-		//end
-		default:
-		begin
-			out_data = 0;
+			{out.carry, out.data} = in.a + in.b
+				+ {{`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
+				__locals.in_actual_carry};
 		end
 
+		default:
+		begin
+			out.carry = 0;
+			out.data = 0;
+		end
 		endcase
 	end
 
 endmodule
 
-`define MAKE_ALU_INNARDS(some_width) \
-	logic [PkgSnow64Alu::MSB_POS__OF_``some_width:0] __out_asr_data; \
-\
-	ArithmeticShiftRight``some_width __inst_asr(.in_to_shift(in.a),  \
-		.in_amount(in.b), .out_data(__out_asr_data)); \
-\
-	__RealSnow64Alu #(.WIDTH__DATA_INOUT \
-		(`WIDTH__SNOW64_CPU_ALU_``some_width``_DATA_INOUT)) \
-		__inst_alu(.in_a(in.a), .in_b(in.b),  \
-		.in_asr_result(__out_asr_data), .in_oper(in.oper),  \
-		.in_signedness(in.signedness), .out_data(out.data)); \
+module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
+	output PkgSnow64Alu::PortOut_Alu out);
 
-module Snow64Alu64(input PkgSnow64Alu::PortIn_Alu64 in,
-	output PkgSnow64Alu::PortOut_Alu64 out);
 
-	`MAKE_ALU_INNARDS(64)
-endmodule
-module Snow64Alu32(input PkgSnow64Alu::PortIn_Alu32 in,
-	output PkgSnow64Alu::PortOut_Alu32 out);
+	PkgSnow64Alu::SlicedAlu8DataInout __in_a_sliced_8, __in_b_sliced_8;
+	PkgSnow64Alu::SlicedAlu16DataInout __in_a_sliced_16, __in_b_sliced_16;
+	PkgSnow64Alu::SlicedAlu32DataInout __in_a_sliced_32, __in_b_sliced_32;
 
-	`MAKE_ALU_INNARDS(32)
-endmodule
-module Snow64Alu16(input PkgSnow64Alu::PortIn_Alu16 in,
-	output PkgSnow64Alu::PortOut_Alu16 out);
+	// Assignments
+	assign __in_a_sliced_8 = in.a;
+	assign __in_b_sliced_8 = in.b;
+	assign __in_a_sliced_16 = in.a;
+	assign __in_b_sliced_16 = in.b;
+	assign __in_a_sliced_32 = in.a;
+	assign __in_b_sliced_32 = in.b;
 
-	`MAKE_ALU_INNARDS(16)
-endmodule
-module Snow64Alu8(input PkgSnow64Alu::PortIn_Alu8 in,
-	output PkgSnow64Alu::PortOut_Alu8 out);
-
-	`MAKE_ALU_INNARDS(8)
 endmodule
