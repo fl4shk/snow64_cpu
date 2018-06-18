@@ -6,10 +6,22 @@
 module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 	output PkgSnow64Alu::PortOut_SubAlu out);
 
+	localparam __MSB_POS__DATA_INOUT
+		= `MSB_POS__SNOW64_SUB_ALU_DATA_INOUT;
+
 	struct packed
 	{
 		logic in_actual_carry;
 	} __locals;
+
+	logic __out_slts;
+
+	SetLessThanSigned __inst_slts
+		(.in_a_msb_pos(in.a[__MSB_POS__DATA_INOUT]),
+		.in_b_msb_pos(in.a[__MSB_POS__DATA_INOUT]),
+		.in_sub_result_msb_pos(out.data[__MSB_POS__DATA_INOUT]),
+		.out_data(__out_slts));
+
 
 	// Determine if we need to use "in.carry"
 	always @(*)
@@ -88,9 +100,13 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 				__locals.in_actual_carry};
 		end
 
-		//PkgSnow64Alu::OpSlt:
-		//begin
-		//end
+		// Just repeat the "OpSub" stuff here.
+		PkgSnow64Alu::OpSlt:
+		begin
+			{out.carry, out.data} = in.a + (~in.b)
+				+ {{`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
+				__locals.in_actual_carry};
+		end
 		PkgSnow64Alu::OpAnd:
 		begin
 			out.carry = 0;
@@ -117,6 +133,7 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 			out.data = !in.a;
 		end
 
+		// Just repeat the "OpAdd" stuff here.
 		PkgSnow64Alu::OpAddAgain:
 		begin
 			{out.carry, out.data} = in.a + in.b
@@ -130,6 +147,11 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 			out.data = 0;
 		end
 		endcase
+	end
+
+	always @(*)
+	begin
+		out.slts = __out_slts;
 	end
 
 endmodule

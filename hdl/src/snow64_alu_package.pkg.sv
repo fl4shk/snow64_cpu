@@ -60,7 +60,7 @@ typedef struct packed
 typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] data;
-	logic carry;
+	logic slts, carry;
 } PortOut_SubAlu;
 
 typedef struct packed
