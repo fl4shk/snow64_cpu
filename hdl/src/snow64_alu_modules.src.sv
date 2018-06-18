@@ -18,7 +18,7 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 
 	SetLessThanSigned __inst_slts
 		(.in_a_msb_pos(in.a[__MSB_POS__DATA_INOUT]),
-		.in_b_msb_pos(in.a[__MSB_POS__DATA_INOUT]),
+		.in_b_msb_pos(in.b[__MSB_POS__DATA_INOUT]),
 		.in_sub_result_msb_pos(out.data[__MSB_POS__DATA_INOUT]),
 		.out_data(__out_slts));
 
