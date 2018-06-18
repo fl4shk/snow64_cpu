@@ -80,6 +80,38 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_ALU_32_DATA_INOUT:0] data_1, data_0;
 } SlicedAlu32DataInout;
 
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] to_shift, amount;
+} PortIn_Asr64;
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] data;
+} PortOut_Asr64;
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_32_DATA_INOUT:0] to_shift, amount;
+} PortIn_Asr32;
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_32_DATA_INOUT:0] data;
+} PortOut_Asr32;
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_16_DATA_INOUT:0] to_shift, amount;
+} PortIn_Asr16;
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_16_DATA_INOUT:0] data;
+} PortOut_Asr16;
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] to_shift, amount;
+} PortIn_Asr8;
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] data;
+} PortOut_Asr8;
 
 localparam WIDTH__OF_64 = 64;
 localparam MSB_POS__OF_64 = `WIDTH2MP(WIDTH__OF_64);
