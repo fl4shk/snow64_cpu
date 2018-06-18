@@ -13,4 +13,6 @@
 	{{(some_full_width - some_width_of_imm) \
 	{1'b0}},some_imm}
 
+`default_nettype none
+
 `endif		// src__slash__misc_defines_header_sv

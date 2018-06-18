@@ -1,14 +1,14 @@
 `include "src/snow64_alu_defines.header.sv"
 
 
-module __Snow64Alu #(parameter WIDTH__DATA_INOUT=64)
+module __RealSnow64Alu #(parameter WIDTH__DATA_INOUT=64)
 	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b,
 	input logic [__MSB_POS__DATA_INOUT:0] in_asr_result,
 	input logic [`MSB_POS__SNOW64_CPU_ALU_OPER:0] in_oper,
-	input logic in_unsgn_or_sgn,
+	input logic in_signedness,
 	output logic [__MSB_POS__DATA_INOUT:0] out_data);
 
-	import PkgSnow64Alu::*;
+	//import PkgSnow64Alu::*;
 	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
 
 	logic __out_slts;
@@ -58,7 +58,7 @@ module __Snow64Alu #(parameter WIDTH__DATA_INOUT=64)
 		end
 		PkgSnow64Alu::OpSlt:
 		begin
-			case (in_unsgn_or_sgn)
+			case (in_signedness)
 			// Unsigned
 			0:
 			begin
@@ -98,7 +98,7 @@ module __Snow64Alu #(parameter WIDTH__DATA_INOUT=64)
 		end
 		PkgSnow64Alu::OpShr:
 		begin
-			case (in_unsgn_or_sgn)
+			case (in_signedness)
 			0:
 			begin
 				out_data = in_a >> in_b;
@@ -144,61 +144,35 @@ module __Snow64Alu #(parameter WIDTH__DATA_INOUT=64)
 
 endmodule
 
+`define MAKE_ALU_INNARDS(some_width) \
+	logic [PkgSnow64Alu::MSB_POS__OF_``some_width:0] __out_asr_data; \
+\
+	ArithmeticShiftRight``some_width __inst_asr(.in_to_shift(in.a),  \
+		.in_amount(in.b), .out_data(__out_asr_data)); \
+\
+	__RealSnow64Alu #(.WIDTH__DATA_INOUT \
+		(`WIDTH__SNOW64_CPU_ALU_``some_width``_DATA_INOUT)) \
+		__inst_alu(.in_a(in.a), .in_b(in.b),  \
+		.in_asr_result(__out_asr_data), .in_oper(in.oper),  \
+		.in_signedness(in.signedness), .out_data(out.data)); \
+
 module Snow64Alu64(input PkgSnow64Alu::PortIn_Alu64 in,
 	output PkgSnow64Alu::PortOut_Alu64 out);
 
-	import PkgSnow64Alu::*;
-
-	logic [`MSB_POS__SNOW64_CPU_ALU_64_DATA_INOUT:0] __out_asr;
-
-	ArithmeticShiftRight64 __inst_asr(.in_to_shift(in.a), .in_amount(in.b),
-		.out_data(__out_asr));
-
-	__Snow64Alu #(.WIDTH__DATA_INOUT(`WIDTH__SNOW64_CPU_ALU_64_DATA_INOUT))
-		__inst_alu(.in_a(in.a), .in_b(in.b), .in_asr_result(__out_asr),
-		.in_oper(in.oper),
-		.in_unsgn_or_sgn(in.unsgn_or_sgn), .out_data(out.data));
-
+	`MAKE_ALU_INNARDS(64)
 endmodule
 module Snow64Alu32(input PkgSnow64Alu::PortIn_Alu32 in,
 	output PkgSnow64Alu::PortOut_Alu32 out);
 
-	import PkgSnow64Alu::*;
-
-	logic [`MSB_POS__SNOW64_CPU_ALU_32_DATA_INOUT:0] __out_asr;
-
-	ArithmeticShiftRight32 __inst_asr(.in_to_shift(in.a), .in_amount(in.b),
-		.out_data(__out_asr));
-
-	__Snow64Alu #(.WIDTH__DATA_INOUT(`WIDTH__SNOW64_CPU_ALU_32_DATA_INOUT))
-		__inst_alu(.in_a(in.a), .in_b(in.b), .in_oper(in.oper),
-		.in_unsgn_or_sgn(in.unsgn_or_sgn), .out_data(out.data));
+	`MAKE_ALU_INNARDS(32)
 endmodule
 module Snow64Alu16(input PkgSnow64Alu::PortIn_Alu16 in,
 	output PkgSnow64Alu::PortOut_Alu16 out);
 
-	import PkgSnow64Alu::*;
-
-	logic [`MSB_POS__SNOW64_CPU_ALU_16_DATA_INOUT:0] __out_asr;
-
-	ArithmeticShiftRight16 __inst_asr(.in_to_shift(in.a), .in_amount(in.b),
-		.out_data(__out_asr));
-
-	__Snow64Alu #(.WIDTH__DATA_INOUT(`WIDTH__SNOW64_CPU_ALU_16_DATA_INOUT))
-		__inst_alu(.in_a(in.a), .in_b(in.b), .in_oper(in.oper),
-		.in_unsgn_or_sgn(in.unsgn_or_sgn), .out_data(out.data));
+	`MAKE_ALU_INNARDS(16)
 endmodule
 module Snow64Alu8(input PkgSnow64Alu::PortIn_Alu8 in,
 	output PkgSnow64Alu::PortOut_Alu8 out);
 
-	import PkgSnow64Alu::*;
-
-	logic [`MSB_POS__SNOW64_CPU_ALU_8_DATA_INOUT:0] __out_asr;
-
-	ArithmeticShiftRight8 __inst_asr(.in_to_shift(in.a), .in_amount(in.b),
-		.out_data(__out_asr));
-
-	__Snow64Alu #(.WIDTH__DATA_INOUT(`WIDTH__SNOW64_CPU_ALU_8_DATA_INOUT))
-		__inst_alu(.in_a(in.a), .in_b(in.b), .in_oper(in.oper),
-		.in_unsgn_or_sgn(in.unsgn_or_sgn), .out_data(out.data));
+	`MAKE_ALU_INNARDS(8)
 endmodule

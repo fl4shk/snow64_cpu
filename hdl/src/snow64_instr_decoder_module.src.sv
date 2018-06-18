@@ -5,7 +5,7 @@ module Snow64InstrDecoder
 	(input logic [PkgSnow64InstrDecoder::MSB_POS__INSTR:0] in,
 	output PkgSnow64InstrDecoder::PortOut_InstrDecoder out);
 
-	import PkgSnow64InstrDecoder::*;
+	//import PkgSnow64InstrDecoder::*;
 
 	PkgSnow64InstrDecoder::Iog0Instr __iog0_instr;
 	PkgSnow64InstrDecoder::Iog1Instr __iog1_instr;

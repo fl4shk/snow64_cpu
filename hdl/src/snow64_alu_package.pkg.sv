@@ -31,7 +31,7 @@ typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_CPU_ALU_64_DATA_INOUT:0] a, b;
 	logic [`MSB_POS__SNOW64_CPU_ALU_OPER:0] oper;
-	logic unsgn_or_sgn;
+	logic signedness;
 } PortIn_Alu64;
 typedef struct packed
 {
@@ -42,7 +42,7 @@ typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_CPU_ALU_32_DATA_INOUT:0] a, b;
 	logic [`MSB_POS__SNOW64_CPU_ALU_OPER:0] oper;
-	logic unsgn_or_sgn;
+	logic signedness;
 } PortIn_Alu32;
 typedef struct packed
 {
@@ -53,7 +53,7 @@ typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_CPU_ALU_16_DATA_INOUT:0] a, b;
 	logic [`MSB_POS__SNOW64_CPU_ALU_OPER:0] oper;
-	logic unsgn_or_sgn;
+	logic signedness;
 } PortIn_Alu16;
 typedef struct packed
 {
@@ -64,7 +64,7 @@ typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_CPU_ALU_8_DATA_INOUT:0] a, b;
 	logic [`MSB_POS__SNOW64_CPU_ALU_OPER:0] oper;
-	logic unsgn_or_sgn;
+	logic signedness;
 } PortIn_Alu8;
 typedef struct packed
 {
