@@ -93,32 +93,188 @@ endmodule
 	in_amount[__MSB_POS__DATA_INOUT:__LOG2__WIDTH__DATA_INOUT]
 
 
-//module LogicalShiftLeft64
-//	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
-//	output logic [__MSB_POS__DATA_INOUT:0] out_data);
-//
-//	`MAKE_BIT_SHIFT_PROLOG(64)
-//
-//	always @(*)
-//	begin
-//		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
-//		begin
-//			__temp[__INDEX__OUT_DATA] = 0;
-//		end
-//
-//		else
-//		begin
-//			`SET_TEMP_LSL(1);
-//			`SET_TEMP_LSL(2);
-//			`SET_TEMP_LSL(3);
-//			`SET_TEMP_LSL(4);
-//			`SET_TEMP_LSL(5);
-//			`SET_TEMP_LSL(6);
-//		end
-//	end
-//
-//endmodule
+module LogicalShiftLeft64
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
 
+	`MAKE_BIT_SHIFT_PROLOG(64)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSL(1);
+			`SET_TEMP_LSL(2);
+			`SET_TEMP_LSL(3);
+			`SET_TEMP_LSL(4);
+			`SET_TEMP_LSL(5);
+			`SET_TEMP_LSL(6);
+		end
+	end
+endmodule
+module LogicalShiftLeft32
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	`MAKE_BIT_SHIFT_PROLOG(32)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSL(1);
+			`SET_TEMP_LSL(2);
+			`SET_TEMP_LSL(3);
+			`SET_TEMP_LSL(4);
+			`SET_TEMP_LSL(5);
+		end
+	end
+endmodule
+module LogicalShiftLeft16
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	`MAKE_BIT_SHIFT_PROLOG(16)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSL(1);
+			`SET_TEMP_LSL(2);
+			`SET_TEMP_LSL(3);
+			`SET_TEMP_LSL(4);
+		end
+	end
+endmodule
+module LogicalShiftLeft8
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	`MAKE_BIT_SHIFT_PROLOG(8)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSL(1);
+			`SET_TEMP_LSL(2);
+			`SET_TEMP_LSL(3);
+		end
+	end
+endmodule
+
+
+module LogicalShiftRight64
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	`MAKE_BIT_SHIFT_PROLOG(64)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSR(1);
+			`SET_TEMP_LSR(2);
+			`SET_TEMP_LSR(3);
+			`SET_TEMP_LSR(4);
+			`SET_TEMP_LSR(5);
+			`SET_TEMP_LSR(6);
+		end
+	end
+endmodule
+module LogicalShiftRight32
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	`MAKE_BIT_SHIFT_PROLOG(32)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSR(1);
+			`SET_TEMP_LSR(2);
+			`SET_TEMP_LSR(3);
+			`SET_TEMP_LSR(4);
+			`SET_TEMP_LSR(5);
+		end
+	end
+endmodule
+module LogicalShiftRight16
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	`MAKE_BIT_SHIFT_PROLOG(16)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSR(1);
+			`SET_TEMP_LSR(2);
+			`SET_TEMP_LSR(3);
+			`SET_TEMP_LSR(4);
+		end
+	end
+endmodule
+module LogicalShiftRight8
+	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	`MAKE_BIT_SHIFT_PROLOG(8)
+
+	always @(*)
+	begin
+		if (`COMPARE_BIT_SHIFT_IN_AMOUNT)
+		begin
+			__temp[__INDEX__OUT_DATA] = 0;
+		end
+
+		else
+		begin
+			`SET_TEMP_LSR(1);
+			`SET_TEMP_LSR(2);
+			`SET_TEMP_LSR(3);
+		end
+	end
+endmodule
 
 module ArithmeticShiftRight64
 	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
