@@ -44,6 +44,12 @@ localparam __DEBUG_ENUM__OP_DUMMY_3 = OpDummy3;
 localparam __DEBUG_ENUM__OP_DUMMY_4 = OpDummy4;
 
 
+localparam __DEBUG_PORT_MSB_POS__DATA_INOUT
+	= `MSB_POS__SNOW64_ALU_64_DATA_INOUT;
+localparam __DEBUG_PORT_MSB_POS__OPER = `MSB_POS__SNOW64_ALU_OPER;
+localparam __DEBUG_PORT_MSB_POS__TYPE_SIZE
+	= `MSB_POS__SNOW64_CPU_TYPE_SIZE;
+
 
 typedef struct packed
 {
@@ -99,120 +105,6 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] data_0;
 } SlicedAlu64DataInout;
 
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] to_shift, amount;
-} PortIn_Asr64;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] data;
-} PortOut_Asr64;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_32_DATA_INOUT:0] to_shift, amount;
-} PortIn_Asr32;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_32_DATA_INOUT:0] data;
-} PortOut_Asr32;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_16_DATA_INOUT:0] to_shift, amount;
-} PortIn_Asr16;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_16_DATA_INOUT:0] data;
-} PortOut_Asr16;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] to_shift, amount;
-} PortIn_Asr8;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] data;
-} PortOut_Asr8;
-
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] a, b;
-} PortIn_ShiftForAlu;
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] data;
-} PortOut_ShiftForAlu;
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__7__DATA_INOUT:0] to_shift, amount;
-} `INST_8__7(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__7__DATA_INOUT:0] data;
-} `INST_8__7(PortOut_InnerShiftForAlu);
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__6__DATA_INOUT:0] to_shift, amount;
-} `INST_8__6(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__6__DATA_INOUT:0] data;
-} `INST_8__6(PortOut_InnerShiftForAlu);
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__5__DATA_INOUT:0] to_shift, amount;
-} `INST_8__5(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__5__DATA_INOUT:0] data;
-} `INST_8__5(PortOut_InnerShiftForAlu);
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__4__DATA_INOUT:0] to_shift, amount;
-} `INST_8__4(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__4__DATA_INOUT:0] data;
-} `INST_8__4(PortOut_InnerShiftForAlu);
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__3__DATA_INOUT:0] to_shift, amount;
-} `INST_8__3(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__3__DATA_INOUT:0] data;
-} `INST_8__3(PortOut_InnerShiftForAlu);
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__2__DATA_INOUT:0] to_shift, amount;
-} `INST_8__2(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__2__DATA_INOUT:0] data;
-} `INST_8__2(PortOut_InnerShiftForAlu);
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__1__DATA_INOUT:0] to_shift, amount;
-} `INST_8__1(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__1__DATA_INOUT:0] data;
-} `INST_8__1(PortOut_InnerShiftForAlu);
-
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__0__DATA_INOUT:0] to_shift, amount;
-} `INST_8__0(PortIn_InnerShiftForAlu);
-typedef struct packed
-{
-	logic [`MSB_POS__INST_8__0__DATA_INOUT:0] data;
-} `INST_8__0(PortOut_InnerShiftForAlu);
 
 localparam WIDTH__OF_64 = 64;
 localparam MSB_POS__OF_64 = `WIDTH2MP(WIDTH__OF_64);

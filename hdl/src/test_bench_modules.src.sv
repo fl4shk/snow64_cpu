@@ -56,10 +56,6 @@
 //endmodule
 
 
-//module TestBenchCarryBreakAlu;
-//
-//
-//endmodule
 
 
 //module TestBenchSltu;
@@ -161,78 +157,53 @@
 //
 //endmodule
 
-//interface InterfAdder #(parameter WIDTH__DATA_INOUT=64)
-//	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b,
-//	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+//module TestBenchAlu;
 //
-//	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
+//	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] __in_alu_a, __in_alu_b;
+//	logic [`MSB_POS__SNOW64_ALU_OPER:0] __in_alu_oper;
+//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] __in_alu_type_size;
+//	logic __in_alu_signedness;
 //
-//	//task operate(output logic [__MSB_POS__DATA_INOUT:0] some_out);
-//	//	some_out = in_a + in_b;
-//	//endtask
-//
-//	//function add();
-//	//	return in_a + in_b;
-//	//endfunction
-//	task operate;
-//		out_data = in_a + in_b;
-//	endtask
-//
-//endinterface
+//	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] __out_alu_data;
 //
 //
-//module TestBenchInterfAdder
-//	(input logic [__MSB_POS__TEST_ADDER_DATA_INOUT:0] in_a, in_b);
+//	DebugSnow64Alu __inst_debug_alu(.in_a(__in_alu_a), .in_b(__in_alu_b),
+//		.in_oper(__in_alu_oper), .in_type_size(__in_alu_type_size),
+//		.in_signedness(__in_alu_signedness), .out_data(__out_alu_data));
 //
-//	localparam __WIDTH__TEST_ADDER_DATA_INOUT = 8;
-//	localparam __MSB_POS__TEST_ADDER_DATA_INOUT
-//		= `WIDTH2MP(__WIDTH__TEST_ADDER_DATA_INOUT);
+//	assign __in_alu_oper = PkgSnow64Alu::OpShr;
+//	assign __in_alu_type_size = PkgSnow64Cpu::TypSz8;
+//	assign __in_alu_signedness = 1;
 //
-//	//logic __clk, __rst_n;
-//	struct packed
-//	{
-//		logic [__MSB_POS__TEST_ADDER_DATA_INOUT:0] a, b;
-//	} __in_test_adder;
+//	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] __oracle_alu_out_data;
 //
-//	struct packed
-//	{
-//		logic [__MSB_POS__TEST_ADDER_DATA_INOUT:0] data;
-//	} __out_test_adder;
-//
-//	assign __in_test_adder.a = in_a;
-//	assign __in_test_adder.b = in_b;
-//
-//	//InterfAdder #(.WIDTH__DATA_INOUT(__WIDTH__TEST_ADDER_DATA_INOUT))
-//	//	__interf_test_adder(.in_a(__in_test_adder.a), 
-//	//	.in_b(__in_test_adder.b), .out_data(__out_test_adder.data));
-//	InterfAdder #(.WIDTH__DATA_INOUT(__WIDTH__TEST_ADDER_DATA_INOUT))
-//		__interf_test_adder();
-//
-//	assign __interf_test_adder.in_a = __in_test_adder.a;
-//	assign __interf_test_adder.in_b = __in_test_adder.b;
-//
-//	//always @(*)
-//	////always_comb
-//	//begin
-//	//	//__interf_test_adder.out_data
-//	//	//	= __interf_test_adder.in_a + __interf_test_adder.in_b;
-//	//	__interf_test_adder.operate(__interf_test_adder.out_data);
-//	//end
-//	//always @(*)
-//	//always @(__interf_test_adder.in_a, __interf_test_adder.in_b)
-//	//begin
-//	//	__interf_test_adder.out_data = __interf_test_adder.add();
-//	//end
-//
-//	//always_comb
-//	//always @(__in_test_adder)
-//	//always_comb
-//	//always @(*)
-//	always @(__in_test_adder)
+//	initial
 //	begin
-//		__interf_test_adder.operate();
+//		for (longint i=0; i<(1 << 8); i=i+1)
+//		begin
+//			for (longint j=0; j<(1 << 8); j=j+1)
+//			begin
+//				__in_alu_a = i;
+//				__in_alu_b = j;
+//
+//				#1
+//				__oracle_alu_out_data[7:0] 
+//					= $signed(__in_alu_a[7:0]) >>> __in_alu_b[7:0];
+//
+//				#1
+//				if (__out_alu_data[7:0] != __oracle_alu_out_data[7:0])
+//				begin
+//				$display("TestBenchAlu:  Wrong data!:  %h >>> %h, %h, %h",
+//					__in_alu_a, __in_alu_b, __out_alu_data,
+//					__oracle_alu_out_data);
+//				end
+//
+//				$display("TestBenchAlu stuffs:  %h, %h,   %h, %h",
+//					__in_alu_a, __in_alu_b, 
+//					__out_alu_data, __oracle_alu_out_data);
+//			end
+//		end
 //	end
 //
+//
 //endmodule
-
-
