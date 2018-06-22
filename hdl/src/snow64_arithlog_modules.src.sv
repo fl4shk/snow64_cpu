@@ -33,7 +33,7 @@
 //
 //endmodule
 
-module SetLessThanSigned
+module __RawSetLessThanSigned
 	(input logic in_a_msb_pos, in_b_msb_pos, in_sub_result_msb_pos,
 	output logic out_data);
 
@@ -41,6 +41,28 @@ module SetLessThanSigned
 	assign out_data = (in_sub_result_msb_pos
 		^ ((in_a_msb_pos ^ in_b_msb_pos)
 		& (in_a_msb_pos ^ in_sub_result_msb_pos)));
+endmodule
+
+module SetLessThanSigned #(parameter WIDTH__DATA_INOUT=64)
+	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b,
+	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+
+	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
+
+	logic [__MSB_POS__DATA_INOUT:0] __sub_result;
+	assign __sub_result = in_a - in_b;
+
+	logic __out_raw_slts_data;
+
+	__RawSetLessThanSigned __inst_raw_slts
+		(.in_a_msb_pos(in_a[__MSB_POS__DATA_INOUT]),
+		.in_b_msb_pos(in_b[__MSB_POS__DATA_INOUT]),
+		.in_sub_result_msb_pos(__sub_result[__MSB_POS__DATA_INOUT]),
+		.out_data(__out_raw_slts_data));
+
+	assign out_data = `ZERO_EXTEND(WIDTH__DATA_INOUT, 1, 
+		__out_raw_slts_data);
+
 endmodule
 
 // Barrel shifters to compute arithmetic shift right.

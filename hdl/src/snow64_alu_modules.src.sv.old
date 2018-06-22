@@ -820,55 +820,55 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	`ASSIGN_TO_IN_SUB_ALU(7)
 	`undef ASSIGN_TO_IN_SUB_ALU
 
-	assign `INST_8__7_B(__in_shift, _to_shift_logical)
+	assign `INST_8__7_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[7];
-	assign `INST_8__6_B(__in_shift, _to_shift_logical)
+	assign `INST_8__6_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[6];
-	assign `INST_8__5_B(__in_shift, _to_shift_logical)
+	assign `INST_8__5_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[5];
-	assign `INST_8__4_B(__in_shift, _to_shift_logical)
+	assign `INST_8__4_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[4];
-	assign `INST_8__3_B(__in_shift, _to_shift_logical)
+	assign `INST_8__3_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[3];
-	assign `INST_8__2_B(__in_shift, _to_shift_logical)
+	assign `INST_8__2_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[2];
-	assign `INST_8__1_B(__in_shift, _to_shift_logical)
+	assign `INST_8__1_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[1];
-	assign `INST_8__0_B(__in_shift, _to_shift_logical)
+	assign `INST_8__0_S(__in_shift, _to_shift_logical)
 		= __out_slice_and_zero_extend_a.sliced_data[0];
 
-	assign `INST_8__7_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__7_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[7];
-	assign `INST_8__6_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__6_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[6];
-	assign `INST_8__5_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__5_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[5];
-	assign `INST_8__4_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__4_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[4];
-	assign `INST_8__3_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__3_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[3];
-	assign `INST_8__2_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__2_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[2];
-	assign `INST_8__1_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__1_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[1];
-	assign `INST_8__0_B(__in_shift, _to_shift_arithmetic)
+	assign `INST_8__0_S(__in_shift, _to_shift_arithmetic)
 		= __out_slice_and_sign_extend.sliced_data[0];
 
-	assign `INST_8__7_B(__in_shift, _amount)
+	assign `INST_8__7_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[7];
-	assign `INST_8__6_B(__in_shift, _amount)
+	assign `INST_8__6_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[6];
-	assign `INST_8__5_B(__in_shift, _amount)
+	assign `INST_8__5_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[5];
-	assign `INST_8__4_B(__in_shift, _amount)
+	assign `INST_8__4_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[4];
-	assign `INST_8__3_B(__in_shift, _amount)
+	assign `INST_8__3_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[3];
-	assign `INST_8__2_B(__in_shift, _amount)
+	assign `INST_8__2_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[2];
-	assign `INST_8__1_B(__in_shift, _amount)
+	assign `INST_8__1_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[1];
-	assign `INST_8__0_B(__in_shift, _amount)
+	assign `INST_8__0_S(__in_shift, _amount)
 		= __out_slice_and_zero_extend_b.sliced_data[0];
 
 
@@ -944,33 +944,33 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				case (in.type_size)
 				PkgSnow64Cpu::TypSz8:
 				begin
-					out.data = {`INST_8__7_B(__out_lsl, _data)[7:0],
-						`INST_8__6_B(__out_lsl, _data)[7:0],
-						`INST_8__5_B(__out_lsl, _data)[7:0],
-						`INST_8__4_B(__out_lsl, _data)[7:0],
-						`INST_8__3_B(__out_lsl, _data)[7:0],
-						`INST_8__2_B(__out_lsl, _data)[7:0],
-						`INST_8__1_B(__out_lsl, _data)[7:0],
-						`INST_8__0_B(__out_lsl, _data)[7:0]};
+					out.data = {`INST_8__7_S(__out_lsl, _data)[7:0],
+						`INST_8__6_S(__out_lsl, _data)[7:0],
+						`INST_8__5_S(__out_lsl, _data)[7:0],
+						`INST_8__4_S(__out_lsl, _data)[7:0],
+						`INST_8__3_S(__out_lsl, _data)[7:0],
+						`INST_8__2_S(__out_lsl, _data)[7:0],
+						`INST_8__1_S(__out_lsl, _data)[7:0],
+						`INST_8__0_S(__out_lsl, _data)[7:0]};
 				end
 
 				PkgSnow64Cpu::TypSz16:
 				begin
-					out.data = {`INST_16__3_B(__out_lsl, _data)[15:0],
-						`INST_16__2_B(__out_lsl, _data)[15:0],
-						`INST_16__1_B(__out_lsl, _data)[15:0],
-						`INST_16__0_B(__out_lsl, _data)[15:0]};
+					out.data = {`INST_16__3_S(__out_lsl, _data)[15:0],
+						`INST_16__2_S(__out_lsl, _data)[15:0],
+						`INST_16__1_S(__out_lsl, _data)[15:0],
+						`INST_16__0_S(__out_lsl, _data)[15:0]};
 				end
 
 				PkgSnow64Cpu::TypSz32:
 				begin
-					out.data = {`INST_32__1_B(__out_lsl, _data)[31:0],
-						`INST_32__0_B(__out_lsl, _data)[31:0]};
+					out.data = {`INST_32__1_S(__out_lsl, _data)[31:0],
+						`INST_32__0_S(__out_lsl, _data)[31:0]};
 				end
 
 				PkgSnow64Cpu::TypSz64:
 				begin
-					out.data = `INST_64__0_B(__out_lsl, _data);
+					out.data = `INST_64__0_S(__out_lsl, _data);
 				end
 				endcase
 			end
@@ -982,33 +982,33 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 					case (in.type_size)
 					PkgSnow64Cpu::TypSz8:
 					begin
-						out.data = {`INST_8__7_B(__out_lsr, _data)[7:0],
-							`INST_8__6_B(__out_lsr, _data)[7:0],
-							`INST_8__5_B(__out_lsr, _data)[7:0],
-							`INST_8__4_B(__out_lsr, _data)[7:0],
-							`INST_8__3_B(__out_lsr, _data)[7:0],
-							`INST_8__2_B(__out_lsr, _data)[7:0],
-							`INST_8__1_B(__out_lsr, _data)[7:0],
-							`INST_8__0_B(__out_lsr, _data)[7:0]};
+						out.data = {`INST_8__7_S(__out_lsr, _data)[7:0],
+							`INST_8__6_S(__out_lsr, _data)[7:0],
+							`INST_8__5_S(__out_lsr, _data)[7:0],
+							`INST_8__4_S(__out_lsr, _data)[7:0],
+							`INST_8__3_S(__out_lsr, _data)[7:0],
+							`INST_8__2_S(__out_lsr, _data)[7:0],
+							`INST_8__1_S(__out_lsr, _data)[7:0],
+							`INST_8__0_S(__out_lsr, _data)[7:0]};
 					end
 
 					PkgSnow64Cpu::TypSz16:
 					begin
-						out.data = {`INST_16__3_B(__out_lsr, _data)[15:0],
-							`INST_16__2_B(__out_lsr, _data)[15:0],
-							`INST_16__1_B(__out_lsr, _data)[15:0],
-							`INST_16__0_B(__out_lsr, _data)[15:0]};
+						out.data = {`INST_16__3_S(__out_lsr, _data)[15:0],
+							`INST_16__2_S(__out_lsr, _data)[15:0],
+							`INST_16__1_S(__out_lsr, _data)[15:0],
+							`INST_16__0_S(__out_lsr, _data)[15:0]};
 					end
 
 					PkgSnow64Cpu::TypSz32:
 					begin
-						out.data = {`INST_32__1_B(__out_lsr, _data)[31:0],
-							`INST_32__0_B(__out_lsr, _data)[31:0]};
+						out.data = {`INST_32__1_S(__out_lsr, _data)[31:0],
+							`INST_32__0_S(__out_lsr, _data)[31:0]};
 					end
 
 					PkgSnow64Cpu::TypSz64:
 					begin
-						out.data = `INST_64__0_B(__out_lsr, _data);
+						out.data = `INST_64__0_S(__out_lsr, _data);
 					end
 					endcase
 				end
@@ -1018,33 +1018,33 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 					case (in.type_size)
 					PkgSnow64Cpu::TypSz8:
 					begin
-						out.data = {`INST_8__7_B(__out_asr, _data)[7:0],
-							`INST_8__6_B(__out_asr, _data)[7:0],
-							`INST_8__5_B(__out_asr, _data)[7:0],
-							`INST_8__4_B(__out_asr, _data)[7:0],
-							`INST_8__3_B(__out_asr, _data)[7:0],
-							`INST_8__2_B(__out_asr, _data)[7:0],
-							`INST_8__1_B(__out_asr, _data)[7:0],
-							`INST_8__0_B(__out_asr, _data)[7:0]};
+						out.data = {`INST_8__7_S(__out_asr, _data)[7:0],
+							`INST_8__6_S(__out_asr, _data)[7:0],
+							`INST_8__5_S(__out_asr, _data)[7:0],
+							`INST_8__4_S(__out_asr, _data)[7:0],
+							`INST_8__3_S(__out_asr, _data)[7:0],
+							`INST_8__2_S(__out_asr, _data)[7:0],
+							`INST_8__1_S(__out_asr, _data)[7:0],
+							`INST_8__0_S(__out_asr, _data)[7:0]};
 					end
 
 					PkgSnow64Cpu::TypSz16:
 					begin
-						out.data = {`INST_16__3_B(__out_asr, _data)[15:0],
-							`INST_16__2_B(__out_asr, _data)[15:0],
-							`INST_16__1_B(__out_asr, _data)[15:0],
-							`INST_16__0_B(__out_asr, _data)[15:0]};
+						out.data = {`INST_16__3_S(__out_asr, _data)[15:0],
+							`INST_16__2_S(__out_asr, _data)[15:0],
+							`INST_16__1_S(__out_asr, _data)[15:0],
+							`INST_16__0_S(__out_asr, _data)[15:0]};
 					end
 
 					PkgSnow64Cpu::TypSz32:
 					begin
-						out.data = {`INST_32__1_B(__out_asr, _data)[31:0],
-							`INST_32__0_B(__out_asr, _data)[31:0]};
+						out.data = {`INST_32__1_S(__out_asr, _data)[31:0],
+							`INST_32__0_S(__out_asr, _data)[31:0]};
 					end
 
 					PkgSnow64Cpu::TypSz64:
 					begin
-						out.data = `INST_64__0_B(__out_asr, _data);
+						out.data = `INST_64__0_S(__out_asr, _data);
 					end
 					endcase
 				end

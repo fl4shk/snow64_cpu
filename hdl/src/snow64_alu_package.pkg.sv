@@ -65,24 +65,24 @@ typedef struct packed
 
 
 
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT:0] a, b;
-	logic carry;
-	logic [`MSB_POS__SNOW64_ALU_OPER:0] oper;
-	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
-	//logic type_size;
-	//logic signedness;
-	logic [`MSB_POS__SNOW64_SUB_ALU_INDEX:0] index;
-} PortIn_SubAlu;
-
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] data;
-
-	// Note that "carry" also is equivalent to the "sltu" result.
-	logic carry, lts;
-} PortOut_SubAlu;
+//typedef struct packed
+//{
+//	logic [`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT:0] a, b;
+//	logic carry;
+//	logic [`MSB_POS__SNOW64_ALU_OPER:0] oper;
+//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
+//	//logic type_size;
+//	//logic signedness;
+//	logic [`MSB_POS__SNOW64_SUB_ALU_INDEX:0] index;
+//} PortIn_SubAlu;
+//
+//typedef struct packed
+//{
+//	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] data;
+//
+//	// Note that "carry" also is equivalent to the "sltu" result.
+//	logic carry, lts;
+//} PortOut_SubAlu;
 
 
 typedef struct packed
