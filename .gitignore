@@ -28,3 +28,4 @@ a.out
 *.html
 hdl/v_outputs
 *.stp
+algorithm_tests/*
