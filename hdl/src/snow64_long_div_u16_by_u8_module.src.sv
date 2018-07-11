@@ -1,4 +1,4 @@
-`include "src/snow64_long_div_u16_by_u16_defines.header.sv"
+`include "src/snow64_long_div_u16_by_u8_defines.header.sv"
 
 module LongDivU16ByU8(input logic clk, in_start,
 	input logic [`MSB_POS__LONG_DIV_U16_BY_U8_IN_A:0] in_a,
