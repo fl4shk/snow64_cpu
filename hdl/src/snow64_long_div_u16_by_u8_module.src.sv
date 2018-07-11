@@ -1,19 +1,22 @@
 `include "src/snow64_long_div_u16_by_u8_defines.header.sv"
 
 module LongDivU16ByU8(input logic clk, in_start,
-	input logic [`MSB_POS__LONG_DIV_U16_BY_U8_IN_A:0] in_a,
-	input logic [`MSB_POS__LONG_DIV_U16_BY_U8_IN_B:0] in_b,
+	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_A:0] in_a,
+	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_B:0] in_b,
 	output logic out_data_valid, out_can_accept_cmd,
-	output logic [`MSB_POS__LONG_DIV_U16_BY_U8_OUT_DATA:0] out_data);
+	output logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_OUT_DATA:0]
+		out_data);
 
-	localparam __WIDTH__IN_A = `WIDTH__LONG_DIV_U16_BY_U8_IN_A;
-	localparam __MSB_POS__IN_A = `MSB_POS__LONG_DIV_U16_BY_U8_IN_A;
+	localparam __WIDTH__IN_A = `WIDTH__SNOW64_LONG_DIV_U16_BY_U8_IN_A;
+	localparam __MSB_POS__IN_A = `MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_A;
 
-	localparam __WIDTH__IN_B = `WIDTH__LONG_DIV_U16_BY_U8_IN_B;
-	localparam __MSB_POS__IN_B = `MSB_POS__LONG_DIV_U16_BY_U8_IN_B;
+	localparam __WIDTH__IN_B = `WIDTH__SNOW64_LONG_DIV_U16_BY_U8_IN_B;
+	localparam __MSB_POS__IN_B = `MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_B;
 
-	localparam __WIDTH__OUT_DATA = `WIDTH__LONG_DIV_U16_BY_U8_OUT_DATA;
-	localparam __MSB_POS__OUT_DATA = `MSB_POS__LONG_DIV_U16_BY_U8_OUT_DATA;
+	localparam __WIDTH__OUT_DATA
+		= `WIDTH__SNOW64_LONG_DIV_U16_BY_U8_OUT_DATA;
+	localparam __MSB_POS__OUT_DATA
+		= `MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_OUT_DATA;
 
 
 	localparam __RADIX = 16;
