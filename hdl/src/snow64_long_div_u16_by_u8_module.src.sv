@@ -18,11 +18,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 	localparam __MSB_POS__OUT_DATA
 		= `MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_OUT_DATA;
 
+	localparam __WIDTH__MULT_ARR = 12;
+	localparam __MSB_POS__MULT_ARR = `WIDTH2MP(__WIDTH__MULT_ARR);
+
 
 	localparam __RADIX = 16;
 	localparam __NUM_BITS_PER_ITERATION = 4;
 	localparam __STARTING_I_VALUE = `WIDTH2MP(__RADIX);
-
 
 	localparam __WIDTH__TEMP = 16;
 	localparam __MSB_POS__TEMP = `WIDTH2MP(__WIDTH__TEMP);
@@ -39,7 +41,7 @@ module LongDivU16ByU8(input logic clk, in_start,
 
 
 
-	logic [__MSB_POS__TEMP:0] __mult_arr
+	logic [__MSB_POS__MULT_ARR:0] __mult_arr
 		[0 : `ARR_SIZE_TO_LAST_INDEX(__RADIX)];
 	//logic [__MSB_POS__TEMP:0] __mult_arr[0 : __RADIX];
 
@@ -51,7 +53,34 @@ module LongDivU16ByU8(input logic clk, in_start,
 	logic [__MSB_POS__INDEX:0] __i;
 	logic [__MSB_POS__TEMP:0] __j;
 
-	logic [__MSB_POS__TEMP:0] __search_result;
+	//logic [__MSB_POS__TEMP:0] __search_result;
+
+	task iteration_end;
+		input [__MSB_POS__INDEX:0] some_index;
+		case (__i[3:2])
+			2'd3:
+			begin
+				out_data[15:12] = some_index;
+			end
+
+			2'd2:
+			begin
+				out_data[11:8] = some_index;
+			end
+
+			2'd1:
+			begin
+				out_data[7:4] = some_index;
+			end
+
+			2'd0:
+			begin
+				out_data[3:0] = some_index;
+			end
+		endcase
+
+		__current = __current - __mult_arr[some_index];
+	endtask
 
 	//assign out_ready = (__state == StIdle);
 
@@ -218,11 +247,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 0 or 1
 							if (__mult_arr[1] > __current)
 							begin
-								__search_result = 0;
+								//__search_result = 0;
+								iteration_end(0);
 							end
 							else // if (__mult_arr[1] <= __current)
 							begin
-								__search_result = 1;
+								//__search_result = 1;
+								iteration_end(1);
 							end
 						end
 						else // if (__mult_arr[2] <= __current)
@@ -230,11 +261,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 2 or 3
 							if (__mult_arr[3] > __current)
 							begin
-								__search_result = 2;
+								//__search_result = 2;
+								iteration_end(2);
 							end
 							else // if (__mult_arr[3] <= __current)
 							begin
-								__search_result = 3;
+								//__search_result = 3;
+								iteration_end(3);
 							end
 						end
 					end
@@ -245,11 +278,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 4 or 5
 							if (__mult_arr[5] > __current)
 							begin
-								__search_result = 4;
+								//__search_result = 4;
+								iteration_end(4);
 							end
 							else // if (__mult_arr[5] <= __current)
 							begin
-								__search_result = 5;
+								//__search_result = 5;
+								iteration_end(5);
 							end
 						end
 						else // if (__mult_arr[6] <= __current)
@@ -257,11 +292,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 6 or 7
 							if (__mult_arr[7] > __current)
 							begin
-								__search_result = 6;
+								//__search_result = 6;
+								iteration_end(6);
 							end
 							else // if (__mult_arr[7] <= __current)
 							begin
-								__search_result = 7;
+								//__search_result = 7;
+								iteration_end(7);
 							end
 						end
 					end
@@ -275,11 +312,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 8 or 9
 							if (__mult_arr[9] > __current)
 							begin
-								__search_result = 8;
+								//__search_result = 8;
+								iteration_end(8);
 							end
 							else // if (__mult_arr[9] <= __current)
 							begin
-								__search_result = 9;
+								//__search_result = 9;
+								iteration_end(9);
 							end
 						end
 						else // if (__mult_arr[10] <= __current)
@@ -287,11 +326,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 10 or 11
 							if (__mult_arr[11] > __current)
 							begin
-								__search_result = 10;
+								//__search_result = 10;
+								iteration_end(10);
 							end
 							else // if (__mult_arr[11] <= __current)
 							begin
-								__search_result = 11;
+								//__search_result = 11;
+								iteration_end(11);
 							end
 						end
 					end
@@ -302,11 +343,13 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 12 or 13
 							if (__mult_arr[13] > __current)
 							begin
-								__search_result = 12;
+								//__search_result = 12;
+								iteration_end(12);
 							end
 							else // if (__mult_arr[13] <= __current)
 							begin
-								__search_result = 13;
+								//__search_result = 13;
+								iteration_end(13);
 							end
 						end
 						else // if (__mult_arr[14] <= __current)
@@ -314,47 +357,18 @@ module LongDivU16ByU8(input logic clk, in_start,
 							// 14 or 15
 							if (__mult_arr[15] > __current)
 							begin
-								__search_result = 14;
+								//__search_result = 14;
+								iteration_end(14);
 							end
 							else
 							begin
-								__search_result = 15;
+								//__search_result = 15;
+								iteration_end(15);
 								//__search_result = 14;
 							end
 						end
 					end
 				end
-
-
-				case (__i[3:2])
-					2'd3:
-					begin
-						out_data[15:12] = __search_result;
-					end
-
-					2'd2:
-					begin
-						out_data[11:8] = __search_result;
-					end
-
-					2'd1:
-					begin
-						out_data[7:4] = __search_result;
-					end
-
-					2'd0:
-					begin
-						out_data[3:0] = __search_result;
-
-						//if (__captured_b == 0)
-						//begin
-						//	out_data = 0;
-						//end
-					end
-				endcase
-
-				__current = __current - __mult_arr[__search_result];
-
 			end
 
 			default:
