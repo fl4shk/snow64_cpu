@@ -247,13 +247,13 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 						// 0 or 1
 						if (__mult_arr[1] > __current)
 						begin
-							__search_result = 0;
-							//iteration_end(0);
+							//__search_result = 0;
+							iteration_end(0);
 						end
 						else // if (__mult_arr[1] <= __current)
 						begin
-							__search_result = 1;
-							//iteration_end(1);
+							//__search_result = 1;
+							iteration_end(1);
 						end
 					end
 					else // if (__mult_arr[2] <= __current)
@@ -261,13 +261,13 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 						// 2 or 3
 						if (__mult_arr[3] > __current)
 						begin
-							__search_result = 2;
-							//iteration_end(2);
+							//__search_result = 2;
+							iteration_end(2);
 						end
 						else // if (__mult_arr[3] <= __current)
 						begin
-							__search_result = 3;
-							//iteration_end(3);
+							//__search_result = 3;
+							iteration_end(3);
 						end
 					end
 				end
@@ -278,13 +278,13 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 						// 4 or 5
 						if (__mult_arr[5] > __current)
 						begin
-							__search_result = 4;
-							//iteration_end(4);
+							//__search_result = 4;
+							iteration_end(4);
 						end
 						else // if (__mult_arr[5] <= __current)
 						begin
-							__search_result = 5;
-							//iteration_end(5);
+							//__search_result = 5;
+							iteration_end(5);
 						end
 					end
 					else // if (__mult_arr[6] <= __current)
@@ -292,18 +292,18 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 						// 6 or 7
 						if (__mult_arr[7] > __current)
 						begin
-							__search_result = 6;
-							//iteration_end(6);
+							//__search_result = 6;
+							iteration_end(6);
 						end
 						else // if (__mult_arr[7] <= __current)
 						begin
-							__search_result = 7;
-							//iteration_end(7);
+							//__search_result = 7;
+							iteration_end(7);
 						end
 					end
 				end
 
-				iteration_end(__search_result);
+				//iteration_end(__search_result);
 			end
 
 		endcase
