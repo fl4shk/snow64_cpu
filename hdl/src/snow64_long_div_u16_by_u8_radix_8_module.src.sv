@@ -1,7 +1,5 @@
 `include "src/snow64_long_div_u16_by_u8_defines.header.sv"
 
-
-
 module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_A:0] in_a,
 	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_B:0] in_b,
@@ -69,6 +67,8 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 	logic [__MSB_POS__TEMP:0] __j;
 
 	logic [__MSB_POS__ARR_INDEX:0] __search_result;
+	//logic [__MSB_POS__ARR_INDEX:0] 
+	//	__search_result_0_1_2_3, __search_result_4_5_6_7;
 
 	assign out_data = __almost_out_data;
 
@@ -270,6 +270,7 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 							//iteration_end(3);
 						end
 					end
+					//iteration_end(__search_result_0_1_2_3);
 				end
 				else // if (__mult_arr[4] <= __current)
 				begin
@@ -301,6 +302,7 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 							//iteration_end(7);
 						end
 					end
+					//iteration_end(__search_result_4_5_6_7);
 				end
 
 				iteration_end(__search_result);
