@@ -207,3 +207,62 @@
 //
 //
 //endmodule
+
+module TestBenchCountLeadingZeros16;
+
+	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_IN:0] __in_clz16;
+	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __out_clz16;
+	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __oracle;
+
+	logic __did_find_zero;
+
+	Snow64CountLeadingZeros16 __inst_clz16(.in(__in_clz16),
+		.out(__out_clz16));
+
+
+	initial
+	begin
+		for (longint i=0; 
+			i<(1 << `WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_IN);
+			i=i+1)
+		begin
+			__in_clz16 = i;
+			__oracle = 0;
+			__did_find_zero = 0;
+
+			#1
+			for (longint j
+				=(1 << `WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_IN) - 1;
+				j>=0;
+				--j)
+			begin
+				if (!__in_clz16[j])
+				begin
+					if (!__did_find_zero)
+					begin
+						__oracle = __oracle + 1;
+					end
+				end
+				else
+				begin
+					//break;
+					__did_find_zero = 1;
+				end
+			end
+			if (__in_clz16 == 0)
+			begin
+				__oracle = 16;
+			end
+
+			#1
+			if (__out_clz16 != __oracle)
+			begin
+				$display("Eek!  %h:  %d, %d", __in_clz16, __out_clz16,
+					__oracle);
+			end
+		end
+
+		$finish;
+	end
+
+endmodule

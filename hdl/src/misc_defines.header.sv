@@ -3,6 +3,8 @@
 
 // src/misc_defines.header.sv
 
+`default_nettype none
+
 `define WIDTH2MP(some_width) ((some_width) - 1)
 `define ARR_SIZE_TO_LAST_INDEX(some_arr_size) ((some_arr_size) - 1)
 
@@ -16,7 +18,6 @@
 `define ZERO_EXTEND(some_full_width, some_width_of_arg, some_other_arg) \
 	{{(some_full_width - some_width_of_arg) {1'b0}},some_other_arg}
 
-`default_nettype none
 
 `define INDEX64_8__7_H 63
 `define INDEX64_8__7_L 56
@@ -175,5 +176,17 @@
 `define WIDTH__INST_64__0__DATA_INOUT 64
 `define MSB_POS__INST_64__0__DATA_INOUT \
 	`WIDTH2MP(`WIDTH__INST_64__0__DATA_INOUT)
+
+`define WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_IN 16
+`define MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_IN \
+	`WIDTH2MP(`WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_IN)
+
+
+// 5 because the number itself may be zero (meaning we have 16 leading
+// zeros)
+
+`define WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_OUT 5
+`define MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT \
+	`WIDTH2MP(`WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_OUT)
 
 `endif		// src__slash__misc_defines_header_sv
