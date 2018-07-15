@@ -177,7 +177,8 @@ module Snow64BFloat16Add(input logic clk,
 
 	// Pseudo combinational logic
 	//always @(posedge clk)
-	always @(__state)
+	always @(__state, __out_clz16)
+	//always @(*)
 	begin
 		case (__state)
 		PkgSnow64BFloat16::StAddStarting:
@@ -247,16 +248,26 @@ module Snow64BFloat16Add(input logic clk,
 		begin
 			{__temp_ret_significand, __temp_out_data}
 				= {__ret_significand, __out_data};
+			//$display("StAddEffSub:  %h, %h",
+			//	__temp_ret_significand, __temp_out_data);
 
 			// If the result is not zero
 			if (__temp_ret_significand)
 			begin
 				__real_num_leading_zeros
-					= `ZERO_EXTEND(__WIDTH__TEMP_SIGNIFICAND,
-					`WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_OUT, __out_clz16)
-					- __WIDTH__TEMP_SIGNIFICAND
+					= __out_clz16
+					- (__WIDTH__TEMP_SIGNIFICAND
 					- (PkgSnow64BFloat16::WIDTH__FRAC
-					+ __WIDTH__BUFFER_BITS);
+					+ __WIDTH__BUFFER_BITS));
+				//__real_num_leading_zeros = __out_clz16;
+
+				//__real_num_leading_zeros = __out_clz16
+				//	- (PkgSnow64BFloat16::WIDTH__FRAC
+				//	+ __WIDTH__BUFFER_BITS);
+				//__real_num_leading_zeros = __out_clz16;
+
+				//$display("__out_clz16, __real_num_leading_zeros:  %h, %h",
+				//	__out_clz16, __real_num_leading_zeros);
 
 				if ((`ZERO_EXTEND(32, `WIDTH__SNOW64_BFLOAT16_ENC_EXP,
 					__temp_out_data.enc_exp)
@@ -290,6 +301,12 @@ module Snow64BFloat16Add(input logic clk,
 					[__MSB_POS__TEMP_SIGNIFICAND:__WIDTH__BUFFER_BITS];
 			end
 
+			//$display("StAddEffSub:  %h, %h",
+			//	__temp_ret_significand, __temp_out_data);
+
+			$display("StAddEffSub:  %h, %h, %h:  %h",
+				__temp_out_data.sign, __temp_out_data.enc_exp,
+				__temp_out_data.enc_mantissa, __temp_out_data);
 		end
 
 		endcase
@@ -344,17 +361,6 @@ module Snow64BFloat16Add(input logic clk,
 
 		PkgSnow64BFloat16::StAddStarting:
 		begin
-			//$display("shifted fractions:  %h, %h",
-			//	__captured_in_a_shifted_frac,
-			//	__captured_in_b_shifted_frac);
-			//$display("temps:  %h, %h, %h",
-			//	__temp_a_significand, __temp_b_significand,
-			//	__temp_ret_significand);
-			//$display("__captured_in_a, __captured_in_b:  %h, %h",
-			//	__captured_in_a, __captured_in_b);
-			//__a_significand <= __temp_a_significand;
-			//__b_significand <= __temp_b_significand;
-
 			if (__captured_in_a.sign == __captured_in_b.sign)
 			begin
 				__state <= PkgSnow64BFloat16::StAddEffAdd;
@@ -371,7 +377,7 @@ module Snow64BFloat16Add(input logic clk,
 				if (__temp_ret_significand
 					[__MSB_POS__TEMP_SIGNIFICAND])
 				begin
-					__temp_out_data.sign <= 1;
+					__out_data.sign <= 1;
 					__ret_significand <= -__temp_ret_significand;
 				end
 
@@ -382,26 +388,6 @@ module Snow64BFloat16Add(input logic clk,
 			end
 		end
 
-		//PkgSnow64BFloat16::StAddEffAdd:
-		//begin
-		//	__state <= PkgSnow64BFloat16::StAddIdle;
-		//	out.data_valid <= 1;
-		//	out.can_accept_cmd <= 1;
-
-		//	__ret_significand <= __temp_ret_significand;
-		//	__out_data <= __temp_out_data;
-		//end
-
-		//// Effective subtracts may need more parts
-		//PkgSnow64BFloat16::StAddEffSub:
-		//begin
-		//	__state <= PkgSnow64BFloat16::StAddIdle;
-		//	out.data_valid <= 1;
-		//	out.can_accept_cmd <= 1;
-
-		//	__ret_significand <= __temp_ret_significand;
-		//	__out_data <= __temp_out_data;
-		//end
 
 		//PkgSnow64BFloat16::StAddEffSub:
 		//PkgSnow64BFloat16::StAddEffSub:

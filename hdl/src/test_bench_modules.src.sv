@@ -298,23 +298,54 @@ module ShowBFloat16Add;
 	initial
 	begin
 		__in_bfloat16_add_start = 0;
-		__in_bfloat16_add_a = `WIDTH__SNOW64_BFLOAT16_ITSELF'h4120;
-		__in_bfloat16_add_b = `WIDTH__SNOW64_BFLOAT16_ITSELF'h3dcc;
+		//__in_bfloat16_add_a = `WIDTH__SNOW64_BFLOAT16_ITSELF'h4120;
+		//__in_bfloat16_add_b = `WIDTH__SNOW64_BFLOAT16_ITSELF'h3dcc;
+
+		//__in_bfloat16_add_a = 'hc120;
+		////__in_bfloat16_add_b = 'h3dcc;
+		//__in_bfloat16_add_b = 'h3dcc | 'h8000;
+		__in_bfloat16_add_a = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS;
+		__in_bfloat16_add_b = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS
+			| 'h8000;
 
 		#2
 		__in_bfloat16_add_start = 1;
 
 		#2
 		__in_bfloat16_add_start = 0;
-		//$display("__out_bfloat16_add.data:  %h", __out_bfloat16_add.data);
 
 		#2
-		//$display("__out_bfloat16_add.data:  %h", __out_bfloat16_add.data);
+		$display("__out_bfloat16_add.data:  %h",
+			__out_bfloat16_add.data);
 		#2
-		$display("__out_bfloat16_add.data:  %h", __out_bfloat16_add.data);
+		$display("__out_bfloat16_add.data:  %h",
+			__out_bfloat16_add.data);
+		#2
+		$display("__out_bfloat16_add.data:  %h",
+			__out_bfloat16_add.data);
+
+		//for (longint i=0; i<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF); i=i+1)
+		//begin
+		//	__in_bfloat16_add_a = i;
+
+		//	for (longint j=0;
+		//		j<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF);
+		//		j=j+1)
+		//	begin
+		//		__in_bfloat16_add_start = 1;
+		//		__in_bfloat16_add_b = j;
+
+		//		#2
+		//		__in_bfloat16_add_start = 0;
+
+		//		#2
+		//		#2
+		//		$display("%d",
+		//			__out_bfloat16_add.data);
+		//	end
+		//end
 
 		$finish;
-
 	end
 
 
