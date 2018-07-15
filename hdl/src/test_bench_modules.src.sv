@@ -208,61 +208,114 @@
 //
 //endmodule
 
-module TestBenchCountLeadingZeros16;
+//module TestBenchCountLeadingZeros16;
+//
+//	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_IN:0] __in_clz16;
+//	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __out_clz16;
+//	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __oracle;
+//
+//	logic __did_find_zero;
+//
+//	Snow64CountLeadingZeros16 __inst_clz16(.in(__in_clz16),
+//		.out(__out_clz16));
+//
+//
+//	initial
+//	begin
+//		for (longint i=0; 
+//			i<(1 << `WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_IN);
+//			i=i+1)
+//		begin
+//			__in_clz16 = i;
+//			__oracle = 0;
+//			__did_find_zero = 0;
+//
+//			#1
+//			for (longint j=15; j>=0; --j)
+//			begin
+//				//#1
+//				//$display("j:  ", j);
+//				if (!__in_clz16[j])
+//				begin
+//					if (!__did_find_zero)
+//					begin
+//						__oracle = __oracle + 1;
+//					end
+//				end
+//				else
+//				begin
+//					__did_find_zero = 1;
+//				end
+//			end
+//
+//			if (__in_clz16 == 0)
+//			begin
+//				__oracle = 16;
+//			end
+//
+//			#1
+//			if (__out_clz16 != __oracle)
+//			begin
+//				$display("Eek!  %h:  %d, %d", __in_clz16, __out_clz16,
+//					__oracle);
+//			end
+//		end
+//
+//		$finish;
+//	end
+//
+//endmodule
 
-	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_IN:0] __in_clz16;
-	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __out_clz16;
-	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __oracle;
+module ShowBFloat16Add;
 
-	logic __did_find_zero;
+	logic __clk;
 
-	Snow64CountLeadingZeros16 __inst_clz16(.in(__in_clz16),
-		.out(__out_clz16));
+	initial
+	begin
+		__clk = 0;
+	end
+
+	always
+	begin
+		#1
+		__clk = !__clk;
+	end
+
+	logic __in_bfloat16_add_start;
+	PkgSnow64BFloat16::BFloat16 __in_bfloat16_add_a, __in_bfloat16_add_b;
+
+	PkgSnow64BFloat16::PortIn_Add __in_bfloat16_add;
+	PkgSnow64BFloat16::PortOut_Add __out_bfloat16_add;
+
+	assign __in_bfloat16_add.start = __in_bfloat16_add_start;
+	assign __in_bfloat16_add.a = __in_bfloat16_add_a;
+	assign __in_bfloat16_add.b = __in_bfloat16_add_b;
+
+	Snow64BFloat16Add __inst_bfloat16_add(.clk(__clk),
+		.in(__in_bfloat16_add), .out(__out_bfloat16_add));
 
 
 	initial
 	begin
-		for (longint i=0; 
-			i<(1 << `WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_IN);
-			i=i+1)
-		begin
-			__in_clz16 = i;
-			__oracle = 0;
-			__did_find_zero = 0;
+		__in_bfloat16_add_start = 0;
+		__in_bfloat16_add_a = `WIDTH__SNOW64_BFLOAT16_ITSELF'h4120;
+		__in_bfloat16_add_b = `WIDTH__SNOW64_BFLOAT16_ITSELF'h3dcc;
 
-			#1
-			for (longint j
-				=(1 << `WIDTH__SNOW64_COUNT_LEADING_ZEROS_16_IN) - 1;
-				j>=0;
-				--j)
-			begin
-				if (!__in_clz16[j])
-				begin
-					if (!__did_find_zero)
-					begin
-						__oracle = __oracle + 1;
-					end
-				end
-				else
-				begin
-					//break;
-					__did_find_zero = 1;
-				end
-			end
-			if (__in_clz16 == 0)
-			begin
-				__oracle = 16;
-			end
+		#2
+		__in_bfloat16_add_start = 1;
 
-			#1
-			if (__out_clz16 != __oracle)
-			begin
-				$display("Eek!  %h:  %d, %d", __in_clz16, __out_clz16,
-					__oracle);
-			end
-		end
+		#2
+		__in_bfloat16_add_start = 0;
+		//$display("__out_bfloat16_add.data:  %h", __out_bfloat16_add.data);
+
+		#2
+		//$display("__out_bfloat16_add.data:  %h", __out_bfloat16_add.data);
+		#2
+		$display("__out_bfloat16_add.data:  %h", __out_bfloat16_add.data);
 
 		$finish;
+
 	end
+
 
 endmodule

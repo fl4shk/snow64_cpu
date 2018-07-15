@@ -57,7 +57,7 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 	//logic [__MSB_POS__TEMP:0] __mult_arr[0 : __RADIX];
 
 	logic [__MSB_POS__CAPTURED_A:0] __captured_a;
-	logic [__MSB_POS__CAPTURED_B:0] __captured_b;
+	//logic [__MSB_POS__CAPTURED_B:0] __captured_b;
 	logic [__MSB_POS__ALMOST_OUT_DATA:0] __almost_out_data;
 
 	logic [__MSB_POS__TEMP:0] __current;
@@ -139,7 +139,7 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 					if (in_b != 0)
 					begin
 						__captured_a <= in_a;
-						__captured_b <= in_b;
+						//__captured_b <= in_b;
 
 						//__mult_arr[0] <= in_b * 0;
 						__mult_arr[1] <= in_b * 1;
@@ -157,8 +157,7 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 						// Ensure "correct" results (return a zero when
 						// in_b is zero)
 						__captured_a <= 0;
-						//__captured_b <= in_b;
-						__captured_b <= 1;
+						//__captured_b <= 1;
 
 						//__mult_arr[0] <= 0;
 						__mult_arr[1] <= 1;

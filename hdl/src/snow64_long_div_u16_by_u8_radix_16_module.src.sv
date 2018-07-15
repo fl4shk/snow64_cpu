@@ -53,7 +53,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 	//logic [__MSB_POS__TEMP:0] __mult_arr[0 : __RADIX];
 
 	logic [__MSB_POS__IN_A:0] __captured_a;
-	logic [__MSB_POS__IN_B:0] __captured_b;
+	//logic [__MSB_POS__IN_B:0] __captured_b;
 
 	logic [__MSB_POS__TEMP:0] __current;
 
@@ -62,6 +62,9 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 	logic [__MSB_POS__TEMP:0] __j;
 
 	logic [__MSB_POS__ARR_INDEX:0] __search_result;
+	//logic [__MSB_POS__ARR_INDEX:0]
+	//	__search_result_0_1_2_3, __search_result_4_5_6_7,
+	//	__search_result_8_9_10_11, __search_result_12_13_14_15;
 
 	task iteration_end;
 		input [__MSB_POS__ARR_INDEX:0] some_index;
@@ -114,7 +117,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 					if (in_b != 0)
 					begin
 						__captured_a <= in_a;
-						__captured_b <= in_b;
+						//__captured_b <= in_b;
 
 						//__mult_arr[0] <= in_b * 0;
 						__mult_arr[1] <= in_b * 1;
@@ -143,8 +146,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 						// Ensure "correct" results (return a zero when
 						// in_b is zero)
 						__captured_a <= 0;
-						//__captured_b <= in_b;
-						__captured_b <= 1;
+						//__captured_b <= 1;
 
 						//__mult_arr[0] <= 0;
 						__mult_arr[1] <= 1;
@@ -238,11 +240,13 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 0;
 								//iteration_end(0);
+								//__search_result_0_1_2_3 = 0;
 							end
 							else // if (__mult_arr[1] <= __current)
 							begin
 								__search_result = 1;
 								//iteration_end(1);
+								//__search_result_0_1_2_3 = 1;
 							end
 						end
 						else // if (__mult_arr[2] <= __current)
@@ -252,13 +256,18 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 2;
 								//iteration_end(2);
+								//__search_result_0_1_2_3 = 2;
 							end
 							else // if (__mult_arr[3] <= __current)
 							begin
 								__search_result = 3;
 								//iteration_end(3);
+								//__search_result_0_1_2_3 = 3;
 							end
 						end
+
+						//iteration_end(__search_result_0_1_2_3);
+						iteration_end(__search_result);
 					end
 					else // if (__mult_arr[4] <= __current)
 					begin
@@ -269,11 +278,13 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 4;
 								//iteration_end(4);
+								//__search_result_4_5_6_7 = 4;
 							end
 							else // if (__mult_arr[5] <= __current)
 							begin
 								__search_result = 5;
 								//iteration_end(5);
+								//__search_result_4_5_6_7 = 5;
 							end
 						end
 						else // if (__mult_arr[6] <= __current)
@@ -283,13 +294,18 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 6;
 								//iteration_end(6);
+								//__search_result_4_5_6_7 = 6;
 							end
 							else // if (__mult_arr[7] <= __current)
 							begin
 								__search_result = 7;
 								//iteration_end(7);
+								//__search_result_4_5_6_7 = 7;
 							end
 						end
+
+						//iteration_end(__search_result_4_5_6_7);
+						iteration_end(__search_result);
 					end
 				end
 				else // if (__mult_arr[8] <= __current)
@@ -303,11 +319,13 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 8;
 								//iteration_end(8);
+								//__search_result_8_9_10_11 = 8;
 							end
 							else // if (__mult_arr[9] <= __current)
 							begin
 								__search_result = 9;
 								//iteration_end(9);
+								//__search_result_8_9_10_11 = 9;
 							end
 						end
 						else // if (__mult_arr[10] <= __current)
@@ -317,13 +335,18 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 10;
 								//iteration_end(10);
+								//__search_result_8_9_10_11 = 10;
 							end
 							else // if (__mult_arr[11] <= __current)
 							begin
 								__search_result = 11;
 								//iteration_end(11);
+								//__search_result_8_9_10_11 = 11;
 							end
 						end
+
+						//iteration_end(__search_result_8_9_10_11);
+						iteration_end(__search_result);
 					end
 					else // if (__mult_arr[12] <= __current)
 					begin
@@ -334,11 +357,13 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 12;
 								//iteration_end(12);
+								//__search_result_12_13_14_15 = 12;
 							end
 							else // if (__mult_arr[13] <= __current)
 							begin
 								__search_result = 13;
 								//iteration_end(13);
+								//__search_result_12_13_14_15 = 13;
 							end
 						end
 						else // if (__mult_arr[14] <= __current)
@@ -348,16 +373,21 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 							begin
 								__search_result = 14;
 								//iteration_end(14);
+								//__search_result_12_13_14_15 = 14;
 							end
 							else
 							begin
 								__search_result = 15;
 								//iteration_end(15);
+								//__search_result_12_13_14_15 = 15;
 							end
 						end
+
+						//iteration_end(__search_result_12_13_14_15);
+						iteration_end(__search_result);
 					end
 				end
-				iteration_end(__search_result);
+				//iteration_end(__search_result);
 			end
 
 		endcase

@@ -16,8 +16,17 @@
 //	{{(some_full_width - some_width_of_arg) \
 //	{some_non_sliced_arg[`WIDTH2MP(some_width_of_arg)]}},some_other_arg}
 `define ZERO_EXTEND(some_full_width, some_width_of_arg, some_other_arg) \
-	{{(some_full_width - some_width_of_arg) {1'b0}},some_other_arg}
+	{{(some_full_width - some_width_of_arg){1'b0}},some_other_arg}
 
+`define BPRANGE_TO_SHIFTED_MASK(bit_pos_hi, bit_pos_lo) \
+	(((1 << (bit_pos_hi - bit_pos_lo + 1)) - 1) << bit_pos_lo)
+`define GET_BITS(to_get_from, mask, shift) \
+	((to_get_from & mask) >> shift)
+`define GET_BITS_WITH_RANGE(to_get_from, bit_pos_range_hi,
+	bit_pos_range_lo) \
+	`GET_BITS(to_get_from, \
+		`BPRANGE_TO_SHIFTED_MASK(bit_pos_range_hi, bit_pos_range_lo), \
+		bit_pos_range_lo)
 
 `define INDEX64_8__7_H 63
 `define INDEX64_8__7_L 56

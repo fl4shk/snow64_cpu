@@ -30,16 +30,10 @@ module Snow64CountLeadingZeros16
 	(input logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_IN:0] in,
 	output logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] out);
 
-	//localparam __ARR_SIZE__TEMP = 4;
-	//localparam __LAST_INDEX__TEMP
-	//	= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__TEMP);
+	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_IN:0] __temp;
 
-	//logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] 
-	//	__temp[0 : __LAST_INDEX__TEMP];
-
-	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __temp;
-
-	always_comb
+	//always_comb
+	always @(*)
 	begin
 		if (in == 0)
 		begin
