@@ -20,8 +20,7 @@ module Snow64BFloat16Add(input logic clk,
 
 	PkgSnow64BFloat16::StateAdd __state;
 	PkgSnow64BFloat16::BFloat16 __captured_in_a, __captured_in_b,
-		__curr_in_a, __curr_in_b, __out_data,
-		__temp_out_data;
+		__curr_in_a, __curr_in_b, __temp_out_data;
 
 	logic [__MSB_POS__TEMP_SIGNIFICAND:0]
 		__captured_in_a_shifted_frac, __captured_in_b_shifted_frac;
@@ -30,7 +29,7 @@ module Snow64BFloat16Add(input logic clk,
 
 	logic [__MSB_POS__TEMP_SIGNIFICAND:0]
 		//__a_significand, __b_significand, 
-		__ret_significand,
+		//__ret_significand,
 		__temp_a_significand, __temp_b_significand, __temp_ret_significand,
 		__real_num_leading_zeros, __temp_ret_enc_exp;
 
@@ -38,14 +37,14 @@ module Snow64BFloat16Add(input logic clk,
 	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_16_OUT:0] __out_clz16;
 
 
-	Snow64CountLeadingZeros16 __inst_clz16(.in(__ret_significand),
+	Snow64CountLeadingZeros16 __inst_clz16(.in(__temp_ret_significand),
 		.out(__out_clz16));
 
 	assign {__curr_in_a, __curr_in_b} = {in.a, in.b};
 
 
 	// Use "always @(*)" here to keep Icarus Verilog happy
-	always @(*) out.data = __out_data;
+	always @(*) out.data = __temp_out_data;
 
 
 	task set_some_significand;
@@ -177,10 +176,30 @@ module Snow64BFloat16Add(input logic clk,
 
 	// Pseudo combinational logic
 	//always @(posedge clk)
-	always @(__state, __out_clz16)
+	//always @(__state, __out_clz16)
 	//always @(*)
+	//always @(posedge clk)
+	//always @(*)
+	always @(posedge clk)
 	begin
 		case (__state)
+		PkgSnow64BFloat16::StAddIdle:
+		begin
+			if (in.start)
+			begin
+				if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
+				begin
+					//__d = __curr_in_b.enc_exp - __curr_in_a.enc_exp;
+					__temp_out_data.enc_exp = __curr_in_b.enc_exp;
+				end
+
+				else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
+				begin
+					//__d = __curr_in_a.enc_exp - __curr_in_b.enc_exp;
+					__temp_out_data.enc_exp = __curr_in_a.enc_exp;
+				end
+			end
+		end
 		PkgSnow64BFloat16::StAddStarting:
 		begin
 			if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
@@ -200,22 +219,31 @@ module Snow64BFloat16Add(input logic clk,
 			begin
 				__temp_ret_significand = __temp_a_significand
 					+ __temp_b_significand;
+				__temp_out_data.sign = __captured_in_a.sign;
 			end
 			else // if (__captured_in_a.sign != __captured_in_b.sign)
 			begin
 				__temp_ret_significand = __captured_in_a.sign
 					? (__temp_b_significand - __temp_a_significand)
 					: (__temp_a_significand - __temp_b_significand);
+
+				// Convert to sign and magnitude
+				if (__temp_ret_significand
+					[__MSB_POS__TEMP_SIGNIFICAND])
+				begin
+					__temp_out_data.sign = 1;
+					__temp_ret_significand = -__temp_ret_significand;
+				end
+
+				else
+				begin
+					__temp_out_data.sign = 0;
+				end
 			end
 		end
 
 		PkgSnow64BFloat16::StAddEffAdd:
 		begin
-			{__temp_ret_significand, __temp_out_data}
-				= {__ret_significand, __out_data};
-			//$display("StAddEffAdd:  %h, %h",
-			//	__temp_ret_significand, __temp_out_data);
-
 			// Check for an overflow (for an add:  only ever by one bit,
 			// and thus we only need to be able to right shift by one bit)
 			if (__temp_ret_significand[PkgSnow64BFloat16::WIDTH__FRAC
@@ -246,11 +274,6 @@ module Snow64BFloat16Add(input logic clk,
 
 		PkgSnow64BFloat16::StAddEffSub:
 		begin
-			{__temp_ret_significand, __temp_out_data}
-				= {__ret_significand, __out_data};
-			//$display("StAddEffSub:  %h, %h",
-			//	__temp_ret_significand, __temp_out_data);
-
 			// If the result is not zero
 			if (__temp_ret_significand)
 			begin
@@ -259,15 +282,6 @@ module Snow64BFloat16Add(input logic clk,
 					- (__WIDTH__TEMP_SIGNIFICAND
 					- (PkgSnow64BFloat16::WIDTH__FRAC
 					+ __WIDTH__BUFFER_BITS));
-				//__real_num_leading_zeros = __out_clz16;
-
-				//__real_num_leading_zeros = __out_clz16
-				//	- (PkgSnow64BFloat16::WIDTH__FRAC
-				//	+ __WIDTH__BUFFER_BITS);
-				//__real_num_leading_zeros = __out_clz16;
-
-				//$display("__out_clz16, __real_num_leading_zeros:  %h, %h",
-				//	__out_clz16, __real_num_leading_zeros);
 
 				if ((`ZERO_EXTEND(32, `WIDTH__SNOW64_BFLOAT16_ENC_EXP,
 					__temp_out_data.enc_exp)
@@ -304,10 +318,17 @@ module Snow64BFloat16Add(input logic clk,
 			//$display("StAddEffSub:  %h, %h",
 			//	__temp_ret_significand, __temp_out_data);
 
-			$display("StAddEffSub:  %h, %h, %h:  %h",
-				__temp_out_data.sign, __temp_out_data.enc_exp,
-				__temp_out_data.enc_mantissa, __temp_out_data);
+			//$display("StAddEffSub:  %h, %h, %h:  %h",
+			//	__temp_out_data.sign, __temp_out_data.enc_exp,
+			//	__temp_out_data.enc_mantissa, __temp_out_data);
 		end
+
+		//default:
+		//begin
+		//	{__temp_a_significand, __temp_b_significand,
+		//		__temp_ret_significand, __temp_out_data,
+		//		__real_num_leading_zeros} = 0;
+		//end
 
 		endcase
 	end
@@ -346,16 +367,16 @@ module Snow64BFloat16Add(input logic clk,
 				if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
 				begin
 					__d <= __curr_in_b.enc_exp - __curr_in_a.enc_exp;
-					__out_data.enc_exp <= __curr_in_b.enc_exp;
+					//__temp_out_data.enc_exp <= __curr_in_b.enc_exp;
 				end
 
 				else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
 				begin
 					__d <= __curr_in_a.enc_exp - __curr_in_b.enc_exp;
-					__out_data.enc_exp <= __curr_in_a.enc_exp;
+					//__temp_out_data.enc_exp <= __curr_in_a.enc_exp;
 				end
 
-				__out_data.sign <= 0;
+				//__temp_out_data.sign <= 0;
 			end
 		end
 
@@ -365,26 +386,26 @@ module Snow64BFloat16Add(input logic clk,
 			begin
 				__state <= PkgSnow64BFloat16::StAddEffAdd;
 
-				__ret_significand <= __temp_a_significand
-					+ __temp_b_significand;
+				//__ret_significand <= __temp_a_significand
+				//	+ __temp_b_significand;
 			end
 
 			else // if (__captured_in_a.sign != __captured_in_b.sign)
 			begin
 				__state <= PkgSnow64BFloat16::StAddEffSub;
 
-				// Convert to sign and magnitude
-				if (__temp_ret_significand
-					[__MSB_POS__TEMP_SIGNIFICAND])
-				begin
-					__out_data.sign <= 1;
-					__ret_significand <= -__temp_ret_significand;
-				end
+				//// Convert to sign and magnitude
+				//if (__temp_ret_significand
+				//	[__MSB_POS__TEMP_SIGNIFICAND])
+				//begin
+				//	__temp_out_data.sign <= 1;
+				//	__ret_significand <= -__temp_ret_significand;
+				//end
 
-				else
-				begin
-					__ret_significand <= __temp_ret_significand;
-				end
+				//else
+				//begin
+				//	__ret_significand <= __temp_ret_significand;
+				//end
 			end
 		end
 
@@ -398,7 +419,7 @@ module Snow64BFloat16Add(input logic clk,
 			out.can_accept_cmd <= 1;
 
 			//__ret_significand <= __temp_ret_significand;
-			__out_data <= __temp_out_data;
+			//__temp_out_data <= __temp_out_data;
 		end
 		endcase
 	end

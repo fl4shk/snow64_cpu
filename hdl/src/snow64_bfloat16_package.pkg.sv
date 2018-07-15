@@ -23,7 +23,6 @@ typedef enum logic [`MSB_POS__SNOW64_BFLOAT16_ADD_STATE:0]
 
 	StAddEffAdd,
 
-	// Effective subtracts may need more than one part?
 	StAddEffSub
 } StateAdd;
 

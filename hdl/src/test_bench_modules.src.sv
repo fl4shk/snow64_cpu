@@ -298,15 +298,15 @@ module ShowBFloat16Add;
 	initial
 	begin
 		__in_bfloat16_add_start = 0;
-		//__in_bfloat16_add_a = `WIDTH__SNOW64_BFLOAT16_ITSELF'h4120;
-		//__in_bfloat16_add_b = `WIDTH__SNOW64_BFLOAT16_ITSELF'h3dcc;
+		__in_bfloat16_add_a = 'h4120;
+		__in_bfloat16_add_b = 'h3dcc;
 
 		//__in_bfloat16_add_a = 'hc120;
 		////__in_bfloat16_add_b = 'h3dcc;
 		//__in_bfloat16_add_b = 'h3dcc | 'h8000;
-		__in_bfloat16_add_a = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS;
-		__in_bfloat16_add_b = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS
-			| 'h8000;
+		////__in_bfloat16_add_a = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS;
+		////__in_bfloat16_add_b = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS
+		////	| 'h8000;
 
 		#2
 		__in_bfloat16_add_start = 1;
