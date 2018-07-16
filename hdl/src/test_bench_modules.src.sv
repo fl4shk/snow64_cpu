@@ -266,87 +266,91 @@
 //
 //endmodule
 
-module ShowBFloat16Add;
-
-	logic __clk;
-
-	initial
-	begin
-		__clk = 0;
-	end
-
-	always
-	begin
-		#1
-		__clk = !__clk;
-	end
-
-	logic __in_bfloat16_add_start;
-	PkgSnow64BFloat16::BFloat16 __in_bfloat16_add_a, __in_bfloat16_add_b;
-
-	PkgSnow64BFloat16::PortIn_Add __in_bfloat16_add;
-	PkgSnow64BFloat16::PortOut_Add __out_bfloat16_add;
-
-	assign __in_bfloat16_add.start = __in_bfloat16_add_start;
-	assign __in_bfloat16_add.a = __in_bfloat16_add_a;
-	assign __in_bfloat16_add.b = __in_bfloat16_add_b;
-
-	Snow64BFloat16Add __inst_bfloat16_add(.clk(__clk),
-		.in(__in_bfloat16_add), .out(__out_bfloat16_add));
-
-
-	initial
-	begin
-		__in_bfloat16_add_start = 0;
-		__in_bfloat16_add_a = 'h4120;
-		__in_bfloat16_add_b = 'h3dcc;
-
-		//__in_bfloat16_add_a = 'hc120;
-		////__in_bfloat16_add_b = 'h3dcc;
-		//__in_bfloat16_add_b = 'h3dcc | 'h8000;
-		////__in_bfloat16_add_a = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS;
-		////__in_bfloat16_add_b = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS
-		////	| 'h8000;
-
-		#2
-		__in_bfloat16_add_start = 1;
-
-		#2
-		__in_bfloat16_add_start = 0;
-
-		#2
-		$display("__out_bfloat16_add.data:  %h",
-			__out_bfloat16_add.data);
-		#2
-		$display("__out_bfloat16_add.data:  %h",
-			__out_bfloat16_add.data);
-		#2
-		$display("__out_bfloat16_add.data:  %h",
-			__out_bfloat16_add.data);
-
-		//for (longint i=0; i<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF); i=i+1)
-		//begin
-		//	__in_bfloat16_add_a = i;
-
-		//	for (longint j=0;
-		//		j<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF);
-		//		j=j+1)
-		//	begin
-		//		__in_bfloat16_add_start = 1;
-		//		__in_bfloat16_add_b = j;
-
-		//		#2
-		//		__in_bfloat16_add_start = 0;
-
-		//		#2
-		//		#2
-		//		$display("%d",
-		//			__out_bfloat16_add.data);
-		//	end
-		//end
-
-		$finish;
-	end
-
-
-endmodule
+//module ShowBFloat16Mul;
+//
+//	logic __clk;
+//
+//	initial
+//	begin
+//		__clk = 0;
+//	end
+//
+//	always
+//	begin
+//		#1
+//		__clk = !__clk;
+//	end
+//
+//	logic __in_bfloat16_mul_start;
+//	PkgSnow64BFloat16::BFloat16 __in_bfloat16_mul_a, __in_bfloat16_mul_b;
+//
+//	PkgSnow64BFloat16::PortIn_Oper __in_bfloat16_mul;
+//	PkgSnow64BFloat16::PortOut_Oper __out_bfloat16_mul;
+//
+//	assign __in_bfloat16_mul.start = __in_bfloat16_mul_start;
+//	assign __in_bfloat16_mul.a = __in_bfloat16_mul_a;
+//	assign __in_bfloat16_mul.b = __in_bfloat16_mul_b;
+//
+//	Snow64BFloat16Mul __inst_bfloat16_mul(.clk(__clk),
+//		.in(__in_bfloat16_mul), .out(__out_bfloat16_mul));
+//
+//
+//	initial
+//	begin
+//		__in_bfloat16_mul_start = 0;
+//		//__in_bfloat16_mul_a = 'h4120;
+//		//__in_bfloat16_mul_b = 'h3dcc;
+//		__in_bfloat16_mul_a = 'h80;
+//		//__in_bfloat16_mul_b = 'h3f80;
+//		//__in_bfloat16_mul_b = 'h80;
+//		__in_bfloat16_mul_b = 'h3f81;
+//
+//		//__in_bfloat16_mul_a = 'hc120;
+//		////__in_bfloat16_mul_b = 'h3dcc;
+//		//__in_bfloat16_mul_b = 'h3dcc | 'h8000;
+//		////__in_bfloat16_mul_a = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS;
+//		////__in_bfloat16_mul_b = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS
+//		////	| 'h8000;
+//
+//		#2
+//		__in_bfloat16_mul_start = 1;
+//
+//		#2
+//		__in_bfloat16_mul_start = 0;
+//
+//		#2
+//		$display("__out_bfloat16_mul.data:  %h",
+//			__out_bfloat16_mul.data);
+//		#2
+//		$display("__out_bfloat16_mul.data:  %h",
+//			__out_bfloat16_mul.data);
+//		//#2
+//		//$display("__out_bfloat16_mul.data:  %h",
+//		//	__out_bfloat16_mul.data);
+//
+//		//for (longint i=0; i<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF); i=i+1)
+//		//begin
+//		//	__in_bfloat16_mul_a = i;
+//
+//		//	for (longint j=0;
+//		//		j<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF);
+//		//		j=j+1)
+//		//	begin
+//		//		__in_bfloat16_mul_start = 1;
+//		//		__in_bfloat16_mul_b = j;
+//
+//		//		#2
+//		//		__in_bfloat16_mul_start = 0;
+//
+//		//		#2
+//		//		#2
+//		//		$display("%d",
+//		//			__out_bfloat16_mul.data);
+//		//	end
+//		//end
+//
+//		$finish;
+//	end
+//
+//
+//endmodule

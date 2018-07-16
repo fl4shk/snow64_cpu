@@ -1,8 +1,8 @@
 `include "src/snow64_bfloat16_defines.header.sv"
 
 module Snow64BFloat16Add(input logic clk,
-	input PkgSnow64BFloat16::PortIn_Add in,
-	output PkgSnow64BFloat16::PortOut_Add out);
+	input PkgSnow64BFloat16::PortIn_Oper in,
+	output PkgSnow64BFloat16::PortOut_Oper out);
 
 
 
@@ -25,7 +25,7 @@ module Snow64BFloat16Add(input logic clk,
 	logic [__MSB_POS__TEMP_SIGNIFICAND:0]
 		__captured_in_a_shifted_frac, __captured_in_b_shifted_frac;
 	logic [`WIDTH__SNOW64_BFLOAT16_ENC_EXP:0] __d;
-	logic __sticky;
+	//logic __sticky;
 
 	logic [__MSB_POS__TEMP_SIGNIFICAND:0]
 		//__a_significand, __b_significand, 
@@ -44,7 +44,7 @@ module Snow64BFloat16Add(input logic clk,
 
 
 	// Use "always @(*)" here to keep Icarus Verilog happy
-	always @(*) out.data = __temp_out_data;
+	//always @(*) out.data = __temp_out_data;
 
 
 	task set_some_significand;
@@ -174,12 +174,15 @@ module Snow64BFloat16Add(input logic clk,
 	//always @(in.a or in.b)
 	//always @(__state)
 
+	initial
+	begin
+		__state = PkgSnow64BFloat16::StAddIdle;
+		out.data_valid = 0;
+		out.can_accept_cmd = 1;
+		out.data = 0;
+	end
+
 	// Pseudo combinational logic
-	//always @(posedge clk)
-	//always @(__state, __out_clz16)
-	//always @(*)
-	//always @(posedge clk)
-	//always @(*)
 	always @(posedge clk)
 	begin
 		case (__state)
@@ -187,33 +190,51 @@ module Snow64BFloat16Add(input logic clk,
 		begin
 			if (in.start)
 			begin
+				out = 0;
 				if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
 				begin
-					//__d = __curr_in_b.enc_exp - __curr_in_a.enc_exp;
+					__d = __curr_in_b.enc_exp - __curr_in_a.enc_exp;
 					__temp_out_data.enc_exp = __curr_in_b.enc_exp;
 				end
 
 				else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
 				begin
-					//__d = __curr_in_a.enc_exp - __curr_in_b.enc_exp;
+					__d = __curr_in_a.enc_exp - __curr_in_b.enc_exp;
 					__temp_out_data.enc_exp = __curr_in_a.enc_exp;
+				end
+				__captured_in_a_shifted_frac
+					= `BFLOAT16_FRAC(__curr_in_a) << __WIDTH__BUFFER_BITS;
+				__captured_in_b_shifted_frac
+					= `BFLOAT16_FRAC(__curr_in_b) << __WIDTH__BUFFER_BITS;
+
+				if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
+				begin
+					set_some_significand(__captured_in_a_shifted_frac,
+						__captured_in_b_shifted_frac,
+						__temp_a_significand, __temp_b_significand);
+				end
+				else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
+				begin
+					set_some_significand(__captured_in_b_shifted_frac,
+						__captured_in_a_shifted_frac,
+						__temp_b_significand, __temp_a_significand);
 				end
 			end
 		end
 		PkgSnow64BFloat16::StAddStarting:
 		begin
-			if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
-			begin
-				set_some_significand(__captured_in_a_shifted_frac,
-					__captured_in_b_shifted_frac,
-					__temp_a_significand, __temp_b_significand);
-			end
-			else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
-			begin
-				set_some_significand(__captured_in_b_shifted_frac,
-					__captured_in_a_shifted_frac,
-					__temp_b_significand, __temp_a_significand);
-			end
+			//if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
+			//begin
+			//	set_some_significand(__captured_in_a_shifted_frac,
+			//		__captured_in_b_shifted_frac,
+			//		__temp_a_significand, __temp_b_significand);
+			//end
+			//else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
+			//begin
+			//	set_some_significand(__captured_in_b_shifted_frac,
+			//		__captured_in_a_shifted_frac,
+			//		__temp_b_significand, __temp_a_significand);
+			//end
 
 			if (__captured_in_a.sign == __captured_in_b.sign)
 			begin
@@ -246,7 +267,7 @@ module Snow64BFloat16Add(input logic clk,
 		begin
 			// Check for an overflow (for an add:  only ever by one bit,
 			// and thus we only need to be able to right shift by one bit)
-			if (__temp_ret_significand[PkgSnow64BFloat16::WIDTH__FRAC
+			if (__temp_ret_significand[`WIDTH__SNOW64_BFLOAT16_FRAC
 				+ __WIDTH__BUFFER_BITS])
 			begin
 				__temp_ret_significand = __temp_ret_significand >> 1;
@@ -255,21 +276,23 @@ module Snow64BFloat16Add(input logic clk,
 
 			// If necessary, saturate to the highest valid mantissa and
 			// exponent
-			if (__temp_out_data.enc_exp == PkgSnow64BFloat16::MAX_ENC_EXP)
+			if (__temp_out_data.enc_exp == `SNOW64_BFLOAT16_MAX_ENC_EXP)
 			begin
 				{__temp_ret_significand, __temp_out_data.enc_exp}
 					= {{__WIDTH__TEMP_SIGNIFICAND{1'b1}},
-					PkgSnow64BFloat16::MAX_SATURATED_ENC_EXP};
+					`SNOW64_BFLOAT16_MAX_SATURATED_ENC_EXP};
 			end
 
 			{__temp_out_data.enc_mantissa, __temp_out_data.sign}
-				= {__temp_ret_significand[PkgSnow64BFloat16::MSB_POS__FRAC
+				= {__temp_ret_significand[`MSB_POS__SNOW64_BFLOAT16_FRAC
 				+ __WIDTH__BUFFER_BITS :__WIDTH__BUFFER_BITS],
 				__captured_in_a.sign};
 
 			//$display("StAddEffAdd:  %h, %h, %h:  %h",
 			//	__temp_out_data.sign, __temp_out_data.enc_exp,
 			//	__temp_out_data.enc_mantissa, __temp_out_data);
+			{out.data_valid, out.can_accept_cmd, out.data}
+				= {1'b1, 1'b1, __temp_out_data};
 		end
 
 		PkgSnow64BFloat16::StAddEffSub:
@@ -280,7 +303,7 @@ module Snow64BFloat16Add(input logic clk,
 				__real_num_leading_zeros
 					= __out_clz16
 					- (__WIDTH__TEMP_SIGNIFICAND
-					- (PkgSnow64BFloat16::WIDTH__FRAC
+					- (`WIDTH__SNOW64_BFLOAT16_FRAC
 					+ __WIDTH__BUFFER_BITS));
 
 				if ((`ZERO_EXTEND(32, `WIDTH__SNOW64_BFLOAT16_ENC_EXP,
@@ -321,6 +344,9 @@ module Snow64BFloat16Add(input logic clk,
 			//$display("StAddEffSub:  %h, %h, %h:  %h",
 			//	__temp_out_data.sign, __temp_out_data.enc_exp,
 			//	__temp_out_data.enc_mantissa, __temp_out_data);
+
+			{out.data_valid, out.can_accept_cmd, out.data}
+				= {1'b1, 1'b1, __temp_out_data};
 		end
 
 		//default:
@@ -334,14 +360,6 @@ module Snow64BFloat16Add(input logic clk,
 	end
 
 
-	initial
-	begin
-		__state = PkgSnow64BFloat16::StAddIdle;
-		out.data_valid = 0;
-		out.can_accept_cmd = 1;
-	end
-
-
 
 	always_ff @(posedge clk)
 	begin
@@ -350,8 +368,8 @@ module Snow64BFloat16Add(input logic clk,
 		begin
 			if (in.start)
 			begin
-				out.data_valid <= 0;
-				out.can_accept_cmd <= 0;
+				//out.data_valid <= 0;
+				//out.can_accept_cmd <= 0;
 
 				__captured_in_a <= in.a;
 				__captured_in_b <= in.b;
@@ -359,22 +377,22 @@ module Snow64BFloat16Add(input logic clk,
 
 				__state <= PkgSnow64BFloat16::StAddStarting;
 
-				__captured_in_a_shifted_frac
-					<= `BFLOAT16_FRAC(__curr_in_a) << __WIDTH__BUFFER_BITS;
-				__captured_in_b_shifted_frac
-					<= `BFLOAT16_FRAC(__curr_in_b) << __WIDTH__BUFFER_BITS;
+				//__captured_in_a_shifted_frac
+				//	<= `BFLOAT16_FRAC(__curr_in_a) << __WIDTH__BUFFER_BITS;
+				//__captured_in_b_shifted_frac
+				//	<= `BFLOAT16_FRAC(__curr_in_b) << __WIDTH__BUFFER_BITS;
 
-				if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
-				begin
-					__d <= __curr_in_b.enc_exp - __curr_in_a.enc_exp;
-					//__temp_out_data.enc_exp <= __curr_in_b.enc_exp;
-				end
+				//if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
+				//begin
+				//	__d <= __curr_in_b.enc_exp - __curr_in_a.enc_exp;
+				//	//__temp_out_data.enc_exp <= __curr_in_b.enc_exp;
+				//end
 
-				else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
-				begin
-					__d <= __curr_in_a.enc_exp - __curr_in_b.enc_exp;
-					//__temp_out_data.enc_exp <= __curr_in_a.enc_exp;
-				end
+				//else // if (__curr_in_a.enc_exp >= __curr_in_b.enc_exp)
+				//begin
+				//	__d <= __curr_in_a.enc_exp - __curr_in_b.enc_exp;
+				//	//__temp_out_data.enc_exp <= __curr_in_a.enc_exp;
+				//end
 
 				//__temp_out_data.sign <= 0;
 			end
@@ -415,8 +433,8 @@ module Snow64BFloat16Add(input logic clk,
 		default:
 		begin
 			__state <= PkgSnow64BFloat16::StAddIdle;
-			out.data_valid <= 1;
-			out.can_accept_cmd <= 1;
+			//out.data_valid <= 1;
+			//out.can_accept_cmd <= 1;
 
 			//__ret_significand <= __temp_ret_significand;
 			//__temp_out_data <= __temp_out_data;
