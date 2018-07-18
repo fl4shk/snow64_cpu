@@ -27,5 +27,7 @@ a.out
 *.E
 *.html
 hdl/v_outputs
+hdl/*.sv
+hdl/generated_single_source_file
 *.stp
 algorithm_tests/*

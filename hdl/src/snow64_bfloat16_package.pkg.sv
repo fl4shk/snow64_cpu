@@ -21,6 +21,22 @@ typedef enum logic [`MSB_POS__SNOW64_BFLOAT16_MUL_STATE:0]
 	StMulFinishing
 } StateMul;
 
+typedef enum logic [`MSB_POS__SNOW64_BFLOAT16_DIV_STATE:0]
+{
+	StDivIdle,
+
+	StDivStartingLongDiv,
+
+	StDivInner0,
+	StDivInner1,
+	StDivInner2,
+	StDivInner3,
+	StDivInner4,
+
+	StDivFinishing
+} StateDiv;
+
+// Helper class
 typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_BFLOAT16_ENC_SIGN:0] sign;
@@ -34,7 +50,7 @@ typedef struct packed
 {
 	logic start;
 	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] a, b;
-} PortIn_Oper;
+} PortIn_BinOp;
 typedef struct packed
 {
 	logic data_valid, can_accept_cmd;

@@ -266,7 +266,7 @@
 //
 //endmodule
 
-//module ShowBFloat16Mul;
+//module ShowBFloat16Div;
 //
 //	logic __clk;
 //
@@ -281,73 +281,85 @@
 //		__clk = !__clk;
 //	end
 //
-//	logic __in_bfloat16_mul_start;
-//	PkgSnow64BFloat16::BFloat16 __in_bfloat16_mul_a, __in_bfloat16_mul_b;
+//	logic __dummy;
+//	logic __in_bfloat16_div_start;
+//	PkgSnow64BFloat16::BFloat16 __in_bfloat16_div_a, __in_bfloat16_div_b;
 //
-//	PkgSnow64BFloat16::PortIn_Oper __in_bfloat16_mul;
-//	PkgSnow64BFloat16::PortOut_Oper __out_bfloat16_mul;
+//	PkgSnow64BFloat16::PortIn_Oper __in_bfloat16_div;
+//	PkgSnow64BFloat16::PortOut_Oper __out_bfloat16_div;
 //
-//	assign __in_bfloat16_mul.start = __in_bfloat16_mul_start;
-//	assign __in_bfloat16_mul.a = __in_bfloat16_mul_a;
-//	assign __in_bfloat16_mul.b = __in_bfloat16_mul_b;
+//	assign __in_bfloat16_div.start = __in_bfloat16_div_start;
+//	assign __in_bfloat16_div.a = __in_bfloat16_div_a;
+//	assign __in_bfloat16_div.b = __in_bfloat16_div_b;
 //
-//	Snow64BFloat16Mul __inst_bfloat16_mul(.clk(__clk),
-//		.in(__in_bfloat16_mul), .out(__out_bfloat16_mul));
+//	Snow64BFloat16Div __inst_bfloat16_div(.clk(__clk),
+//		.in(__in_bfloat16_div), .out(__out_bfloat16_div));
 //
 //
 //	initial
 //	begin
-//		__in_bfloat16_mul_start = 0;
-//		//__in_bfloat16_mul_a = 'h4120;
-//		//__in_bfloat16_mul_b = 'h3dcc;
-//		__in_bfloat16_mul_a = 'h80;
-//		//__in_bfloat16_mul_b = 'h3f80;
-//		//__in_bfloat16_mul_b = 'h80;
-//		__in_bfloat16_mul_b = 'h3f81;
+//		for (longint i=0; i<20; i=i+1)
+//		begin
+//		__dummy = 0;
+//		__in_bfloat16_div_start = 0;
+//		//__in_bfloat16_div_a = 'h81;
+//		//__in_bfloat16_div_b = 'hb0b5;
+//		//__in_bfloat16_div_a = 'h4080;
+//		//__in_bfloat16_div_b = 'h80;
+//		__in_bfloat16_div_a = 'h80;
+//		__in_bfloat16_div_b = 'h80 + i;
 //
-//		//__in_bfloat16_mul_a = 'hc120;
-//		////__in_bfloat16_mul_b = 'h3dcc;
-//		//__in_bfloat16_mul_b = 'h3dcc | 'h8000;
-//		////__in_bfloat16_mul_a = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS;
-//		////__in_bfloat16_mul_b = PkgSnow64BFloat16::MAX_SATURATED_DATA_ABS
-//		////	| 'h8000;
 //
 //		#2
-//		__in_bfloat16_mul_start = 1;
+//		__in_bfloat16_div_start = 1;
 //
 //		#2
-//		__in_bfloat16_mul_start = 0;
+//		__in_bfloat16_div_start = 0;
 //
-//		#2
-//		$display("__out_bfloat16_mul.data:  %h",
-//			__out_bfloat16_mul.data);
-//		#2
-//		$display("__out_bfloat16_mul.data:  %h",
-//			__out_bfloat16_mul.data);
+//		while (!__out_bfloat16_div.data_valid)
+//		begin
+//			#2
+//			__dummy = !__dummy;
+//		end
 //		//#2
-//		//$display("__out_bfloat16_mul.data:  %h",
-//		//	__out_bfloat16_mul.data);
+//		//#2
+//		//#2
+//		//#2
+//		//#2
+//		//#2
+//
+//		#2
+//		$display("__out_bfloat16_div.data:  %h",
+//			__out_bfloat16_div.data);
+//		#2
+//		$display("__out_bfloat16_div.data:  %h",
+//			__out_bfloat16_div.data);
+//
+//		//#2
+//		//$display("__out_bfloat16_div.data:  %h",
+//		//	__out_bfloat16_div.data);
 //
 //		//for (longint i=0; i<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF); i=i+1)
 //		//begin
-//		//	__in_bfloat16_mul_a = i;
+//		//	__in_bfloat16_div_a = i;
 //
 //		//	for (longint j=0;
 //		//		j<(1 << `WIDTH__SNOW64_BFLOAT16_ITSELF);
 //		//		j=j+1)
 //		//	begin
-//		//		__in_bfloat16_mul_start = 1;
-//		//		__in_bfloat16_mul_b = j;
+//		//		__in_bfloat16_div_start = 1;
+//		//		__in_bfloat16_div_b = j;
 //
 //		//		#2
-//		//		__in_bfloat16_mul_start = 0;
+//		//		__in_bfloat16_div_start = 0;
 //
 //		//		#2
 //		//		#2
 //		//		$display("%d",
-//		//			__out_bfloat16_mul.data);
+//		//			__out_bfloat16_div.data);
 //		//	end
 //		//end
+//		end
 //
 //		$finish;
 //	end

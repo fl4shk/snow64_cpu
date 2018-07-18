@@ -1,11 +1,8 @@
 `include "src/snow64_long_div_u16_by_u8_defines.header.sv"
 
-module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
-	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_A:0] in_a,
-	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_B:0] in_b,
-	output logic out_data_valid, out_can_accept_cmd,
-	output logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_OUT_DATA:0]
-		out_data);
+module Snow64LongDivU16ByU8Radix8(input logic clk, 
+	input PkgSnow64LongDiv::PortIn_LongDivU16ByU8 in,
+	output PkgSnow64LongDiv::PortOut_LongDivU16ByU8 out);
 
 	localparam __WIDTH__IN_A = `WIDTH__SNOW64_LONG_DIV_U16_BY_U8_IN_A;
 	localparam __MSB_POS__IN_A = `MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_A;
@@ -41,7 +38,8 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 	localparam __MSB_POS__CAPTURED_B = `WIDTH2MP(__WIDTH__CAPTURED_B);
 
 	localparam __WIDTH__ALMOST_OUT_DATA = __WIDTH__CAPTURED_A;
-	localparam __MSB_POS__ALMOST_OUT_DATA = __WIDTH__ALMOST_OUT_DATA;
+	localparam __MSB_POS__ALMOST_OUT_DATA
+		= `WIDTH2MP(__WIDTH__ALMOST_OUT_DATA);
 
 
 	enum logic
@@ -59,6 +57,7 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 	logic [__MSB_POS__CAPTURED_A:0] __captured_a;
 	//logic [__MSB_POS__CAPTURED_B:0] __captured_b;
 	logic [__MSB_POS__ALMOST_OUT_DATA:0] __almost_out_data;
+	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
 
 	logic [__MSB_POS__TEMP:0] __current;
 
@@ -70,7 +69,10 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 	logic [__MSB_POS__ARR_INDEX:0] 
 		__search_result_0_1_2_3, __search_result_4_5_6_7;
 
-	assign out_data = __almost_out_data;
+	assign out.data = __almost_out_data;
+	assign out.data_valid = __temp_out_data_valid;
+	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
+	//always @(*) out.data = __almost_out_data;
 
 	task iteration_end;
 		input [__MSB_POS__ARR_INDEX:0] some_index;
@@ -105,12 +107,6 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 			begin
 				__almost_out_data[2:0] = some_index;
 			end
-
-			//default:
-			//begin
-			//	// Eek!
-			//	out_data = 0;
-			//end
 		endcase
 
 		__current = __current - __mult_arr[some_index];
@@ -121,78 +117,8 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 	initial
 	begin
 		__state = StIdle;
-		out_data_valid = 0;
-		out_can_accept_cmd = 1;
-	end
-
-	always_ff @(posedge clk)
-	begin
-		case (__state)
-			StIdle:
-			begin
-				if (in_start)
-				begin
-					__state <= StWorking;
-
-					__mult_arr[0] <= 0;
-
-					if (in_b != 0)
-					begin
-						__captured_a <= in_a;
-						//__captured_b <= in_b;
-
-						//__mult_arr[0] <= in_b * 0;
-						__mult_arr[1] <= in_b * 1;
-						__mult_arr[2] <= in_b * 2;
-						__mult_arr[3] <= in_b * 3;
-
-						__mult_arr[4] <= in_b * 4;
-						__mult_arr[5] <= in_b * 5;
-						__mult_arr[6] <= in_b * 6;
-						__mult_arr[7] <= in_b * 7;
-					end
-
-					else // if (in_b == 0)
-					begin
-						// Ensure "correct" results (return a zero when
-						// in_b is zero)
-						__captured_a <= 0;
-						//__captured_b <= 1;
-
-						//__mult_arr[0] <= 0;
-						__mult_arr[1] <= 1;
-						__mult_arr[2] <= 2;
-						__mult_arr[3] <= 3;
-
-						__mult_arr[4] <= 4;
-						__mult_arr[5] <= 5;
-						__mult_arr[6] <= 6;
-						__mult_arr[7] <= 7;
-					end
-
-					__i <= __STARTING_I_VALUE;
-
-					out_data_valid <= 0;
-					out_can_accept_cmd <= 0;
-				end
-			end
-
-
-			StWorking:
-			begin
-				//__i <= __i - __NUM_BITS_PER_ITERATION;
-				__i <= __i - 1;
-
-				// Last iteration means we should update __state
-				//if (__i == __NUM_BITS_PER_ITERATION - 1)
-				if (__i == 0)
-				begin
-					__state <= StIdle;
-					out_data_valid <= 1;
-					out_can_accept_cmd <= 1;
-				end
-			end
-		endcase
+		__temp_out_data_valid = 0;
+		__temp_out_can_accept_cmd = 1;
 	end
 
 	always @(posedge clk)
@@ -202,6 +128,7 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 			begin
 				__current = 0;
 				__almost_out_data = 0;
+
 			end
 
 			StWorking:
@@ -305,9 +232,88 @@ module Snow64LongDivU16ByU8Radix8(input logic clk, in_start,
 				end
 
 				//iteration_end(__search_result);
+
+				//if (__i == 0)
+				//begin
+				//	out_data_valid = 1;
+				//	out_can_accept_cmd = 1;
+				//end
 			end
 
 		endcase
 	end
+
+	always_ff @(posedge clk)
+	begin
+		//$display("Snow64LongDivU16ByU8Radix8 in.start:  %h", in.start);
+		case (__state)
+			StIdle:
+			begin
+				if (in.start)
+				begin
+					__state <= StWorking;
+
+					__mult_arr[0] <= 0;
+
+					if (in.b != 0)
+					begin
+						__captured_a <= in.a;
+						//__captured_b <= in.b;
+
+						//__mult_arr[0] <= in.b * 0;
+						__mult_arr[1] <= in.b * 1;
+						__mult_arr[2] <= in.b * 2;
+						__mult_arr[3] <= in.b * 3;
+
+						__mult_arr[4] <= in.b * 4;
+						__mult_arr[5] <= in.b * 5;
+						__mult_arr[6] <= in.b * 6;
+						__mult_arr[7] <= in.b * 7;
+					end
+
+					else // if (in.b == 0)
+					begin
+						// Ensure "correct" results (return a zero when
+						// in.b is zero)
+						__captured_a <= 0;
+						//__captured_b <= 1;
+
+						//__mult_arr[0] <= 0;
+						__mult_arr[1] <= 1;
+						__mult_arr[2] <= 2;
+						__mult_arr[3] <= 3;
+
+						__mult_arr[4] <= 4;
+						__mult_arr[5] <= 5;
+						__mult_arr[6] <= 6;
+						__mult_arr[7] <= 7;
+					end
+
+					__i <= __STARTING_I_VALUE;
+
+					__temp_out_data_valid <= 0;
+					__temp_out_can_accept_cmd <= 0;
+				end
+			end
+
+
+			StWorking:
+			begin
+				//__i <= __i - __NUM_BITS_PER_ITERATION;
+				__i <= __i - 1;
+
+				// Last iteration means we should update __state
+				//if (__i == __NUM_BITS_PER_ITERATION - 1)
+				if (__i == 0)
+				begin
+					__state <= StIdle;
+					__temp_out_data_valid <= 1;
+					__temp_out_can_accept_cmd <= 1;
+					//$display("Snow64LongDivU16ByU8Radix8:  stuff");
+				end
+			end
+		endcase
+	end
+
 
 endmodule

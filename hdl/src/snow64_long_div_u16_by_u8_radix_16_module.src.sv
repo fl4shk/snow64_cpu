@@ -1,11 +1,8 @@
 `include "src/snow64_long_div_u16_by_u8_defines.header.sv"
 
-module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
-	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_A:0] in_a,
-	input logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_B:0] in_b,
-	output logic out_data_valid, out_can_accept_cmd,
-	output logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_OUT_DATA:0]
-		out_data);
+module Snow64LongDivU16ByU8Radix16(input logic clk, 
+	input PkgSnow64LongDiv::PortIn_LongDivU16ByU8 in,
+	output PkgSnow64LongDiv::PortOut_LongDivU16ByU8 out);
 
 	localparam __WIDTH__IN_A = `WIDTH__SNOW64_LONG_DIV_U16_BY_U8_IN_A;
 	localparam __MSB_POS__IN_A = `MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_IN_A;
@@ -21,6 +18,9 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 	localparam __WIDTH__MULT_ARR = 12;
 	localparam __MSB_POS__MULT_ARR = `WIDTH2MP(__WIDTH__MULT_ARR);
 
+	localparam __WIDTH__ALMOST_OUT_DATA = __WIDTH__IN_A;
+	localparam __MSB_POS__ALMOST_OUT_DATA
+		= `WIDTH2MP(__WIDTH__ALMOST_OUT_DATA);
 
 	localparam __RADIX = 16;
 	localparam __NUM_BITS_PER_ITERATION = 4;
@@ -61,10 +61,14 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 	logic [1:0] __i;
 	logic [__MSB_POS__TEMP:0] __j;
 
+	logic [__MSB_POS__ALMOST_OUT_DATA:0] __almost_out_data;
+
 	logic [__MSB_POS__ARR_INDEX:0] __search_result;
 	//logic [__MSB_POS__ARR_INDEX:0]
 	//	__search_result_0_1_2_3, __search_result_4_5_6_7,
 	//	__search_result_8_9_10_11, __search_result_12_13_14_15;
+
+	always @(*) out.data = __almost_out_data;
 
 	task iteration_end;
 		input [__MSB_POS__ARR_INDEX:0] some_index;
@@ -72,22 +76,22 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 		case (__i)
 			2'd3:
 			begin
-				out_data[15:12] = some_index;
+				__almost_out_data[15:12] = some_index;
 			end
 
 			2'd2:
 			begin
-				out_data[11:8] = some_index;
+				__almost_out_data[11:8] = some_index;
 			end
 
 			2'd1:
 			begin
-				out_data[7:4] = some_index;
+				__almost_out_data[7:4] = some_index;
 			end
 
 			2'd0:
 			begin
-				out_data[3:0] = some_index;
+				__almost_out_data[3:0] = some_index;
 			end
 		endcase
 
@@ -99,100 +103,10 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 	initial
 	begin
 		__state = StIdle;
-		out_data_valid = 0;
-		out_can_accept_cmd = 1;
+		out.data_valid = 0;
+		out.can_accept_cmd = 1;
 	end
 
-	always_ff @(posedge clk)
-	begin
-		case (__state)
-			StIdle:
-			begin
-				if (in_start)
-				begin
-					__state <= StWorking;
-
-					__mult_arr[0] <= 0;
-
-					if (in_b != 0)
-					begin
-						__captured_a <= in_a;
-						//__captured_b <= in_b;
-
-						//__mult_arr[0] <= in_b * 0;
-						__mult_arr[1] <= in_b * 1;
-						__mult_arr[2] <= in_b * 2;
-						__mult_arr[3] <= in_b * 3;
-
-						__mult_arr[4] <= in_b * 4;
-						__mult_arr[5] <= in_b * 5;
-						__mult_arr[6] <= in_b * 6;
-						__mult_arr[7] <= in_b * 7;
-
-						__mult_arr[8] <= in_b * 8;
-						__mult_arr[9] <= in_b * 9;
-						__mult_arr[10] <= in_b * 10;
-						__mult_arr[11] <= in_b * 11;
-
-						__mult_arr[12] <= in_b * 12;
-						__mult_arr[13] <= in_b * 13;
-						__mult_arr[14] <= in_b * 14;
-						__mult_arr[15] <= in_b * 15;
-
-					end
-
-					else // if (in_b == 0)
-					begin
-						// Ensure "correct" results (return a zero when
-						// in_b is zero)
-						__captured_a <= 0;
-						//__captured_b <= 1;
-
-						//__mult_arr[0] <= 0;
-						__mult_arr[1] <= 1;
-						__mult_arr[2] <= 2;
-						__mult_arr[3] <= 3;
-
-						__mult_arr[4] <= 4;
-						__mult_arr[5] <= 5;
-						__mult_arr[6] <= 6;
-						__mult_arr[7] <= 7;
-
-						__mult_arr[8] <= 8;
-						__mult_arr[9] <= 9;
-						__mult_arr[10] <= 10;
-						__mult_arr[11] <= 11;
-
-						__mult_arr[12] <= 12;
-						__mult_arr[13] <= 13;
-						__mult_arr[14] <= 14;
-						__mult_arr[15] <= 15;
-					end
-
-					__i <= __STARTING_I_VALUE;
-
-					out_data_valid <= 0;
-					out_can_accept_cmd <= 0;
-				end
-			end
-
-
-			StWorking:
-			begin
-				//__i <= __i - __NUM_BITS_PER_ITERATION;
-				__i <= __i - 1;
-
-				// Last iteration means we should update __state
-				//if (__i == __NUM_BITS_PER_ITERATION - 1)
-				if (__i == 0)
-				begin
-					__state <= StIdle;
-					out_data_valid <= 1;
-					out_can_accept_cmd <= 1;
-				end
-			end
-		endcase
-	end
 
 	always @(posedge clk)
 	begin
@@ -200,7 +114,12 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 			StIdle:
 			begin
 				__current = 0;
-				out_data = 0;
+
+				if (in.start)
+				begin
+					out.data_valid = 1;
+					out.can_accept_cmd = 1;
+				end
 			end
 
 			StWorking:
@@ -388,8 +307,100 @@ module Snow64LongDivU16ByU8Radix16(input logic clk, in_start,
 					end
 				end
 				//iteration_end(__search_result);
+
+				if (__i == 0)
+				begin
+					out.data_valid = 1;
+					out.can_accept_cmd = 1;
+				end
 			end
 
+		endcase
+	end
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+			StIdle:
+			begin
+				if (in.start)
+				begin
+					__state <= StWorking;
+
+					__mult_arr[0] <= 0;
+
+					if (in.b != 0)
+					begin
+						__captured_a <= in.a;
+						//__captured_b <= in.b;
+
+						//__mult_arr[0] <= in.b * 0;
+						__mult_arr[1] <= in.b * 1;
+						__mult_arr[2] <= in.b * 2;
+						__mult_arr[3] <= in.b * 3;
+
+						__mult_arr[4] <= in.b * 4;
+						__mult_arr[5] <= in.b * 5;
+						__mult_arr[6] <= in.b * 6;
+						__mult_arr[7] <= in.b * 7;
+
+						__mult_arr[8] <= in.b * 8;
+						__mult_arr[9] <= in.b * 9;
+						__mult_arr[10] <= in.b * 10;
+						__mult_arr[11] <= in.b * 11;
+
+						__mult_arr[12] <= in.b * 12;
+						__mult_arr[13] <= in.b * 13;
+						__mult_arr[14] <= in.b * 14;
+						__mult_arr[15] <= in.b * 15;
+
+					end
+
+					else // if (in.b == 0)
+					begin
+						// Ensure "correct" results (return a zero when
+						// in.b is zero)
+						__captured_a <= 0;
+						//__captured_b <= 1;
+
+						//__mult_arr[0] <= 0;
+						__mult_arr[1] <= 1;
+						__mult_arr[2] <= 2;
+						__mult_arr[3] <= 3;
+
+						__mult_arr[4] <= 4;
+						__mult_arr[5] <= 5;
+						__mult_arr[6] <= 6;
+						__mult_arr[7] <= 7;
+
+						__mult_arr[8] <= 8;
+						__mult_arr[9] <= 9;
+						__mult_arr[10] <= 10;
+						__mult_arr[11] <= 11;
+
+						__mult_arr[12] <= 12;
+						__mult_arr[13] <= 13;
+						__mult_arr[14] <= 14;
+						__mult_arr[15] <= 15;
+					end
+
+					__i <= __STARTING_I_VALUE;
+				end
+			end
+
+
+			StWorking:
+			begin
+				//__i <= __i - __NUM_BITS_PER_ITERATION;
+				__i <= __i - 1;
+
+				// Last iteration means we should update __state
+				//if (__i == __NUM_BITS_PER_ITERATION - 1)
+				if (__i == 0)
+				begin
+					__state <= StIdle;
+				end
+			end
 		endcase
 	end
 

@@ -1,7 +1,7 @@
 `include "src/snow64_bfloat16_defines.header.sv"
 
 module Snow64BFloat16Mul(input logic clk,
-	input PkgSnow64BFloat16::PortIn_Oper in,
+	input PkgSnow64BFloat16::PortIn_BinOp in,
 	output PkgSnow64BFloat16::PortOut_Oper out);
 
 	localparam __WIDTH__TEMP = 16;
@@ -115,8 +115,9 @@ module Snow64BFloat16Mul(input logic clk,
 			begin
 				{__temp_out_data.enc_mantissa, __temp_out_data.enc_exp}
 				= {__temp_ret_significand
-				[`MSB_POS__SNOW64_BFLOAT16_ENC_MANTISSA:0],
-				__temp_ret_enc_exp[`MSB_POS__SNOW64_BFLOAT16_ENC_EXP:0]};
+					[`MSB_POS__SNOW64_BFLOAT16_ENC_MANTISSA:0],
+					__temp_ret_enc_exp
+					[`MSB_POS__SNOW64_BFLOAT16_ENC_EXP:0]};
 			end
 
 			{out.data_valid, out.can_accept_cmd, out.data}
