@@ -27,11 +27,7 @@ typedef enum logic [`MSB_POS__SNOW64_BFLOAT16_DIV_STATE:0]
 
 	StDivStartingLongDiv,
 
-	StDivInner0,
-	StDivInner1,
-	StDivInner2,
-	StDivInner3,
-	StDivInner4,
+	StDivAfterLongDiv,
 
 	StDivFinishing
 } StateDiv;
@@ -51,6 +47,7 @@ typedef struct packed
 	logic start;
 	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] a, b;
 } PortIn_BinOp;
+
 typedef struct packed
 {
 	logic data_valid, can_accept_cmd;

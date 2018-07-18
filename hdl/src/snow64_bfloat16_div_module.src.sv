@@ -26,7 +26,7 @@ module Snow64BFloat16Div(input logic clk,
 	PkgSnow64LongDiv::PortIn_LongDivU16ByU8 __in_long_div;
 	PkgSnow64LongDiv::PortOut_LongDivU16ByU8 __out_long_div;
 
-	Snow64LongDivU16ByU8Radix8 __inst_long_div(.clk(clk),
+	Snow64LongDivU16ByU8Radix16 __inst_long_div(.clk(clk),
 		.in(__in_long_div), .out(__out_long_div));
 
 	assign {__curr_in_a, __curr_in_b} = {in.a, in.b};
@@ -39,9 +39,9 @@ module Snow64BFloat16Div(input logic clk,
 	//assign __in_long_div_start = in.start;
 	assign __in_long_div_start = in.start && out.can_accept_cmd;
 
-	assign __in_long_div_a = {`BFLOAT16_FRAC(__curr_in_a),
+	assign __in_long_div_a = {`SNOW64_BFLOAT16_FRAC(__curr_in_a),
 		{__WIDTH__BUFFER_BITS{1'b0}}};
-	assign __in_long_div_b = `BFLOAT16_FRAC(__curr_in_b);
+	assign __in_long_div_b = `SNOW64_BFLOAT16_FRAC(__curr_in_b);
 
 
 	assign __in_long_div = {__in_long_div_start, __in_long_div_a,
@@ -81,9 +81,9 @@ module Snow64BFloat16Div(input logic clk,
 
 				//__temp_a_significand <= __in_long_div_a;
 				//__temp_b_significand <= __in_long_div_b;
-				__temp_a_significand <= {`BFLOAT16_FRAC(__curr_in_a),
+				__temp_a_significand <= {`SNOW64_BFLOAT16_FRAC(__curr_in_a),
 					{__WIDTH__BUFFER_BITS{1'b0}}};
-				__temp_b_significand <= `BFLOAT16_FRAC(__curr_in_b);
+				__temp_b_significand <= `SNOW64_BFLOAT16_FRAC(__curr_in_b);
 
 				__temp_out_data_valid <= 0;
 				__temp_out_can_accept_cmd <= 0;
@@ -106,7 +106,7 @@ module Snow64BFloat16Div(input logic clk,
 			//	&& __out_long_div.data_valid)
 			if (__out_long_div.data_valid)
 			begin
-				__state <= PkgSnow64BFloat16::StDivInner0;
+				__state <= PkgSnow64BFloat16::StDivAfterLongDiv;
 
 				// Special case of division by zero:  just set the whole
 				// thing to zero
@@ -143,7 +143,7 @@ module Snow64BFloat16Div(input logic clk,
 			end
 		end
 
-		PkgSnow64BFloat16::StDivInner0:
+		PkgSnow64BFloat16::StDivAfterLongDiv:
 		begin
 			__state <= PkgSnow64BFloat16::StDivFinishing;
 			//$display("__temp_ret_significand:  %h",

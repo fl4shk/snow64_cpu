@@ -42,12 +42,12 @@ module Snow64BFloat16Mul(input logic clk,
 				{__temp_a_significand, __temp_b_significand}
 					= {`ZERO_EXTEND(__WIDTH__TEMP,
 					`WIDTH__SNOW64_BFLOAT16_FRAC,
-					`BFLOAT16_FRAC(__curr_in_a)),
+					`SNOW64_BFLOAT16_FRAC(__curr_in_a)),
 					`ZERO_EXTEND(__WIDTH__TEMP,
 					`WIDTH__SNOW64_BFLOAT16_FRAC,
-					`BFLOAT16_FRAC(__curr_in_b))};
-				//__temp_a_significand = `BFLOAT16_FRAC(__curr_in_a);
-				//__temp_b_significand = `BFLOAT16_FRAC(__curr_in_b);
+					`SNOW64_BFLOAT16_FRAC(__curr_in_b))};
+				//__temp_a_significand = `SNOW64_BFLOAT16_FRAC(__curr_in_a);
+				//__temp_b_significand = `SNOW64_BFLOAT16_FRAC(__curr_in_b);
 
 				//$display("temp a, temp b:  %h, %h", __temp_a_significand,
 				//	__temp_b_significand);
