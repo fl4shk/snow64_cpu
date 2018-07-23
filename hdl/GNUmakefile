@@ -18,7 +18,7 @@ BUILD_VVP:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -o $(PROJ).vvp
 BUILD_VHDL:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvhdl -o generated_vhdl/$(PROJ).vhd
 BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvlog95 -o generated_verilog/$(PROJ).v
 #BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tverilog -o generated_verilog/$(PROJ).v
-PREPROCESS:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -E -o generated_single_source_file/$(PROJ).sv
+PREPROCESS:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -E -o generated_single_source_files/$(PROJ).sv
 
 
 PKG_FILES := $(foreach DIR,$(SRC_DIRS),$(wildcard $(DIR)/*.pkg.sv))

@@ -514,7 +514,7 @@ endmodule
 // the (many) inputs to this module are all coming from existing sources.
 module __Snow64GetSubAluResults
 	(input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
-	input logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0]
+	input logic [`MSB_POS__SNOW64_SIZE_8:0]
 		in_sub_alu_0_out_data, in_sub_alu_1_out_data,
 		in_sub_alu_2_out_data, in_sub_alu_3_out_data,
 		in_sub_alu_4_out_data, in_sub_alu_5_out_data,
@@ -530,7 +530,7 @@ module __Snow64GetSubAluResults
 		in_sub_alu_4_out_lts, in_sub_alu_5_out_lts,
 		in_sub_alu_6_out_lts, in_sub_alu_7_out_lts,
 	
-	output logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] 
+	output logic [`MSB_POS__SNOW64_SIZE_64:0] 
 		out_data, out_ltu, out_lts);
 
 
@@ -697,7 +697,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	`undef MAKE_BIT_SHIFTER_PORTS
 	`undef MAKE_BIT_SHIFTER_INSTANCES
 
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] 
+	logic [`MSB_POS__SNOW64_SIZE_64:0] 
 		__out_get_sub_alu_results_data, 
 		__out_get_sub_alu_results_ltu, __out_get_sub_alu_results_lts;
 
@@ -907,7 +907,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			end
 			PkgSnow64Alu::OpSlt:
 			begin
-				case (in.signedness)
+				case (in.type_signedness)
 				0:
 				begin
 					out.data = __out_get_sub_alu_results_ltu;
@@ -976,7 +976,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			end
 			PkgSnow64Alu::OpShr:
 			begin
-				case (in.signedness)
+				case (in.type_signedness)
 				0:
 				begin
 					case (in.type_size)
@@ -1134,12 +1134,12 @@ endmodule
 
 
 module DebugSnow64Alu
-	(input logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] in_a, in_b,
+	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
 	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
 	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
 	input logic in_signedness,
 
-	output logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] out_data);
+	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
 
 	PkgSnow64Alu::PortIn_Alu __in_alu;
 	PkgSnow64Alu::PortOut_Alu __out_alu;
@@ -1150,7 +1150,7 @@ module DebugSnow64Alu
 	always @(*) __in_alu.b = in_b;
 	always @(*) __in_alu.oper = in_oper;
 	always @(*) __in_alu.type_size = in_type_size;
-	always @(*) __in_alu.signedness = in_signedness;
+	always @(*) __in_alu.type_signedness = in_signedness;
 
 	always @(*) out_data = __out_alu.data;
 endmodule

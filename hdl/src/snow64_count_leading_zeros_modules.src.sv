@@ -97,3 +97,43 @@ module Snow64CountLeadingZeros32
 	end
 
 endmodule
+
+module Snow64CountLeadingZeros64
+	(input logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_IN:0] in,
+	output logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_OUT:0] out);
+
+	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_IN:0] __temp;
+
+	//always_comb
+	always @(*)
+	begin
+		if (in == 0)
+		begin
+			out = 64;
+		end
+
+		else
+		begin
+			__temp = in;
+			out[6] = 0;
+
+			__temp = __temp[63:32] ? __temp[63:32] : {1'b1, __temp[31:0]};
+			out[5] = __temp[32];
+
+			__temp = __temp[31:16] ? __temp[31:16] : {1'b1, __temp[15:0]};
+			out[4] = __temp[16];
+
+			__temp = __temp[15:8] ? __temp[15:8] : {1'b1, __temp[7:0]};
+			out[3] = __temp[8];
+
+			__temp = __temp[7:4] ? __temp[7:4] : {1'b1, __temp[3:0]};
+			out[2] = __temp[4];
+
+			__temp = __temp[3:2] ? __temp[3:2] : {1'b1, __temp[1:0]};
+			out[1] = __temp[2];
+
+			out[0] = !__temp[1];
+		end
+	end
+
+endmodule

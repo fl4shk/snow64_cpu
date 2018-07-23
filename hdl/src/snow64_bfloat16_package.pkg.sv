@@ -55,5 +55,38 @@ typedef struct packed
 } PortOut_Oper;
 
 
+//// For casting an integer to a BFloat16
+//typedef struct packed
+//{
+//	logic start;
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] to_cast;
+//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
+//	logic type_signedness;
+//} PortIn_CastFromInt;
+//
+//typedef struct packed
+//{
+//	logic data_valid, can_accept_cmd;
+//	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] data;
+//} PortOut_CastFromInt;
+//
+//
+//// For casting a BFloat16 to an integer 
+//typedef struct packed
+//{
+//	logic start;
+//	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] to_cast;
+//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
+//	logic type_signedness;
+//} PortIn_CastToInt;
+//
+//typedef struct packed
+//{
+//	logic data_valid, can_accept_cmd;
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] data;
+//} PortOut_CastToInt;
+
+
+
 
 endpackage : PkgSnow64BFloat16

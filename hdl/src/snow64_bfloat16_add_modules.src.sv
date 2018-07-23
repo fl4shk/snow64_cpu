@@ -203,9 +203,11 @@ module __RealSnow64BFloat16Add(input logic clk,
 					__temp_out_data.enc_exp = __curr_in_a.enc_exp;
 				end
 				__captured_in_a_shifted_frac
-					= `SNOW64_BFLOAT16_FRAC(__curr_in_a) << __WIDTH__BUFFER_BITS;
+					= `SNOW64_BFLOAT16_FRAC(__curr_in_a)
+					<< __WIDTH__BUFFER_BITS;
 				__captured_in_b_shifted_frac
-					= `SNOW64_BFLOAT16_FRAC(__curr_in_b) << __WIDTH__BUFFER_BITS;
+					= `SNOW64_BFLOAT16_FRAC(__curr_in_b)
+					<< __WIDTH__BUFFER_BITS;
 
 				if (__curr_in_a.enc_exp < __curr_in_b.enc_exp)
 				begin

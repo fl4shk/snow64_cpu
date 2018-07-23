@@ -2,12 +2,12 @@
 `include "src/snow64_cpu_defines.header.sv"
 
 module DebugSnow64Alu
-	(input logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] in_a, in_b,
+	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
 	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
 	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
 	input logic in_signedness,
 
-	output logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] out_data);
+	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
 
 	PkgSnow64Alu::PortIn_Alu __in_alu;
 	PkgSnow64Alu::PortOut_Alu __out_alu;
@@ -18,7 +18,7 @@ module DebugSnow64Alu
 	always @(*) __in_alu.b = in_b;
 	always @(*) __in_alu.oper = in_oper;
 	always @(*) __in_alu.type_size = in_type_size;
-	always @(*) __in_alu.signedness = in_signedness;
+	always @(*) __in_alu.type_signedness = in_signedness;
 
 	always @(*) out_data = __out_alu.data;
 endmodule
@@ -328,27 +328,27 @@ endmodule
 //
 //	SetLessThanSigned __inst_slts_32_1
 //		(.in_a_msb_pos(__in_a_sliced_32.data_1
-//		[`MSB_POS__SNOW64_ALU_32_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_32]),
 //		.in_b_msb_pos(__in_b_sliced_32.data_1
-//		[`MSB_POS__SNOW64_ALU_32_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_32]),
 //		.in_sub_result_msb_pos(__temp_data_sliced_32.data_1
-//		[`MSB_POS__SNOW64_ALU_32_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_32]),
 //		.out_data(__out_slts_data_sliced_32_1));
 //	SetLessThanSigned __inst_slts_32_0
 //		(.in_a_msb_pos(__in_a_sliced_32.data_0
-//		[`MSB_POS__SNOW64_ALU_32_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_32]),
 //		.in_b_msb_pos(__in_b_sliced_32.data_0
-//		[`MSB_POS__SNOW64_ALU_32_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_32]),
 //		.in_sub_result_msb_pos(__temp_data_sliced_32.data_0
-//		[`MSB_POS__SNOW64_ALU_32_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_32]),
 //		.out_data(__out_slts_data_sliced_32_0));
 //	SetLessThanSigned __inst_slts_64_0
 //		(.in_a_msb_pos(__in_a_sliced_64.data_0
-//		[`MSB_POS__SNOW64_ALU_64_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_64]),
 //		.in_b_msb_pos(__in_b_sliced_64.data_0
-//		[`MSB_POS__SNOW64_ALU_64_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_64]),
 //		.in_sub_result_msb_pos(__temp_data_sliced_64.data_0
-//		[`MSB_POS__SNOW64_ALU_64_DATA_INOUT]),
+//		[`MSB_POS__SNOW64_SIZE_64]),
 //		.out_data(__out_slts_data_sliced_64_0));
 //
 //
@@ -367,7 +367,7 @@ endmodule
 //
 //		PkgSnow64Cpu::TypSz32:
 //		begin
-//			if ((in.oper == PkgSnow64Alu::OpSlt) && in.signedness)
+//			if ((in.oper == PkgSnow64Alu::OpSlt) && in.type_signedness)
 //			begin
 //				out.data 
 //					= {`ZERO_EXTEND(32, 1, __out_slts_data_sliced_32_1),
@@ -382,7 +382,7 @@ endmodule
 //
 //		PkgSnow64Cpu::TypSz64:
 //		begin
-//			if ((in.oper == PkgSnow64Alu::OpSlt) && in.signedness)
+//			if ((in.oper == PkgSnow64Alu::OpSlt) && in.type_signedness)
 //			begin
 //				out.data = __out_slts_data_sliced_64_0;
 //			end
@@ -401,7 +401,7 @@ endmodule
 //		case (in.oper)
 //		PkgSnow64Alu::OpSlt:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_8
@@ -445,7 +445,7 @@ endmodule
 //
 //		PkgSnow64Alu::OpShr:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_8
@@ -504,7 +504,7 @@ endmodule
 //		case (in.oper)
 //		PkgSnow64Alu::OpSlt:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_16
@@ -536,7 +536,7 @@ endmodule
 //
 //		PkgSnow64Alu::OpShr:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_16
@@ -597,7 +597,7 @@ endmodule
 //
 //		PkgSnow64Alu::OpSlt:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_32
@@ -623,7 +623,7 @@ endmodule
 //		end
 //		PkgSnow64Alu::OpShr:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_32
@@ -684,7 +684,7 @@ endmodule
 //
 //		PkgSnow64Alu::OpSlt:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_64.data_0
@@ -706,7 +706,7 @@ endmodule
 //
 //		PkgSnow64Alu::OpShr:
 //		begin
-//			case (in.signedness)
+//			case (in.type_signedness)
 //			0:
 //			begin
 //				__temp_data_sliced_64.data_0 = __out_lsr_data_sliced_64_0;
@@ -1350,7 +1350,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpSlt:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				__out_data_sliced_8
@@ -1435,7 +1435,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpShr:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				//__out_data_sliced_8
@@ -1544,7 +1544,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpSlt:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				__out_data_sliced_16
@@ -1605,7 +1605,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpShr:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				//__out_data_sliced_16
@@ -1699,7 +1699,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpSlt:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				__out_data_sliced_32
@@ -1748,7 +1748,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpShr:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				//__out_data_sliced_32
@@ -1822,7 +1822,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpSlt:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				__out_data_sliced_64
@@ -1865,7 +1865,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 		PkgSnow64Alu::OpShr:
 		begin
-			case (in.signedness)
+			case (in.type_signedness)
 			0:
 			begin
 				//__out_data_sliced_64

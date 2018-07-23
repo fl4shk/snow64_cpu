@@ -45,7 +45,7 @@ localparam __DEBUG_ENUM__OP_DUMMY_4 = OpDummy4;
 
 
 localparam __DEBUG_PORT_MSB_POS__DATA_INOUT
-	= `MSB_POS__SNOW64_ALU_64_DATA_INOUT;
+	= `MSB_POS__SNOW64_SIZE_64;
 localparam __DEBUG_PORT_MSB_POS__OPER = `MSB_POS__SNOW64_ALU_OPER;
 localparam __DEBUG_PORT_MSB_POS__TYPE_SIZE
 	= `MSB_POS__SNOW64_CPU_TYPE_SIZE;
@@ -53,14 +53,14 @@ localparam __DEBUG_PORT_MSB_POS__TYPE_SIZE
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] a, b;
+	logic [`MSB_POS__SNOW64_SIZE_64:0] a, b;
 	logic [`MSB_POS__SNOW64_ALU_OPER:0] oper;
 	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
-	logic signedness;
+	logic type_signedness;
 } PortIn_Alu;
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] data;
+	logic [`MSB_POS__SNOW64_SIZE_64:0] data;
 } PortOut_Alu;
 
 
@@ -72,13 +72,13 @@ typedef struct packed
 //	logic [`MSB_POS__SNOW64_ALU_OPER:0] oper;
 //	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
 //	//logic type_size;
-//	//logic signedness;
+//	//logic type_signedness;
 //	logic [`MSB_POS__SNOW64_SUB_ALU_INDEX:0] index;
 //} PortIn_SubAlu;
 //
 //typedef struct packed
 //{
-//	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] data;
+//	logic [`MSB_POS__SNOW64_SIZE_8:0] data;
 //
 //	// Note that "carry" also is equivalent to the "sltu" result.
 //	logic carry, lts;
@@ -87,24 +87,24 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_ALU_8_DATA_INOUT:0] 
+	logic [`MSB_POS__SNOW64_SIZE_8:0] 
 		data_7, data_6, data_5, data_4, data_3, data_2, data_1, data_0;
 } SlicedAlu8DataInout;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_ALU_16_DATA_INOUT:0] 
+	logic [`MSB_POS__SNOW64_SIZE_16:0] 
 		data_3, data_2, data_1, data_0;
 } SlicedAlu16DataInout;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_ALU_32_DATA_INOUT:0] data_1, data_0;
+	logic [`MSB_POS__SNOW64_SIZE_32:0] data_1, data_0;
 } SlicedAlu32DataInout;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] data_0;
+	logic [`MSB_POS__SNOW64_SIZE_64:0] data_0;
 } SlicedAlu64DataInout;
 
 
@@ -126,13 +126,13 @@ localparam LAST_INDEX__SUB_ALU_PORTS
 //typedef struct packed
 //{
 //	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
-//	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] to_slice;
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] to_slice;
 //} PortIn_SliceAndExtend;
 //
 //typedef struct packed
 //{
 //	logic [`LAST_INDEX__SNOW64_ALU_SLICE_AND_EXTEND_OUT_DATA:0]
-//		[`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] sliced_data;
+//		[`MSB_POS__SNOW64_SIZE_64:0] sliced_data;
 //} PortOut_SliceAndExtend;
 
 endpackage : PkgSnow64Alu

@@ -159,12 +159,12 @@
 
 //module TestBenchAlu;
 //
-//	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] __in_alu_a, __in_alu_b;
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] __in_alu_a, __in_alu_b;
 //	logic [`MSB_POS__SNOW64_ALU_OPER:0] __in_alu_oper;
 //	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] __in_alu_type_size;
 //	logic __in_alu_signedness;
 //
-//	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] __out_alu_data;
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] __out_alu_data;
 //
 //
 //	DebugSnow64Alu __inst_debug_alu(.in_a(__in_alu_a), .in_b(__in_alu_b),
@@ -175,7 +175,7 @@
 //	assign __in_alu_type_size = PkgSnow64Cpu::TypSz8;
 //	assign __in_alu_signedness = 1;
 //
-//	logic [`MSB_POS__SNOW64_ALU_64_DATA_INOUT:0] __oracle_alu_out_data;
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] __oracle_alu_out_data;
 //
 //	initial
 //	begin
