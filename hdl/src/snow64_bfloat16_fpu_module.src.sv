@@ -78,6 +78,7 @@ module Snow64BFloat16Fpu(input logic clk,
 
 	task tell_outside_world_data_ready
 		(input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] n_out_data);
+		__state <= StIdle;
 		out.data_valid <= 1;
 		out.can_accept_cmd <= 1;
 		out.data <= n_out_data;
