@@ -210,7 +210,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 	} __state;
 
 	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
-	logic [`MSB_POS__SNOW64_SIZE_64:0] __temp_out_data;
+	logic [`MSB_POS__SNOW64_SIZE_64:0] __temp_out_data, __temp_for_sticky;
 
 	assign out.data_valid = __temp_out_data_valid;
 	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
@@ -260,6 +260,28 @@ module Snow64BFloat16CastToInt(input logic clk,
 		begin
 			__temp_out_data = {1'b1, 63'h0};
 		end
+		endcase
+	endtask
+
+	task set_sticky;
+		case (__captured_in_type_size)
+			PkgSnow64Cpu::TypSz32:
+			begin
+				__temp_for_sticky = (~((32'h1
+					<< (`WIDTH2MP(__width) - {16'h0, __abs_curr_exp}))
+					- 32'h1));
+				__sticky = (__temp_out_data[31:0] 
+					& __temp_for_sticky[31:0]) != 0;
+			end
+
+			PkgSnow64Cpu::TypSz64:
+			begin
+				__temp_for_sticky = (~((64'h1
+					<< (`WIDTH2MP(__width) - {48'h0, __abs_curr_exp}))
+					- 64'h1));
+				__sticky = (__temp_out_data[63:0] 
+					& __temp_for_sticky[63:0]) != 0;
+			end
 		endcase
 	endtask
 
@@ -333,13 +355,16 @@ module Snow64BFloat16CastToInt(input logic clk,
 
 		StInner:
 		begin
-			$display("StInner stuffs:  %h\t\t%h, %h, %h",
-				__temp_out_data, __curr_exp, __abs_curr_exp,
-				__max_shift_amount);
+			//$display("StInner stuffs:  %h\t\t%h, %h, %h",
+			//	__temp_out_data, __curr_exp, __abs_curr_exp,
+			//	__max_shift_amount);
 			if (__curr_exp != __abs_curr_exp)
 			begin
+				//$display("StInner:  __curr_exp < 0");
 				if (__abs_curr_exp <= __max_shift_amount)
 				begin
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp <= __max_shift_amount");
 					__temp_out_data = __temp_out_data >> __abs_curr_exp;
 
 
@@ -351,26 +376,31 @@ module Snow64BFloat16CastToInt(input logic clk,
 				end
 				else
 				begin
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp > __max_shift_amount");
 					__temp_out_data = 0;
 				end
 			end
 			else // if (__curr_exp == __abs_curr_exp)
 			begin
-				$display("__curr_exp == __abs_curr_exp");
+				//$display("StInner:  __curr_exp >= 0");
 				if (__abs_curr_exp <= __max_shift_amount)
 				begin
-					$display("<=");
-					if (__abs_curr_exp == 0)
-					begin
-						__sticky = __temp_out_data != 0;
-					end
-					else // if (__abs_curr_exp != 0)
-					begin
-						__sticky = `GET_BITS_WITH_RANGE(__temp_out_data,
-							`MSB_POS__SNOW64_SIZE_64,
-							(`MSB_POS__SNOW64_SIZE_64 - __abs_curr_exp))
-							!= 0;
-					end
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp <= __max_shift_amount");
+					//if (__abs_curr_exp == 0)
+					//begin
+					//	__sticky = `GET_BITS_WITH_RANGE(__temp_out_data,
+					//		`WIDTH2MP(__width), 0) != 0;
+					//end
+					//else // if (__abs_curr_exp != 0)
+					//begin
+					//	__sticky = `GET_BITS_WITH_RANGE(__temp_out_data,
+					//		`WIDTH2MP(__width),
+					//		(`WIDTH2MP(__width) - __abs_curr_exp))
+					//		!= 0;
+					//end
+					set_sticky();
 
 					__temp_out_data = __temp_out_data << __abs_curr_exp;
 
@@ -379,21 +409,24 @@ module Snow64BFloat16CastToInt(input logic clk,
 					begin
 						__temp_out_data = -__temp_out_data;
 					end
+
+					//$display("StInner last __temp_out_data:  %h",
+					//	__temp_out_data);
 				end
 
 				else // if (__abs_curr_exp > __max_shift_amount)
 				begin
-					$display(">");
-					$display("__abs_curr_exp > __max_shift_amount");
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp > __max_shift_amount");
 
-					$display("stuffs:  %h\t\t%h, %h, %h\t\t%h, %h, %h",
-						__captured_in_type_signedness,
-						__captured_in_type_size,
-						__curr_exp, __width,
-						__captured_in_to_cast.enc_exp,
-						`SNOW64_BFLOAT16_MAX_ENC_EXP,
-						(__captured_in_to_cast.enc_exp
-						!= `SNOW64_BFLOAT16_MAX_ENC_EXP));
+					//$display("stuffs:  %h\t\t%h, %h, %h\t\t%h, %h, %h",
+					//	__captured_in_type_signedness,
+					//	__captured_in_type_size,
+					//	__curr_exp, __width,
+					//	__captured_in_to_cast.enc_exp,
+					//	`SNOW64_BFLOAT16_MAX_ENC_EXP,
+					//	(__captured_in_to_cast.enc_exp
+					//	!= `SNOW64_BFLOAT16_MAX_ENC_EXP));
 
 					__temp_out_data = 0;
 
@@ -417,7 +450,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 						end
 						else // if (__captured_in_type_signedness)
 						begin
-							$display("set_to_max_signed()");
+							//$display("set_to_max_signed()");
 							set_to_max_signed();
 						end
 					end
@@ -430,6 +463,8 @@ module Snow64BFloat16CastToInt(input logic clk,
 			// I have no idea what's up with this strange behavior,
 			// but this is what I had to do to get it to properly
 			// match what IEEE floats do on my x86-64 laptop.
+
+			//$display("StFinishing:  %h", __sticky);
 
 			if ((__curr_exp == __abs_curr_exp)
 				&& (__abs_curr_exp <= __max_shift_amount)
