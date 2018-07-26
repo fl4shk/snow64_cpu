@@ -25,14 +25,17 @@ module Snow64BFloat16Fpu(input logic clk,
 	logic __out_submodule_slt; // slt is on an island by itself
 
 
-	always @(*) __in_submodule_add.start = in.start
+	always @(*) __in_submodule_add.start = (__state == StIdle) && in.start
 		&& ((in.oper == PkgSnow64BFloat16::OpAdd)
 		|| (in.oper == PkgSnow64BFloat16::OpAddAgain));
-	always @(*) __in_submodule_sub.start = in.start
+
+	always @(*) __in_submodule_sub.start = (__state == StIdle) && in.start
 		&& (in.oper == PkgSnow64BFloat16::OpSub);
-	always @(*) __in_submodule_mul.start = in.start
+
+	always @(*) __in_submodule_mul.start = (__state == StIdle) && in.start
 		&& (in.oper == PkgSnow64BFloat16::OpMul);
-	always @(*) __in_submodule_div.start = in.start
+
+	always @(*) __in_submodule_div.start = (__state == StIdle) && in.start
 		&& (in.oper == PkgSnow64BFloat16::OpDiv);
 
 	always @(*) __in_submodule_add.a = in.a;
