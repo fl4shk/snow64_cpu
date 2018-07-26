@@ -76,7 +76,7 @@ module Snow64BFloat16Fpu(input logic clk,
 		out.can_accept_cmd <= 0;
 	endtask
 
-	task tell_outside_world_data_ready
+	task switch_to_idle
 		(input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] n_out_data);
 		__state <= StIdle;
 		out.data_valid <= 1;
@@ -133,7 +133,7 @@ module Snow64BFloat16Fpu(input logic clk,
 			begin
 				if (__out_submodule_add.data_valid)
 				begin
-					tell_outside_world_data_ready(__out_submodule_add.data);
+					switch_to_idle(__out_submodule_add.data);
 				end
 			end
 
@@ -141,22 +141,21 @@ module Snow64BFloat16Fpu(input logic clk,
 			begin
 				if (__out_submodule_sub.data_valid)
 				begin
-					tell_outside_world_data_ready(__out_submodule_sub.data);
+					switch_to_idle(__out_submodule_sub.data);
 				end
 			end
 
 			PkgSnow64BFloat16::OpSlt:
 			begin
-				tell_outside_world_data_ready
-					(`ZERO_EXTEND(`WIDTH__SNOW64_BFLOAT16_ITSELF, 1,
-					__out_submodule_slt));
+				switch_to_idle(`ZERO_EXTEND(`WIDTH__SNOW64_BFLOAT16_ITSELF,
+					1, __out_submodule_slt));
 			end
 
 			PkgSnow64BFloat16::OpMul:
 			begin
 				if (__out_submodule_mul.data_valid)
 				begin
-					tell_outside_world_data_ready(__out_submodule_mul.data);
+					switch_to_idle(__out_submodule_mul.data);
 				end
 			end
 
@@ -164,7 +163,7 @@ module Snow64BFloat16Fpu(input logic clk,
 			begin
 				if (__out_submodule_div.data_valid)
 				begin
-					tell_outside_world_data_ready(__out_submodule_div.data);
+					switch_to_idle(__out_submodule_div.data);
 				end
 			end
 
@@ -172,7 +171,7 @@ module Snow64BFloat16Fpu(input logic clk,
 			begin
 				if (__out_submodule_add.data_valid)
 				begin
-					tell_outside_world_data_ready(__out_submodule_add.data);
+					switch_to_idle(__out_submodule_add.data);
 				end
 			end
 			endcase
