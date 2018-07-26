@@ -105,7 +105,10 @@ module Snow64BFloat16CastFromInt(input logic clk,
 
 					PkgSnow64Cpu::TypSz64:
 					begin
-						__temp_abs_data = in.to_cast;
+						//__temp_abs_data = in.to_cast;
+						//__temp_abs_data = in.to_cast;
+						__temp_abs_data = in.to_cast[63]
+							? (-in.to_cast[63:0]) : in.to_cast[63:0];
 						__width = 64;
 						__temp_out_data.sign = in.to_cast[63];
 					end
