@@ -569,55 +569,55 @@ module Snow64BFloat16CastToInt(input logic clk,
 endmodule
 
 
-module DebugSnow64BFloat16CastFromInt(input logic clk,
-	input logic in_start,
-	input logic [`MSB_POS__SNOW64_SIZE_64:0] in_to_cast,
-	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
-	input logic in_type_signedness,
-	output logic out_data_valid, out_can_accept_cmd,
-	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
-
-	PkgSnow64BFloat16::PortIn_CastFromInt __in_cast_from_int;
-	PkgSnow64BFloat16::PortOut_CastFromInt __out_cast_from_int;
-
-	Snow64BFloat16CastFromInt __inst_cast_from_int(.clk(clk),
-		.in(__in_cast_from_int), .out(__out_cast_from_int));
-
-
-	always @(*) __in_cast_from_int.start = in_start;
-	always @(*) __in_cast_from_int.to_cast = in_to_cast;
-	always @(*) __in_cast_from_int.type_size = in_type_size;
-	always @(*) __in_cast_from_int.type_signedness = in_type_signedness;
-
-	assign out_data_valid = __out_cast_from_int.data_valid;
-	assign out_can_accept_cmd = __out_cast_from_int.can_accept_cmd;
-	assign out_data = __out_cast_from_int.data;
-
-endmodule
-
-
-module DebugSnow64BFloat16CastToInt(input logic clk,
-	input logic in_start,
-	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_to_cast,
-	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
-	input logic in_type_signedness,
-	output logic out_data_valid, out_can_accept_cmd,
-	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
-
-	PkgSnow64BFloat16::PortIn_CastToInt __in_cast_to_int;
-	PkgSnow64BFloat16::PortOut_CastToInt __out_cast_to_int;
-
-	Snow64BFloat16CastToInt __inst_cast_to_int(.clk(clk),
-		.in(__in_cast_to_int), .out(__out_cast_to_int));
-
-
-	always @(*) __in_cast_to_int.start = in_start;
-	always @(*) __in_cast_to_int.to_cast = in_to_cast;
-	always @(*) __in_cast_to_int.type_size = in_type_size;
-	always @(*) __in_cast_to_int.type_signedness = in_type_signedness;
-
-	assign out_data_valid = __out_cast_to_int.data_valid;
-	assign out_can_accept_cmd = __out_cast_to_int.can_accept_cmd;
-	assign out_data = __out_cast_to_int.data;
-
-endmodule
+//module DebugSnow64BFloat16CastFromInt(input logic clk,
+//	input logic in_start,
+//	input logic [`MSB_POS__SNOW64_SIZE_64:0] in_to_cast,
+//	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
+//	input logic in_type_signedness,
+//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
+//
+//	PkgSnow64BFloat16::PortIn_CastFromInt __in_cast_from_int;
+//	PkgSnow64BFloat16::PortOut_CastFromInt __out_cast_from_int;
+//
+//	Snow64BFloat16CastFromInt __inst_cast_from_int(.clk(clk),
+//		.in(__in_cast_from_int), .out(__out_cast_from_int));
+//
+//
+//	always @(*) __in_cast_from_int.start = in_start;
+//	always @(*) __in_cast_from_int.to_cast = in_to_cast;
+//	always @(*) __in_cast_from_int.type_size = in_type_size;
+//	always @(*) __in_cast_from_int.type_signedness = in_type_signedness;
+//
+//	assign out_data_valid = __out_cast_from_int.data_valid;
+//	assign out_can_accept_cmd = __out_cast_from_int.can_accept_cmd;
+//	assign out_data = __out_cast_from_int.data;
+//
+//endmodule
+//
+//
+//module DebugSnow64BFloat16CastToInt(input logic clk,
+//	input logic in_start,
+//	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_to_cast,
+//	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
+//	input logic in_type_signedness,
+//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
+//
+//	PkgSnow64BFloat16::PortIn_CastToInt __in_cast_to_int;
+//	PkgSnow64BFloat16::PortOut_CastToInt __out_cast_to_int;
+//
+//	Snow64BFloat16CastToInt __inst_cast_to_int(.clk(clk),
+//		.in(__in_cast_to_int), .out(__out_cast_to_int));
+//
+//
+//	always @(*) __in_cast_to_int.start = in_start;
+//	always @(*) __in_cast_to_int.to_cast = in_to_cast;
+//	always @(*) __in_cast_to_int.type_size = in_type_size;
+//	always @(*) __in_cast_to_int.type_signedness = in_type_signedness;
+//
+//	assign out_data_valid = __out_cast_to_int.data_valid;
+//	assign out_can_accept_cmd = __out_cast_to_int.can_accept_cmd;
+//	assign out_data = __out_cast_to_int.data;
+//
+//endmodule

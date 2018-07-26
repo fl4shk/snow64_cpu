@@ -5,6 +5,10 @@
 
 `include "src/snow64_cpu_defines.header.sv"
 
+`define WIDTH__SNOW64_BFLOAT16_FPU_OPER 4
+`define MSB_POS__SNOW64_BFLOAT16_FPU_OPER \
+	`WIDTH2MP(`WIDTH__SNOW64_BFLOAT16_FPU_OPER)
+
 `define WIDTH__SNOW64_BFLOAT16_ITSELF 16
 `define MSB_POS__SNOW64_BFLOAT16_ITSELF \
 	`WIDTH2MP(`WIDTH__SNOW64_BFLOAT16_ITSELF)
@@ -63,5 +67,7 @@
 	? {1'b1, x.enc_mantissa} \
 	: {{`WIDTH__SNOW64_BFLOAT16_FRAC{1'b0}}})
 
+`define SNOW64_ABS(val, high_bit) \
+	val[high_bit] ? (-val[high_bit:0]) : val[high_bit:0]
 
 `endif		// src__slash__snow64_bfloat16_defines_header_sv

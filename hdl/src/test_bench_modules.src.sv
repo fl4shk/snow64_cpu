@@ -286,7 +286,7 @@
 //	PkgSnow64BFloat16::BFloat16 __in_bfloat16_div_a, __in_bfloat16_div_b;
 //
 //	PkgSnow64BFloat16::PortIn_Oper __in_bfloat16_div;
-//	PkgSnow64BFloat16::PortOut_Oper __out_bfloat16_div;
+//	PkgSnow64BFloat16::PortOut_BinOp __out_bfloat16_div;
 //
 //	assign __in_bfloat16_div.start = __in_bfloat16_div_start;
 //	assign __in_bfloat16_div.a = __in_bfloat16_div_a;

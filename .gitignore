@@ -28,6 +28,6 @@ a.out
 *.html
 hdl/v_outputs
 hdl/*.sv
-hdl/generated_single_source_file
+hdl/generated_single_source_files
 *.stp
 algorithm_tests/*

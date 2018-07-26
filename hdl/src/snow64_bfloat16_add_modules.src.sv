@@ -2,7 +2,7 @@
 
 module __RealSnow64BFloat16Add(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 
 
@@ -447,7 +447,7 @@ endmodule
 
 module Snow64BFloat16Add(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk), .in(in),
 		.out(out));
@@ -455,7 +455,7 @@ endmodule
 
 module Snow64BFloat16Sub(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 	PkgSnow64BFloat16::PortIn_BinOp __in_bfloat16_add;
 	PkgSnow64BFloat16::BFloat16 __in_b, __in_bfloat16_add_b;

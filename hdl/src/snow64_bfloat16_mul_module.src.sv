@@ -2,7 +2,7 @@
 
 module Snow64BFloat16Mul(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 	localparam __WIDTH__TEMP = 16;
 	localparam __MSB_POS__TEMP = `WIDTH2MP(__WIDTH__TEMP);
