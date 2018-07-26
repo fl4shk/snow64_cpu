@@ -366,3 +366,31 @@
 //
 //
 //endmodule
+
+//module TestBFloat16CastFromInt;
+//	logic __clk;
+//
+//	initial
+//	begin
+//		__clk = 0;
+//	end
+//
+//	always
+//	begin
+//		#1
+//		__clk = !__clk;
+//	end
+//
+//	PkgSnow64BFloat16::PortIn_CastFromInt __in_bfloat16_cast_from_int;
+//	PkgSnow64BFloat16::PortOut_CastFromInt __out_bfloat16_cast_from_int;
+//
+//	Snow64BFloat16CastFromInt(.clk(clk), .in(__in_bfloat16_cast_from_int),
+//		.out(__out_bfloat16_cast_from_int));
+//
+//
+//	initial
+//	begin
+//		__in_bfloat16_cast_from_int = 0;
+//	end
+//
+//endmodule
