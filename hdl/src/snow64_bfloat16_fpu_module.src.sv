@@ -166,6 +166,11 @@ module Snow64BFloat16Fpu(input logic clk,
 				out.data = __out_submodule_div.data;
 			end
 
+			PkgSnow64BFloat16::OpAddAgain:
+			begin
+				out.data = __out_submodule_add.data;
+			end
+
 			default:
 			begin
 				out.data = 0;
