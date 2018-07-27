@@ -145,6 +145,7 @@ module Snow64BFloat16Div(input logic clk,
 
 		PkgSnow64BFloat16::StDivAfterLongDiv:
 		begin
+			//$display("StDivAfterLongDiv");
 			__state <= PkgSnow64BFloat16::StDivFinishing;
 			//$display("__temp_ret_significand:  %h",
 			//	__temp_ret_significand);
@@ -203,3 +204,10 @@ module Snow64BFloat16Div(input logic clk,
 	end
 
 endmodule
+
+//module DebugSnow64BFloat16Div(input logic clk,
+//	input PkgSnow64BFloat16::PortIn_BinOp in,
+//	output PkgSnow64BFloat16::PortOut_BinOp out);
+//
+//	Snow64BFloat16Div __inst_bfloat16_div(.clk(clk), .in(in), .out(out));
+//endmodule

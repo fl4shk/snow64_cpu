@@ -1,27 +1,27 @@
 `include "src/snow64_alu_defines.header.sv"
 `include "src/snow64_cpu_defines.header.sv"
 
-module DebugSnow64Alu
-	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
-	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
-	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
-	input logic in_signedness,
-
-	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
-
-	PkgSnow64Alu::PortIn_Alu __in_alu;
-	PkgSnow64Alu::PortOut_Alu __out_alu;
-
-	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
-
-	always @(*) __in_alu.a = in_a;
-	always @(*) __in_alu.b = in_b;
-	always @(*) __in_alu.oper = in_oper;
-	always @(*) __in_alu.type_size = in_type_size;
-	always @(*) __in_alu.type_signedness = in_signedness;
-
-	always @(*) out_data = __out_alu.data;
-endmodule
+//module DebugSnow64Alu
+//	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
+//	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
+//	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
+//	input logic in_signedness,
+//
+//	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
+//
+//	PkgSnow64Alu::PortIn_Alu __in_alu;
+//	PkgSnow64Alu::PortOut_Alu __out_alu;
+//
+//	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
+//
+//	always @(*) __in_alu.a = in_a;
+//	always @(*) __in_alu.b = in_b;
+//	always @(*) __in_alu.oper = in_oper;
+//	always @(*) __in_alu.type_size = in_type_size;
+//	always @(*) __in_alu.type_signedness = in_signedness;
+//
+//	always @(*) out_data = __out_alu.data;
+//endmodule
 
 
 //module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,

@@ -5,8 +5,9 @@
 // single-cycle.
 // To keep from changing the test bench, this module TEMPORARILY has an
 // interface that the test bench knows about.  That will change later!
-module Snow64BFloat16Slt(input PkgSnow64BFloat16::PortIn_BinOp in,
-	output logic out);
+module Snow64BFloat16Slt(input logic clk,
+	input PkgSnow64BFloat16::PortIn_BinOp in,
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 	localparam __WIDTH__DATA_NO_SIGN = `WIDTH__SNOW64_BFLOAT16_ITSELF - 1;
 	localparam __MSB_POS__DATA_NO_SIGN = `WIDTH2MP(__WIDTH__DATA_NO_SIGN);
@@ -25,46 +26,47 @@ module Snow64BFloat16Slt(input PkgSnow64BFloat16::PortIn_BinOp in,
 	assign __in_a_frac = `SNOW64_BFLOAT16_FRAC(__in_a);
 	assign __in_b_frac = `SNOW64_BFLOAT16_FRAC(__in_b);
 
-	//initial
-	//begin
-	//	out.data_valid = 1;
-	//	out.can_accept_cmd = 1;
-	//	out.data = 0;
-	//end
-
 	initial
 	begin
-		out = 0;
+		out.data_valid = 0;
+		out.can_accept_cmd = 1;
+		out.data = 0;
 	end
 
-	// Combinational logic
-	always @(*)
+	//// Combinational logic
+	//always @(*)
+	always_ff @(posedge clk)
 	begin
-		case ({__in_a.sign, __in_b.sign})
-		2'b00:
+		if (in.start)
 		begin
-			// Equal signs, both non-negative
-			out = (__in_a_no_sign < __in_b_no_sign);
-		end
+			case ({__in_a.sign, __in_b.sign})
+			2'b00:
+			begin
+				// Equal signs, both non-negative
+				out.data <= (__in_a_no_sign < __in_b_no_sign);
+			end
 
-		2'b01:
-		begin
-			out = 0;
-		end
+			2'b01:
+			begin
+				out.data <= 0;
+			end
 
-		2'b10:
-		begin
-			// The only time opposite signs allows "<" to return false
-			// is when ((__in_a == 0.0f) && (__in_b == -0.0f))
-			out = (!((__in_a_frac == 0) && (__in_b_frac == 0)));
-		end
+			2'b10:
+			begin
+				// The only time opposite signs allows "<" to return false
+				// is when ((__in_a == 0.0f) && (__in_b == -0.0f))
+				out.data <= (!((__in_a_frac == 0) && (__in_b_frac == 0)));
+			end
 
-		2'b11:
-		begin
-			// Equal signs, both non-positive
-			out = (__in_b_no_sign < __in_a_no_sign);
+			2'b11:
+			begin
+				// Equal signs, both non-positive
+				out.data <= (__in_b_no_sign < __in_a_no_sign);
+			end
+			endcase
+
+			out.data_valid <= 1;
 		end
-		endcase
 	end
 
 endmodule

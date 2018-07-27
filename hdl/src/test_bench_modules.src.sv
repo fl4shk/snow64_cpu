@@ -394,3 +394,26 @@
 //	end
 //
 //endmodule
+
+//module TestBFloat16Fpu;
+//
+//	logic __clk;
+//
+//	initial
+//	begin
+//		__clk = 0;
+//	end
+//
+//	always
+//	begin
+//		#1
+//		__clk = !__clk;
+//	end
+//
+//	PkgSnow64BFloat16::PortIn_Fpu __in_bfloat16_fpu;
+//	PkgSnow64BFloat16::PortOut_Fpu __out_bfloat16_fpu;
+//
+//	Snow64BFloat16Fpu __inst_bfloat16_fpu(.clk(clk),
+//		.in(__in_bfloat16_fpu), .out(__out_bfloat16_fpu));
+//
+//endmodule
