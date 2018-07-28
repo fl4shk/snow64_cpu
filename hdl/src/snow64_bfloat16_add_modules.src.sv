@@ -1,6 +1,6 @@
 `include "src/snow64_bfloat16_defines.header.sv"
 
-module __RealSnow64BFloat16Add(input logic clk,
+module Snow64BFloat16Add(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
 	output PkgSnow64BFloat16::PortOut_BinOp out);
 
@@ -445,31 +445,31 @@ module __RealSnow64BFloat16Add(input logic clk,
 	end
 endmodule
 
-module Snow64BFloat16Add(input logic clk,
-	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_BinOp out);
-
-	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk), .in(in),
-		.out(out));
-endmodule
-
-module Snow64BFloat16Sub(input logic clk,
-	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_BinOp out);
-
-	PkgSnow64BFloat16::PortIn_BinOp __in_bfloat16_add;
-	PkgSnow64BFloat16::BFloat16 __in_b, __in_bfloat16_add_b;
-
-	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk),
-		.in(__in_bfloat16_add), .out(out));
-
-	always @(*) __in_b = in.b;
-	always @(*) __in_bfloat16_add_b.sign = !__in_b.sign;
-	always @(*) __in_bfloat16_add_b.enc_exp = __in_b.enc_exp;
-	always @(*) __in_bfloat16_add_b.enc_mantissa = __in_b.enc_mantissa;
-
-	always @(*) __in_bfloat16_add.start = in.start;
-	always @(*) __in_bfloat16_add.a = in.a;
-	always @(*) __in_bfloat16_add.b = __in_bfloat16_add_b;
-
-endmodule
+//module Snow64BFloat16Add(input logic clk,
+//	input PkgSnow64BFloat16::PortIn_BinOp in,
+//	output PkgSnow64BFloat16::PortOut_BinOp out);
+//
+//	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk), .in(in),
+//		.out(out));
+//endmodule
+//
+//module Snow64BFloat16Sub(input logic clk,
+//	input PkgSnow64BFloat16::PortIn_BinOp in,
+//	output PkgSnow64BFloat16::PortOut_BinOp out);
+//
+//	PkgSnow64BFloat16::PortIn_BinOp __in_bfloat16_add;
+//	PkgSnow64BFloat16::BFloat16 __in_b, __in_bfloat16_add_b;
+//
+//	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk),
+//		.in(__in_bfloat16_add), .out(out));
+//
+//	always @(*) __in_b = in.b;
+//	always @(*) __in_bfloat16_add_b.sign = !__in_b.sign;
+//	always @(*) __in_bfloat16_add_b.enc_exp = __in_b.enc_exp;
+//	always @(*) __in_bfloat16_add_b.enc_mantissa = __in_b.enc_mantissa;
+//
+//	always @(*) __in_bfloat16_add.start = in.start;
+//	always @(*) __in_bfloat16_add.a = in.a;
+//	always @(*) __in_bfloat16_add.b = __in_bfloat16_add_b;
+//
+//endmodule
