@@ -1,13 +1,8 @@
 include(src/include/misc_defines.m4)dnl
-define(`CODE',CONCAT3(`<code>',$1,`</code>'))dnl
-define(`BOLD',CONCAT3(`<b>',$1,`</b>'))dnl
-define(`ITALIC',CONCAT3(`<i>',$1,`</i>'))dnl
-define(`UNDERLINE',CONCAT3(`<u>',$1,`</u>'))dnl
 define(`OPCODE_GROUP',CONCAT(`Opcode Group:  ',$1))dnl
 dnl define(`OP_IMMFIELD',CONCAT(`Opcode (Immediate Field):  ',$1))dnl
 dnl define(`OP_RC',CONCAT(`Opcode (rC Field):  ',$1))dnl
 define(`OPCODE',CONCAT(`Opcode:  ',$1))dnl
-define(`NEWLINE',`<br>')dnl
 define(`SCALAR_MNEMONIC',CONCAT(`Scalar Mnemonic:  ',CODE(CONCAT($1,s))))dnl
 define(`VECTOR_MNEMONIC',CONCAT(`Vector Mnemonic:  ',CODE(CONCAT($1,v))))dnl
 define(`BOTH_MNEMONICS',SCALAR_MNEMONIC(`$1')
