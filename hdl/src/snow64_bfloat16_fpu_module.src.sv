@@ -1,28 +1,28 @@
 `include "src/snow64_bfloat16_defines.header.sv"
 
-module DebugSnow64BFloat16Fpu(input logic clk,
-	input logic in_start,
-	input logic [`MSB_POS__SNOW64_BFLOAT16_FPU_OPER:0] in_oper,
-	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_a, in_b,
-	output logic out_data_valid, out_can_accept_cmd,
-	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
-
-
-	PkgSnow64BFloat16::PortIn_Fpu __in_bfloat16_fpu;
-	PkgSnow64BFloat16::PortOut_Fpu __out_bfloat16_fpu;
-
-	always @(*) __in_bfloat16_fpu.start = in_start;
-	always @(*) __in_bfloat16_fpu.oper = in_oper;
-	always @(*) __in_bfloat16_fpu.a = in_a;
-	always @(*) __in_bfloat16_fpu.b = in_b;
-
-	assign out_data_valid = __out_bfloat16_fpu.data_valid;
-	assign out_can_accept_cmd = __out_bfloat16_fpu.can_accept_cmd;
-	assign out_data = __out_bfloat16_fpu.data;
-
-	Snow64BFloat16Fpu __inst_bfloat16_fpu(.clk(clk),
-		.in(__in_bfloat16_fpu), .out(__out_bfloat16_fpu));
-endmodule
+//module DebugSnow64BFloat16Fpu(input logic clk,
+//	input logic in_start,
+//	input logic [`MSB_POS__SNOW64_BFLOAT16_FPU_OPER:0] in_oper,
+//	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_a, in_b,
+//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
+//
+//
+//	PkgSnow64BFloat16::PortIn_Fpu __in_bfloat16_fpu;
+//	PkgSnow64BFloat16::PortOut_Fpu __out_bfloat16_fpu;
+//
+//	always @(*) __in_bfloat16_fpu.start = in_start;
+//	always @(*) __in_bfloat16_fpu.oper = in_oper;
+//	always @(*) __in_bfloat16_fpu.a = in_a;
+//	always @(*) __in_bfloat16_fpu.b = in_b;
+//
+//	assign out_data_valid = __out_bfloat16_fpu.data_valid;
+//	assign out_can_accept_cmd = __out_bfloat16_fpu.can_accept_cmd;
+//	assign out_data = __out_bfloat16_fpu.data;
+//
+//	Snow64BFloat16Fpu __inst_bfloat16_fpu(.clk(clk),
+//		.in(__in_bfloat16_fpu), .out(__out_bfloat16_fpu));
+//endmodule
 
 
 module Snow64BFloat16Fpu(input logic clk,

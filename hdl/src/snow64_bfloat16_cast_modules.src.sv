@@ -20,7 +20,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 	assign out.data = __temp_out_data;
 
 	logic [`MSB_POS__SNOW64_SIZE_64:0] __width;
-	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] __captured_in_type_size;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __captured_in_type_size;
 
 	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_IN:0] __temp_abs_data;
 	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_OUT:0] __out_clz64;
@@ -47,26 +47,26 @@ module Snow64BFloat16CastFromInt(input logic clk,
 				case (in.type_signedness)
 				0:
 				begin
-					case (in.type_size)
-					PkgSnow64Cpu::TypSz8:
+					case (in.int_type_size)
+					PkgSnow64Cpu::IntTypSz8:
 					begin
 						__temp_abs_data = {56'h0, in.to_cast[7:0]};
 						__width = 8;
 					end
 
-					PkgSnow64Cpu::TypSz16:
+					PkgSnow64Cpu::IntTypSz16:
 					begin
 						__temp_abs_data = {48'h0, in.to_cast[15:0]};
 						__width = 16;
 					end
 
-					PkgSnow64Cpu::TypSz32:
+					PkgSnow64Cpu::IntTypSz32:
 					begin
 						__temp_abs_data = {32'h0, in.to_cast[31:0]};
 						__width = 32;
 					end
 
-					PkgSnow64Cpu::TypSz64:
+					PkgSnow64Cpu::IntTypSz64:
 					begin
 						__temp_abs_data = in.to_cast;
 						__width = 64;
@@ -78,8 +78,8 @@ module Snow64BFloat16CastFromInt(input logic clk,
 
 				1:
 				begin
-					case (in.type_size)
-					PkgSnow64Cpu::TypSz8:
+					case (in.int_type_size)
+					PkgSnow64Cpu::IntTypSz8:
 					begin
 						__temp_abs_data = in.to_cast[7]
 							? (-in.to_cast[7:0]) : in.to_cast[7:0];
@@ -87,7 +87,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 						__temp_out_data.sign = in.to_cast[7];
 					end
 
-					PkgSnow64Cpu::TypSz16:
+					PkgSnow64Cpu::IntTypSz16:
 					begin
 						__temp_abs_data = in.to_cast[15]
 							? (-in.to_cast[15:0]) : in.to_cast[15:0];
@@ -95,7 +95,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 						__temp_out_data.sign = in.to_cast[15];
 					end
 
-					PkgSnow64Cpu::TypSz32:
+					PkgSnow64Cpu::IntTypSz32:
 					begin
 						__temp_abs_data = in.to_cast[31]
 							? (-in.to_cast[31:0]) : in.to_cast[31:0];
@@ -103,7 +103,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 						__temp_out_data.sign = in.to_cast[31];
 					end
 
-					PkgSnow64Cpu::TypSz64:
+					PkgSnow64Cpu::IntTypSz64:
 					begin
 						//__temp_abs_data = in.to_cast;
 						//__temp_abs_data = in.to_cast;
@@ -121,28 +121,28 @@ module Snow64BFloat16CastFromInt(input logic clk,
 		StFinishing:
 		begin
 			case (__captured_in_type_size)
-			PkgSnow64Cpu::TypSz8:
+			PkgSnow64Cpu::IntTypSz8:
 			begin
 				__temp_ret_enc_exp = `SNOW64_BFLOAT16_BIAS
 					+ (__width - `WIDTH__SNOW64_SIZE_64'h1) 
 					- (__out_clz64 - (64 - 8));
 			end
 
-			PkgSnow64Cpu::TypSz16:
+			PkgSnow64Cpu::IntTypSz16:
 			begin
 				__temp_ret_enc_exp = `SNOW64_BFLOAT16_BIAS
 					+ (__width - `WIDTH__SNOW64_SIZE_64'h1) 
 					- (__out_clz64 - (64 - 16));
 			end
 
-			PkgSnow64Cpu::TypSz32:
+			PkgSnow64Cpu::IntTypSz32:
 			begin
 				__temp_ret_enc_exp = `SNOW64_BFLOAT16_BIAS
 					+ (__width - `WIDTH__SNOW64_SIZE_64'h1) 
 					- (__out_clz64 - (64 - 32));
 			end
 
-			PkgSnow64Cpu::TypSz64:
+			PkgSnow64Cpu::IntTypSz64:
 			begin
 				__temp_ret_enc_exp = `SNOW64_BFLOAT16_BIAS
 					+ (__width - `WIDTH__SNOW64_SIZE_64'h1) 
@@ -183,7 +183,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 				__state <= StFinishing;
 				__temp_out_data_valid <= 0;
 				__temp_out_can_accept_cmd <= 0;
-				__captured_in_type_size <= in.type_size;
+				__captured_in_type_size <= in.int_type_size;
 			end
 		end
 
@@ -224,7 +224,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 	PkgSnow64BFloat16::BFloat16 __curr_in_to_cast, __captured_in_to_cast;
 	assign __curr_in_to_cast = in.to_cast;
 
-	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] __captured_in_type_size;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __captured_in_type_size;
 	logic __captured_in_type_signedness;
 
 	//logic [`MSB_POS__SNOW64_BFLOAT16_ENC_EXP:0]
@@ -241,25 +241,25 @@ module Snow64BFloat16CastToInt(input logic clk,
 	// function in my BFloat16 software implementation.
 	task set_to_max_signed;
 		case (__captured_in_type_size)
-		PkgSnow64Cpu::TypSz8:
+		PkgSnow64Cpu::IntTypSz8:
 		begin
 			__temp_out_data = {{(`WIDTH__SNOW64_SIZE_64
 				- `WIDTH__SNOW64_SIZE_8){1'b1}}, 1'b1, 7'h0};
 		end
 
-		PkgSnow64Cpu::TypSz16:
+		PkgSnow64Cpu::IntTypSz16:
 		begin
 			__temp_out_data = {{(`WIDTH__SNOW64_SIZE_64
 				- `WIDTH__SNOW64_SIZE_16){1'b1}}, 1'b1, 15'h0};
 		end
 
-		PkgSnow64Cpu::TypSz32:
+		PkgSnow64Cpu::IntTypSz32:
 		begin
 			__temp_out_data = {{(`WIDTH__SNOW64_SIZE_64
 				- `WIDTH__SNOW64_SIZE_32){1'b1}}, 1'b1, 31'h0};
 		end
 
-		PkgSnow64Cpu::TypSz64:
+		PkgSnow64Cpu::IntTypSz64:
 		begin
 			__temp_out_data = {1'b1, 63'h0};
 		end
@@ -268,7 +268,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 
 	task set_sticky;
 		case (__captured_in_type_size)
-			PkgSnow64Cpu::TypSz32:
+			PkgSnow64Cpu::IntTypSz32:
 			begin
 				__temp_for_sticky = (~((32'h1
 					<< (`WIDTH2MP(__width) - {16'h0, __abs_curr_exp}))
@@ -277,7 +277,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 					& __temp_for_sticky[31:0]) != 0;
 			end
 
-			PkgSnow64Cpu::TypSz64:
+			PkgSnow64Cpu::IntTypSz64:
 			begin
 				__temp_for_sticky = (~((64'h1
 					<< (`WIDTH2MP(__width) - {48'h0, __abs_curr_exp}))
@@ -328,26 +328,26 @@ module Snow64BFloat16CastToInt(input logic clk,
 					__abs_curr_exp = __curr_exp;
 				end
 
-				case (in.type_size)
-				PkgSnow64Cpu::TypSz8:
+				case (in.int_type_size)
+				PkgSnow64Cpu::IntTypSz8:
 				begin
 					__max_shift_amount = `MSB_POS__SNOW64_SIZE_8;
 					__width = `WIDTH__SNOW64_SIZE_8;
 				end
 
-				PkgSnow64Cpu::TypSz16:
+				PkgSnow64Cpu::IntTypSz16:
 				begin
 					__max_shift_amount = `MSB_POS__SNOW64_SIZE_16;
 					__width = `WIDTH__SNOW64_SIZE_16;
 				end
 
-				PkgSnow64Cpu::TypSz32:
+				PkgSnow64Cpu::IntTypSz32:
 				begin
 					__max_shift_amount = `MSB_POS__SNOW64_SIZE_32;
 					__width = `WIDTH__SNOW64_SIZE_32;
 				end
 
-				PkgSnow64Cpu::TypSz64:
+				PkgSnow64Cpu::IntTypSz64:
 				begin
 					__max_shift_amount = `MSB_POS__SNOW64_SIZE_64;
 					__width = `WIDTH__SNOW64_SIZE_64;
@@ -433,11 +433,11 @@ module Snow64BFloat16CastToInt(input logic clk,
 
 					__temp_out_data = 0;
 
-					//if ((__captured_in_type_size >= PkgSnow64Cpu::TypSz32)
+					//if ((__captured_in_type_size >= PkgSnow64Cpu::IntTypSz32)
 					//	&& (__curr_exp >= __width)
 					//	&& (__captured_in_to_cast.enc_exp
 					//	!= `SNOW64_BFLOAT16_MAX_ENC_EXP))
-					if ((__captured_in_type_size >= PkgSnow64Cpu::TypSz32)
+					if ((__captured_in_type_size >= PkgSnow64Cpu::IntTypSz32)
 						&& ({8'h00, __curr_exp} >= __width[15:0])
 						&& (__captured_in_to_cast.enc_exp
 						!= `SNOW64_BFLOAT16_MAX_ENC_EXP))
@@ -446,7 +446,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 						begin
 							if (__captured_in_to_cast.sign
 								&& (__captured_in_type_size
-								== PkgSnow64Cpu::TypSz64))
+								== PkgSnow64Cpu::IntTypSz64))
 							begin
 								set_to_max_signed();
 							end
@@ -471,12 +471,12 @@ module Snow64BFloat16CastToInt(input logic clk,
 
 			if ((__curr_exp == __abs_curr_exp)
 				&& (__abs_curr_exp <= __max_shift_amount)
-				&& (__captured_in_type_size >= PkgSnow64Cpu::TypSz32)
+				&& (__captured_in_type_size >= PkgSnow64Cpu::IntTypSz32)
 				&& __sticky)
 			begin
 				if (!__captured_in_type_signedness)
 				begin
-					if (__captured_in_type_size == PkgSnow64Cpu::TypSz64)
+					if (__captured_in_type_size == PkgSnow64Cpu::IntTypSz64)
 					begin
 						if (__captured_in_to_cast.sign)
 						begin
@@ -509,24 +509,24 @@ module Snow64BFloat16CastToInt(input logic clk,
 			//$display("StFinishing");
 
 			case (__captured_in_type_size)
-			PkgSnow64Cpu::TypSz8:
+			PkgSnow64Cpu::IntTypSz8:
 			begin
 				//$display("Shrinking things:  %h", __temp_out_data);
 				__temp_out_data = __temp_out_data[7:0];
 				//$display("Shrinking things:  %h", __temp_out_data);
 			end
 
-			PkgSnow64Cpu::TypSz16:
+			PkgSnow64Cpu::IntTypSz16:
 			begin
 				__temp_out_data = __temp_out_data[15:0];
 			end
 
-			PkgSnow64Cpu::TypSz32:
+			PkgSnow64Cpu::IntTypSz32:
 			begin
 				__temp_out_data = __temp_out_data[31:0];
 			end
 
-			PkgSnow64Cpu::TypSz64:
+			PkgSnow64Cpu::IntTypSz64:
 			begin
 				
 			end
@@ -547,7 +547,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 				__temp_out_can_accept_cmd <= 0;
 
 				__captured_in_to_cast <= in.to_cast;
-				__captured_in_type_size <= in.type_size;
+				__captured_in_type_size <= in.int_type_size;
 				__captured_in_type_signedness <= in.type_signedness;
 			end
 		end
@@ -572,7 +572,7 @@ endmodule
 //module DebugSnow64BFloat16CastFromInt(input logic clk,
 //	input logic in_start,
 //	input logic [`MSB_POS__SNOW64_SIZE_64:0] in_to_cast,
-//	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
+//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
 //	input logic in_type_signedness,
 //	output logic out_data_valid, out_can_accept_cmd,
 //	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
@@ -586,7 +586,7 @@ endmodule
 //
 //	always @(*) __in_cast_from_int.start = in_start;
 //	always @(*) __in_cast_from_int.to_cast = in_to_cast;
-//	always @(*) __in_cast_from_int.type_size = in_type_size;
+//	always @(*) __in_cast_from_int.int_type_size = in_type_size;
 //	always @(*) __in_cast_from_int.type_signedness = in_type_signedness;
 //
 //	assign out_data_valid = __out_cast_from_int.data_valid;
@@ -599,7 +599,7 @@ endmodule
 //module DebugSnow64BFloat16CastToInt(input logic clk,
 //	input logic in_start,
 //	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_to_cast,
-//	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
+//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
 //	input logic in_type_signedness,
 //	output logic out_data_valid, out_can_accept_cmd,
 //	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
@@ -613,7 +613,7 @@ endmodule
 //
 //	always @(*) __in_cast_to_int.start = in_start;
 //	always @(*) __in_cast_to_int.to_cast = in_to_cast;
-//	always @(*) __in_cast_to_int.type_size = in_type_size;
+//	always @(*) __in_cast_to_int.int_type_size = in_type_size;
 //	always @(*) __in_cast_to_int.type_signedness = in_type_signedness;
 //
 //	assign out_data_valid = __out_cast_to_int.data_valid;

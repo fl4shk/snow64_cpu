@@ -34,8 +34,7 @@ define(`NOTE_U32',`Note:  unsigned 32-bit integer(s)')dnl
 define(`NOTE_S32',`Note:  signed 32-bit integer(s)')dnl
 define(`NOTE_U64',`Note:  unsigned 64-bit integer(s)')dnl
 define(`NOTE_S64',`Note:  signed 64-bit integer(s)')dnl
-define(`NOTE_FLOAT',`Note:  16-bit floating point number(s), the top 16 bits of a
-			standard 32-bit IEEE float.')dnl
+define(`NOTE_BFLOAT16',`Note:  BFloat16 format floating point number.')dnl
 # Snow64 Instruction Set
 * Notes
 	* There are no Instruction LARs (the typical instruction fetch of most
@@ -81,7 +80,7 @@ NEWLINE()NEWLINE()
 			{
 				struct packed
 				{
-					logic [31 - 5 : 0] base_ptr;
+					logic [63 - 5 : 0] base_ptr;
 
 					logic [4:0] offset;
 				} addr_8;
@@ -89,21 +88,21 @@ NEWLINE()NEWLINE()
 				// Used for both 16-bit integers and the half floats
 				struct packed
 				{
-					logic [31 - 4 : 0] base_ptr;
+					logic [63 - 4 : 0] base_ptr;
 
 					logic [3:0] offset;
 				} addr_16;
 
 				struct packed
 				{
-					logic [31 - 3 : 0] base_ptr;
+					logic [63 - 3 : 0] base_ptr;
 
 					logic [2:0] offset;
 				} addr_32;
 
 				struct packed
 				{
-					logic [31 - 2 : 0] base_ptr;
+					logic [63 - 2 : 0] base_ptr;
 
 					logic [1:0] offset;
 				} addr_64;
@@ -248,12 +247,10 @@ OPCODE_GROUP(0b001)
 			* OPCODE(0x0)
 			* Effect:  CODE(if (dA.sdata != 0) 
 				pc <= pc + SIGN_EXTEND_TO_64(simm20);)
-			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
 		* BOLD(bfal) dA, simm20
 			* OPCODE(0x1)
 			* Effect:  CODE(if (dA.sdata == 0) 
 				pc <= pc + SIGN_EXTEND_TO_64(simm20);)
-			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
 		* BOLD(jmp) dA
 			* OPCODE(0x2)
 			* Effect:  CODE(pc <= dA.sdata;)
@@ -302,6 +299,24 @@ OPCODE_GROUP(0b010)
 		* MDCODE(c):  dSrc1
 		* MDCODE(o):  opcode
 		* MDCODE(i):  12-bit signed immediate
+	* Effect:  
+		* Load LAR-sized data from 64-bit address computed as follows:
+		CODE((dB.address + EXTEND_TO_64(dC.sdata) 
+		\+ (SIGN_EXTEND_TO_64(simm12))))
+			* This 64-bit address is referred to as the "effective
+			address".
+		* The type of extension of the CODE(EXTEND_TO_64(dC.sdata))
+		expression is based upon the type of CODE(dC).  
+			* If CODE(dC) is tagged as an unsigned integer, zero-extension
+			is performed.
+			* If CODE(dC) is tagged as a signed integer, sign-extension is
+			performed.
+			* If CODE(dC) is tagged as a BFloat16, CODE(dC.sdata) is casted
+			to a 64-bit signed integer.  (This one is weird... normally,
+			addressing isn't done with floating point numbers!).
+		* Due to associativity of the LARs, these instructions will not
+		actually load from memory if the effective address's data already
+		loaded into a LAR.
 	* Instructions:
 		* BOLD(ldu8) dA, dB, dC, simm12
 			* OPCODE(0x0)
@@ -329,7 +344,7 @@ OPCODE_GROUP(0b010)
 			* NOTE_S64()
 		* BOLD(ldf16) dA, dB, dC, simm12
 			* OPCODE(0x8)
-			* NOTE_FLOAT()
+			* NOTE_BFLOAT16()
 NEWLINE()NEWLINE()
 * Store Instructions:
 OPCODE_GROUP(0b011)
@@ -341,6 +356,21 @@ OPCODE_GROUP(0b011)
 		* MDCODE(i):  12-bit signed immediate
 	* Note:  These are actually type conversion instructions as actual
 	writes to memory are done lazily
+	* Effect:
+		* These instructions marks CODE(dA) as dirty, change its address to
+		the effective address (see next bullet), and sets its type.
+		* The 64-bit effective address is computed as follows:
+			CODE((dB.address + EXTEND_TO_64(dC.sdata) 
+			+ (SIGN_EXTEND_TO_64(simm12))))
+		* The type of extension of the CODE(EXTEND_TO_64(dC.sdata))
+			expression is based upon the type of CODE(dC).  
+			* If CODE(dC) is tagged as an unsigned integer, zero-extension
+			is performed.
+			* If CODE(dC) is tagged as a signed integer, sign-extension is
+			performed.
+			* If CODE(dC) is tagged as a BFloat16, CODE(dC.sdata) is casted
+			to a 64-bit signed integer.  (This one is weird... normally,
+			addressing isn't done with floating point numbers!).
 	* Instructions:
 		* BOLD(stu8) dA, dB, dC, simm12
 			* OPCODE(0x0)
@@ -368,7 +398,7 @@ OPCODE_GROUP(0b011)
 			* NOTE_S64()
 		* BOLD(stf16) dA, dB, dC, simm12
 			* OPCODE(0x8)
-			* NOTE_FLOAT()
+			* NOTE_BFLOAT16()
 NEWLINE()NEWLINE()
 * Port-mapped Input/Output Instructions:
 OPCODE_GROUP(0b100)
@@ -417,7 +447,7 @@ OPCODE_GROUP(0b100)
 			* NOTE_S64()
 		* BOLD(inf16) dA, dB, simm16
 			* OPCODE(0x8)
-			* NOTE_FLOAT()
+			* NOTE_BFLOAT16()
 		* BOLD(out) (actual mnemonics below)
 			* OPCODE(0x9)
 				* BOLD(outs) dA, dB, simm16

@@ -43,7 +43,7 @@
 			{
 				struct packed
 				{
-					logic [31 - 5 : 0] base_ptr;
+					logic [63 - 5 : 0] base_ptr;
 
 					logic [4:0] offset;
 				} addr_8;
@@ -51,21 +51,21 @@
 				// Used for both 16-bit integers and the half floats
 				struct packed
 				{
-					logic [31 - 4 : 0] base_ptr;
+					logic [63 - 4 : 0] base_ptr;
 
 					logic [3:0] offset;
 				} addr_16;
 
 				struct packed
 				{
-					logic [31 - 3 : 0] base_ptr;
+					logic [63 - 3 : 0] base_ptr;
 
 					logic [2:0] offset;
 				} addr_32;
 
 				struct packed
 				{
-					logic [31 - 2 : 0] base_ptr;
+					logic [63 - 2 : 0] base_ptr;
 
 					logic [1:0] offset;
 				} addr_64;
@@ -234,16 +234,10 @@ Opcode Group:  0b001
 			* Opcode:  0x0
 			* Effect:  <code>if (dA.sdata != 0) 
 				pc <= pc + sign\_extend\_to\_64(simm20);</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
 		* <b>bfal</b> dA, simm20
 			* Opcode:  0x1
 			* Effect:  <code>if (dA.sdata == 0) 
 				pc <= pc + sign\_extend\_to\_64(simm20);</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
 		* <b>jmp</b> dA
 			* Opcode:  0x2
 			* Effect:  <code>pc <= dA.sdata;</code>
@@ -302,6 +296,24 @@ Opcode Group:  0b010
 		* `c`:  dSrc1
 		* `o`:  opcode
 		* `i`:  12-bit signed immediate
+	* Effect:  
+		* Load LAR-sized data from 64-bit address computed as follows:
+		<code>(dB.address + extend\_to\_64(dC.sdata) 
+		\+ (sign\_extend\_to\_64(simm12)))</code>
+			* This 64-bit address is referred to as the "effective
+			address".
+		* The type of extension of the <code>extend\_to\_64(dC.sdata)</code>
+		expression is based upon the type of <code>dC</code>.  
+			* If <code>dC</code> is tagged as an unsigned integer, zero-extension
+			is performed.
+			* If <code>dC</code> is tagged as a signed integer, sign-extension is
+			performed.
+			* If <code>dC</code> is tagged as a BFloat16, <code>dC.sdata</code> is casted
+			to a 64-bit signed integer.  (This one is weird... normally,
+			addressing isn't done with floating point numbers!).
+		* Due to associativity of the LARs, these instructions will not
+		actually load from memory if the effective address's data already
+		loaded into a LAR.
 	* Instructions:
 		* <b>ldu8</b> dA, dB, dC, simm12
 			* Opcode:  0x0
@@ -329,8 +341,7 @@ Opcode Group:  0b010
 			* Note:  signed 64-bit integer(s)
 		* <b>ldf16</b> dA, dB, dC, simm12
 			* Opcode:  0x8
-			* Note:  16-bit floating point number(s), the top 16 bits of a
-			standard 32-bit IEEE float.
+			* Note:  BFloat16 format floating point number.
 <br><br>
 * Store Instructions:
 Opcode Group:  0b011
@@ -342,6 +353,21 @@ Opcode Group:  0b011
 		* `i`:  12-bit signed immediate
 	* Note:  These are actually type conversion instructions as actual
 	writes to memory are done lazily
+	* Effect:
+		* These instructions marks <code>dA</code> as dirty, change its address to
+		the effective address (see next bullet), and sets its type.
+		* The 64-bit effective address is computed as follows:
+			<code>(dB.address + extend\_to\_64(dC.sdata) 
+			+ (sign\_extend\_to\_64(simm12)))</code>
+		* The type of extension of the <code>extend\_to\_64(dC.sdata)</code>
+			expression is based upon the type of <code>dC</code>.  
+			* If <code>dC</code> is tagged as an unsigned integer, zero-extension
+			is performed.
+			* If <code>dC</code> is tagged as a signed integer, sign-extension is
+			performed.
+			* If <code>dC</code> is tagged as a BFloat16, <code>dC.sdata</code> is casted
+			to a 64-bit signed integer.  (This one is weird... normally,
+			addressing isn't done with floating point numbers!).
 	* Instructions:
 		* <b>stu8</b> dA, dB, dC, simm12
 			* Opcode:  0x0
@@ -369,8 +395,7 @@ Opcode Group:  0b011
 			* Note:  signed 64-bit integer(s)
 		* <b>stf16</b> dA, dB, dC, simm12
 			* Opcode:  0x8
-			* Note:  16-bit floating point number(s), the top 16 bits of a
-			standard 32-bit IEEE float.
+			* Note:  BFloat16 format floating point number.
 <br><br>
 * Port-mapped Input/Output Instructions:
 Opcode Group:  0b100
@@ -421,8 +446,7 @@ Opcode Group:  0b100
 			* Note:  signed 64-bit integer(s)
 		* <b>inf16</b> dA, dB, simm16
 			* Opcode:  0x8
-			* Note:  16-bit floating point number(s), the top 16 bits of a
-			standard 32-bit IEEE float.
+			* Note:  BFloat16 format floating point number.
 		* <b>out</b> (actual mnemonics below)
 			* Opcode:  0x9
 				* <b>outs</b> dA, dB, simm16

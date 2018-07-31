@@ -34,17 +34,17 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 	// Determine if we need to use "in.carry"
 	always @(*)
 	begin
-		case (in.type_size)
+		case (in.int_type_size)
 
 		// 8-bit operations don't care about "in.carry".
-		PkgSnow64Cpu::TypSz8:
+		PkgSnow64Cpu::IntTypSz8:
 		begin
 			__in_actual_carry = __performing_subtract;
 		end
 
 		// For 16-bit operations, a sub ALU with an odd-numbered index will
 		// need to use "in.carry"
-		PkgSnow64Cpu::TypSz16:
+		PkgSnow64Cpu::IntTypSz16:
 		begin
 			case (in.index[0])
 			0:
@@ -62,7 +62,7 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 
 		// For 32-bit operations, we care about carry for only two cases:
 		// (in.index == 0) or (in.index == 4).
-		PkgSnow64Cpu::TypSz32:
+		PkgSnow64Cpu::IntTypSz32:
 		begin
 			case (in.index[1:0])
 			0:
@@ -80,7 +80,7 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 
 		// 64-bit operations do indeed care about carry, but only if the
 		// index is zero.
-		PkgSnow64Cpu::TypSz64:
+		PkgSnow64Cpu::IntTypSz64:
 		begin
 			case (in.index[2:0])
 			0:
@@ -298,25 +298,25 @@ module __Snow64SliceAndSignExtend
 
 	always @(*)
 	begin
-		case (in.type_size)
-		PkgSnow64Cpu::TypSz8:
+		case (in.int_type_size)
+		PkgSnow64Cpu::IntTypSz8:
 		begin
 			out.sliced_data = __sign_extended_data_8;
 		end
 
-		PkgSnow64Cpu::TypSz16:
+		PkgSnow64Cpu::IntTypSz16:
 		begin
 			out.sliced_data = {__sign_extended_data_16, 
 				{(512 - (512 >> 1)){1'b0}}};
 		end
 
-		PkgSnow64Cpu::TypSz32:
+		PkgSnow64Cpu::IntTypSz32:
 		begin
 			out.sliced_data = {__sign_extended_data_32,
 				{(512 - (512 >> 2)){1'b0}}};
 		end
 
-		PkgSnow64Cpu::TypSz64:
+		PkgSnow64Cpu::IntTypSz64:
 		begin
 			out.sliced_data = {__sign_extended_data_64,
 				{(512 - (512 >> 3)){1'b0}}};
@@ -402,25 +402,25 @@ module __Snow64SliceAndZeroExtend
 
 	always @(*)
 	begin
-		case (in.type_size)
-		PkgSnow64Cpu::TypSz8:
+		case (in.int_type_size)
+		PkgSnow64Cpu::IntTypSz8:
 		begin
 			out.sliced_data = __zero_extended_data_8;
 		end
 
-		PkgSnow64Cpu::TypSz16:
+		PkgSnow64Cpu::IntTypSz16:
 		begin
 			out.sliced_data = {__zero_extended_data_16, 
 				{(512 - (512 >> 1)){1'b0}}};
 		end
 
-		PkgSnow64Cpu::TypSz32:
+		PkgSnow64Cpu::IntTypSz32:
 		begin
 			out.sliced_data = {__zero_extended_data_32,
 				{(512 - (512 >> 2)){1'b0}}};
 		end
 
-		PkgSnow64Cpu::TypSz64:
+		PkgSnow64Cpu::IntTypSz64:
 		begin
 			out.sliced_data = {__zero_extended_data_64,
 				{(512 - (512 >> 3)){1'b0}}};
@@ -472,26 +472,26 @@ endmodule
 //	// __inst_asr64_0.to_shift 
 //	always @(*)
 //	begin
-//		case (in.type_size)
-//		PkgSnow64Cpu::TypSz8:
+//		case (in.int_type_size)
+//		PkgSnow64Cpu::IntTypSz8:
 //		begin
 //			`INST_8__7(__in_asr).to_shift
 //				= `SIGN_EXTEND(64, 8, in.a`SLICE64_8__7);
 //		end
 //
-//		PkgSnow64Cpu::TypSz16:
+//		PkgSnow64Cpu::IntTypSz16:
 //		begin
 //			`INST_16__3(__in_asr).to_shift
 //				= `SIGN_EXTEND(64, 16, in.a`SLICE64_16__3);
 //		end
 //
-//		PkgSnow64Cpu::TypSz32:
+//		PkgSnow64Cpu::IntTypSz32:
 //		begin
 //			`INST_32__1(__in_asr).to_shift
 //				= `SIGN_EXTEND(64, 32, in.a`SLICE64_32__1);
 //		end
 //
-//		PkgSnow64Cpu::TypSz64:
+//		PkgSnow64Cpu::IntTypSz64:
 //		begin
 //			`INST_64__0(__in_asr).to_shift = in.a;
 //		end
@@ -513,7 +513,7 @@ endmodule
 // "PortOut_ModuleName" packed structs for this module primarily because
 // the (many) inputs to this module are all coming from existing sources.
 module __Snow64GetSubAluResults
-	(input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
+	(input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
 	input logic [`MSB_POS__SNOW64_SIZE_8:0]
 		in_sub_alu_0_out_data, in_sub_alu_1_out_data,
 		in_sub_alu_2_out_data, in_sub_alu_3_out_data,
@@ -545,7 +545,7 @@ module __Snow64GetSubAluResults
 	always @(*)
 	begin
 		case (in_type_size)
-		PkgSnow64Cpu::TypSz8:
+		PkgSnow64Cpu::IntTypSz8:
 		begin
 			out_ltu = {`ZERO_EXTEND(8, 1, !in_sub_alu_7_out_carry),
 				`ZERO_EXTEND(8, 1, !in_sub_alu_6_out_carry),
@@ -557,7 +557,7 @@ module __Snow64GetSubAluResults
 				`ZERO_EXTEND(8, 1, !in_sub_alu_0_out_carry)};
 		end
 
-		PkgSnow64Cpu::TypSz16:
+		PkgSnow64Cpu::IntTypSz16:
 		begin
 			out_ltu = {`ZERO_EXTEND(16, 1, !in_sub_alu_7_out_carry),
 				`ZERO_EXTEND(16, 1, !in_sub_alu_5_out_carry),
@@ -565,13 +565,13 @@ module __Snow64GetSubAluResults
 				`ZERO_EXTEND(16, 1, !in_sub_alu_1_out_carry)};
 		end
 
-		PkgSnow64Cpu::TypSz32:
+		PkgSnow64Cpu::IntTypSz32:
 		begin
 			out_ltu = {`ZERO_EXTEND(32, 1, !in_sub_alu_7_out_carry),
 				`ZERO_EXTEND(32, 1, !in_sub_alu_3_out_carry)};
 		end
 
-		PkgSnow64Cpu::TypSz64:
+		PkgSnow64Cpu::IntTypSz64:
 		begin
 			out_ltu = `ZERO_EXTEND(64, 1, !in_sub_alu_7_out_carry);
 		end
@@ -582,7 +582,7 @@ module __Snow64GetSubAluResults
 	always @(*)
 	begin
 		case (in_type_size)
-		PkgSnow64Cpu::TypSz8:
+		PkgSnow64Cpu::IntTypSz8:
 		begin
 			out_lts = {`ZERO_EXTEND(8, 1, in_sub_alu_7_out_lts),
 				`ZERO_EXTEND(8, 1, in_sub_alu_6_out_lts),
@@ -594,7 +594,7 @@ module __Snow64GetSubAluResults
 				`ZERO_EXTEND(8, 1, in_sub_alu_0_out_lts)};
 		end
 
-		PkgSnow64Cpu::TypSz16:
+		PkgSnow64Cpu::IntTypSz16:
 		begin
 			out_lts = {`ZERO_EXTEND(16, 1, in_sub_alu_7_out_lts),
 				`ZERO_EXTEND(16, 1, in_sub_alu_5_out_lts),
@@ -602,13 +602,13 @@ module __Snow64GetSubAluResults
 				`ZERO_EXTEND(16, 1, in_sub_alu_1_out_lts)};
 		end
 
-		PkgSnow64Cpu::TypSz32:
+		PkgSnow64Cpu::IntTypSz32:
 		begin
 			out_lts = {`ZERO_EXTEND(32, 1, in_sub_alu_7_out_lts),
 				`ZERO_EXTEND(32, 1, in_sub_alu_3_out_lts)};
 		end
 
-		PkgSnow64Cpu::TypSz64:
+		PkgSnow64Cpu::IntTypSz64:
 		begin
 			out_lts = `ZERO_EXTEND(64, 1, in_sub_alu_7_out_lts);
 		end
@@ -751,7 +751,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	`undef MAKE_INST_SUB_ALU
 
 	__Snow64GetSubAluResults __inst_get_sub_alu_results
-		(.in_type_size(in.type_size),
+		(.in_type_size(in.int_type_size),
 		.in_sub_alu_0_out_data(__out_sub_alu_0.data),
 		.in_sub_alu_1_out_data(__out_sub_alu_1.data),
 		.in_sub_alu_2_out_data(__out_sub_alu_2.data),
@@ -790,12 +790,12 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	assign __in_a_sliced_16 = in.a;
 	assign __in_a_sliced_32 = in.a;
 
-	always @(*) __in_slice_and_sign_extend.type_size = in.type_size;
+	always @(*) __in_slice_and_sign_extend.int_type_size = in.int_type_size;
 	always @(*) __in_slice_and_sign_extend.to_slice = in.a;
 
-	always @(*) __in_slice_and_zero_extend_a.type_size = in.type_size;
+	always @(*) __in_slice_and_zero_extend_a.int_type_size = in.int_type_size;
 	always @(*) __in_slice_and_zero_extend_a.to_slice = in.a;
-	always @(*) __in_slice_and_zero_extend_b.type_size = in.type_size;
+	always @(*) __in_slice_and_zero_extend_b.int_type_size = in.int_type_size;
 	always @(*) __in_slice_and_zero_extend_b.to_slice = in.b;
 
 	`define ASSIGN_TO_IN_SUB_ALU(some_num) \
@@ -806,7 +806,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 		always @(*) __in_sub_alu_``some_num.carry \
 			= __sub_alu_in_carry_``some_num; \
 		always @(*) __in_sub_alu_``some_num.oper = in.oper; \
-		always @(*) __in_sub_alu_``some_num.type_size = in.type_size; \
+		always @(*) __in_sub_alu_``some_num.int_type_size = in.int_type_size; \
 		always @(*) __in_sub_alu_``some_num.index \
 			= __sub_alu_in_index_``some_num;
 
@@ -941,8 +941,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 			PkgSnow64Alu::OpShl:
 			begin
-				case (in.type_size)
-				PkgSnow64Cpu::TypSz8:
+				case (in.int_type_size)
+				PkgSnow64Cpu::IntTypSz8:
 				begin
 					out.data = {`INST_8__7_S(__out_lsl, _data)[7:0],
 						`INST_8__6_S(__out_lsl, _data)[7:0],
@@ -954,7 +954,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 						`INST_8__0_S(__out_lsl, _data)[7:0]};
 				end
 
-				PkgSnow64Cpu::TypSz16:
+				PkgSnow64Cpu::IntTypSz16:
 				begin
 					out.data = {`INST_16__3_S(__out_lsl, _data)[15:0],
 						`INST_16__2_S(__out_lsl, _data)[15:0],
@@ -962,13 +962,13 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 						`INST_16__0_S(__out_lsl, _data)[15:0]};
 				end
 
-				PkgSnow64Cpu::TypSz32:
+				PkgSnow64Cpu::IntTypSz32:
 				begin
 					out.data = {`INST_32__1_S(__out_lsl, _data)[31:0],
 						`INST_32__0_S(__out_lsl, _data)[31:0]};
 				end
 
-				PkgSnow64Cpu::TypSz64:
+				PkgSnow64Cpu::IntTypSz64:
 				begin
 					out.data = `INST_64__0_S(__out_lsl, _data);
 				end
@@ -979,8 +979,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				case (in.type_signedness)
 				0:
 				begin
-					case (in.type_size)
-					PkgSnow64Cpu::TypSz8:
+					case (in.int_type_size)
+					PkgSnow64Cpu::IntTypSz8:
 					begin
 						out.data = {`INST_8__7_S(__out_lsr, _data)[7:0],
 							`INST_8__6_S(__out_lsr, _data)[7:0],
@@ -992,7 +992,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 							`INST_8__0_S(__out_lsr, _data)[7:0]};
 					end
 
-					PkgSnow64Cpu::TypSz16:
+					PkgSnow64Cpu::IntTypSz16:
 					begin
 						out.data = {`INST_16__3_S(__out_lsr, _data)[15:0],
 							`INST_16__2_S(__out_lsr, _data)[15:0],
@@ -1000,13 +1000,13 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 							`INST_16__0_S(__out_lsr, _data)[15:0]};
 					end
 
-					PkgSnow64Cpu::TypSz32:
+					PkgSnow64Cpu::IntTypSz32:
 					begin
 						out.data = {`INST_32__1_S(__out_lsr, _data)[31:0],
 							`INST_32__0_S(__out_lsr, _data)[31:0]};
 					end
 
-					PkgSnow64Cpu::TypSz64:
+					PkgSnow64Cpu::IntTypSz64:
 					begin
 						out.data = `INST_64__0_S(__out_lsr, _data);
 					end
@@ -1015,8 +1015,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 				1:
 				begin
-					case (in.type_size)
-					PkgSnow64Cpu::TypSz8:
+					case (in.int_type_size)
+					PkgSnow64Cpu::IntTypSz8:
 					begin
 						out.data = {`INST_8__7_S(__out_asr, _data)[7:0],
 							`INST_8__6_S(__out_asr, _data)[7:0],
@@ -1028,7 +1028,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 							`INST_8__0_S(__out_asr, _data)[7:0]};
 					end
 
-					PkgSnow64Cpu::TypSz16:
+					PkgSnow64Cpu::IntTypSz16:
 					begin
 						out.data = {`INST_16__3_S(__out_asr, _data)[15:0],
 							`INST_16__2_S(__out_asr, _data)[15:0],
@@ -1036,13 +1036,13 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 							`INST_16__0_S(__out_asr, _data)[15:0]};
 					end
 
-					PkgSnow64Cpu::TypSz32:
+					PkgSnow64Cpu::IntTypSz32:
 					begin
 						out.data = {`INST_32__1_S(__out_asr, _data)[31:0],
 							`INST_32__0_S(__out_asr, _data)[31:0]};
 					end
 
-					PkgSnow64Cpu::TypSz64:
+					PkgSnow64Cpu::IntTypSz64:
 					begin
 						out.data = `INST_64__0_S(__out_asr, _data);
 					end
@@ -1056,8 +1056,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			end
 			PkgSnow64Alu::OpNot:
 			begin
-				case (in.type_size)
-				PkgSnow64Cpu::TypSz8:
+				case (in.int_type_size)
+				PkgSnow64Cpu::IntTypSz8:
 				begin
 					//out.data = __out_get_sub_alu_results_data;
 					out.data 
@@ -1079,7 +1079,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 					//out.data[7:0] = !__in_a_sliced_8.data_0;
 				end
 
-				PkgSnow64Cpu::TypSz16:
+				PkgSnow64Cpu::IntTypSz16:
 				begin
 					out.data 
 						= {`ZERO_EXTEND(16, 1, !__in_a_sliced_16.data_3),
@@ -1092,7 +1092,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 					//out.data[15:0] = !__in_a_sliced_16.data_0;
 				end
 
-				PkgSnow64Cpu::TypSz32:
+				PkgSnow64Cpu::IntTypSz32:
 				begin
 					out.data
 						= {`ZERO_EXTEND(32, 1, !__in_a_sliced_32.data_1),
@@ -1102,7 +1102,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 				end
 
-				PkgSnow64Cpu::TypSz64:
+				PkgSnow64Cpu::IntTypSz64:
 				begin
 					out.data = !in.a;
 				end
@@ -1136,7 +1136,7 @@ endmodule
 module DebugSnow64Alu
 	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
 	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
-	input logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] in_type_size,
+	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
 	input logic in_signedness,
 
 	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
@@ -1149,7 +1149,7 @@ module DebugSnow64Alu
 	always @(*) __in_alu.a = in_a;
 	always @(*) __in_alu.b = in_b;
 	always @(*) __in_alu.oper = in_oper;
-	always @(*) __in_alu.type_size = in_type_size;
+	always @(*) __in_alu.int_type_size = in_type_size;
 	always @(*) __in_alu.type_signedness = in_signedness;
 
 	always @(*) out_data = __out_alu.data;

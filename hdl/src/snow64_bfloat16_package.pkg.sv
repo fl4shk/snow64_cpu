@@ -95,7 +95,7 @@ typedef struct packed
 {
 	logic start;
 	logic [`MSB_POS__SNOW64_SIZE_64:0] to_cast;
-	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	logic type_signedness;
 } PortIn_CastFromInt;
 
@@ -111,7 +111,7 @@ typedef struct packed
 {
 	logic start;
 	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] to_cast;
-	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	logic type_signedness;
 } PortIn_CastToInt;
 

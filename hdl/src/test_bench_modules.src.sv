@@ -161,7 +161,7 @@
 //
 //	logic [`MSB_POS__SNOW64_SIZE_64:0] __in_alu_a, __in_alu_b;
 //	logic [`MSB_POS__SNOW64_ALU_OPER:0] __in_alu_oper;
-//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] __in_alu_type_size;
+//	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __in_alu_type_size;
 //	logic __in_alu_signedness;
 //
 //	logic [`MSB_POS__SNOW64_SIZE_64:0] __out_alu_data;
@@ -172,7 +172,7 @@
 //		.in_signedness(__in_alu_signedness), .out_data(__out_alu_data));
 //
 //	assign __in_alu_oper = PkgSnow64Alu::OpShr;
-//	assign __in_alu_type_size = PkgSnow64Cpu::TypSz8;
+//	assign __in_alu_type_size = PkgSnow64Cpu::IntTypSz8;
 //	assign __in_alu_signedness = 1;
 //
 //	logic [`MSB_POS__SNOW64_SIZE_64:0] __oracle_alu_out_data;

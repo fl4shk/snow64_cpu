@@ -23,15 +23,15 @@
 
 
 
-
-
-
-
-
-
-
-
-
+//`define BPRANGE_TO_SHIFTED_MASK(bit_pos_hi, bit_pos_lo) \
+//	(((1 << (bit_pos_hi - bit_pos_lo + 1)) - 1) << bit_pos_lo)
+//`define GET_BITS(to_get_from, mask, shift) \
+//	((to_get_from & mask) >> shift)
+//`define GET_BITS_WITH_RANGE(to_get_from, bit_pos_range_hi,
+//	bit_pos_range_lo) \
+//	`GET_BITS(to_get_from, \
+//		`BPRANGE_TO_SHIFTED_MASK(bit_pos_range_hi, bit_pos_range_lo), \
+//		bit_pos_range_lo)
 
 
 
@@ -478,6 +478,22 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// src__slash__snow64_cpu_defines_header_sv
 
 package PkgSnow64InstrDecoder;
@@ -723,24 +739,60 @@ endpackage : PkgSnow64InstrDecoder
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// src__slash__snow64_cpu_defines_header_sv
 
 package PkgSnow64Cpu;
 
 
+typedef enum logic [((2) - 1):0]
+{
+	// Put "DataTypUnsgnInt" and "DataTypSgnInt" in this order so that we
+	// can just do "some_data_type[0]" to get the value for the
+	// "type_signedness" input that some modules have.
+	DataTypUnsgnInt,
+	DataTypSgnInt,
+
+	// Snow64 only has BFloat16's for its floating point numbers.
+	DataTypBFloat16,
+
+	// We don't really have another format here.  A future data LARs
+	// machine may support, for example, fixed-point numbers in the
+	// hardware.  (I have some ideas for that myself, but I'm not going
+	// into that here).
+	// 
+	// Another alternative might be to change "DataTypBFloat16" to
+	// "DataTypFloat32" and also to change "DataTypReserved" to
+	// "DataTypFloat64" if both binary32 and binary64 floats are supported,
+	// but no other floating point types are supported.
+	DataTypReserved
+} DataType;
+
+// Integers are the only types that rely on this "enum"... though perhaps
+// that will change.
 typedef enum logic [
 	((2) - 1):0]
 {
-	TypSz8,
-	TypSz16,
-	TypSz32,
-	TypSz64
-} TypeSize;
-
-localparam __DEBUG_ENUM__TYP_SZ_8 = TypSz8;
-localparam __DEBUG_ENUM__TYP_SZ_16 = TypSz16;
-localparam __DEBUG_ENUM__TYP_SZ_32 = TypSz32;
-localparam __DEBUG_ENUM__TYP_SZ_64 = TypSz64;
+	IntTypSz8,
+	IntTypSz16,
+	IntTypSz32,
+	IntTypSz64
+} IntTypeSize;
 
 endpackage : PkgSnow64Cpu
 
@@ -976,18 +1028,6 @@ endpackage : PkgSnow64Cpu
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 //`define WIDTH__SNOW64_SUB_ALU_DATA_INOUT 16
 //`define MSB_POS__SNOW64_SUB_ALU_DATA_INOUT \
 //	`WIDTH2MP(`WIDTH__SNOW64_SUB_ALU_DATA_INOUT)
@@ -1001,6 +1041,22 @@ endpackage : PkgSnow64Cpu
 
 
 		// src__slash__snow64_alu_defines_header_sv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1064,7 +1120,7 @@ localparam __DEBUG_PORT_MSB_POS__DATA_INOUT
 	= 
 	((64) - 1);
 localparam __DEBUG_PORT_MSB_POS__OPER = ((4) - 1);
-localparam __DEBUG_PORT_MSB_POS__TYPE_SIZE
+localparam __DEBUG_PORT_MSB_POS__INT_TYPE_SIZE
 	= 
 	((2) - 1);
 
@@ -1075,7 +1131,7 @@ typedef struct packed
 	((64) - 1):0] a, b;
 	logic [((4) - 1):0] oper;
 	logic [
-	((2) - 1):0] type_size;
+	((2) - 1):0] int_type_size;
 	logic type_signedness;
 } PortIn_Alu;
 typedef struct packed
@@ -1091,8 +1147,8 @@ typedef struct packed
 //	logic [`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT:0] a, b;
 //	logic carry;
 //	logic [`MSB_POS__SNOW64_ALU_OPER:0] oper;
-//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
-//	//logic type_size;
+//	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+//	//logic int_type_size;
 //	//logic type_signedness;
 //	logic [`MSB_POS__SNOW64_SUB_ALU_INDEX:0] index;
 //} PortIn_SubAlu;
@@ -1106,31 +1162,6 @@ typedef struct packed
 //} PortOut_SubAlu;
 
 
-typedef struct packed
-{
-	logic [
-	((8) - 1):0] 
-		data_7, data_6, data_5, data_4, data_3, data_2, data_1, data_0;
-} SlicedAlu8DataInout;
-
-typedef struct packed
-{
-	logic [
-	((16) - 1):0] 
-		data_3, data_2, data_1, data_0;
-} SlicedAlu16DataInout;
-
-typedef struct packed
-{
-	logic [
-	((32) - 1):0] data_1, data_0;
-} SlicedAlu32DataInout;
-
-typedef struct packed
-{
-	logic [
-	((64) - 1):0] data_0;
-} SlicedAlu64DataInout;
 
 
 localparam WIDTH__OF_64 = 64;
@@ -1142,15 +1173,12 @@ localparam MSB_POS__OF_16 = ((WIDTH__OF_16) - 1);
 localparam WIDTH__OF_8 = 8;
 localparam MSB_POS__OF_8 = ((WIDTH__OF_8) - 1);
 
-localparam ARR_SIZE__SUB_ALU_PORTS = 8;
-localparam LAST_INDEX__SUB_ALU_PORTS
-	= ((ARR_SIZE__SUB_ALU_PORTS) - 1);
 
 
 
 //typedef struct packed
 //{
-//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
+//	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 //	logic [`MSB_POS__SNOW64_SIZE_64:0] to_slice;
 //} PortIn_SliceAndExtend;
 //
@@ -1429,7 +1457,417 @@ endpackage : PkgSnow64LongDiv
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// src__slash__snow64_cpu_defines_header_sv
+
+package PkgSnow64SlicedData;
+
+
+typedef struct packed
+{
+	logic [
+	((8) - 1):0] 
+		data_7, data_6, data_5, data_4, data_3, data_2, data_1, data_0;
+} SlicedData8;
+
+typedef struct packed
+{
+	logic [
+	((16) - 1):0] 
+		data_3, data_2, data_1, data_0;
+} SlicedData16;
+
+typedef struct packed
+{
+	logic [
+	((32) - 1):0] data_1, data_0;
+} SlicedData32;
+
+typedef struct packed
+{
+	logic [
+	((64) - 1):0] data_0;
+} SlicedData64;
+
+
+endpackage : PkgSnow64SlicedData
+
+
+
+// src/snow64_lar_file_defines.header.sv
+
+//`include "src/misc_defines.header.sv"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// src__slash__snow64_cpu_defines_header_sv
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 8-bit
+
+
+
+
+
+
+
+
+
+
+// 16-bit
+
+
+
+
+
+
+
+
+
+
+// 32-bit
+
+
+
+
+
+
+
+
+
+
+// 64-bit
+
+
+
+
+
+
+
+
+
+
+// Metadata stuff
+
+
+
+
+
+// A "tag" in this case is which refers to the index of the shared data
+// that this LAR cares about.
+
+
+
+
+
+// Shared data stuff
+
+
+
+
+
+
+
+
+
+
+// It is technically possible for all the non-dzero LARs' metadata to point
+// to the same shared data, though this is uncommon in practice.
+
+
+
+
+
+
+
+
+
+		// src__slash__snow64_lar_file_defines_header_sv
+
+
+package PkgSnow64LarFile;
+
+typedef struct packed
+{
+	// This is used to tell the LAR file to stop
+	logic pause;
+} PortIn_LarFile_Ctrl;
+
+typedef struct packed
+{
+	logic [
+	((4) - 1):0] index;
+} PortIn_LarFile_Read;
+
+typedef enum logic [
+	((2) - 1):0]
+{
+	// Mostly ALU/FPU operations.
+	WriteTypOnlyData,
+
+	// Used for port-mapped inputs
+	WriteTypDataAndType,
+
+	// Loads and stores, in general, change EVERYTHING.
+	// They also affect reference counts.
+	WriteTypLdSt,
+
+	// Don't use this!
+	WriteTypReserved
+} LarFileWriteType;
+
+typedef struct packed
+{
+	// Are we requesting a write at all?
+	logic req;
+
+	// Actually a LarFileWriteType
+	logic write_type;
+
+	// Which LAR are we writing to?
+	logic [
+	((4) - 1):0] index;
+
+	// Data to write into the LAR file
+	logic [
+	((256) - 1):0] data;
+
+	// Address to write into the LAR file (relevant for WriteTypLdSt)
+	logic [((64) - 1):0] addr;
+
+	// New data type of the LAR (relevant for WriteTypLdSt
+	logic [((2) - 1):0] data_type;
+	logic [
+	((2) - 1):0] int_type_size;
+} PortIn_LarFile_Write;
+
+typedef struct packed
+{
+	logic [
+	((256) - 1):0] data;
+	logic [((64) - 1):0] addr;
+
+	// Outside the LAR file itself, this "tag" is used for operand
+	// forwarding by the control unit or whatever you want to call it.
+	// This is very much akin to how I implemented operand forwarding in my
+	// first pipelined CPU, but in that case, I had used the register
+	// indices directly.  Of course, with a DLARs machine, that's not
+	// really a valid option because two registers may actually point to
+	// the same data.
+	logic [
+	((4) - 1):0] tag;
+
+	logic [((2) - 1):0] data_type;
+
+	// Same int_type_size goodness as in other modules.
+	logic [
+	((2) - 1):0] int_type_size;
+} PortOut_LarFile_Read;
+
+typedef struct packed
+{
+	logic req;
+	logic [
+	((256) - 1):0] data;
+	logic [
+	((
+	
+	(64 - 5)) - 1):0] base_addr;
+} PortOut_LarFile_MemWrite;
+
+typedef struct packed
+{
+	logic [
+	((
+	(64 - 5)) - 1):0] base_ptr;
+	logic [
+	((5) - 1):0] offset;
+} LarAddr8;
+
+
+typedef struct packed
+{
+	logic [
+	((
+	(64 - 4)) - 1):0] base_ptr;
+	logic [
+	((4) - 1):0] offset;
+} LarAddr16;
+
+
+typedef struct packed
+{
+	logic [
+	((
+	(64 - 3)) - 1):0] base_ptr;
+	logic [
+	((3) - 1):0] offset;
+} LarAddr32;
+
+
+typedef struct packed
+{
+	logic [
+	((
+	(64 - 2)) - 1):0] base_ptr;
+	logic [
+	((2) - 1):0] offset;
+} LarAddr64;
+
+// Used to grab the base_addr from an incoming address
+typedef struct packed
+{
+	logic [
+	((
+	
+	(64 - 5)) - 1):0] base_addr;
+	logic [
+	((
+	5) - 1):0] fill;
+} LarBaseAddr;
+
+
+
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_8:0]
+//	LarAddr8BasePtr;
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_8:0]
+//	LarAddr8DataOffset;
+//
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_16:0]
+//	LarAddr16BasePtr;
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_16:0]
+//	LarAddr16DataOffset;
+//
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_32:0]
+//	LarAddr32BasePtr;
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_32:0]
+//	LarAddr32DataOffset;
+//
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_64:0]
+//	LarAddr64BasePtr;
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_64:0]
+//	LarAddr64DataOffset;
+
+
+
+// LAR Metadata stuff
+
+
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_META_DA_DATA_OFFSET:0]
+//	LarMetaDaDataOffset;
+
+//// The LAR's tag... specifies which shared data is used by this LAR.
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_META_DA_TAG:0] LarMetaDaTag;
+
+//// See PkgSnow64Cpu::DataType.
+//typedef logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] LarMetaDaDataType;
+
+//// See PkgSnow64Cpu::IntTypeSize.
+//typedef logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] LarMetaDaIntTypeSize;
+
+
+// LAR Shared Data stuff
+
+//// The base address, used for associativity between LARs.
+//// We really do only need one copy of this.
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_BASE_ADDR:0]
+//	LarShDaBaseAddr;
+
+//// The data itself.
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_DATA:0] LarShDaData;
+
+//// The reference count.
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_REF_COUNT:0]
+//	LarShDaRefCount;
+
+//// The "dirty" flag.  Used to determine if we should write back to memory.
+//typedef logic LarShDaDirty;
+
+endpackage : PkgSnow64LarFile
+
+
+
 // src/snow64_bfloat16_defines.header.sv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1463,6 +1901,10 @@ endpackage : PkgSnow64LongDiv
 
 
 
+
+
+
+
 // That's right, here we have a state machine for the BFloat16 adder... we
 // don't get to have single cycle execution for bfloat16s.
 
@@ -1476,6 +1918,9 @@ endpackage : PkgSnow64LongDiv
 
 
 
+
+
+//`define SNOW64_BFLOAT16_MODDED_BIAS (`SNOW64_BFLOAT16_BIAS + 8'd7)
 
 
 
@@ -1509,6 +1954,45 @@ endpackage : PkgSnow64LongDiv
 
 package PkgSnow64BFloat16;
 
+typedef enum logic [
+	((4) - 1):0]
+{
+	OpAdd,
+	OpSub,
+	OpSlt,
+	OpMul,
+
+	OpDiv,
+	OpDummy0,
+	OpDummy1,
+	OpDummy2,
+
+	OpDummy3,
+	OpDummy4,
+	OpDummy5,
+	OpDummy6,
+
+	OpAddAgain,
+	OpDummy8,
+	OpDummy9,
+	OpDummy10
+} FpuOper;
+
+typedef struct packed
+{
+	logic start;
+	logic [
+	((4) - 1):0] oper;
+	logic [
+	((16) - 1):0] a, b;
+} PortIn_Fpu;
+
+typedef struct packed
+{
+	logic data_valid, can_accept_cmd;
+	logic [
+	((16) - 1):0] data;
+} PortOut_Fpu;
 
 typedef enum logic [
 	((2) - 1):0]
@@ -1567,56 +2051,50 @@ typedef struct packed
 	logic data_valid, can_accept_cmd;
 	logic [
 	((16) - 1):0] data;
-} PortOut_Oper;
+} PortOut_BinOp;
 
 
-//// For casting an integer to a BFloat16
-//typedef struct packed
-//{
-//	logic start;
-//	logic [`MSB_POS__SNOW64_SIZE_64:0] to_cast;
-//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
-//	logic type_signedness;
-//} PortIn_CastFromInt;
-//
-//typedef struct packed
-//{
-//	logic data_valid, can_accept_cmd;
-//	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] data;
-//} PortOut_CastFromInt;
-//
-//
-//// For casting a BFloat16 to an integer 
-//typedef struct packed
-//{
-//	logic start;
-//	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] to_cast;
-//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] type_size;
-//	logic type_signedness;
-//} PortIn_CastToInt;
-//
-//typedef struct packed
-//{
-//	logic data_valid, can_accept_cmd;
-//	logic [`MSB_POS__SNOW64_SIZE_64:0] data;
-//} PortOut_CastToInt;
+// For casting an integer to a BFloat16
+typedef struct packed
+{
+	logic start;
+	logic [
+	((64) - 1):0] to_cast;
+	logic [
+	((2) - 1):0] int_type_size;
+	logic type_signedness;
+} PortIn_CastFromInt;
+
+typedef struct packed
+{
+	logic data_valid, can_accept_cmd;
+	logic [
+	((16) - 1):0] data;
+} PortOut_CastFromInt;
+
+
+// For casting a BFloat16 to an integer 
+typedef struct packed
+{
+	logic start;
+	logic [
+	((16) - 1):0] to_cast;
+	logic [
+	((2) - 1):0] int_type_size;
+	logic type_signedness;
+} PortIn_CastToInt;
+
+typedef struct packed
+{
+	logic data_valid, can_accept_cmd;
+	logic [
+	((64) - 1):0] data;
+} PortOut_CastToInt;
 
 
 
 
 endpackage : PkgSnow64BFloat16
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2627,19 +3105,23 @@ endmodule
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// src__slash__snow64_cpu_defines_header_sv
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2832,7 +3314,7 @@ endmodule
 //
 //	logic [`MSB_POS__SNOW64_SIZE_64:0] __in_alu_a, __in_alu_b;
 //	logic [`MSB_POS__SNOW64_ALU_OPER:0] __in_alu_oper;
-//	logic [`MSB_POS__SNOW64_CPU_TYPE_SIZE:0] __in_alu_type_size;
+//	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __in_alu_type_size;
 //	logic __in_alu_signedness;
 //
 //	logic [`MSB_POS__SNOW64_SIZE_64:0] __out_alu_data;
@@ -2843,7 +3325,7 @@ endmodule
 //		.in_signedness(__in_alu_signedness), .out_data(__out_alu_data));
 //
 //	assign __in_alu_oper = PkgSnow64Alu::OpShr;
-//	assign __in_alu_type_size = PkgSnow64Cpu::TypSz8;
+//	assign __in_alu_type_size = PkgSnow64Cpu::IntTypSz8;
 //	assign __in_alu_signedness = 1;
 //
 //	logic [`MSB_POS__SNOW64_SIZE_64:0] __oracle_alu_out_data;
@@ -2957,7 +3439,7 @@ endmodule
 //	PkgSnow64BFloat16::BFloat16 __in_bfloat16_div_a, __in_bfloat16_div_b;
 //
 //	PkgSnow64BFloat16::PortIn_Oper __in_bfloat16_div;
-//	PkgSnow64BFloat16::PortOut_Oper __out_bfloat16_div;
+//	PkgSnow64BFloat16::PortOut_BinOp __out_bfloat16_div;
 //
 //	assign __in_bfloat16_div.start = __in_bfloat16_div_start;
 //	assign __in_bfloat16_div.a = __in_bfloat16_div_a;
@@ -3038,17 +3520,56 @@ endmodule
 //
 //endmodule
 
+//module TestBFloat16CastFromInt;
+//	logic __clk;
+//
+//	initial
+//	begin
+//		__clk = 0;
+//	end
+//
+//	always
+//	begin
+//		#1
+//		__clk = !__clk;
+//	end
+//
+//	PkgSnow64BFloat16::PortIn_CastFromInt __in_bfloat16_cast_from_int;
+//	PkgSnow64BFloat16::PortOut_CastFromInt __out_bfloat16_cast_from_int;
+//
+//	Snow64BFloat16CastFromInt(.clk(clk), .in(__in_bfloat16_cast_from_int),
+//		.out(__out_bfloat16_cast_from_int));
+//
+//
+//	initial
+//	begin
+//		__in_bfloat16_cast_from_int = 0;
+//	end
+//
+//endmodule
 
-
-
-
-
-
-
-
-
-
-
+//module TestBFloat16Fpu;
+//
+//	logic __clk;
+//
+//	initial
+//	begin
+//		__clk = 0;
+//	end
+//
+//	always
+//	begin
+//		#1
+//		__clk = !__clk;
+//	end
+//
+//	PkgSnow64BFloat16::PortIn_Fpu __in_bfloat16_fpu;
+//	PkgSnow64BFloat16::PortOut_Fpu __out_bfloat16_fpu;
+//
+//	Snow64BFloat16Fpu __inst_bfloat16_fpu(.clk(clk),
+//		.in(__in_bfloat16_fpu), .out(__out_bfloat16_fpu));
+//
+//endmodule
 
 
 
@@ -3095,32 +3616,45 @@ endmodule
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// src__slash__snow64_cpu_defines_header_sv
 
-module DebugSnow64Alu
-	(input logic [
-	((64) - 1):0] in_a, in_b,
-	input logic [((4) - 1):0] in_oper,
-	input logic [
-	((2) - 1):0] in_type_size,
-	input logic in_signedness,
-
-	output logic [
-	((64) - 1):0] out_data);
-
-	PkgSnow64Alu::PortIn_Alu __in_alu;
-	PkgSnow64Alu::PortOut_Alu __out_alu;
-
-	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
-
-	always @(*) __in_alu.a = in_a;
-	always @(*) __in_alu.b = in_b;
-	always @(*) __in_alu.oper = in_oper;
-	always @(*) __in_alu.type_size = in_type_size;
-	always @(*) __in_alu.type_signedness = in_signedness;
-
-	always @(*) out_data = __out_alu.data;
-endmodule
+//module DebugSnow64Alu
+//	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
+//	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
+//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
+//	input logic in_signedness,
+//
+//	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
+//
+//	PkgSnow64Alu::PortIn_Alu __in_alu;
+//	PkgSnow64Alu::PortOut_Alu __out_alu;
+//
+//	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
+//
+//	always @(*) __in_alu.a = in_a;
+//	always @(*) __in_alu.b = in_b;
+//	always @(*) __in_alu.oper = in_oper;
+//	always @(*) __in_alu.int_type_size = in_type_size;
+//	always @(*) __in_alu.type_signedness = in_signedness;
+//
+//	always @(*) out_data = __out_alu.data;
+//endmodule
 
 
 //module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
@@ -3151,13 +3685,13 @@ endmodule
 //
 //	always @(*)
 //	begin
-//		case (in.type_size)
-//		PkgSnow64Cpu::TypSz8:
+//		case (in.int_type_size)
+//		PkgSnow64Cpu::IntTypSz8:
 //		begin
 //			__in_actual_carry = __performing_subtract;
 //		end
 //
-//		//PkgSnow64Cpu::TypSz16:
+//		//PkgSnow64Cpu::IntTypSz16:
 //		default:
 //		begin
 //			case (in.index[0])
@@ -3245,16 +3779,16 @@ endmodule
 //	output PkgSnow64Alu::PortOut_Alu out);
 //
 //	// Local variables, module instantiations, and assignments
-//	PkgSnow64Alu::SlicedAlu8DataInout __in_a_sliced_8, __in_b_sliced_8,
+//	PkgSnow64SlicedData::SlicedData8 __in_a_sliced_8, __in_b_sliced_8,
 //		__temp_data_sliced_8;
-//	PkgSnow64Alu::SlicedAlu16DataInout __in_a_sliced_16, __in_b_sliced_16,
+//	PkgSnow64SlicedData::SlicedData16 __in_a_sliced_16, __in_b_sliced_16,
 //		__temp_data_sliced_16;
-//	PkgSnow64Alu::SlicedAlu32DataInout __in_a_sliced_32, __in_b_sliced_32,
+//	PkgSnow64SlicedData::SlicedData32 __in_a_sliced_32, __in_b_sliced_32,
 //		__temp_data_sliced_32;
 //
 //	// ...slicing a 64-bit thing into 64-bit components means you're not
 //	// really doing anything.
-//	PkgSnow64Alu::SlicedAlu64DataInout __in_a_sliced_64, __in_b_sliced_64,
+//	PkgSnow64SlicedData::SlicedData64 __in_a_sliced_64, __in_b_sliced_64,
 //		__temp_data_sliced_64;
 //
 //	logic [PkgSnow64Alu::MSB_POS__OF_8:0]
@@ -3394,7 +3928,7 @@ endmodule
 //		= __sub_alu_``some_num``_in_carry; \
 //	always @(*) __in_sub_alu_``some_num``.index \
 //		= __sub_alu_``some_num``_in_index; \
-//	always @(*) __in_sub_alu_``some_num``.type_size = in.type_size; \
+//	always @(*) __in_sub_alu_``some_num``.int_type_size = in.int_type_size; \
 //	always @(*) __in_sub_alu_``some_num``.oper = in.oper;
 //
 //	`ASSIGN_TO_SUB_ALU_INPUTS(0)
@@ -3453,18 +3987,18 @@ endmodule
 //
 //	always @(*)
 //	begin
-//		case (in.type_size)
-//		PkgSnow64Cpu::TypSz8:
+//		case (in.int_type_size)
+//		PkgSnow64Cpu::IntTypSz8:
 //		begin
 //			out.data = __temp_data_sliced_8;
 //		end
 //
-//		PkgSnow64Cpu::TypSz16:
+//		PkgSnow64Cpu::IntTypSz16:
 //		begin
 //			out.data = __temp_data_sliced_16;
 //		end
 //
-//		PkgSnow64Cpu::TypSz32:
+//		PkgSnow64Cpu::IntTypSz32:
 //		begin
 //			if ((in.oper == PkgSnow64Alu::OpSlt) && in.type_signedness)
 //			begin
@@ -3479,7 +4013,7 @@ endmodule
 //			end
 //		end
 //
-//		PkgSnow64Cpu::TypSz64:
+//		PkgSnow64Cpu::IntTypSz64:
 //		begin
 //			if ((in.oper == PkgSnow64Alu::OpSlt) && in.type_signedness)
 //			begin
@@ -3851,13 +4385,13 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 	// Local variables, module instantiations, and assignments
 
-	PkgSnow64Alu::SlicedAlu8DataInout 
+	PkgSnow64SlicedData::SlicedData8 
 		__in_a_sliced_8, __in_b_sliced_8, __out_data_sliced_8;
-	PkgSnow64Alu::SlicedAlu16DataInout 
+	PkgSnow64SlicedData::SlicedData16 
 		__in_a_sliced_16, __in_b_sliced_16, __out_data_sliced_16;
-	PkgSnow64Alu::SlicedAlu32DataInout 
+	PkgSnow64SlicedData::SlicedData32 
 		__in_a_sliced_32, __in_b_sliced_32, __out_data_sliced_32;
-	PkgSnow64Alu::SlicedAlu64DataInout 
+	PkgSnow64SlicedData::SlicedData64 
 		__in_a_sliced_64, __in_b_sliced_64, __out_data_sliced_64;
 
 
@@ -4314,8 +4848,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//// Zero extend and sign extend the inputs
 	//always @(*)
 	//begin
-	//	case (in.type_size)
-	//	PkgSnow64Cpu::TypSz8:
+	//	case (in.int_type_size)
+	//	PkgSnow64Cpu::IntTypSz8:
 	//	begin
 	//		{`INST_8__7_S(__zero_ext, _in_a),
 	//			`INST_8__7_S(__zero_ext, _in_b),
@@ -4331,7 +4865,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//			__in_b_sliced_8.data_7)};
 	//	end
 
-	//	PkgSnow64Cpu::TypSz16:
+	//	PkgSnow64Cpu::IntTypSz16:
 	//	begin
 	//		{`INST_16__3_S(__zero_ext, _in_a),
 	//			`INST_16__3_S(__zero_ext, _in_b),
@@ -4347,7 +4881,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//			__in_b_sliced_16.data_3)};
 	//	end
 
-	//	PkgSnow64Cpu::TypSz32:
+	//	PkgSnow64Cpu::IntTypSz32:
 	//	begin
 	//		{`INST_32__1_S(__zero_ext, _in_a),
 	//			`INST_32__1_S(__zero_ext, _in_b),
@@ -4363,7 +4897,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//			__in_b_sliced_32.data_1)};
 	//	end
 
-	//	PkgSnow64Cpu::TypSz64:
+	//	PkgSnow64Cpu::IntTypSz64:
 	//	begin
 	//		{`INST_64__0_S(__zero_ext, _in_a),
 	//			`INST_64__0_S(__zero_ext, _in_b),
@@ -4379,8 +4913,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 	//always @(*)
 	//begin
-	//	case (in.type_size)
-	//	PkgSnow64Cpu::TypSz8:
+	//	case (in.int_type_size)
+	//	PkgSnow64Cpu::IntTypSz8:
 	//	begin
 	//		{`INST_8__6_S(__zero_ext, _in_a),
 	//			`INST_8__6_S(__zero_ext, _in_b),
@@ -4396,7 +4930,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//			__in_b_sliced_8.data_6)};
 	//	end
 
-	//	PkgSnow64Cpu::TypSz16:
+	//	PkgSnow64Cpu::IntTypSz16:
 	//	begin
 	//		{`INST_16__2_S(__zero_ext, _in_a),
 	//			`INST_16__2_S(__zero_ext, _in_b),
@@ -4412,7 +4946,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//			__in_b_sliced_16.data_2)};
 	//	end
 
-	//	//PkgSnow64Cpu::TypSz32:
+	//	//PkgSnow64Cpu::IntTypSz32:
 	//	default:
 	//	begin
 	//		{`INST_32__0_S(__zero_ext, _in_a),
@@ -4429,8 +4963,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 	//always @(*)
 	//begin
-	//	case (in.type_size)
-	//	PkgSnow64Cpu::TypSz8:
+	//	case (in.int_type_size)
+	//	PkgSnow64Cpu::IntTypSz8:
 	//	begin
 	//		{`INST_8__5_S(__zero_ext, _in_a),
 	//			`INST_8__5_S(__zero_ext, _in_b),
@@ -4446,7 +4980,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//			__in_b_sliced_8.data_5)};
 	//	end
 
-	//	//PkgSnow64Cpu::TypSz16:
+	//	//PkgSnow64Cpu::IntTypSz16:
 	//	default:
 	//	begin
 	//		{`INST_16__1_S(__zero_ext, _in_a),
@@ -4463,8 +4997,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 	//always @(*)
 	//begin
-	//	case (in.type_size)
-	//	PkgSnow64Cpu::TypSz8:
+	//	case (in.int_type_size)
+	//	PkgSnow64Cpu::IntTypSz8:
 	//	begin
 	//		{`INST_8__4_S(__zero_ext, _in_a),
 	//			`INST_8__4_S(__zero_ext, _in_b),
@@ -4480,7 +5014,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//			__in_b_sliced_8.data_4)};
 	//	end
 
-	//	//PkgSnow64Cpu::TypSz16:
+	//	//PkgSnow64Cpu::IntTypSz16:
 	//	default:
 	//	begin
 	//		{`INST_16__0_S(__zero_ext, _in_a),
@@ -4541,7 +5075,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	//end
 
 	// Non-shift bitwise operations treat "in.a" and "in.b" as if they're
-	// just 64-bit bit vectors, and so every "in.type_size" value will
+	// just 64-bit bit vectors, and so every "in.int_type_size" value will
 	// cause the same result to occur.  This allows me to slightly shrink
 	// the ALU.
 	logic [PkgSnow64Alu::MSB_POS__OF_64:0] __out_non_shift_bitwise_data;
@@ -5201,23 +5735,23 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 	always @(*)
 	begin
-		case (in.type_size)
-		PkgSnow64Cpu::TypSz8:
+		case (in.int_type_size)
+		PkgSnow64Cpu::IntTypSz8:
 		begin
 			out.data = __out_data_sliced_8;
 		end
 
-		PkgSnow64Cpu::TypSz16:
+		PkgSnow64Cpu::IntTypSz16:
 		begin
 			out.data = __out_data_sliced_16;
 		end
 
-		PkgSnow64Cpu::TypSz32:
+		PkgSnow64Cpu::IntTypSz32:
 		begin
 			out.data = __out_data_sliced_32;
 		end
 
-		PkgSnow64Cpu::TypSz64:
+		PkgSnow64Cpu::IntTypSz64:
 		begin
 			out.data = __out_data_sliced_64;
 		end
@@ -5291,6 +5825,13 @@ endmodule
 
 
 
+
+
+
+
+
+
+
 		// src__slash__snow64_bfloat16_defines_header_sv
 
 
@@ -5298,8 +5839,9 @@ endmodule
 // single-cycle.
 // To keep from changing the test bench, this module TEMPORARILY has an
 // interface that the test bench knows about.  That will change later!
-module Snow64BFloat16Slt(input PkgSnow64BFloat16::PortIn_BinOp in,
-	output logic out);
+module Snow64BFloat16Slt(input logic clk,
+	input PkgSnow64BFloat16::PortIn_BinOp in,
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 	localparam __WIDTH__DATA_NO_SIGN = 16 - 1;
 	localparam __MSB_POS__DATA_NO_SIGN = ((__WIDTH__DATA_NO_SIGN) - 1);
@@ -5332,46 +5874,47 @@ module Snow64BFloat16Slt(input PkgSnow64BFloat16::PortIn_BinOp in,
 	: {{
 	(7 + 1){1'b0}}});
 
-	//initial
-	//begin
-	//	out.data_valid = 1;
-	//	out.can_accept_cmd = 1;
-	//	out.data = 0;
-	//end
-
 	initial
 	begin
-		out = 0;
+		out.data_valid = 0;
+		out.can_accept_cmd = 1;
+		out.data = 0;
 	end
 
-	// Combinational logic
-	always @(*)
+	//// Combinational logic
+	//always @(*)
+	always_ff @(posedge clk)
 	begin
-		case ({__in_a.sign, __in_b.sign})
-		2'b00:
+		if (in.start)
 		begin
-			// Equal signs, both non-negative
-			out = (__in_a_no_sign < __in_b_no_sign);
-		end
+			case ({__in_a.sign, __in_b.sign})
+			2'b00:
+			begin
+				// Equal signs, both non-negative
+				out.data <= (__in_a_no_sign < __in_b_no_sign);
+			end
 
-		2'b01:
-		begin
-			out = 0;
-		end
+			2'b01:
+			begin
+				out.data <= 0;
+			end
 
-		2'b10:
-		begin
-			// The only time opposite signs allows "<" to return false
-			// is when ((__in_a == 0.0f) && (__in_b == -0.0f))
-			out = (!((__in_a_frac == 0) && (__in_b_frac == 0)));
-		end
+			2'b10:
+			begin
+				// The only time opposite signs allows "<" to return false
+				// is when ((__in_a == 0.0f) && (__in_b == -0.0f))
+				out.data <= (!((__in_a_frac == 0) && (__in_b_frac == 0)));
+			end
 
-		2'b11:
-		begin
-			// Equal signs, both non-positive
-			out = (__in_b_no_sign < __in_a_no_sign);
+			2'b11:
+			begin
+				// Equal signs, both non-positive
+				out.data <= (__in_b_no_sign < __in_a_no_sign);
+			end
+			endcase
+
+			out.data_valid <= 1;
 		end
-		endcase
 	end
 
 endmodule
@@ -5440,11 +5983,18 @@ endmodule
 
 
 
+
+
+
+
+
+
+
 		// src__slash__snow64_bfloat16_defines_header_sv
 
-module __RealSnow64BFloat16Add(input logic clk,
+module Snow64BFloat16Add(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 
 
@@ -5967,34 +6517,41 @@ module __RealSnow64BFloat16Add(input logic clk,
 	end
 endmodule
 
-module Snow64BFloat16Add(input logic clk,
-	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+//module Snow64BFloat16Add(input logic clk,
+//	input PkgSnow64BFloat16::PortIn_BinOp in,
+//	output PkgSnow64BFloat16::PortOut_BinOp out);
+//
+//	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk), .in(in),
+//		.out(out));
+//endmodule
+//
+//module Snow64BFloat16Sub(input logic clk,
+//	input PkgSnow64BFloat16::PortIn_BinOp in,
+//	output PkgSnow64BFloat16::PortOut_BinOp out);
+//
+//	PkgSnow64BFloat16::PortIn_BinOp __in_bfloat16_add;
+//	PkgSnow64BFloat16::BFloat16 __in_b, __in_bfloat16_add_b;
+//
+//	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk),
+//		.in(__in_bfloat16_add), .out(out));
+//
+//	always @(*) __in_b = in.b;
+//	always @(*) __in_bfloat16_add_b.sign = !__in_b.sign;
+//	always @(*) __in_bfloat16_add_b.enc_exp = __in_b.enc_exp;
+//	always @(*) __in_bfloat16_add_b.enc_mantissa = __in_b.enc_mantissa;
+//
+//	always @(*) __in_bfloat16_add.start = in.start;
+//	always @(*) __in_bfloat16_add.a = in.a;
+//	always @(*) __in_bfloat16_add.b = __in_bfloat16_add_b;
+//
+//endmodule
 
-	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk), .in(in),
-		.out(out));
-endmodule
 
-module Snow64BFloat16Sub(input logic clk,
-	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
 
-	PkgSnow64BFloat16::PortIn_BinOp __in_bfloat16_add;
-	PkgSnow64BFloat16::BFloat16 __in_b, __in_bfloat16_add_b;
 
-	__RealSnow64BFloat16Add __inst_real_bfloat16_add(.clk(clk),
-		.in(__in_bfloat16_add), .out(out));
 
-	always @(*) __in_b = in.b;
-	always @(*) __in_bfloat16_add_b.sign = !__in_b.sign;
-	always @(*) __in_bfloat16_add_b.enc_exp = __in_b.enc_exp;
-	always @(*) __in_bfloat16_add_b.enc_mantissa = __in_b.enc_mantissa;
 
-	always @(*) __in_bfloat16_add.start = in.start;
-	always @(*) __in_bfloat16_add.a = in.a;
-	always @(*) __in_bfloat16_add.b = __in_bfloat16_add_b;
 
-endmodule
 
 
 
@@ -6064,7 +6621,7 @@ endmodule
 
 module Snow64BFloat16Div(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 	localparam __WIDTH__TEMP = 16;
 	localparam __MSB_POS__TEMP = ((__WIDTH__TEMP) - 1);
@@ -6236,6 +6793,7 @@ module Snow64BFloat16Div(input logic clk,
 
 		PkgSnow64BFloat16::StDivAfterLongDiv:
 		begin
+			//$display("StDivAfterLongDiv");
 			__state <= PkgSnow64BFloat16::StDivFinishing;
 			//$display("__temp_ret_significand:  %h",
 			//	__temp_ret_significand);
@@ -6297,6 +6855,13 @@ module Snow64BFloat16Div(input logic clk,
 	end
 
 endmodule
+
+//module DebugSnow64BFloat16Div(input logic clk,
+//	input PkgSnow64BFloat16::PortIn_BinOp in,
+//	output PkgSnow64BFloat16::PortOut_BinOp out);
+//
+//	Snow64BFloat16Div __inst_bfloat16_div(.clk(clk), .in(in), .out(out));
+//endmodule
 
 
 
@@ -6707,11 +7272,293 @@ endmodule
 
 
 
+
+
+
+
+
+
+
+		// src__slash__snow64_bfloat16_defines_header_sv
+
+//module DebugSnow64BFloat16Fpu(input logic clk,
+//	input logic in_start,
+//	input logic [`MSB_POS__SNOW64_BFLOAT16_FPU_OPER:0] in_oper,
+//	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_a, in_b,
+//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
+//
+//
+//	PkgSnow64BFloat16::PortIn_Fpu __in_bfloat16_fpu;
+//	PkgSnow64BFloat16::PortOut_Fpu __out_bfloat16_fpu;
+//
+//	always @(*) __in_bfloat16_fpu.start = in_start;
+//	always @(*) __in_bfloat16_fpu.oper = in_oper;
+//	always @(*) __in_bfloat16_fpu.a = in_a;
+//	always @(*) __in_bfloat16_fpu.b = in_b;
+//
+//	assign out_data_valid = __out_bfloat16_fpu.data_valid;
+//	assign out_can_accept_cmd = __out_bfloat16_fpu.can_accept_cmd;
+//	assign out_data = __out_bfloat16_fpu.data;
+//
+//	Snow64BFloat16Fpu __inst_bfloat16_fpu(.clk(clk),
+//		.in(__in_bfloat16_fpu), .out(__out_bfloat16_fpu));
+//endmodule
+
+
+module Snow64BFloat16Fpu(input logic clk,
+	input PkgSnow64BFloat16::PortIn_Fpu in,
+	output PkgSnow64BFloat16::PortOut_Fpu out);
+
+	PkgSnow64BFloat16::BFloat16 __in_b, __in_b_negated;
+	assign __in_b = in.b;
+	always @(*) __in_b_negated.sign = !__in_b.sign;
+	always @(*) __in_b_negated.enc_exp = __in_b.enc_exp;
+	always @(*) __in_b_negated.enc_mantissa = __in_b.enc_mantissa;
+
+	logic [
+	((4) - 1):0] __captured_in_oper;
+
+
+
+	PkgSnow64BFloat16::PortIn_BinOp
+		__in_submodule_add, __in_submodule_slt,
+		__in_submodule_mul, __in_submodule_div;
+
+
+	PkgSnow64BFloat16::PortOut_BinOp
+		__out_submodule_add, __out_submodule_slt,
+		__out_submodule_mul, __out_submodule_div;
+
+	always @(*) __in_submodule_add.start = __temp_out_can_accept_cmd
+		&& in.start && ((in.oper == PkgSnow64BFloat16::OpAdd)
+		|| (in.oper == PkgSnow64BFloat16::OpSub)
+		|| (in.oper == PkgSnow64BFloat16::OpAddAgain));
+
+	always @(*) __in_submodule_slt.start = __temp_out_can_accept_cmd
+		&& in.start && (in.oper == PkgSnow64BFloat16::OpSlt);
+
+	always @(*) __in_submodule_mul.start = __temp_out_can_accept_cmd
+		&& in.start && (in.oper == PkgSnow64BFloat16::OpMul);
+
+	always @(*) __in_submodule_div.start = __temp_out_can_accept_cmd
+		&& in.start && (in.oper == PkgSnow64BFloat16::OpDiv);
+
+	always @(*) __in_submodule_add.a = in.a;
+	always @(*) __in_submodule_slt.a = in.a;
+	always @(*) __in_submodule_mul.a = in.a;
+	always @(*) __in_submodule_div.a = in.a;
+
+	always @(*)
+	begin
+		if (in.oper == PkgSnow64BFloat16::OpSub)
+		begin
+			__in_submodule_add.b = __in_b_negated;
+		end
+
+		else // if (in.oper != PkgSnow64BFloat16::OpSub)
+		begin
+			__in_submodule_add.b = in.b;
+		end
+	end
+	always @(*) __in_submodule_slt.b = in.b;
+	always @(*) __in_submodule_mul.b = in.b;
+	always @(*) __in_submodule_div.b = in.b;
+
+	Snow64BFloat16Add __inst_submodule_add(.clk(clk),
+		.in(__in_submodule_add), .out(__out_submodule_add));
+	Snow64BFloat16Slt __inst_submodule_slt(.in(__in_submodule_slt),
+		.out(__out_submodule_slt));
+	Snow64BFloat16Mul __inst_submodule_mul(.clk(clk),
+		.in(__in_submodule_mul), .out(__out_submodule_mul));
+	Snow64BFloat16Div __inst_submodule_div(.clk(clk),
+		.in(__in_submodule_div), .out(__out_submodule_div));
+
+	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+
+	initial
+	begin
+		__captured_in_oper = 0;
+		//__temp_out_data_valid = 0;
+		//__temp_out_can_accept_cmd = 1;
+		out.data = 0;
+	end
+
+	//always @(*)
+	always @(*) out.data_valid = __temp_out_data_valid;
+	always @(*) out.can_accept_cmd = __temp_out_can_accept_cmd;
+	
+	assign __temp_out_data_valid
+		= ((!(in.start && __temp_out_can_accept_cmd))
+		&& ((__out_submodule_add.data_valid
+		&& ((__captured_in_oper == PkgSnow64BFloat16::OpAdd)
+		|| (__captured_in_oper == PkgSnow64BFloat16::OpSub)
+		|| (__captured_in_oper == PkgSnow64BFloat16::OpAddAgain)))
+
+		|| (__out_submodule_slt.data_valid
+		&& (__captured_in_oper == PkgSnow64BFloat16::OpSlt))
+
+		|| (__out_submodule_mul.data_valid
+		&& (__captured_in_oper == PkgSnow64BFloat16::OpMul))
+
+		|| (__out_submodule_div.data_valid
+		&& (__captured_in_oper == PkgSnow64BFloat16::OpDiv))));
+
+	assign __temp_out_can_accept_cmd
+		= (__out_submodule_add.can_accept_cmd
+		&& __out_submodule_slt.can_accept_cmd
+		&& __out_submodule_mul.can_accept_cmd
+		&& __out_submodule_div.can_accept_cmd);
+
+	//task switch_to_wait_for_submodule;
+	//	__captured_in_oper <= in.oper;
+	//	__state <= StWaitForSubmodule;
+	//	out.data_valid <= 0;
+	//	out.can_accept_cmd <= 0;
+	//endtask
+
+	//task switch_to_idle
+	//	(input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] n_out_data);
+	//	__state <= StIdle;
+	//	out.data_valid <= 1;
+	//	out.can_accept_cmd <= 1;
+	//	out.data <= n_out_data;
+	//endtask
+
+	always @(*)
+	begin
+		//if (out.can_accept_cmd)
+		if (__temp_out_can_accept_cmd)
+		begin
+			case (__captured_in_oper)
+			PkgSnow64BFloat16::OpAdd:
+			begin
+				out.data = __out_submodule_add.data;
+			end
+
+			PkgSnow64BFloat16::OpSub:
+			begin
+				out.data = __out_submodule_add.data;
+			end
+
+			PkgSnow64BFloat16::OpSlt:
+			begin
+				out.data = __out_submodule_slt.data;
+			end
+
+			PkgSnow64BFloat16::OpMul:
+			begin
+				out.data = __out_submodule_mul.data;
+			end
+
+			PkgSnow64BFloat16::OpDiv:
+			begin
+				out.data = __out_submodule_div.data;
+			end
+
+			PkgSnow64BFloat16::OpAddAgain:
+			begin
+				out.data = __out_submodule_add.data;
+			end
+
+			default:
+			begin
+				out.data = 0;
+			end
+			endcase
+		end
+
+		else // if (!__temp_out_can_accept_cmd)
+		begin
+			out.data = 0;
+		end
+	end
+
+	always_ff @(posedge clk)
+	begin
+		if (in.start && out.can_accept_cmd)
+		begin
+			__captured_in_oper <= in.oper;
+		end
+	end
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// src__slash__snow64_bfloat16_defines_header_sv
 
 module Snow64BFloat16Mul(input logic clk,
 	input PkgSnow64BFloat16::PortIn_BinOp in,
-	output PkgSnow64BFloat16::PortOut_Oper out);
+	output PkgSnow64BFloat16::PortOut_BinOp out);
 
 	localparam __WIDTH__TEMP = 16;
 	localparam __MSB_POS__TEMP = ((__WIDTH__TEMP) - 1);
@@ -6948,178 +7795,1001 @@ endmodule
 
 
 
+
+
+
+
+
+
+
 		// src__slash__snow64_bfloat16_defines_header_sv
 
-//module Snow64BFloat16CastFromInt(input logic clk,
-//	input PkgSnow64BFloat16::PortIn_CastFromInt in,
-//	output PkgSnow64BFloat16::PortOut_CastFromInt out);
+module Snow64BFloat16CastFromInt(input logic clk,
+	input PkgSnow64BFloat16::PortIn_CastFromInt in,
+	output PkgSnow64BFloat16::PortOut_CastFromInt out);
+
+
+	enum logic
+	{
+		StIdle,
+		StFinishing
+	} __state;
+
+	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+	PkgSnow64BFloat16::BFloat16 __temp_out_data;
+	logic [
+	((64) - 1):0] __temp_ret_enc_exp;
+
+	assign out.data_valid = __temp_out_data_valid;
+	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
+	assign out.data = __temp_out_data;
+
+	logic [
+	((64) - 1):0] __width;
+	logic [
+	((2) - 1):0] __captured_in_type_size;
+
+	logic [
+	((64) - 1):0] __temp_abs_data;
+	logic [
+	((7) - 1):0] __out_clz64;
+
+	Snow64CountLeadingZeros64 __inst_clz64(.in(__temp_abs_data),
+		.out(__out_clz64));
+
+	initial
+	begin
+		__state = StIdle;
+		__temp_out_data_valid = 0;
+		__temp_out_can_accept_cmd = 1;
+		__temp_out_data = 0;
+	end
+
+	// Pseudo combinational logic
+	always @(posedge clk)
+	begin
+		case (__state)
+		StIdle:
+		begin
+			if (in.start)
+			begin
+				case (in.type_signedness)
+				0:
+				begin
+					case (in.int_type_size)
+					PkgSnow64Cpu::IntTypSz8:
+					begin
+						__temp_abs_data = {56'h0, in.to_cast[7:0]};
+						__width = 8;
+					end
+
+					PkgSnow64Cpu::IntTypSz16:
+					begin
+						__temp_abs_data = {48'h0, in.to_cast[15:0]};
+						__width = 16;
+					end
+
+					PkgSnow64Cpu::IntTypSz32:
+					begin
+						__temp_abs_data = {32'h0, in.to_cast[31:0]};
+						__width = 32;
+					end
+
+					PkgSnow64Cpu::IntTypSz64:
+					begin
+						__temp_abs_data = in.to_cast;
+						__width = 64;
+					end
+					endcase
+
+					__temp_out_data.sign = 0;
+				end
+
+				1:
+				begin
+					case (in.int_type_size)
+					PkgSnow64Cpu::IntTypSz8:
+					begin
+						__temp_abs_data = in.to_cast[7]
+							? (-in.to_cast[7:0]) : in.to_cast[7:0];
+						__width = 8;
+						__temp_out_data.sign = in.to_cast[7];
+					end
+
+					PkgSnow64Cpu::IntTypSz16:
+					begin
+						__temp_abs_data = in.to_cast[15]
+							? (-in.to_cast[15:0]) : in.to_cast[15:0];
+						__width = 16;
+						__temp_out_data.sign = in.to_cast[15];
+					end
+
+					PkgSnow64Cpu::IntTypSz32:
+					begin
+						__temp_abs_data = in.to_cast[31]
+							? (-in.to_cast[31:0]) : in.to_cast[31:0];
+						__width = 32;
+						__temp_out_data.sign = in.to_cast[31];
+					end
+
+					PkgSnow64Cpu::IntTypSz64:
+					begin
+						//__temp_abs_data = in.to_cast;
+						//__temp_abs_data = in.to_cast;
+						__temp_abs_data = in.to_cast[63]
+							? (-in.to_cast[63:0]) : in.to_cast[63:0];
+						__width = 64;
+						__temp_out_data.sign = in.to_cast[63];
+					end
+					endcase
+				end
+				endcase
+			end
+		end
+
+		StFinishing:
+		begin
+			case (__captured_in_type_size)
+			PkgSnow64Cpu::IntTypSz8:
+			begin
+				__temp_ret_enc_exp = 8'd127
+					+ (__width - 64'h1) 
+					- (__out_clz64 - (64 - 8));
+			end
+
+			PkgSnow64Cpu::IntTypSz16:
+			begin
+				__temp_ret_enc_exp = 8'd127
+					+ (__width - 64'h1) 
+					- (__out_clz64 - (64 - 16));
+			end
+
+			PkgSnow64Cpu::IntTypSz32:
+			begin
+				__temp_ret_enc_exp = 8'd127
+					+ (__width - 64'h1) 
+					- (__out_clz64 - (64 - 32));
+			end
+
+			PkgSnow64Cpu::IntTypSz64:
+			begin
+				__temp_ret_enc_exp = 8'd127
+					+ (__width - 64'h1) 
+					- __out_clz64;
+			end
+			endcase
+
+			__temp_abs_data = __temp_abs_data << __out_clz64;
+			__temp_abs_data = __temp_abs_data[63:56];
+
+			if (__temp_abs_data == 0)
+			begin
+				{__temp_out_data.enc_exp, __temp_out_data.enc_mantissa}
+					= 0;
+			end
+			else // if (__temp_abs_data != 0)
+			begin
+				//{__temp_out_data.enc_exp, __temp_out_data.enc_mantissa}
+				//	= {__temp_ret_enc_exp
+				//	[`MSB_POS__SNOW64_BFLOAT16_ENC_EXP:0],
+				//	__temp_abs_data
+				//	[`MSB_POS__SNOW64_BFLOAT16_ENC_MANTISSA:0]};
+				__temp_out_data.enc_exp = __temp_ret_enc_exp;
+				__temp_out_data.enc_mantissa = __temp_abs_data;
+			end
+
+		end
+		endcase
+	end
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+		StIdle:
+		begin
+			if (in.start)
+			begin
+				__state <= StFinishing;
+				__temp_out_data_valid <= 0;
+				__temp_out_can_accept_cmd <= 0;
+				__captured_in_type_size <= in.int_type_size;
+			end
+		end
+
+		StFinishing:
+		begin
+			__state <= StIdle;
+			__temp_out_data_valid <= 1;
+			__temp_out_can_accept_cmd <= 1;
+		end
+		endcase
+	end
+
+endmodule
+
+module Snow64BFloat16CastToInt(input logic clk,
+	input PkgSnow64BFloat16::PortIn_CastToInt in,
+	output PkgSnow64BFloat16::PortOut_CastToInt out);
+
+	localparam __WIDTH__STATE = 2;
+	localparam __MSB_POS__STATE = ((__WIDTH__STATE) - 1);
+
+	enum logic [__MSB_POS__STATE:0]
+	{
+		StIdle,
+		StInner,
+		StFinishing
+	} __state;
+
+	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+	logic [
+	((64) - 1):0] __temp_out_data, __temp_for_sticky;
+
+	assign out.data_valid = __temp_out_data_valid;
+	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
+	assign out.data = __temp_out_data;
+
+
+	//logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] __captured_in_to_cast;
+	PkgSnow64BFloat16::BFloat16 __curr_in_to_cast, __captured_in_to_cast;
+	assign __curr_in_to_cast = in.to_cast;
+
+	logic [
+	((2) - 1):0] __captured_in_type_size;
+	logic __captured_in_type_signedness;
+
+	//logic [`MSB_POS__SNOW64_BFLOAT16_ENC_EXP:0]
+	logic [
+	((16) - 1):0]
+		__curr_exp, __abs_curr_exp, __max_shift_amount;
+
+	logic [
+	((64) - 1):0] __width;
+	logic [
+	((64) - 1):0] __temp_ret_enc_exp;
+	logic __sticky;
+
+	// I treat SystemVerilog tasks a lot like I would local variable lambda
+	// functions in C++.
+	// In fact, "set_to_max_signed()" was a C++ local variable lambda
+	// function in my BFloat16 software implementation.
+	task set_to_max_signed;
+		case (__captured_in_type_size)
+		PkgSnow64Cpu::IntTypSz8:
+		begin
+			__temp_out_data = {{(64
+				- 8){1'b1}}, 1'b1, 7'h0};
+		end
+
+		PkgSnow64Cpu::IntTypSz16:
+		begin
+			__temp_out_data = {{(64
+				- 16){1'b1}}, 1'b1, 15'h0};
+		end
+
+		PkgSnow64Cpu::IntTypSz32:
+		begin
+			__temp_out_data = {{(64
+				- 32){1'b1}}, 1'b1, 31'h0};
+		end
+
+		PkgSnow64Cpu::IntTypSz64:
+		begin
+			__temp_out_data = {1'b1, 63'h0};
+		end
+		endcase
+	endtask
+
+	task set_sticky;
+		case (__captured_in_type_size)
+			PkgSnow64Cpu::IntTypSz32:
+			begin
+				__temp_for_sticky = (~((32'h1
+					<< (((__width) - 1) - {16'h0, __abs_curr_exp}))
+					- 32'h1));
+				__sticky = (__temp_out_data[31:0] 
+					& __temp_for_sticky[31:0]) != 0;
+			end
+
+			PkgSnow64Cpu::IntTypSz64:
+			begin
+				__temp_for_sticky = (~((64'h1
+					<< (((__width) - 1) - {48'h0, __abs_curr_exp}))
+					- 64'h1));
+				__sticky = (__temp_out_data[63:0] 
+					& __temp_for_sticky[63:0]) != 0;
+			end
+		endcase
+	endtask
+
+	initial
+	begin
+		__state = StIdle;
+		__temp_out_data_valid = 0;
+		__temp_out_can_accept_cmd = 1;
+		__temp_out_data = 0;
+	end
+
+	// Pseudo combinational logic
+	always @(posedge clk)
+	begin
+		case (__state)
+		StIdle:
+		begin
+			if (in.start)
+			begin
+				__temp_out_data = 
+	(
+	((__curr_in_to_cast.enc_exp != 8'd0)
+	&& (__curr_in_to_cast.enc_exp != 8'd255))
+	? {1'b1, __curr_in_to_cast.enc_mantissa}
+	: {{
+	(7 + 1){1'b0}}});
+
+				//__curr_exp = `SIGN_EXTEND(`WIDTH__SNOW64_SIZE_64,
+				//	`WIDTH__SNOW64_BFLOAT16_ENC_EXP,
+				//	__curr_in_to_cast.enc_exp)
+				//	- `SIGN_EXTEND(`WIDTH__SNOW64_SIZE_64,
+				//	`WIDTH__SNOW64_BFLOAT16_ENC_EXP,
+				//	`SNOW64_BFLOAT16_MODDED_BIAS);
+				//__curr_exp = `SIGN_EXTEND(`WIDTH__SNOW64_SIZE_64,
+				//	`WIDTH__SNOW64_BFLOAT16_ENC_EXP,
+				//	__curr_in_to_cast.enc_exp)
+				//	- `SNOW64_BFLOAT16_MODDED_BIAS;
+				__curr_exp = __curr_in_to_cast.enc_exp
+					- (8'd134);
+
+				if (__curr_exp[
+	((16) - 1)])
+				begin
+					__abs_curr_exp = -__curr_exp;
+				end
+				else
+				begin
+					__abs_curr_exp = __curr_exp;
+				end
+
+				case (in.int_type_size)
+				PkgSnow64Cpu::IntTypSz8:
+				begin
+					__max_shift_amount = 
+	((8) - 1);
+					__width = 8;
+				end
+
+				PkgSnow64Cpu::IntTypSz16:
+				begin
+					__max_shift_amount = 
+	((16) - 1);
+					__width = 16;
+				end
+
+				PkgSnow64Cpu::IntTypSz32:
+				begin
+					__max_shift_amount = 
+	((32) - 1);
+					__width = 32;
+				end
+
+				PkgSnow64Cpu::IntTypSz64:
+				begin
+					__max_shift_amount = 
+	((64) - 1);
+					__width = 64;
+				end
+				endcase
+			end
+		end
+
+		StInner:
+		begin
+			//$display("StInner stuffs:  %h\t\t%h, %h, %h",
+			//	__temp_out_data, __curr_exp, __abs_curr_exp,
+			//	__max_shift_amount);
+			if (__curr_exp != __abs_curr_exp)
+			begin
+				//$display("StInner:  __curr_exp < 0");
+				if (__abs_curr_exp <= __max_shift_amount)
+				begin
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp <= __max_shift_amount");
+					__temp_out_data = __temp_out_data >> __abs_curr_exp;
+
+
+					if ((!__captured_in_type_signedness)
+						&& __captured_in_to_cast.sign)
+					begin
+						__temp_out_data = -__temp_out_data;
+					end
+				end
+				else
+				begin
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp > __max_shift_amount");
+					__temp_out_data = 0;
+				end
+			end
+			else // if (__curr_exp == __abs_curr_exp)
+			begin
+				//$display("StInner:  __curr_exp >= 0");
+				if (__abs_curr_exp <= __max_shift_amount)
+				begin
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp <= __max_shift_amount");
+					//if (__abs_curr_exp == 0)
+					//begin
+					//	__sticky = `GET_BITS_WITH_RANGE(__temp_out_data,
+					//		`WIDTH2MP(__width), 0) != 0;
+					//end
+					//else // if (__abs_curr_exp != 0)
+					//begin
+					//	__sticky = `GET_BITS_WITH_RANGE(__temp_out_data,
+					//		`WIDTH2MP(__width),
+					//		(`WIDTH2MP(__width) - __abs_curr_exp))
+					//		!= 0;
+					//end
+					set_sticky();
+
+					__temp_out_data = __temp_out_data << __abs_curr_exp;
+
+					if ((!__captured_in_type_signedness)
+						&& __captured_in_to_cast.sign)
+					begin
+						__temp_out_data = -__temp_out_data;
+					end
+
+					//$display("StInner last __temp_out_data:  %h",
+					//	__temp_out_data);
+				end
+
+				else // if (__abs_curr_exp > __max_shift_amount)
+				begin
+					//$display("StInner:  %s",
+					//	"__abs_curr_exp > __max_shift_amount");
+
+					//$display("stuffs:  %h\t\t%h, %h, %h\t\t%h, %h, %h",
+					//	__captured_in_type_signedness,
+					//	__captured_in_type_size,
+					//	__curr_exp, __width,
+					//	__captured_in_to_cast.enc_exp,
+					//	`SNOW64_BFLOAT16_MAX_ENC_EXP,
+					//	(__captured_in_to_cast.enc_exp
+					//	!= `SNOW64_BFLOAT16_MAX_ENC_EXP));
+
+					__temp_out_data = 0;
+
+					//if ((__captured_in_type_size >= PkgSnow64Cpu::IntTypSz32)
+					//	&& (__curr_exp >= __width)
+					//	&& (__captured_in_to_cast.enc_exp
+					//	!= `SNOW64_BFLOAT16_MAX_ENC_EXP))
+					if ((__captured_in_type_size >= PkgSnow64Cpu::IntTypSz32)
+						&& ({8'h00, __curr_exp} >= __width[15:0])
+						&& (__captured_in_to_cast.enc_exp
+						!= 8'hff))
+					begin
+						if (!__captured_in_type_signedness)
+						begin
+							if (__captured_in_to_cast.sign
+								&& (__captured_in_type_size
+								== PkgSnow64Cpu::IntTypSz64))
+							begin
+								set_to_max_signed();
+							end
+						end
+						else // if (__captured_in_type_signedness)
+						begin
+							//$display("set_to_max_signed()");
+							set_to_max_signed();
+						end
+					end
+				end
+			end
+		end
+
+		StFinishing:
+		begin
+			// I have no idea what's up with this strange behavior,
+			// but this is what I had to do to get it to properly
+			// match what IEEE floats do on my x86-64 laptop.
+
+			//$display("StFinishing:  %h", __sticky);
+
+			if ((__curr_exp == __abs_curr_exp)
+				&& (__abs_curr_exp <= __max_shift_amount)
+				&& (__captured_in_type_size >= PkgSnow64Cpu::IntTypSz32)
+				&& __sticky)
+			begin
+				if (!__captured_in_type_signedness)
+				begin
+					if (__captured_in_type_size == PkgSnow64Cpu::IntTypSz64)
+					begin
+						if (__captured_in_to_cast.sign)
+						begin
+							__temp_out_data = 0;
+
+							if (__curr_exp >= 56)
+							begin
+								set_to_max_signed();
+							end
+						end
+
+						else if (__curr_exp >= 57)
+						begin
+							__temp_out_data = 0;
+						end
+					end
+				end
+				else // if (__captured_in_type_signedness)
+				begin
+					set_to_max_signed();
+				end
+			end
+
+			if (__captured_in_type_signedness
+				&& __captured_in_to_cast.sign)
+			begin
+				__temp_out_data = -__temp_out_data;
+			end
+
+			//$display("StFinishing");
+
+			case (__captured_in_type_size)
+			PkgSnow64Cpu::IntTypSz8:
+			begin
+				//$display("Shrinking things:  %h", __temp_out_data);
+				__temp_out_data = __temp_out_data[7:0];
+				//$display("Shrinking things:  %h", __temp_out_data);
+			end
+
+			PkgSnow64Cpu::IntTypSz16:
+			begin
+				__temp_out_data = __temp_out_data[15:0];
+			end
+
+			PkgSnow64Cpu::IntTypSz32:
+			begin
+				__temp_out_data = __temp_out_data[31:0];
+			end
+
+			PkgSnow64Cpu::IntTypSz64:
+			begin
+				
+			end
+			endcase
+		end
+		endcase
+	end
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+		StIdle:
+		begin
+			if (in.start)
+			begin
+				__state <= StInner;
+				__temp_out_data_valid <= 0;
+				__temp_out_can_accept_cmd <= 0;
+
+				__captured_in_to_cast <= in.to_cast;
+				__captured_in_type_size <= in.int_type_size;
+				__captured_in_type_signedness <= in.type_signedness;
+			end
+		end
+
+		StInner:
+		begin
+			__state <= StFinishing;
+		end
+
+		StFinishing:
+		begin
+			__state <= StIdle;
+			__temp_out_data_valid <= 1;
+			__temp_out_can_accept_cmd <= 1;
+		end
+		endcase
+	end
+
+endmodule
+
+
+//module DebugSnow64BFloat16CastFromInt(input logic clk,
+//	input logic in_start,
+//	input logic [`MSB_POS__SNOW64_SIZE_64:0] in_to_cast,
+//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
+//	input logic in_type_signedness,
+//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
+//
+//	PkgSnow64BFloat16::PortIn_CastFromInt __in_cast_from_int;
+//	PkgSnow64BFloat16::PortOut_CastFromInt __out_cast_from_int;
+//
+//	Snow64BFloat16CastFromInt __inst_cast_from_int(.clk(clk),
+//		.in(__in_cast_from_int), .out(__out_cast_from_int));
 //
 //
-//	enum logic
-//	{
-//		StIdle,
-//		StFinishing
-//	} __state;
+//	always @(*) __in_cast_from_int.start = in_start;
+//	always @(*) __in_cast_from_int.to_cast = in_to_cast;
+//	always @(*) __in_cast_from_int.int_type_size = in_type_size;
+//	always @(*) __in_cast_from_int.type_signedness = in_type_signedness;
 //
-//	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
-//	PkgSnow64BFloat16::BFloat16 __temp_out_data;
-//	logic [`MSB_POS__SNOW64_SIZE_64:0] __temp_ret_enc_exp;
+//	assign out_data_valid = __out_cast_from_int.data_valid;
+//	assign out_can_accept_cmd = __out_cast_from_int.can_accept_cmd;
+//	assign out_data = __out_cast_from_int.data;
 //
-//	assign out.data_valid = __temp_out_data_valid;
-//	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
-//	assign out.data = __temp_out_data;
+//endmodule
 //
-//	logic [`MSB_POS__SNOW64_SIZE_64:0] __width;
 //
-//	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_IN:0] __temp_abs_data;
-//	logic [`MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_OUT:0] __out_clz64;
+//module DebugSnow64BFloat16CastToInt(input logic clk,
+//	input logic in_start,
+//	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_to_cast,
+//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
+//	input logic in_type_signedness,
+//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
 //
-//	Snow64CountLeadingZeros64 __inst_clz64(.in(__temp_abs_data),
-//		.out(__out_clz64));
+//	PkgSnow64BFloat16::PortIn_CastToInt __in_cast_to_int;
+//	PkgSnow64BFloat16::PortOut_CastToInt __out_cast_to_int;
 //
-//	initial
-//	begin
-//		__state = StIdle;
-//		__temp_out_data_valid = 0;
-//		__temp_out_can_accept_cmd = 1;
-//		__temp_out_data = 0;
-//	end
+//	Snow64BFloat16CastToInt __inst_cast_to_int(.clk(clk),
+//		.in(__in_cast_to_int), .out(__out_cast_to_int));
 //
-//	// Pseudo combinational logic
-//	always @(posedge clk)
-//	begin
-//		case (__state)
-//		StIdle:
-//		begin
-//			if (in.start)
-//			begin
-//				case (in.type_signedness)
-//				0:
-//				begin
-//					case (in.type_size)
-//					PkgSnow64Cpu::TypSz8:
-//					begin
-//						__temp_abs_data = {56'h0, in.to_cast[7:0]};
-//						__width = 8;
-//					end
 //
-//					PkgSnow64Cpu::TypSz16:
-//					begin
-//						__temp_abs_data = {48'h0, in.to_cast[15:0]};
-//						__width = 16;
-//					end
+//	always @(*) __in_cast_to_int.start = in_start;
+//	always @(*) __in_cast_to_int.to_cast = in_to_cast;
+//	always @(*) __in_cast_to_int.int_type_size = in_type_size;
+//	always @(*) __in_cast_to_int.type_signedness = in_type_signedness;
 //
-//					PkgSnow64Cpu::TypSz32:
-//					begin
-//						__temp_abs_data = {32'h0, in.to_cast[31:0]};
-//						__width = 32;
-//					end
-//
-//					PkgSnow64Cpu::TypSz64:
-//					begin
-//						__temp_abs_data = in.to_cast;
-//						__width = 64;
-//					end
-//					endcase
-//
-//					__temp_out_data.sign = 0;
-//				end
-//
-//				1:
-//				begin
-//					case (in.type_size)
-//					PkgSnow64Cpu::TypSz8:
-//					begin
-//						__temp_abs_data = in.to_cast[7]
-//							? (-in.to_cast[7:0]) : in.to_cast[7:0];
-//						__width = 8;
-//						__temp_out_data.sign = in.to_cast[7];
-//					end
-//
-//					PkgSnow64Cpu::TypSz16:
-//					begin
-//						__temp_abs_data = in.to_cast[15]
-//							? (-in.to_cast[15:0]) : in.to_cast[15:0];
-//						__width = 16;
-//						__temp_out_data.sign = in.to_cast[15];
-//					end
-//
-//					PkgSnow64Cpu::TypSz32:
-//					begin
-//						__temp_abs_data = in.to_cast[31]
-//							? (-in.to_cast[31:0]) : in.to_cast[31:0];
-//						__width = 32;
-//						__temp_out_data.sign = in.to_cast[31];
-//					end
-//
-//					PkgSnow64Cpu::TypSz64:
-//					begin
-//						__temp_abs_data = in.to_cast;
-//						__width = 64;
-//						__temp_out_data.sign = in.to_cast[63];
-//					end
-//					endcase
-//				end
-//				endcase
-//			end
-//		end
-//
-//		StFinishing:
-//		begin
-//			__temp_ret_enc_exp = `ZERO_EXTEND(`WIDTH__SNOW64_SIZE_64,
-//				`WIDTH__SNOW64_SIZE_8, `SNOW64_BFLOAT16_BIAS)
-//				+ (__width - `WIDTH__SNOW64_SIZE_64'h1) - __out_clz64;
-//
-//			__temp_abs_data = __temp_abs_data << __out_clz64;
-//			__temp_abs_data = __temp_abs_data[63:56];
-//
-//			if (__temp_abs_data == 0)
-//			begin
-//				{__temp_out_data.enc_exp, __temp_out_data.enc_mantissa}
-//					= 0;
-//			end
-//			else // if (__temp_abs_data != 0)
-//			begin
-//				{__temp_out_data.enc_exp, __temp_out_data.enc_mantissa}
-//					= {__temp_ret_enc_exp
-//					[`MSB_POS__SNOW64_BFLOAT16_ENC_EXP:0],
-//					__temp_abs_data
-//					[`MSB_POS__SNOW64_BFLOAT16_ENC_MANTISSA:0]};
-//			end
-//
-//		end
-//		endcase
-//	end
-//
-//	always_ff @(posedge clk)
-//	begin
-//		case (__state)
-//		StIdle:
-//		begin
-//			if (in.start)
-//			begin
-//				__state <= StFinishing;
-//				__temp_out_data_valid <= 0;
-//				__temp_out_can_accept_cmd <= 0;
-//			end
-//		end
-//
-//		StFinishing:
-//		begin
-//			__state <= StIdle;
-//			__temp_out_data_valid <= 1;
-//			__temp_out_can_accept_cmd <= 1;
-//		end
-//		endcase
-//	end
+//	assign out_data_valid = __out_cast_to_int.data_valid;
+//	assign out_can_accept_cmd = __out_cast_to_int.can_accept_cmd;
+//	assign out_data = __out_cast_to_int.data;
 //
 //endmodule
 
-//module Snow64BFloat16CastToInt(input logic clk,
-//	input PkgSnow64BFloat16::PortIn_CastToInt in,
-//	output PkgSnow64BFloat16::PortOut_CastToInt out);
-//
-//endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// src__slash__snow64_lar_file_defines_header_sv
+
+
+module Snow64LarFile(input logic clk,
+	input PkgSnow64LarFile::PortIn_LarFile_Ctrl in_ctrl,
+	input PkgSnow64LarFile::PortIn_LarFile_Read in_rd_a, in_rd_b, in_rd_c,
+	input PkgSnow64LarFile::PortIn_LarFile_Write in_wr,
+	output PkgSnow64LarFile::PortOut_LarFile_Read
+		out_rd_a, out_rd_b, out_rd_c,
+	output PkgSnow64LarFile::PortOut_LarFile_MemWrite out_mem_write);
+
+
+	localparam __ARR_SIZE__NUM_LARS = 16;
+	localparam __LAST_INDEX__NUM_LARS 
+		= 
+	((16) - 1);
+
+	localparam __WIDTH__ADDR_OFFSET_8
+		= 5;
+	localparam __MSB_POS__ADDR_OFFSET_8
+		= 
+	((5) - 1);
+
+	localparam __WIDTH__ADDR_OFFSET_16
+		= 4;
+	localparam __MSB_POS__ADDR_OFFSET_16
+		= 
+	((4) - 1);
+
+	localparam __WIDTH__ADDR_OFFSET_32
+		= 3;
+	localparam __MSB_POS__ADDR_OFFSET_32
+		= 
+	((3) - 1);
+
+	localparam __WIDTH__ADDR_OFFSET_64
+		= 2;
+	localparam __MSB_POS__ADDR_OFFSET_64
+		= 
+	((2) - 1);
+
+	//localparam __WIDTH__META_DA_DATA_OFFSET
+	//	= `WIDTH__SNOW64_LAR_FILE_META_DA_DATA_OFFSET;
+	//localparam __MSB_POS__META_DA_DATA_OFFSET
+	//	= `MSB_POS__SNOW64_LAR_FILE_META_DA_DATA_OFFSET;
+
+	localparam __WIDTH__META_DA_TAG = 4;
+	localparam __MSB_POS__META_DA_TAG
+		= 
+	((4) - 1);
+
+
+	localparam __WIDTH__SH_DA_BASE_ADDR
+		= 
+	
+	(64 - 5);
+	localparam __MSB_POS__SH_DA_BASE_ADDR
+		= 
+	((
+	
+	(64 - 5)) - 1);
+
+	localparam __WIDTH__SH_DA_DATA
+		= 256;
+	localparam __MSB_POS__SH_DA_DATA
+		= 
+	((256) - 1);
+
+	localparam __WIDTH__SH_DA_REF_COUNT
+		= 
+	4;
+	localparam __MSB_POS__SH_DA_REF_COUNT
+		= 
+	((
+	4) - 1);
+
+
+
+	// For associativity
+	logic __found_sh_da_base_addr;
+
+	// Incoming base_addr to be written to a LAR
+	PkgSnow64LarFile::LarBaseAddr __in_wr__base_addr;
+	assign __in_wr__base_addr = in_wr.addr;
+
+
+	// I have effectively decided to implement LAR metadata and LAR shared
+	// data as "structure of arrays" rather than "array of structures".
+	// This is only because of missing SystemVerilog features in Icarus
+	// Verilog at the time of this code being written.
+
+
+	// LAR Metadata stuff
+
+	// The offset into the LAR.
+	logic [__MSB_POS__ADDR_OFFSET_8:0]
+		__meta_da_arr__addr_offset_8[0 : __LAST_INDEX__NUM_LARS];
+
+	logic [__MSB_POS__ADDR_OFFSET_16:0]
+		__meta_da_arr__addr_offset_16[0 : __LAST_INDEX__NUM_LARS];
+
+	logic [__MSB_POS__ADDR_OFFSET_32:0]
+		__meta_da_arr__addr_offset_32[0 : __LAST_INDEX__NUM_LARS];
+
+	logic [__MSB_POS__ADDR_OFFSET_64:0]
+		__meta_da_arr__addr_offset_64[0 : __LAST_INDEX__NUM_LARS];
+
+
+	// The LAR's tag... specifies which shared data is used by this LAR.
+	logic [__MSB_POS__META_DA_TAG:0]
+		__meta_da_arr__tag[0 : __LAST_INDEX__NUM_LARS];
+
+	// See PkgSnow64Cpu::DataType.
+	logic [((2) - 1):0]
+		__meta_da_arr__data_type[0 : __LAST_INDEX__NUM_LARS];
+
+	// See PkgSnow64Cpu::IntTypeSize.
+	logic [
+	((2) - 1):0]
+		__meta_da_arr__int_type_size[0 : __LAST_INDEX__NUM_LARS];
+
+
+	// LAR Shared Data stuff
+
+	// The base address, used for associativity between LARs.
+	logic [__MSB_POS__SH_DA_BASE_ADDR:0]
+		__sh_da_arr__base_addr[0 : __LAST_INDEX__NUM_LARS];
+
+
+	// The data themselves.
+	logic [__MSB_POS__SH_DA_DATA:0]
+		__sh_da_arr__data[0 : __LAST_INDEX__NUM_LARS];
+
+
+	// The reference counts.
+	logic [__MSB_POS__SH_DA_REF_COUNT:0]
+		__sh_da_arr__ref_count[0 : __LAST_INDEX__NUM_LARS];
+
+	// The "dirty" flags.  Used to determine if we should write back to
+	// memory.
+	logic __sh_da_arr__dirty[0 : __LAST_INDEX__NUM_LARS];
+
+
+	// LAR reads happen during the second half of the clock cycle.
+	// This prevents weirdness I dealt with in my previous pipelined CPU,
+	// where a "read" from the register file might actually have to return
+	// the value currently being written to the register file!
+
+	
+
+	
+
+
+	
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	always_ff @(negedge clk)
+	begin
+		
+		out_rd_a.data
+			<= __sh_da_arr__data[
+		__meta_da_arr__tag[
+		in_rd_a.index]];
+		
+		out_rd_a.addr
+			<= __meta_da_arr__addr[
+		in_rd_a.index];
+		
+		out_rd_a.tag
+			<= __meta_da_arr__tag[
+		in_rd_a.index];
+		
+		out_rd_a.data_type
+			<= __meta_da_arr__int_type_size[
+		in_rd_a.index];
+	end
+	
+	always_ff @(negedge clk)
+	begin
+		
+		out_rd_b.data
+			<= __sh_da_arr__data[
+		__meta_da_arr__tag[
+		in_rd_b.index]];
+		
+		out_rd_b.addr
+			<= __meta_da_arr__addr[
+		in_rd_b.index];
+		
+		out_rd_b.tag
+			<= __meta_da_arr__tag[
+		in_rd_b.index];
+		
+		out_rd_b.data_type
+			<= __meta_da_arr__int_type_size[
+		in_rd_b.index];
+	end
+	
+	always_ff @(negedge clk)
+	begin
+		
+		out_rd_c.data
+			<= __sh_da_arr__data[
+		__meta_da_arr__tag[
+		in_rd_c.index]];
+		
+		out_rd_c.addr
+			<= __meta_da_arr__addr[
+		in_rd_c.index];
+		
+		out_rd_c.tag
+			<= __meta_da_arr__tag[
+		in_rd_c.index];
+		
+		out_rd_c.data_type
+			<= __meta_da_arr__int_type_size[
+		in_rd_c.index];
+	end
+
+	
+	
+	
+
+	// Writes happen during the first half of the clock cycle.
+	always @(posedge clk)
+	begin
+		
+	end
+
+
+endmodule
 
 
 

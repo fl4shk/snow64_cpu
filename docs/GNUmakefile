@@ -45,7 +45,7 @@ html_pre : all_pre $(OUTPUTS)
 #		mkdir -p $$(dirname $$ofile); \
 #	done
 
-$(OUTPUTS) : $(OUTDIR)/%.md : %.m4
+$(OUTPUTS) : $(OUTDIR)/%.md : %.m4 src/include/*.m4
 	m4 $< > $@
 
 $(PDFS) : %.pdf : %.md
