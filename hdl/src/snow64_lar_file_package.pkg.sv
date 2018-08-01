@@ -36,7 +36,7 @@ typedef struct packed
 	logic req;
 
 	// Actually a LarFileWriteType
-	logic write_type;
+	logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0] write_type;
 
 	// Which LAR are we writing to?
 	logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] index;
@@ -64,19 +64,22 @@ typedef struct packed
 	// indices directly.  Of course, with a DLARs machine, that's not
 	// really a valid option because two registers may actually point to
 	// the same data.
-	logic [`MSB_POS__SNOW64_LAR_FILE_META_DA_TAG:0] tag;
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0] tag;
 
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 
 	// Same int_type_size goodness as in other modules.
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+
+	// It turns out that nobody besides the LAR file needs to know which
+	// LARs are dirty!
 } PortOut_LarFile_Read;
 
 typedef struct packed
 {
 	logic req;
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
-	logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_BASE_ADDR:0] base_addr;
+	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
 } PortOut_LarFile_MemWrite;
 
 typedef struct packed
@@ -109,8 +112,8 @@ typedef struct packed
 // Used to grab the base_addr from an incoming address
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_BASE_ADDR:0] base_addr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_META_DA_DATA_OFFSET:0] fill;
+	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] fill;
 } LarBaseAddr;
 
 
@@ -140,11 +143,11 @@ typedef struct packed
 // LAR Metadata stuff
 
 
-//typedef logic [`MSB_POS__SNOW64_LAR_FILE_META_DA_DATA_OFFSET:0]
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
 //	LarMetaDaDataOffset;
 
 //// The LAR's tag... specifies which shared data is used by this LAR.
-//typedef logic [`MSB_POS__SNOW64_LAR_FILE_META_DA_TAG:0] LarMetaDaTag;
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0] LarMetaDaTag;
 
 //// See PkgSnow64Cpu::DataType.
 //typedef logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] LarMetaDaDataType;
@@ -156,15 +159,14 @@ typedef struct packed
 // LAR Shared Data stuff
 
 //// The base address, used for associativity between LARs.
-//// We really do only need one copy of this.
-//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_BASE_ADDR:0]
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 //	LarShDaBaseAddr;
 
 //// The data itself.
-//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_DATA:0] LarShDaData;
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_DATA:0] LarShDaData;
 
 //// The reference count.
-//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SH_DA_REF_COUNT:0]
+//typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_REF_COUNT:0]
 //	LarShDaRefCount;
 
 //// The "dirty" flag.  Used to determine if we should write back to memory.

@@ -14,55 +14,201 @@ module Snow64LarFile(input logic clk,
 	localparam __LAST_INDEX__NUM_LARS 
 		= `LAST_INDEX__SNOW64_LAR_FILE_NUM_LARS;
 
-	localparam __WIDTH__ADDR_OFFSET_8
-		= `WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_8;
-	localparam __MSB_POS__ADDR_OFFSET_8
-		= `MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_8;
-
-	localparam __WIDTH__ADDR_OFFSET_16
-		= `WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_16;
-	localparam __MSB_POS__ADDR_OFFSET_16
-		= `MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_16;
-
-	localparam __WIDTH__ADDR_OFFSET_32
-		= `WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_32;
-	localparam __MSB_POS__ADDR_OFFSET_32
-		= `MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_32;
-
-	localparam __WIDTH__ADDR_OFFSET_64
-		= `WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_64;
-	localparam __MSB_POS__ADDR_OFFSET_64
-		= `MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_64;
-
-	//localparam __WIDTH__META_DA_DATA_OFFSET
-	//	= `WIDTH__SNOW64_LAR_FILE_META_DA_DATA_OFFSET;
-	//localparam __MSB_POS__META_DA_DATA_OFFSET
-	//	= `MSB_POS__SNOW64_LAR_FILE_META_DA_DATA_OFFSET;
-
-	localparam __WIDTH__META_DA_TAG = `WIDTH__SNOW64_LAR_FILE_META_DA_TAG;
-	localparam __MSB_POS__META_DA_TAG
-		= `MSB_POS__SNOW64_LAR_FILE_META_DA_TAG;
-
-
-	localparam __WIDTH__SH_DA_BASE_ADDR
-		= `WIDTH__SNOW64_LAR_FILE_SH_DA_BASE_ADDR;
-	localparam __MSB_POS__SH_DA_BASE_ADDR
-		= `MSB_POS__SNOW64_LAR_FILE_SH_DA_BASE_ADDR;
-
-	localparam __WIDTH__SH_DA_DATA
-		= `WIDTH__SNOW64_LAR_FILE_SH_DA_DATA;
-	localparam __MSB_POS__SH_DA_DATA
-		= `MSB_POS__SNOW64_LAR_FILE_SH_DA_DATA;
-
-	localparam __WIDTH__SH_DA_REF_COUNT
-		= `WIDTH__SNOW64_LAR_FILE_SH_DA_REF_COUNT;
-	localparam __MSB_POS__SH_DA_REF_COUNT
-		= `MSB_POS__SNOW64_LAR_FILE_SH_DA_REF_COUNT;
 
 
 
-	// For associativity
-	logic __found_sh_da_base_addr;
+
+	// These are used mainly because Icarus Verilog does not, at the time
+	// of this writing, support creating an array of packed structs.
+	//
+	// The other reason for these is that they will make it easier for me
+	// to formally verify this module, as I have to convert this module to
+	// Verilog first before I can formally verify it.
+
+	// Meta data fields
+	localparam __METADATA__ADDR_OFFSET_8__INDEX_LO = 0;
+	localparam __METADATA__ADDR_OFFSET_8__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_OFFSET_8__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_8);
+	localparam __METADATA__ADDR_BASE_PTR_8__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__METADATA__ADDR_OFFSET_8__INDEX_HI);
+	localparam __METADATA__ADDR_BASE_PTR_8__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_BASE_PTR_8__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_BASE_PTR_8);
+
+	localparam __METADATA__ADDR_OFFSET_16__INDEX_LO = 0;
+	localparam __METADATA__ADDR_OFFSET_16__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_OFFSET_16__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_16);
+	localparam __METADATA__ADDR_BASE_PTR_16__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__METADATA__ADDR_OFFSET_16__INDEX_HI);
+	localparam __METADATA__ADDR_BASE_PTR_16__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_BASE_PTR_16__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_BASE_PTR_16);
+
+	localparam __METADATA__ADDR_OFFSET_32__INDEX_LO = 0;
+	localparam __METADATA__ADDR_OFFSET_32__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_OFFSET_32__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_32);
+	localparam __METADATA__ADDR_BASE_PTR_32__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__METADATA__ADDR_OFFSET_32__INDEX_HI);
+	localparam __METADATA__ADDR_BASE_PTR_32__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_BASE_PTR_32__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_BASE_PTR_32);
+
+	localparam __METADATA__ADDR_OFFSET_64__INDEX_LO = 0;
+	localparam __METADATA__ADDR_OFFSET_64__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_OFFSET_64__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_64);
+	localparam __METADATA__ADDR_BASE_PTR_64__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__METADATA__ADDR_OFFSET_64__INDEX_HI);
+	localparam __METADATA__ADDR_BASE_PTR_64__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__ADDR_BASE_PTR_64__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_BASE_PTR_64);
+
+	localparam __METADATA__WHOLE_ADDR__INDEX_LO = 0;
+	localparam __METADATA__WHOLE_ADDR__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__WHOLE_ADDR__INDEX_LO,
+		`WIDTH__SNOW64_CPU_ADDR);
+
+	localparam __METADATA__TAG__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__METADATA__WHOLE_ADDR__INDEX_HI);
+	localparam __METADATA__TAG__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__TAG__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_METADATA_TAG);
+
+	localparam __METADATA__DATA_TYPE__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__METADATA__TAG__INDEX_HI);
+	localparam __METADATA__DATA_TYPE__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__DATA_TYPE__INDEX_LO,
+		`WIDTH__SNOW64_CPU_DATA_TYPE);
+
+	localparam __METADATA__INT_TYPE_SIZE__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__METADATA__DATA_TYPE__INDEX_HI);
+	localparam __METADATA__INT_TYPE_SIZE__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__INT_TYPE_SIZE__INDEX_LO,
+		`WIDTH__SNOW64_CPU_INT_TYPE_SIZE);
+
+	localparam __MSB_POS__METADATA = __METADATA__INT_TYPE_SIZE__INDEX_HI;
+	localparam __WIDTH__METADATA = `MP2WIDTH(__MSB_POS__METADATA);
+
+
+
+	// Shared data fields
+	localparam __SHAREDDATA__BASE_ADDR__INDEX_LO = 0;
+	localparam __SHAREDDATA__BASE_ADDR__INDEX_HI
+		= `MAKE_INDEX_HI(__SHAREDDATA__BASE_ADDR__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR);
+
+	localparam __SHAREDDATA__DATA__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__SHAREDDATA__BASE_ADDR__INDEX_HI);
+	localparam __SHAREDDATA__DATA__INDEX_HI
+		= `MAKE_INDEX_HI(__SHAREDDATA__DATA__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_SHAREDDATA_DATA);
+
+	localparam __SHAREDDATA__REF_COUNT__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__SHAREDDATA__DATA__INDEX_HI);
+	localparam __SHAREDDATA__REF_COUNT__INDEX_HI
+		= `MAKE_INDEX_HI(__SHAREDDATA__REF_COUNT__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_SHAREDDATA_REF_COUNT);
+
+	localparam __SHAREDDATA__DIRTY__INDEX_LO
+		= `MAKE_NEXT_INDEX_LO(__SHAREDDATA__REF_COUNT__INDEX_HI);
+	localparam __SHAREDDATA__DIRTY__INDEX_HI
+		= `MAKE_INDEX_HI(__SHAREDDATA__DIRTY__INDEX_LO, 
+		`WIDTH__SNOW64_LAR_FILE_SHAREDDATA_DIRTY);
+
+
+	localparam __MSB_POS__SHAREDDATA = __SHAREDDATA__DIRTY__INDEX_HI;
+	localparam __WIDTH__SHAREDDATA = `MP2WIDTH(__MSB_POS__SHAREDDATA);
+
+
+	wire __in_ctrl__pause = in_ctrl.pause;
+
+	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] 
+		__in_rd_a__index = in_rd_a.index,
+		__in_rd_b__index = in_rd_b.index,
+		__in_rd_c__index = in_rd_c.index;
+
+
+	wire __in_wr__req = in_wr.req;
+	wire [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0] __in_wr__write_type
+		= in_wr.write_type;
+	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] __in_wr__index = in_wr.index;
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_wr__data = in_wr.data;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_wr__addr = in_wr.addr;
+	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] __in_wr__data_type
+		= in_wr.data_type;
+	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __in_wr__int_type_size
+		= in_wr.int_type_size;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] 
+		__out_rd_a__data, __out_rd_b__data, __out_rd_c__data;
+	assign out_rd_a.data = __out_rd_a__data;
+	assign out_rd_b.data = __out_rd_b__data;
+	assign out_rd_c.data = __out_rd_c__data;
+
+	logic [`MSB_POS__SNOW64_CPU_ADDR:0]
+		__out_rd_a__addr, __out_rd_b__addr, __out_rd_c__addr;
+	assign out_rd_a.addr = __out_rd_a__addr;
+	assign out_rd_b.addr = __out_rd_b__addr;
+	assign out_rd_c.addr = __out_rd_c__addr;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
+		__out_rd_a__tag, __out_rd_b__tag, __out_rd_c__tag;
+	assign out_rd_a.tag = __out_rd_a__tag;
+	assign out_rd_b.tag = __out_rd_b__tag;
+	assign out_rd_c.tag = __out_rd_c__tag;
+
+	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
+		__out_rd_a__data_type, __out_rd_b__data_type,
+		__out_rd_c__data_type;
+	assign out_rd_a.data_type = __out_rd_a__data_type;
+	assign out_rd_b.data_type = __out_rd_b__data_type;
+	assign out_rd_c.data_type = __out_rd_c__data_type;
+
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
+		__out_rd_a__int_type_size, __out_rd_b__int_type_size,
+		__out_rd_c__int_type_size;
+	assign out_rd_a.int_type_size = __out_rd_a__int_type_size;
+	assign out_rd_b.int_type_size = __out_rd_b__int_type_size;
+	assign out_rd_c.int_type_size = __out_rd_c__int_type_size;
+
+	logic __out_mem_write__req;
+	assign out_mem_write.req = __out_mem_write__req;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __out_mem_write__data;
+	assign out_mem_write.data = __out_mem_write__data;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
+		__out_mem_write__base_addr;
+	assign out_mem_write.base_addr = __out_mem_write__base_addr;
+
+
+	// The arrays of LAR metadata and shared data.
+	logic [__MSB_POS__METADATA:0] __lar_metadata
+		[0 : __LAST_INDEX__NUM_LARS];
+
+	logic [__MSB_POS__SHAREDDATA:0] __lar_shareddata
+		[0 : __LAST_INDEX__NUM_LARS];
+
+
+
+	initial
+	begin
+		integer __i;
+		for (__i=0; __i<__ARR_SIZE__NUM_LARS; __i=__i+1)
+		begin
+			__lar_metadata[__i] = 0;
+			__lar_shareddata[__i] = 0;
+		end
+	end
+
+
+
+
+	//// For associativity
+	//logic __found_sh_da_base_addr;
 
 	// Incoming base_addr to be written to a LAR
 	PkgSnow64LarFile::LarBaseAddr __in_wr__base_addr;
@@ -71,109 +217,149 @@ module Snow64LarFile(input logic clk,
 
 	// LAR Metadata stuff
 
-	`define META_DATA__WHOLE_ADDR []
-	`define META_DATA__ADDR_OFFSET_8 []
-	`define META_DATA__ADDR_OFFSET_16 []
-	`define META_DATA__ADDR_OFFSET_32 []
-	`define META_DATA__ADDR_OFFSET_64 []
+	`define METADATA__WHOLE_ADDR \
+		[__METADATA__WHOLE_ADDR__INDEX_HI \
+		: __METADATA__WHOLE_ADDR__INDEX_LO]
 
-	//// The offset into the LAR.
-	//logic [__MSB_POS__ADDR_OFFSET_8:0]
-	//	__meta_da_arr__addr_offset_8[0 : __LAST_INDEX__NUM_LARS];
+	`define METADATA__ADDR_OFFSET_8 \
+		[__METADATA__ADDR_OFFSET_8__INDEX_HI \
+		: __METADATA__ADDR_OFFSET_8__INDEX_LO]
+	`define METADATA__ADDR_BASE_PTR_8 \
+		[__METADATA__ADDR_BASE_PTR_8__INDEX_HI \
+		: __METADATA__ADDR_BASE_PTR_8__INDEX_LO]
 
-	//logic [__MSB_POS__ADDR_OFFSET_16:0]
-	//	__meta_da_arr__addr_offset_16[0 : __LAST_INDEX__NUM_LARS];
+	`define METADATA__ADDR_OFFSET_16 \
+		[__METADATA__ADDR_OFFSET_16__INDEX_HI \
+		: __METADATA__ADDR_OFFSET_16__INDEX_LO]
+	`define METADATA__ADDR_BASE_PTR_16 \
+		[__METADATA__ADDR_BASE_PTR_16__INDEX_HI \
+		: __METADATA__ADDR_BASE_PTR_16__INDEX_LO]
 
-	//logic [__MSB_POS__ADDR_OFFSET_32:0]
-	//	__meta_da_arr__addr_offset_32[0 : __LAST_INDEX__NUM_LARS];
+	`define METADATA__ADDR_OFFSET_32 \
+		[__METADATA__ADDR_OFFSET_32__INDEX_HI \
+		: __METADATA__ADDR_OFFSET_32__INDEX_LO]
+	`define METADATA__ADDR_BASE_PTR_32 \
+		[__METADATA__ADDR_BASE_PTR_32__INDEX_HI \
+		: __METADATA__ADDR_BASE_PTR_32__INDEX_LO]
 
-	//logic [__MSB_POS__ADDR_OFFSET_64:0]
-	//	__meta_da_arr__addr_offset_64[0 : __LAST_INDEX__NUM_LARS];
+	`define METADATA__ADDR_OFFSET_64 \
+		[__METADATA__ADDR_OFFSET_64__INDEX_HI \
+		: __METADATA__ADDR_OFFSET_64__INDEX_LO]
+	`define METADATA__ADDR_BASE_PTR_64 \
+		[__METADATA__ADDR_BASE_PTR_64__INDEX_HI \
+		: __METADATA__ADDR_BASE_PTR_64__INDEX_LO]
 
-	//logic [`MSB_POS__SNOW64_CPU_ADDR:0]
-	//	__meta_da_arr__whole_addr[0 : __LAST_INDEX__NUM_LARS];
 
+	// The LAR's tag... specifies which shared data is used by this LAR.
+	`define METADATA__TAG \
+		[__METADATA__TAG__INDEX_HI \
+		: __METADATA__TAG__INDEX_LO]
 
-	//// The LAR's tag... specifies which shared data is used by this LAR.
-	//logic [__MSB_POS__META_DA_TAG:0]
-	//	__meta_da_arr__tag[0 : __LAST_INDEX__NUM_LARS];
+	// See PkgSnow64Cpu::DataType.
+	`define METADATA__DATA_TYPE \
+		[__METADATA__DATA_TYPE__INDEX_HI \
+		: __METADATA__DATA_TYPE__INDEX_LO]
 
-	//// See PkgSnow64Cpu::DataType.
-	//logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
-	//	__meta_da_arr__data_type[0 : __LAST_INDEX__NUM_LARS];
-
-	//// See PkgSnow64Cpu::IntTypeSize.
-	//logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-	//	__meta_da_arr__int_type_size[0 : __LAST_INDEX__NUM_LARS];
+	// See PkgSnow64Cpu::IntTypeSize.
+	`define METADATA__INT_TYPE_SIZE \
+		[__METADATA__INT_TYPE_SIZE__INDEX_HI \
+		: __METADATA__INT_TYPE_SIZE__INDEX_LO]
 
 
 	// LAR Shared Data stuff
+	// Used for extracting the base_addr from a 64-bit address
+	`define SHAREDDATA__INCOMING_BASE_ADDR `METADATA__ADDR_BASE_PTR_8
 
 	// The base address, used for associativity between LARs.
-	logic [__MSB_POS__SH_DA_BASE_ADDR:0]
-		__sh_da_arr__base_addr[0 : __LAST_INDEX__NUM_LARS];
+	`define SHAREDDATA__BASE_ADDR \
+		[__SHAREDDATA__BASE_ADDR__INDEX_HI \
+		: __SHAREDDATA__BASE_ADDR__INDEX_LO]
 
 
-	// The data themselves.
-	logic [__MSB_POS__SH_DA_DATA:0]
-		__sh_da_arr__data[0 : __LAST_INDEX__NUM_LARS];
+	// The data itself.
+	`define SHAREDDATA__DATA \
+		[__SHAREDDATA__DATA__INDEX_HI \
+		: __SHAREDDATA__DATA__INDEX_LO]
 
+	// The reference count of this shared data.
+	`define SHAREDDATA__REF_COUNT \
+		[__SHAREDDATA__REF_COUNT__INDEX_HI \
+		: __SHAREDDATA__REF_COUNT__INDEX_LO]
 
-	// The reference counts.
-	logic [__MSB_POS__SH_DA_REF_COUNT:0]
-		__sh_da_arr__ref_count[0 : __LAST_INDEX__NUM_LARS];
-
-	// The "dirty" flags.  Used to determine if we should write back to
+	// The "dirty" flag.  Used to determine if we should write back to
 	// memory.
-	logic __sh_da_arr__dirty[0 : __LAST_INDEX__NUM_LARS];
+	`define SHAREDDATA__DIRTY \
+		[__SHAREDDATA__DIRTY__INDEX_HI \
+		: __SHAREDDATA__DIRTY__INDEX_LO]
 
 
-	// LAR reads happen during the second half of the clock cycle.
-	// This prevents weirdness I dealt with in my previous pipelined CPU,
-	// where a "read" from the register file might actually have to return
-	// the value currently being written to the register file!
+	`define TAG(index) __lar_metadata[index] `METADATA__TAG
 
-	`define RD_INDEX(suffix) \
-		in_rd_``suffix.index
-	`define RD_TAG(suffix) \
-		__meta_da_arr__tag[`RD_INDEX(suffix)]
+	`define RD_INDEX(which) __in_rd_``which``__index
 
-	`define OUT_RD_PORT(suffix) \
-		out_rd_``suffix
+	`define RD_TAG(which) `TAG(`RD_INDEX(which))
 
-	`define RD_LAR(suffix) \
+	`define GEN_RD(which) \
 	always_ff @(posedge clk) \
 	begin \
-		/* `OUT_RD_PORT(suffix).data  */\
-		/* 	<= __sh_da_arr__data[`RD_TAG(suffix)]; */ \
-		`OUT_RD_PORT(suffix).data \
-			<= __sh_da_arr__data[`RD_INDEX(suffix)]; \
-		`OUT_RD_PORT(suffix).addr \
-			<= __meta_da_arr__whole_addr[`RD_INDEX(suffix)]; \
-		`OUT_RD_PORT(suffix).tag \
-			<= __meta_da_arr__tag[`RD_INDEX(suffix)]; \
-		`OUT_RD_PORT(suffix).data_type \
-			<= __meta_da_arr__data_type[`RD_INDEX(suffix)]; \
-		`OUT_RD_PORT(suffix).int_type_size \
-			<= __meta_da_arr__int_type_size[`RD_INDEX(suffix)]; \
+		__out_rd_``which``__data \
+			<= __lar_shareddata[`RD_TAG(which)] `SHAREDDATA__DATA; \
+		__out_rd_``which``__addr \
+			<= __lar_metadata[`RD_INDEX(which)] `METADATA__WHOLE_ADDR; \
+		__out_rd_``which``__tag <= `RD_TAG(which); \
 	end
 
-	`RD_LAR(a)
-	`RD_LAR(b)
-	`RD_LAR(c)
+	`GEN_RD(a)
+	`GEN_RD(b)
+	`GEN_RD(c)
 
+	`undef RD_INDEX
 	`undef RD_TAG
-	`undef OUT_RD_PORT
-	`undef RD_LAR
+	`undef GEN_RD
 
-	// Writes happen during the first half of the clock cycle.
-	always @(posedge clk)
+	always_ff @(posedge clk)
 	begin
-		if (in_wr.req)
+		//__lar_metadata[1] `METADATA__TAG <= 1;
+		`TAG(1) <= 1;
+
+		if (__in_wr__req)
 		begin
-			__sh_da_arr__data[in_wr.index] <= in_wr.data;
+			if (__in_wr__index == 1)
+			begin
+				__lar_shareddata[`TAG(__in_wr__index)] 
+					`SHAREDDATA__BASE_ADDR
+					<= __in_wr__addr `SHAREDDATA__INCOMING_BASE_ADDR;
+				__lar_shareddata[`TAG(__in_wr__index)] `SHAREDDATA__DATA
+					<= __in_wr__data;
+			end
 		end
 	end
 
+	`undef TAG
+
+
+	`undef METADATA__WHOLE_ADDR
+
+	`undef METADATA__ADDR_OFFSET_8
+	`undef METADATA__ADDR_BASE_PTR_8
+
+	`undef METADATA__ADDR_OFFSET_16
+	`undef METADATA__ADDR_BASE_PTR_16
+
+	`undef METADATA__ADDR_OFFSET_32
+	`undef METADATA__ADDR_BASE_PTR_32
+
+	`undef METADATA__ADDR_OFFSET_64
+	`undef METADATA__ADDR_BASE_PTR_64
+
+
+	`undef METADATA__TAG
+	`undef METADATA__DATA_TYPE
+	`undef METADATA__INT_TYPE_SIZE
+
+	`undef SHAREDDATA__BASE_ADDR
+	`undef SHAREDDATA__DATA
+	`undef SHAREDDATA__REF_COUNT
+	`undef SHAREDDATA__DIRTY
 
 endmodule

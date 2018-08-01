@@ -6,7 +6,13 @@
 `default_nettype none
 
 `define WIDTH2MP(some_width) ((some_width) - 1)
+`define MP2WIDTH(some_msb_pos) ((some_msb_pos) + 1)
 `define ARR_SIZE_TO_LAST_INDEX(some_arr_size) ((some_arr_size) - 1)
+
+`define MAKE_NEXT_INDEX_LO(some_prev_index_hi) \
+	((some_prev_index_hi) + 1)
+`define MAKE_INDEX_HI(some_index_lo, some_width) \
+	((some_index_lo) + (`WIDTH2MP(some_width)))
 
 `define SIGN_EXTEND(some_full_width, some_width_of_arg, some_arg) \
 	{{(some_full_width - some_width_of_arg) \
