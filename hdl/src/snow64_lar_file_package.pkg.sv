@@ -3,6 +3,27 @@
 
 package PkgSnow64LarFile;
 
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] LarIndex;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_8:0]
+	LarAddrBasePtr8;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_8:0] LarAddrOffset8;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_16:0]
+	LarAddrBasePtr16;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_16:0] LarAddrOffset16;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_32:0]
+	LarAddrBasePtr32;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_32:0] LarAddrOffset32;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_64:0]
+	LarAddrBasePtr64;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_64:0] LarAddrOffset64;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0] LarTag;
+
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] LarData;
+
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
+	LarBaseAddr;
+
+
 typedef struct packed
 {
 	// This is used to tell the LAR file to stop
@@ -11,7 +32,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] index;
+	LarIndex index;
 } PortIn_LarFile_Read;
 
 typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
@@ -36,26 +57,26 @@ typedef struct packed
 	logic req;
 
 	// Actually a LarFileWriteType
-	logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0] write_type;
+	LarFileWriteType write_type;
 
 	// Which LAR are we writing to?
-	logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] index;
+	LarIndex index;
 
 	// Data to write into the LAR file
-	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
+	LarData data;
 
 	// Address to write into the LAR file (relevant for WriteTypLdSt)
-	logic [`MSB_POS__SNOW64_CPU_ADDR:0] addr;
+	PkgSnow64Cpu::CpuAddr addr;
 
 	// New data type of the LAR (relevant for WriteTypLdSt
-	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
-	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	PkgSnow64Cpu::DataType data_type;
+	PkgSnow64Cpu::IntTypeSize int_type_size;
 } PortIn_LarFile_Write;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
-	logic [`MSB_POS__SNOW64_CPU_ADDR:0] addr;
+	LarData data;
+	PkgSnow64Cpu::CpuAddr addr;
 
 	// Outside the LAR file itself, this "tag" is used for operand
 	// forwarding by the control unit or whatever you want to call it.
@@ -64,12 +85,12 @@ typedef struct packed
 	// indices directly.  Of course, with a DLARs machine, that's not
 	// really a valid option because two registers may actually point to
 	// the same data.
-	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0] tag;
+	LarTag tag;
 
-	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
+	PkgSnow64Cpu::DataType data_type;
 
 	// Same int_type_size goodness as in other modules.
-	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	PkgSnow64Cpu::IntTypeSize int_type_size;
 
 	// It turns out that nobody besides the LAR file needs to know which
 	// LARs are dirty!
@@ -78,43 +99,43 @@ typedef struct packed
 typedef struct packed
 {
 	logic req;
-	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
-	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
+	LarData data;
+	LarBaseAddr base_addr;
 } PortOut_LarFile_MemWrite;
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_8:0] base_ptr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_8:0] offset;
+	LarAddrBasePtr8 base_ptr;
+	LarAddrOffset8 offset;
 } LarAddr8;
 
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_16:0] base_ptr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_16:0] offset;
+	LarAddrBasePtr16 base_ptr;
+	LarAddrOffset16 offset;
 } LarAddr16;
 
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_32:0] base_ptr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_32:0] offset;
+	LarAddrBasePtr32 base_ptr;
+	LarAddrOffset32 offset;
 } LarAddr32;
 
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_64:0] base_ptr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_64:0] offset;
+	LarAddrBasePtr64 base_ptr;
+	LarAddrOffset64 offset;
 } LarAddr64;
 
-// Used to grab the base_addr from an incoming address
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] fill;
-} LarBaseAddr;
+//// Used to grab the base_addr from an incoming address
+//typedef struct packed
+//{
+//	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
+//	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] fill;
+//} LarBaseAddr;
 
 
 

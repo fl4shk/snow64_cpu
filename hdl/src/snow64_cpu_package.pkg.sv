@@ -2,6 +2,7 @@
 
 package PkgSnow64Cpu;
 
+typedef logic [`MSB_POS__SNOW64_CPU_ADDR:0] CpuAddr;
 
 typedef enum logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
 {

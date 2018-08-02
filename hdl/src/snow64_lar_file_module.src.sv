@@ -9,6 +9,16 @@ module Snow64LarFile(input logic clk,
 		out_rd_a, out_rd_b, out_rd_c,
 	output PkgSnow64LarFile::PortOut_LarFile_MemWrite out_mem_write);
 
+	import PkgSnow64Cpu::CpuAddr;
+	import PkgSnow64LarFile::LarIndex;
+	import PkgSnow64LarFile::LarAddrBasePtr8;
+	import PkgSnow64LarFile::LarAddrOffset8;
+	import PkgSnow64LarFile::LarAddrBasePtr16;
+	import PkgSnow64LarFile::LarAddrOffset16;
+	import PkgSnow64LarFile::LarAddrBasePtr32;
+	import PkgSnow64LarFile::LarAddrOffset32;
+	import PkgSnow64LarFile::LarAddrBasePtr64;
+	import PkgSnow64LarFile::LarAddrOffset64;
 
 	localparam __ARR_SIZE__NUM_LARS = `ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS;
 	localparam __LAST_INDEX__NUM_LARS 
@@ -132,15 +142,15 @@ module Snow64LarFile(input logic clk,
 
 
 	wire __in_wr__req = in_wr.req;
-	wire [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0] __in_wr__write_type
-		= in_wr.write_type;
+	PkgSnow64LarFile::LarFileWriteType __in_wr__write_type;
+	assign __in_wr__write_type = in_wr.write_type;
 	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] __in_wr__index = in_wr.index;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_wr__data = in_wr.data;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_wr__addr = in_wr.addr;
-	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] __in_wr__data_type
-		= in_wr.data_type;
-	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __in_wr__int_type_size
-		= in_wr.int_type_size;
+	PkgSnow64Cpu::DataType __in_wr__data_type;
+	assign __in_wr__data_type = in_wr.data_type;
+	PkgSnow64Cpu::IntTypeSize __in_wr__int_type_size;
+	assign __in_wr__int_type_size = in_wr.int_type_size;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] 
 		__out_rd_a__data, __out_rd_b__data, __out_rd_c__data;
@@ -194,15 +204,6 @@ module Snow64LarFile(input logic clk,
 
 
 
-	initial
-	begin
-		integer __i;
-		for (__i=0; __i<__ARR_SIZE__NUM_LARS; __i=__i+1)
-		begin
-			__lar_metadata[__i] = 0;
-			__lar_shareddata[__i] = 0;
-		end
-	end
 
 
 
@@ -215,50 +216,101 @@ module Snow64LarFile(input logic clk,
 	assign __in_wr__base_addr = in_wr.addr;
 
 
-	// LAR Metadata stuff
+	//`define TAG(index) __lar_metadata[index] `METADATA__TAG
 
-	`define METADATA__WHOLE_ADDR \
-		[__METADATA__WHOLE_ADDR__INDEX_HI \
-		: __METADATA__WHOLE_ADDR__INDEX_LO]
+	`define metadata_whole_addr(index) \
+		__lar_metadata[index] [__METADATA__WHOLE_ADDR__INDEX_HI \
+			: __METADATA__WHOLE_ADDR__INDEX_LO]
 
-	`define METADATA__ADDR_OFFSET_8 \
-		[__METADATA__ADDR_OFFSET_8__INDEX_HI \
-		: __METADATA__ADDR_OFFSET_8__INDEX_LO]
-	`define METADATA__ADDR_BASE_PTR_8 \
-		[__METADATA__ADDR_BASE_PTR_8__INDEX_HI \
-		: __METADATA__ADDR_BASE_PTR_8__INDEX_LO]
+	task set_metadata_whole_addr(input LarIndex index,
+		input CpuAddr n_whole_addr);
 
-	`define METADATA__ADDR_OFFSET_16 \
-		[__METADATA__ADDR_OFFSET_16__INDEX_HI \
-		: __METADATA__ADDR_OFFSET_16__INDEX_LO]
-	`define METADATA__ADDR_BASE_PTR_16 \
-		[__METADATA__ADDR_BASE_PTR_16__INDEX_HI \
-		: __METADATA__ADDR_BASE_PTR_16__INDEX_LO]
+		`metadata_whole_addr(index) <= n_whole_addr;
+	endtask
 
-	`define METADATA__ADDR_OFFSET_32 \
-		[__METADATA__ADDR_OFFSET_32__INDEX_HI \
-		: __METADATA__ADDR_OFFSET_32__INDEX_LO]
-	`define METADATA__ADDR_BASE_PTR_32 \
-		[__METADATA__ADDR_BASE_PTR_32__INDEX_HI \
-		: __METADATA__ADDR_BASE_PTR_32__INDEX_LO]
 
-	`define METADATA__ADDR_OFFSET_64 \
-		[__METADATA__ADDR_OFFSET_64__INDEX_HI \
-		: __METADATA__ADDR_OFFSET_64__INDEX_LO]
-	`define METADATA__ADDR_BASE_PTR_64 \
-		[__METADATA__ADDR_BASE_PTR_64__INDEX_HI \
-		: __METADATA__ADDR_BASE_PTR_64__INDEX_LO]
+	`define metadata_addr_offset_8(index) \
+		__lar_metadata[index] [__METADATA__ADDR_OFFSET_8__INDEX_HI \
+			: __METADATA__ADDR_OFFSET_8__INDEX_LO]
+	`define metadata_addr_base_ptr_8(index) \
+		__lar_metadata[index] [__METADATA__ADDR_BASE_PTR_8__INDEX_HI \
+			: __METADATA__ADDR_BASE_PTR_8__INDEX_LO]
+
+	task set_metadata_addr_offset_8(input LarIndex index,
+		input LarAddrOffset8 n_addr_offset_8);
+
+		`metadata_addr_offset_8(index) <= n_addr_offset_8;
+	endtask
+
+	task set_metadata_addr_base_ptr_8(input LarIndex index,
+		input LarAddrBasePtr8 n_addr_base_ptr_8);
+
+		`metadata_addr_base_ptr_8(index) <= n_addr_base_ptr_8;
+	endtask
+
+	`define metadata_addr_offset_16(index) \
+		__lar_metadata[index] [__METADATA__ADDR_OFFSET_16__INDEX_HI \
+			: __METADATA__ADDR_OFFSET_16__INDEX_LO]
+	`define metadata_addr_base_ptr_16(index) \
+		__lar_metadata[index] [__METADATA__ADDR_BASE_PTR_16__INDEX_HI \
+			: __METADATA__ADDR_BASE_PTR_16__INDEX_LO]
+	task set_metadata_addr_offset_16(input LarIndex index,
+		input LarAddrOffset16 n_addr_offset_16);
+
+		`metadata_addr_offset_16(index) <= n_addr_offset_16;
+	endtask
+	task set_metadata_addr_base_ptr_16(input LarIndex index,
+		input LarAddrBasePtr16 n_addr_base_ptr_16);
+
+		`metadata_addr_base_ptr_16(index) <= n_addr_base_ptr_16;
+	endtask
+
+	`define metadata_addr_offset_32(index) \
+		__lar_metadata[index] [__METADATA__ADDR_OFFSET_32__INDEX_HI \
+			: __METADATA__ADDR_OFFSET_32__INDEX_LO]
+	`define metadata_addr_base_ptr_32(index) \
+		__lar_metadata[index] [__METADATA__ADDR_BASE_PTR_32__INDEX_HI \
+			: __METADATA__ADDR_BASE_PTR_32__INDEX_LO]
+	task set_metadata_addr_offset_32(input LarIndex index,
+		input LarAddrOffset32 n_addr_offset_32);
+
+		`metadata_addr_offset_32(index) <= n_addr_offset_32;
+	endtask
+	task set_metadata_addr_base_ptr_32(input LarIndex index,
+		input LarAddrBasePtr32 n_addr_base_ptr_32);
+
+		`metadata_addr_base_ptr_32(index) <= n_addr_base_ptr_32;
+	endtask
+
+	`define metadata_addr_offset_64(index) \
+		__lar_metadata[index] [__METADATA__ADDR_OFFSET_64__INDEX_HI \
+			: __METADATA__ADDR_OFFSET_64__INDEX_LO]
+	`define metadata_addr_base_ptr_64(index) \
+		__lar_metadata[index] [__METADATA__ADDR_BASE_PTR_64__INDEX_HI \
+			: __METADATA__ADDR_BASE_PTR_64__INDEX_LO]
+	task set_metadata_addr_offset_64(input LarIndex index,
+		input LarAddrOffset64 n_addr_offset_64);
+
+		`metadata_addr_offset_64(index) <= n_addr_offset_64;
+	endtask
+	task set_metadata_addr_base_ptr_64(input LarIndex index,
+		input LarAddrBasePtr64 n_addr_base_ptr_64);
+
+		`metadata_addr_base_ptr_64(index) <= n_addr_base_ptr_64;
+	endtask
+
+
 
 
 	// The LAR's tag... specifies which shared data is used by this LAR.
-	`define METADATA__TAG \
-		[__METADATA__TAG__INDEX_HI \
-		: __METADATA__TAG__INDEX_LO]
+	`define metadata_tag(index) \
+		__lar_metadata[index] [__METADATA__TAG__INDEX_HI \
+			: __METADATA__TAG__INDEX_LO]
 
 	// See PkgSnow64Cpu::DataType.
-	`define METADATA__DATA_TYPE \
-		[__METADATA__DATA_TYPE__INDEX_HI \
-		: __METADATA__DATA_TYPE__INDEX_LO]
+	`define metadata_data_type(index) \
+		__lar_metadata[index] [__METADATA__DATA_TYPE__INDEX_HI \
+			: __METADATA__DATA_TYPE__INDEX_LO]
 
 	// See PkgSnow64Cpu::IntTypeSize.
 	`define METADATA__INT_TYPE_SIZE \
@@ -292,74 +344,61 @@ module Snow64LarFile(input logic clk,
 		[__SHAREDDATA__DIRTY__INDEX_HI \
 		: __SHAREDDATA__DIRTY__INDEX_LO]
 
+	initial
+	begin
+		integer __i;
+		for (__i=0; __i<__ARR_SIZE__NUM_LARS; __i=__i+1)
+		begin
+			__lar_metadata[__i] = 0;
+			__lar_shareddata[__i] = 0;
+		end
+	end
 
-	`define TAG(index) __lar_metadata[index] `METADATA__TAG
+
 
 	`define RD_INDEX(which) __in_rd_``which``__index
 
 	`define RD_TAG(which) `TAG(`RD_INDEX(which))
 
-	`define GEN_RD(which) \
-	always_ff @(posedge clk) \
-	begin \
-		__out_rd_``which``__data \
-			<= __lar_shareddata[`RD_TAG(which)] `SHAREDDATA__DATA; \
-		__out_rd_``which``__addr \
-			<= __lar_metadata[`RD_INDEX(which)] `METADATA__WHOLE_ADDR; \
-		__out_rd_``which``__tag <= `RD_TAG(which); \
-	end
+	//`define GEN_RD(which) \
+	//always_ff @(posedge clk) \
+	//begin \
+	//	__out_rd_``which``__data \
+	//		<= __lar_shareddata[`RD_TAG(which)] `SHAREDDATA__DATA; \
+	//	__out_rd_``which``__addr \
+	//		<= __lar_metadata[`RD_INDEX(which)] `METADATA__WHOLE_ADDR; \
+	//	__out_rd_``which``__tag <= `RD_TAG(which); \
+	//end
 
-	`GEN_RD(a)
-	`GEN_RD(b)
-	`GEN_RD(c)
+	//`GEN_RD(a)
+	//`GEN_RD(b)
+	//`GEN_RD(c)
 
 	`undef RD_INDEX
 	`undef RD_TAG
-	`undef GEN_RD
+	//`undef GEN_RD
 
-	always_ff @(posedge clk)
-	begin
-		//__lar_metadata[1] `METADATA__TAG <= 1;
-		`TAG(1) <= 1;
+	//always_ff @(posedge clk)
+	//begin
+	//	//__lar_metadata[1] `METADATA__TAG <= 1;
+	//	`TAG(1) <= 1;
 
-		if (__in_wr__req)
-		begin
-			if (__in_wr__index == 1)
-			begin
-				__lar_shareddata[`TAG(__in_wr__index)] 
-					`SHAREDDATA__BASE_ADDR
-					<= __in_wr__addr `SHAREDDATA__INCOMING_BASE_ADDR;
-				__lar_shareddata[`TAG(__in_wr__index)] `SHAREDDATA__DATA
-					<= __in_wr__data;
-			end
-		end
-	end
+	//	if (__in_wr__req)
+	//	begin
+	//		if (__in_wr__index == 1)
+	//		begin
+	//			__lar_shareddata[`TAG(__in_wr__index)] 
+	//				`SHAREDDATA__BASE_ADDR
+	//				<= __in_wr__addr `SHAREDDATA__INCOMING_BASE_ADDR;
+	//			__lar_shareddata[`TAG(__in_wr__index)] `SHAREDDATA__DATA
+	//				<= __in_wr__data;
+	//		end
+	//	end
+	//end
 
 	`undef TAG
+	`undef metadata_whole_addr
 
 
-	`undef METADATA__WHOLE_ADDR
-
-	`undef METADATA__ADDR_OFFSET_8
-	`undef METADATA__ADDR_BASE_PTR_8
-
-	`undef METADATA__ADDR_OFFSET_16
-	`undef METADATA__ADDR_BASE_PTR_16
-
-	`undef METADATA__ADDR_OFFSET_32
-	`undef METADATA__ADDR_BASE_PTR_32
-
-	`undef METADATA__ADDR_OFFSET_64
-	`undef METADATA__ADDR_BASE_PTR_64
-
-
-	`undef METADATA__TAG
-	`undef METADATA__DATA_TYPE
-	`undef METADATA__INT_TYPE_SIZE
-
-	`undef SHAREDDATA__BASE_ADDR
-	`undef SHAREDDATA__DATA
-	`undef SHAREDDATA__REF_COUNT
-	`undef SHAREDDATA__DIRTY
 
 endmodule
