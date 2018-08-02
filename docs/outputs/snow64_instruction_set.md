@@ -120,7 +120,8 @@
 * Note:  All invalid instructions are treated as NOPs.
 * ALU Instructions:  Opcode Group:  0b000
 	* Encoding:  `000t aaaa bbbb cccc  oooo iiii iiii iiii`
-		* `t`:  operation type:  if <code>0b0</code>:  scalar operation; 
+		* `t`:  operation type:  if <code>0b0</code>:  scalar
+operation; 
 		else: vector operation
 		* `a`:  dDest
 		* `b`:  dSrc0
@@ -146,46 +147,50 @@
 			* Scalar Mnemonic:  <code>slts</code>
 			* Vector Mnemonic:  <code>sltv</code>
 			* Note:  set less than
-			* Note:  The signedness of dDest will be used for the operation
+			* Note:  The signedness of dDest will be used
+for the operation
 		* <b>mul</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x3
 			* Scalar Mnemonic:  <code>muls</code>
 			* Vector Mnemonic:  <code>mulv</code>
-			* Note:  If dDest has a larger size than both dSrc0 and dSrc1,
-			then the signedness used for the operation will be that of dDest
+			* Note:  If dDest has a larger size
+than both dSrc0 and dSrc1, then the signedness used for the operation will
+be that of dDest
 			* Note:  This operation
-is not guaranteed to be single cycle, and thus pipeline stalls will be used
+is not guaranteed to be single cycle, and thus pipeline stalls will be
+used
 		* <b>div</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x4
 			* Scalar Mnemonic:  <code>divs</code>
 			* Vector Mnemonic:  <code>divv</code>
 			* Note:  This operation
-is not guaranteed to be single cycle, and thus pipeline stalls will be used
+is not guaranteed to be single cycle, and thus pipeline stalls will be
+used
 		* <b>and</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x5
 			* Scalar Mnemonic:  <code>ands</code>
 			* Vector Mnemonic:  <code>andv</code>
-			* Note:  For floats, this operation treats all operands as
-			16-bit signed integers.
+			* Note:  For floats, this
+operation treats all operands as 16-bit signed integers.
 		* <b>orr</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x6
 			* Scalar Mnemonic:  <code>orrs</code>
 			* Vector Mnemonic:  <code>orrv</code>
-			* Note:  For floats, this operation treats all operands as
-			16-bit signed integers.
+			* Note:  For floats, this
+operation treats all operands as 16-bit signed integers.
 		* <b>xor</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x7
 			* Scalar Mnemonic:  <code>xors</code>
 			* Vector Mnemonic:  <code>xorv</code>
-			* Note:  For floats, this operation treats all operands as
-			16-bit signed integers.
+			* Note:  For floats, this
+operation treats all operands as 16-bit signed integers.
 		* <b>shl</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x8
 			* Scalar Mnemonic:  <code>shls</code>
 			* Vector Mnemonic:  <code>shlv</code>
 			* Note:  Shift left
-			* Note:  For floats, this operation treats all operands as
-			16-bit signed integers.
+			* Note:  For floats, this
+operation treats all operands as 16-bit signed integers.
 		* <b>shr</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x9
 			* Scalar Mnemonic:  <code>shrs</code>
@@ -198,15 +203,15 @@ is not guaranteed to be single cycle, and thus pipeline stalls will be used
 				performed
 			* Note:  dSrc1 is always treated as unsigned (due to being a
 			number of bits to shift by)
-			* Note:  For floats, this operation treats all operands as
-			16-bit signed integers.
+			* Note:  For floats, this
+operation treats all operands as 16-bit signed integers.
 		* <b>inv</b> dDest, dSrc0
 			* Opcode:  0xa
 			* Scalar Mnemonic:  <code>invs</code>
 			* Vector Mnemonic:  <code>invv</code>
 			* Note:  Bitwise invert
-			* Note:  For floats, this operation treats all operands as
-			16-bit signed integers.
+			* Note:  For floats, this
+operation treats all operands as 16-bit signed integers.
 		* <b>not</b> dDest, dSrc0
 			* Opcode:  0xb
 			* Scalar Mnemonic:  <code>nots</code>
@@ -241,9 +246,10 @@ Opcode Group:  0b001
 		* <b>jmp</b> dA
 			* Opcode:  0x2
 			* Effect:  <code>pc <= dA.sdata;</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
+			* Note:  It is suggested
+to have dA.sdata be at least as
+			large as the largest memory address (which might not be
+			64-bit if there isn't enough physical memory for that)
 		* <b>ei</b>
 			* Opcode:  0x3
 			* Effect:  <code>ie <= 1'b1;</code>
@@ -263,30 +269,34 @@ Opcode Group:  0b001
 		* <b>cpy</b> dA, ireta
 			* Opcode:  0x7
 			* Effect:  <code>dA.sdata <= ireta;</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
+			* Note:  It is suggested
+to have dA.sdata be at least as
+			large as the largest memory address (which might not be
+			64-bit if there isn't enough physical memory for that)
 		* <b>cpy</b> dA, idsta
 			* Opcode:  0x8
 			* Effect:  <code>dA.sdata <= idsta;</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
+			* Note:  It is suggested
+to have dA.sdata be at least as
+			large as the largest memory address (which might not be
+			64-bit if there isn't enough physical memory for that)
 		* <b>cpy</b> ie, dA
 			* Opcode:  0x9
 			* Effect:  <code>ie <= (dA.sdata != 0);</code>
 		* <b>cpy</b> ireta, dA
 			* Opcode:  0xa
 			* Effect:  <code>ireta <= dA.sdata;</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
+			* Note:  It is suggested
+to have dA.sdata be at least as
+			large as the largest memory address (which might not be
+			64-bit if there isn't enough physical memory for that)
 		* <b>cpy</b> idsta, dA
 			* Opcode:  0xb
 			* Effect:  <code>idsta <= dA.sdata;</code>
-			* Note:  It is suggested to have dA.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isnt enough physical memory for that')
+			* Note:  It is suggested
+to have dA.sdata be at least as
+			large as the largest memory address (which might not be
+			64-bit if there isn't enough physical memory for that)
 <br><br>
 * Load Instructions:
 Opcode Group:  0b010
@@ -400,7 +410,8 @@ Opcode Group:  0b011
 * Port-mapped Input/Output Instructions:
 Opcode Group:  0b100
 	* Encoding:  `100t aaaa bbbb oooo  iiii iiii iiii iiii`
-		* `t`:  operation type:  if <code>0b0</code>:  scalar operation; 
+		* `t`:  operation type:  if <code>0b0</code>:  scalar
+operation; 
 		else: vector operation
 		* `a`:  dA
 		* `b`:  dB

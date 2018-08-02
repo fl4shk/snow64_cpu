@@ -7,19 +7,24 @@ define(`SCALAR_MNEMONIC',CONCAT(`Scalar Mnemonic:  ',CODE(CONCAT($1,s))))dnl
 define(`VECTOR_MNEMONIC',CONCAT(`Vector Mnemonic:  ',CODE(CONCAT($1,v))))dnl
 define(`BOTH_MNEMONICS',SCALAR_MNEMONIC(`$1')
 			* VECTOR_MNEMONIC(`$1'))dnl
-define(`NOTE_SIGNEDNESS_IF_DDEST_LARGER',`Note:  If dDest has a larger size than both dSrc0 and dSrc1,
-			then the signedness used for the operation will be that of dDest')dnl
-define(`NOTE_SIGNEDNESS_USED',`Note:  The signedness of dDest will be used for the operation')dnl
-define(`NOTE_FLOATS_TREATED_AS_16_BIT_INT',`Note:  For floats, this operation treats all operands as
-			16-bit signed integers.')dnl
+define(`NOTE_SIGNEDNESS_IF_DDEST_LARGER',`Note:  If dDest has a larger size
+than both dSrc0 and dSrc1, then the signedness used for the operation will
+be that of dDest')dnl
+define(`NOTE_SIGNEDNESS_USED',`Note:  The signedness of dDest will be used
+for the operation')dnl
+define(`NOTE_FLOATS_TREATED_AS_16_BIT_INT',`Note:  For floats, this
+operation treats all operands as 16-bit signed integers.')dnl
 define(`NOTE_OPERATION_MAY_TAKE_MORE_THAN_ONE_CYCLE',`Note:  This operation
-is not guaranteed to be single cycle, and thus pipeline stalls will be used')dnl
-define(`NOTE_SUGGEST_LARGEST_MEMORY_ADDR',CONCAT3(`Note:  It is suggested to have ',$1,`.sdata be at least as 
-			large as the largest memory address (which might not be 64-bit
-			if there isn't enough physical memory for that)'))dnl
+is not guaranteed to be single cycle, and thus pipeline stalls will be
+used')dnl
+define(`NOTE_SUGGEST_LARGEST_MEMORY_ADDR',CONCAT3(`Note:  It is suggested
+to have ',$1,`.sdata be at least as'
+			large as the largest memory address (which might not be
+			64-bit if there isn't enough physical memory for that)))dnl
 define(`NOTE_SDATA',`Note:  MDCODE(dX.sdata) is simply the current scalar portion of the
 	data LAR called MDCODE(dX)')dnl
-define(`DESCRIBE_SV_OPERATION_TYPE',`operation type:  if CODE(0b0):  scalar operation; 
+define(`DESCRIBE_SV_OPERATION_TYPE',`operation type:  if CODE(0b0):  scalar
+operation; 
 		else: vector operation')dnl
 define(`NOTE_U8',`Note:  unsigned 8-bit integer(s)')dnl
 define(`NOTE_S8',`Note:  signed 8-bit integer(s)')dnl

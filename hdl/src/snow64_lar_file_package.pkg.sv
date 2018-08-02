@@ -19,7 +19,7 @@ typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 	// Mostly ALU/FPU operations.
 	WriteTypOnlyData,
 
-	// Used for port-mapped inputs
+	// Used for port-mapped input instructions
 	WriteTypDataAndType,
 
 	// Loads and stores, in general, change EVERYTHING.
