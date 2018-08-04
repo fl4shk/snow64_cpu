@@ -384,6 +384,16 @@ module Snow64LarFile(input logic clk,
 		end
 
 		__curr_tag_stack_index = __LAST_INDEX__NUM_LARS;
+		{__out_rd_a__data, __out_rd_b__data, __out_rd_c__data} = 0;
+		{__out_rd_a__addr, __out_rd_b__addr, __out_rd_c__addr} = 0;
+		{__out_rd_a__tag, __out_rd_b__tag, __out_rd_c__tag} = 0;
+		{__out_rd_a__data_type, __out_rd_b__data_type,
+			__out_rd_c__data_type} = 0;
+		{__out_rd_a__int_type_size, __out_rd_b__int_type_size,
+			__out_rd_c__int_type_size} = 0;
+		__out_mem_write__req = 0;
+		__out_mem_write__data = 0;
+		__out_mem_write__base_addr = 0;
 	end
 
 
