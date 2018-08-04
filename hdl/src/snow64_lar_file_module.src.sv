@@ -496,8 +496,8 @@ module Snow64LarFile(input logic clk,
 			begin
 				if (`wr_metadata_tag != __UNALLOCATED_TAG)
 				begin
-					// Data identical to what we have means we might not have
-					// to touch memory.
+					// Data identical to what we have means we might not
+					// have to touch memory.
 					if (`wr_curr_shareddata_data != __in_wr__data)
 					begin
 						`wr_curr_shareddata_dirty <= 1;
@@ -538,165 +538,224 @@ module Snow64LarFile(input logic clk,
 				// The address's data is already in at least one LAR.
 				if (`__tag_search_final != 0)
 				begin
+					// A tag already exists.  We set our tag to the
+					// existing one.
+					`wr_metadata_tag <= `__tag_search_final;
+
+					// Loads change the data and clear the dirty flag
+					// regardless of whether or not we had the tag ourself.
+					if (__in_wr__write_type
+						== PkgSnow64LarFile::WriteTypLd)
+					begin
+						`wr_aliased_shareddata_data <= __in_wr__data;
+						`wr_aliased_shareddata_dirty <= 0;
+					end
+
+					// If our existing tag ISN'T the one we found.
 					if (`__tag_search_final != `wr_metadata_tag)
 					begin
-						`wr_metadata_tag <= `__tag_search_final;
 						`wr_aliased_shareddata_ref_count
 							<= `wr_aliased_shareddata_ref_count + 1;
 
-						case (`wr_curr_shareddata_ref_count)
-						0:
+						if (__in_wr__write_type 
+							== PkgSnow64LarFile::WriteTypSt)
 						begin
+							// Make a copy of our data to the new address.
+							// This also causes us to need to set the dirty
+							// flag.
+							`wr_aliased_shareddata_data
+								<= `wr_curr_shareddata_data;
+							`wr_aliased_shareddata_dirty <= 1;
 						end
 
+
+						case (`wr_curr_shareddata_ref_count)
+						// We haven't been allocated yet.
+						0:
+						begin
+							stop_mem_write();
+						end
+
+						// There were no other references to us, so
+						// deallocate the old tag (pushing it onto the
+						// stack), and (if we were dirty) send our old data
+						// out to memory.
 						1:
 						begin
-							`wr_curr_shareddata_ref_count <= 0;
+							`top_metadata_tag <= `wr_metadata_tag;
+							__curr_tag_stack_index
+								<= __curr_tag_stack_index + 1;
 
-							// There was only one reference left, so we
-							// deallocate the previous stuff.
 							if (`wr_curr_shareddata_dirty)
 							begin
 								send_shareddata_to_mem(`wr_metadata_tag);
 							end
+							else
+							begin
+								stop_mem_write();
+							end
 
-							`top_metadata_tag <= `wr_metadata_tag;
-							__curr_tag_stack_index
-								<= __curr_tag_stack_index + 1;
+							// We were the only LAR that cared about our
+							// old shared data, which means our old shared
+							// data becomes free for other use.
+							`wr_curr_shareddata_ref_count <= 0;
+
+							// We don't need to write any data out to
+							// memory if 
+							`wr_curr_shareddata_dirty <= 0;
+
+							//// For good measure.
+							//`wr_curr_shareddata_base_addr <= 0;
+							//`wr_curr_shareddata_data <= 0;
 						end
 
+						// There was at least one other reference to us, so
+						// don't deallocate anything, but do decrement the
+						// reference count.
 						default:
 						begin
 							`wr_curr_shareddata_ref_count
 								<= `wr_curr_shareddata_ref_count - 1;
+							stop_mem_write();
 						end
 						endcase
+					end
+
+					else
+					begin
+						stop_mem_write();
 					end
 				end
 
 				// We didn't find any aliases of __in_wr__addr.
 				else // if (`__tag_search_final == 0)
 				begin
-					// This is how things are at the start of the program,
-					// before any LARs have any data.
-					if (`wr_metadata_tag == __UNALLOCATED_TAG)
+					case (`wr_curr_shareddata_ref_count)
+					// This is from before we were allocated.
+					0:
 					begin
-						// Just a pure allocation here, as we don't have
-						// any other references.
+						// Allocate a new element of shared data.
 						`wr_metadata_tag <= `top_metadata_tag;
 						__curr_tag_stack_index <= __curr_tag_stack_index
 							- 1;
 
+						`wr_to_allocate_shareddata_base_addr
+							<= __in_wr__incoming_base_addr.base_addr;
+
+						// Within the run of the current program We are the
+						// first LAR to ever reference this element of
+						// shared data.
+						`wr_to_allocate_shareddata_ref_count <= 1;
+
 						if (__in_wr__write_type
 							== PkgSnow64LarFile::WriteTypLd)
 						begin
-							`wr_to_allocate_shareddata_data 
+							`wr_to_allocate_shareddata_data
 								<= __in_wr__data;
-							// Loads of data that nobody had before means
-							// that it's data actually FROM memory, so it's
-							// automatically clean.
+
+							// Loads mark the data as clean.
 							`wr_to_allocate_shareddata_dirty <= 0;
 						end
 						else // if (__in_wr__write_type
 							// == PkgSnow64LarFile::WriteTypSt)
 						begin
-							// Since this is a store, we need to mark the
-							// data as dirty.
+							// Simple default behavior... if you do a store
+							// before there was any data in a LAR, why not
+							// make the result data zero?
+							`wr_to_allocate_shareddata_data <= 0;
+
+							// Stores mark the data as dirty.
 							`wr_to_allocate_shareddata_dirty <= 1;
 						end
 
+						stop_mem_write();
+					end
+
+					// We were the only reference, so don't perform any
+					// allocation or deallocation, and don't change the
+					// reference count.
+					// Note however that this can still cause a write back
+					// to memory.
+					1:
+					begin
+						`wr_curr_shareddata_base_addr
+							<= __in_wr__incoming_base_addr.base_addr;
+
+						// If we changed our address and our data is dirty,
+						// we need to write our old data back to memory.
+						if ((`wr_curr_shareddata_base_addr
+							!= __in_wr__incoming_base_addr.base_addr)
+							&& `wr_curr_shareddata_dirty)
+						begin
+							send_shareddata_to_mem(`wr_metadata_tag);
+						end
+
+						else
+						begin
+							stop_mem_write();
+						end
+
+						if (__in_wr__write_type
+							== PkgSnow64LarFile::WriteTypLd)
+						begin
+							`wr_curr_shareddata_data <= __in_wr__data;
+							// Loads mark the data as clean.
+							`wr_curr_shareddata_dirty <= 0;
+						end
+						else // if (__in_wr__write_type
+							// == PkgSnow64LarFile::WriteTypSt)
+						begin
+							// We don't need to change our data in this
+							// case, but we do need to mark stuff as dirty.
+							`wr_curr_shareddata_dirty <= 1;
+						end
+					end
+
+					// There was at least one other reference to our data,
+					// so don't deallocate anything, but do decrement the
+					// old reference count.
+					default:
+					begin
+						// Allocate a new element of shared data.
+						`wr_metadata_tag <= `top_metadata_tag;
+						__curr_tag_stack_index <= __curr_tag_stack_index
+							- 1;
+
+						// Set the base_addr and ref_count of our allocated
+						// element shared data.
 						`wr_to_allocate_shareddata_base_addr
 							<= __in_wr__incoming_base_addr.base_addr;
 
 						`wr_to_allocate_shareddata_ref_count <= 1;
-					end
 
-					else // if (`wr_metadata_tag != __UNALLOCATED_TAG)
-					begin
-						case (`wr_curr_shareddata_ref_count)
-						//0:
-						//begin
-						// This won't happen in this if statement.
-						//end
-
-						// If we were the only one who had our data, we
-						// don't need to allocate anything, and our
-						// reference count remains the same (1)
-						1:
+						if (__in_wr__write_type
+							== PkgSnow64LarFile::WriteTypLd)
 						begin
-							// There was only one reference left, so we
-							// send our data back to memory.
-							if (`wr_curr_shareddata_dirty)
-							begin
-								send_shareddata_to_mem(`wr_metadata_tag);
-							end
+							`wr_to_allocate_shareddata_data
+								<= __in_wr__data;
 
-							if (__in_wr__write_type
-								== PkgSnow64LarFile::WriteTypLd)
-							begin
-								`wr_curr_shareddata_data <= __in_wr__data;
-
-								// Loads of data that nobody had before
-								// means that it's data actually FROM
-								// memory, so it's automatically clean.
-								`wr_curr_shareddata_dirty <= 0;
-							end
-							else // if (__in_wr__write_type
-								// == PkgSnow64LarFile::WriteTypSt)
-							begin
-								`wr_curr_shareddata_dirty <= 1;
-							end
-
-							`wr_curr_shareddata_base_addr
-								<= __in_wr__incoming_base_addr.base_addr;
-
-							// Since we're not allocating anything, we
-							// don't need to change the reference count of
-							// this LAR.
-							//`wr_curr_shareddata_ref_count
-							//	<= `wr_curr_shareddata_ref_count + 1;
+							// Loads always provide clean data.
+							`wr_to_allocate_shareddata_dirty <= 0;
 						end
-
-						// If there was anyone BESIDES us who had our data,
-						// then we need to allocate stuff.
-						default:
+						else // if (__in_wr__write_type
+							// == PkgSnow64LarFile::WriteTypSt)
 						begin
-							`wr_metadata_tag <= `top_metadata_tag;
-							__curr_tag_stack_index 
-								<= __curr_tag_stack_index - 1;
+							// Make a copy of our old data over to the
+							// freshly allocated element of shared data.
+							`wr_to_allocate_shareddata_data
+								<= `wr_curr_shareddata_data;
 
-							if (__in_wr__write_type
-								== PkgSnow64LarFile::WriteTypLd)
-							begin
-								`wr_to_allocate_shareddata_data 
-									<= __in_wr__data;
-								// Loads of data that nobody had before
-								// means that it's data actually FROM
-								// memory, so it's automatically clean.
-								`wr_to_allocate_shareddata_dirty <= 0;
-							end
-							else // if (__in_wr__write_type
-								// == PkgSnow64LarFile::WriteTypSt)
-							begin
-								// Here we make a copy of the data from the
-								// old address to the new address, and this
-								// is perhaps what actually looks the most
-								// like a store in a conventional
-								// architecture.
-								`wr_to_allocate_shareddata_data
-									<= `wr_curr_shareddata_data;
-								`wr_to_allocate_shareddata_dirty <= 1;
-							end
-
-							`wr_to_allocate_shareddata_base_addr
-								<= __in_wr__incoming_base_addr.base_addr;
-
-							`wr_to_allocate_shareddata_ref_count
-								<= `wr_to_allocate_shareddata_ref_count
-								+ 1;
+							// Also, since this is a store, mark it as
+							// dirty.
+							`wr_to_allocate_shareddata_dirty <= 1;
 						end
-						endcase
+						
+						// Decrement the old reference count.
+						`wr_curr_shareddata_ref_count
+							<= `wr_curr_shareddata_ref_count - 1;
+						stop_mem_write();
 					end
+					endcase
 				end
 
 			end
