@@ -253,8 +253,8 @@ module Snow64LarFile(input logic clk,
 		__curr_tag_stack_index;
 
 	//logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
-	//	__tag_search_0, __tag_search_1, __tag_search_2, __tag_search_3,
-	//	__tag_search_final;
+	//	__debug_tag_search_0, __debug_tag_search_1, __debug_tag_search_2, 
+	//	__debug_tag_search_3, __debug_tag_search_final;
 
 
 
@@ -429,6 +429,13 @@ module Snow64LarFile(input logic clk,
 
 	`define __tag_search_final (`__tag_search_0 | `__tag_search_1 \
 		| `__tag_search_2 | `__tag_search_3)
+
+	//assign __debug_tag_search_0 = `__tag_search_0;
+	//assign __debug_tag_search_1 = `__tag_search_1;
+	//assign __debug_tag_search_2 = `__tag_search_2;
+	//assign __debug_tag_search_3 = `__tag_search_3;
+	//assign __debug_tag_search_final = `__tag_search_final;
+
 	//`define __tag_search_final (`do_tag_search(1) | `do_tag_search(2) \
 	//	| `do_tag_search(3) | `do_tag_search(4) | `do_tag_search(5) \
 	//	| `do_tag_search(6) | `do_tag_search(7) | `do_tag_search(8) \
@@ -582,10 +589,14 @@ module Snow64LarFile(input logic clk,
 						// out to memory.
 						1:
 						begin
+							// Deallocate our old tag.
 							`top_metadata_tag <= `wr_metadata_tag;
 							__curr_tag_stack_index
 								<= __curr_tag_stack_index + 1;
 
+							// Since we're deallocating stuff, we need to
+							// write our old data back to memory if it's
+							// not already up to date.
 							if (`wr_curr_shareddata_dirty)
 							begin
 								send_shareddata_to_mem(`wr_metadata_tag);
@@ -642,7 +653,7 @@ module Snow64LarFile(input logic clk,
 						`wr_to_allocate_shareddata_base_addr
 							<= __in_wr__incoming_base_addr.base_addr;
 
-						// Within the run of the current program We are the
+						// Within the run of the current program we are the
 						// first LAR to ever reference this element of
 						// shared data.
 						`wr_to_allocate_shareddata_ref_count <= 1;
