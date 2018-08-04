@@ -357,11 +357,11 @@ OPCODE_GROUP(0b011)
 	* Note:  These are actually type conversion instructions as actual
 	writes to memory are done lazily
 	* Effect:
-		* These instructions marks CODE(dA) as dirty, change its address to
+		* These instructions mark CODE(dA) as dirty, change its address to
 		the effective address (see next bullet), and sets its type.
 		* The 64-bit effective address is computed as follows:
 			CODE((dB.address + EXTEND_TO_64(dC.sdata) 
-			+ (SIGN_EXTEND_TO_64(simm12))))
+			\+ (SIGN_EXTEND_TO_64(simm12))))
 		* The type of extension of the CODE(EXTEND_TO_64(dC.sdata))
 			expression is based upon the type of CODE(dC).  
 			* If CODE(dC) is tagged as an unsigned integer, zero-extension

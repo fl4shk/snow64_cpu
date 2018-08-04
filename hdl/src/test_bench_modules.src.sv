@@ -417,3 +417,51 @@
 //		.in(__in_bfloat16_fpu), .out(__out_bfloat16_fpu));
 //
 //endmodule
+
+//module TestLarFile;
+//
+//	logic __clk;
+//
+//	initial
+//	begin
+//		__clk = 0;
+//	end
+//
+//	always
+//	begin
+//		#1
+//		__clk = !__clk;
+//	end
+//
+//	PkgSnow64LarFile::PortIn_LarFile_Ctrl __in_lar_file_ctrl;
+//	PkgSnow64LarFile::PortIn_LarFile_Read __in_lar_file_rd_a,
+//		__in_lar_file_rd_b, __in_lar_file_rd_c;
+//	PkgSnow64LarFile::PortIn_LarFile_Write __in_lar_file_wr;
+//
+//	PkgSnow64LarFile::PortOut_LarFile_Read __out_lar_file_rd_a,
+//		__out_lar_file_rd_b, __out_lar_file_rd_c;
+//	PkgSnow64LarFile::PortOut_LarFile_MemWrite __out_lar_file_mem_write;
+//
+//	Snow64LarFile __inst_lar_file(.clk(__clk),
+//		.in_ctrl(__in_lar_file_ctrl), .in_rd_a(__in_lar_file_rd_a),
+//		.in_rd_b(__in_lar_file_rd_b), .in_rd_c(__in_lar_file_rd_c),
+//		.in_wr(__in_lar_file_wr), .out_rd_a(__out_lar_file_rd_a),
+//		.out_rd_b(__out_lar_file_rd_b), .out_rd_c(__out_lar_file_rd_c),
+//		.out_mem_write(__out_lar_file_mem_write));
+//
+//	task inc_indices;
+//		{__in_lar_file_rd_a.index, __in_lar_file_rd_b.index,
+//			__in_lar_file_rd_c.index} 
+//			= {__in_lar_file_rd_a.index, __in_lar_file_rd_b.index,
+//			__in_lar_file_rd_c.index} + 1;
+//	endtask : inc_indices
+//
+//	initial
+//	begin
+//		//__in_lar_file_ctrl.pause = 0;
+//
+//		//{__in_lar_file_rd_a.index, __in_lar_file_rd_b.index,
+//		//	__in_lar_file_rd_c.index} = 0;
+//	end
+//
+//endmodule

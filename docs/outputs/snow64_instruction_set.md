@@ -368,7 +368,7 @@ Opcode Group:  0b011
 		the effective address (see next bullet), and sets its type.
 		* The 64-bit effective address is computed as follows:
 			<code>(dB.address + extend\_to\_64(dC.sdata) 
-			+ (sign\_extend\_to\_64(simm12)))</code>
+			\+ (sign\_extend\_to\_64(simm12)))</code>
 		* The type of extension of the <code>extend\_to\_64(dC.sdata)</code>
 			expression is based upon the type of <code>dC</code>.  
 			* If <code>dC</code> is tagged as an unsigned integer, zero-extension

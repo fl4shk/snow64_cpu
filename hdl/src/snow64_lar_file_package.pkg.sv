@@ -19,9 +19,11 @@ typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_OFFSET_64:0] LarAddrOffset64;
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0] LarTag;
 
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] LarData;
-
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 	LarBaseAddr;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_REF_COUNT:0]
+	LarRefCount;
+typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_DIRTY:0] LarDirty;
 
 
 typedef struct packed
@@ -43,12 +45,9 @@ typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 	// Used for port-mapped input instructions
 	WriteTypDataAndType,
 
-	// Loads and stores, in general, change EVERYTHING.
-	// They also affect reference counts.
-	WriteTypLdSt,
+	WriteTypLd,
 
-	// Don't use this!
-	WriteTypReserved
+	WriteTypSt
 } LarFileWriteType;
 
 typedef struct packed
@@ -56,21 +55,23 @@ typedef struct packed
 	// Are we requesting a write at all?
 	logic req;
 
-	// Actually a LarFileWriteType
-	LarFileWriteType write_type;
+	// The type of writing into the LAR file that we're doing.
+	logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0] write_type;
 
 	// Which LAR are we writing to?
 	LarIndex index;
 
-	// Data to write into the LAR file
+	// Data to write into the LAR file (not relevant for WriteTypSt)
 	LarData data;
 
-	// Address to write into the LAR file (relevant for WriteTypLdSt)
+	// Address to write into the LAR file (relevant for WriteTypLd and
+	// WriteTypSt)
 	PkgSnow64Cpu::CpuAddr addr;
 
-	// New data type of the LAR (relevant for WriteTypLdSt
-	PkgSnow64Cpu::DataType data_type;
-	PkgSnow64Cpu::IntTypeSize int_type_size;
+	// New type of the LAR (relevant for all LarFileWriteType's except
+	// WriteTypOnlyData)
+	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 } PortIn_LarFile_Write;
 
 typedef struct packed
@@ -87,15 +88,16 @@ typedef struct packed
 	// the same data.
 	LarTag tag;
 
-	PkgSnow64Cpu::DataType data_type;
+	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 
 	// Same int_type_size goodness as in other modules.
-	PkgSnow64Cpu::IntTypeSize int_type_size;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 
 	// It turns out that nobody besides the LAR file needs to know which
 	// LARs are dirty!
 } PortOut_LarFile_Read;
 
+// Tell the outside world when we want to write to memory.
 typedef struct packed
 {
 	logic req;
@@ -130,12 +132,12 @@ typedef struct packed
 	LarAddrOffset64 offset;
 } LarAddr64;
 
-//// Used to grab the base_addr from an incoming address
-//typedef struct packed
-//{
-//	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
-//	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] fill;
-//} LarBaseAddr;
+// Used to grab the base_addr from an incoming address
+typedef struct packed
+{
+	LarBaseAddr base_addr;
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] fill;
+} LarIncomingBaseAddr;
 
 
 
