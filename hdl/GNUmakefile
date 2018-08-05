@@ -16,7 +16,8 @@ VC := iverilog
 EXTRA_IVERILOG_OPTIONS:=-g2009 -DICARUS
 BUILD_VVP:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -o $(PROJ).vvp
 BUILD_VHDL:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvhdl -o generated_vhdl/$(PROJ).vhd
-BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -DFORMAL -tvlog95 -o generated_verilog/$(PROJ).v
+BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvlog95 -o generated_verilog/$(PROJ).v
+BUILD_FORMAL:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -DFORMAL -tvlog95 -o generated_verilog/$(PROJ).v
 #BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tverilog -o generated_verilog/$(PROJ).v
 PREPROCESS:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -E -o generated_single_source_files/$(PROJ).sv
 
@@ -35,6 +36,11 @@ vhdl: clean reminder
 .PHONY : verilog
 verilog: clean reminder
 	$(BUILD_VERILOG) $(PKG_FILES) $(SRC_FILES)
+
+.PHONY : formal
+formal: clean reminder
+	$(BUILD_FORMAL) $(PKG_FILES) $(SRC_FILES)
+
 
 .PHONY : only_preprocess
 only_preprocess: clean reminder
