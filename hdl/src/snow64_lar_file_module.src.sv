@@ -246,6 +246,9 @@ module Snow64LarFile(input logic clk,
 	logic __out_wait_for_me__busy;
 	assign out_wait_for_me.busy = __out_wait_for_me__busy;
 
+	assign __out_wait_for_me__busy
+		= (__wr_load_state != PkgSnow64LarFile::WrLdStIdle);
+
 
 	// The arrays of LAR metadata and shared data.
 	//logic [__MSB_POS__METADATA:0] __lar_metadata
@@ -485,8 +488,6 @@ module Snow64LarFile(input logic clk,
 		__out_mem_write__req = 0;
 		__out_mem_write__data = 0;
 		__out_mem_write__base_addr = 0;
-
-		__out_wait_for_me__busy = 0;
 	end
 
 
@@ -1015,6 +1016,7 @@ module Snow64LarFile(input logic clk,
 
 		PkgSnow64LarFile::WrLdStReqMemRead:
 		begin
+			stop_mem_write();
 			if (!__in_mem_write__busy)
 			begin
 				__wr_load_state <= PkgSnow64LarFile::WrLdStWaitForMemRead;
@@ -1024,6 +1026,7 @@ module Snow64LarFile(input logic clk,
 
 		PkgSnow64LarFile::WrLdStWaitForMemRead:
 		begin
+			stop_mem_read();
 			if (!__in_mem_read__busy)
 			begin
 				__wr_load_state <= PkgSnow64LarFile::WrLdStIdle;
