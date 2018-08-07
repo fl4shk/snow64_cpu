@@ -25,18 +25,6 @@ typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_REF_COUNT:0]
 	LarRefCount;
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_DIRTY:0] LarDirty;
 
-
-typedef struct packed
-{
-	// This is used to tell the LAR file to stop
-	logic pause;
-} PortIn_LarFile_Ctrl;
-
-typedef struct packed
-{
-	LarIndex index;
-} PortIn_LarFile_Read;
-
 typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 {
 	// Mostly ALU/FPU operations.
@@ -50,6 +38,28 @@ typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 	WriteTypSt
 } LarFileWriteType;
 
+typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_LOAD_STATE:0]
+{
+	WrLdStIdle,
+	WrLdStReqMemRead,
+	WrLdStWaitForMemRead,
+	//WrLdStFinishing
+	WrLdStEek
+} WriteLoadState;
+
+typedef struct packed
+{
+	// This is used to tell the LAR file to stop writing to memory with the
+	// round-robin method of writing to memory.
+	logic pause_auto_mem_write;
+} PortIn_LarFile_Ctrl;
+
+typedef struct packed
+{
+	LarIndex index;
+} PortIn_LarFile_Read;
+
+
 typedef struct packed
 {
 	// Are we requesting a write at all?
@@ -61,7 +71,8 @@ typedef struct packed
 	// Which LAR are we writing to?
 	LarIndex index;
 
-	// Data to write into the LAR file (not relevant for WriteTypSt)
+	// Data to write into the LAR file (not relevant for WriteTypLd or
+	// WriteTypSt)
 	LarData data;
 
 	// Address to write into the LAR file (relevant for WriteTypLd and
@@ -73,6 +84,17 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 } PortIn_LarFile_Write;
+
+typedef struct packed
+{
+	logic busy;
+	LarData data;
+} PortIn_LarFile_MemRead;
+
+typedef struct packed
+{
+	logic busy;
+} PortIn_LarFile_MemWrite;
 
 typedef struct packed
 {
@@ -97,6 +119,13 @@ typedef struct packed
 	// LARs are dirty!
 } PortOut_LarFile_Read;
 
+// Tell the outside world when we want to read from memory.
+typedef struct packed
+{
+	logic req;
+	LarBaseAddr base_addr;
+} PortOut_LarFile_MemRead;
+
 // Tell the outside world when we want to write to memory.
 typedef struct packed
 {
@@ -104,6 +133,14 @@ typedef struct packed
 	LarData data;
 	LarBaseAddr base_addr;
 } PortOut_LarFile_MemWrite;
+
+// Wait for me!
+// This indicates that we can't accept any commands.
+typedef struct packed
+{
+	logic busy;
+} PortOut_LarFile_WaitForMe;
+
 
 typedef struct packed
 {
