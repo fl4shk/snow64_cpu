@@ -70,6 +70,8 @@ module Snow64LarFile(input logic clk,
 		= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__NUM_LARS);
 	`endif // FORMAL
 
+
+	`ifdef FORMAL
 	// Mostly ALU/FPU operations.
 	localparam __ENUM__WRITE_TYPE__ONLY_DATA 
 		= PkgSnow64LarFile::WriteTypOnlyData;
@@ -90,6 +92,21 @@ module Snow64LarFile(input logic clk,
 		= PkgSnow64LarFile::WrLdStWaitForMemRead;
 	localparam __ENUM__WRITE_LOAD_STATE__EEK
 		= PkgSnow64LarFile::WrLdStEek;
+
+	localparam __ENUM__DATA_TYPE__UNSGN_INT
+		= PkgSnow64Cpu::DataTypUnsgnInt;
+	localparam __ENUM__DATA_TYPE__SGN_INT
+		= PkgSnow64Cpu::DataTypSgnInt;
+	localparam __ENUM__DATA_TYPE__BFLOAT16
+		= PkgSnow64Cpu::DataTypBFloat16;
+	localparam __ENUM__DATA_TYPE__RESERVED
+		= PkgSnow64Cpu::DataTypReserved;
+
+	localparam __ENUM__INT_TYPE_SIZE__8 = PkgSnow64Cpu::IntTypSz8;
+	localparam __ENUM__INT_TYPE_SIZE__16 = PkgSnow64Cpu::IntTypSz16;
+	localparam __ENUM__INT_TYPE_SIZE__32 = PkgSnow64Cpu::IntTypSz32;
+	localparam __ENUM__INT_TYPE_SIZE__64 = PkgSnow64Cpu::IntTypSz64;
+	`endif		// FORMAL
 
 	localparam __UNALLOCATED_TAG = 0;
 

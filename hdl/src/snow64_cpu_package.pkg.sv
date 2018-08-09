@@ -53,8 +53,8 @@ typedef struct packed
 
 typedef enum logic
 {
-	ExtDatAccTypRead,
-	ExtDatAccTypWrite
+	ExtDataAccTypRead,
+	ExtDataAccTypWrite
 } ExtDataAccessType;
 
 
