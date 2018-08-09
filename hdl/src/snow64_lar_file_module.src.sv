@@ -1,11 +1,9 @@
 `include "src/snow64_lar_file_defines.header.sv"
 
-// For when we're done formally verifying the LAR file itself.
-// Actually, at the time of this writing, the LAR file is almost done being
-// formally verified!
-`ifdef FORMAL
-`undef FORMAL
-`endif		// FORMAL
+//// For when we're done formally verifying the LAR file itself.
+//`ifdef FORMAL
+//`undef FORMAL
+//`endif		// FORMAL
 
 module Snow64LarFile(input logic clk,
 	input PkgSnow64LarFile::PortIn_LarFile in,
@@ -61,9 +59,16 @@ module Snow64LarFile(input logic clk,
 	import PkgSnow64LarFile::LarRefCount;
 	import PkgSnow64LarFile::LarDirty;
 
+	`ifndef FORMAL
 	localparam __ARR_SIZE__NUM_LARS = `ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS;
 	localparam __LAST_INDEX__NUM_LARS 
 		= `LAST_INDEX__SNOW64_LAR_FILE_NUM_LARS;
+	`else // if defined(FORMAL)
+	// Verify the LAR file when there are only Four LARs 
+	localparam __ARR_SIZE__NUM_LARS = 4;
+	localparam __LAST_INDEX__NUM_LARS
+		= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__NUM_LARS);
+	`endif // FORMAL
 
 	// Mostly ALU/FPU operations.
 	localparam __ENUM__WRITE_TYPE__ONLY_DATA 
@@ -140,13 +145,17 @@ module Snow64LarFile(input logic clk,
 		= `MAKE_INDEX_HI(__METADATA__ADDR_BASE_PTR_64__INDEX_LO,
 		`WIDTH__SNOW64_LAR_FILE_ADDR_BASE_PTR_64);
 
-	localparam __METADATA__WHOLE_ADDR__INDEX_LO = 0;
-	localparam __METADATA__WHOLE_ADDR__INDEX_HI
-		= `MAKE_INDEX_HI(__METADATA__WHOLE_ADDR__INDEX_LO,
-		`WIDTH__SNOW64_CPU_ADDR);
+	//localparam __METADATA__WHOLE_ADDR__INDEX_LO = 0;
+	//localparam __METADATA__WHOLE_ADDR__INDEX_HI
+	//	= `MAKE_INDEX_HI(__METADATA__WHOLE_ADDR__INDEX_LO,
+	//	`WIDTH__SNOW64_CPU_ADDR);
+	localparam __METADATA__DATA_INDEX__INDEX_LO = 0;
+	localparam __METADATA__DATA_INDEX__INDEX_HI
+		= `MAKE_INDEX_HI(__METADATA__DATA_INDEX__INDEX_LO,
+		`WIDTH__SNOW64_LAR_FILE_ADDR_OFFSET_8);
 
 	localparam __METADATA__TAG__INDEX_LO
-		= `MAKE_NEXT_INDEX_LO(__METADATA__WHOLE_ADDR__INDEX_HI);
+		= `MAKE_NEXT_INDEX_LO(__METADATA__DATA_INDEX__INDEX_HI);
 	localparam __METADATA__TAG__INDEX_HI
 		= `MAKE_INDEX_HI(__METADATA__TAG__INDEX_LO,
 		`WIDTH__SNOW64_LAR_FILE_METADATA_TAG);
@@ -196,15 +205,19 @@ module Snow64LarFile(input logic clk,
 	//localparam __MSB_POS__SHAREDDATA = __SHAREDDATA__DIRTY__INDEX_HI;
 	//localparam __WIDTH__SHAREDDATA = `MP2WIDTH(__MSB_POS__SHAREDDATA);
 
-	localparam __MSB_POS__METADATA__WHOLE_ADDR
-		= __METADATA__WHOLE_ADDR__INDEX_HI
-		- __METADATA__WHOLE_ADDR__INDEX_LO;
-	localparam __WIDTH__METADATA__WHOLE_ADDR
-		= `MP2WIDTH(__MSB_POS__METADATA__WHOLE_ADDR);
+	//localparam __MSB_POS__METADATA__WHOLE_ADDR
+	//	= __METADATA__WHOLE_ADDR__INDEX_HI
+	//	- __METADATA__WHOLE_ADDR__INDEX_LO;
+	//localparam __WIDTH__METADATA__WHOLE_ADDR
+	//	= `MP2WIDTH(__MSB_POS__METADATA__WHOLE_ADDR);
+	localparam __MSB_POS__METADATA__DATA_INDEX
+		= __METADATA__DATA_INDEX__INDEX_HI
+		- __METADATA__DATA_INDEX__INDEX_LO;
+	localparam __WIDTH__METADATA__DATA_INDEX
+		= `MP2WIDTH(__MSB_POS__METADATA__DATA_INDEX);
 
 	localparam __MSB_POS__METADATA__TAG
-		= __METADATA__TAG__INDEX_HI
-		- __METADATA__TAG__INDEX_LO;
+		= `WIDTH2MP($clog2(__ARR_SIZE__NUM_LARS));
 	localparam __WIDTH__METADATA__TAG
 		= `MP2WIDTH(__MSB_POS__METADATA__TAG);
 
@@ -232,9 +245,11 @@ module Snow64LarFile(input logic clk,
 	localparam __WIDTH__SHAREDDATA__DATA
 		= `MP2WIDTH(__MSB_POS__SHAREDDATA__DATA);
 
+	//localparam __MSB_POS__SHAREDDATA__REF_COUNT
+	//	= __SHAREDDATA__REF_COUNT__INDEX_HI
+	//	- __SHAREDDATA__REF_COUNT__INDEX_LO;
 	localparam __MSB_POS__SHAREDDATA__REF_COUNT
-		= __SHAREDDATA__REF_COUNT__INDEX_HI
-		- __SHAREDDATA__REF_COUNT__INDEX_LO;
+		= `WIDTH2MP($clog2(__ARR_SIZE__NUM_LARS));
 	localparam __WIDTH__SHAREDDATA__REF_COUNT
 		= `MP2WIDTH(__MSB_POS__SHAREDDATA__REF_COUNT);
 
@@ -247,18 +262,20 @@ module Snow64LarFile(input logic clk,
 	wire __in_ctrl__pause_auto_mem_write 
 		= real_in_ctrl.pause_auto_mem_write;
 
-	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] 
-		__in_rd_a__index = real_in_rd_a.index,
-		__in_rd_b__index = real_in_rd_b.index,
-		__in_rd_c__index = real_in_rd_c.index;
+	wire [__MSB_POS__METADATA__TAG:0] 
+		__in_rd_a__index = real_in_rd_a.index[__MSB_POS__METADATA__TAG:0],
+		__in_rd_b__index = real_in_rd_b.index[__MSB_POS__METADATA__TAG:0],
+		__in_rd_c__index = real_in_rd_c.index[__MSB_POS__METADATA__TAG:0];
 
 	wire __in_wr__req = real_in_wr.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0] __in_wr__write_type
 		= real_in_wr.write_type;
 
-	logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] __captured_in_wr_index;
-	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] __in_wr__index
-		= real_in_wr.index;
+	logic [__MSB_POS__METADATA__TAG:0] __captured_in_wr_index;
+
+	wire [__MSB_POS__METADATA__TAG:0] __in_wr__index
+		= real_in_wr.index[__MSB_POS__METADATA__TAG:0];
+
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_wr__data
 		= real_in_wr.data;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_wr__addr = real_in_wr.addr;
@@ -334,11 +351,12 @@ module Snow64LarFile(input logic clk,
 	// The arrays of LAR metadata and shared data.
 	//logic [__MSB_POS__METADATA:0] __lar_metadata
 	//	[0 : __LAST_INDEX__NUM_LARS];
-	logic [__MSB_POS__METADATA__WHOLE_ADDR : 0]
-		__lar_metadata__whole_addr[0 : __LAST_INDEX__NUM_LARS];
+
+	logic [__MSB_POS__METADATA__DATA_INDEX : 0]
+		__lar_metadata__data_index[0 : __LAST_INDEX__NUM_LARS];
 	`ifdef FORMAL
-	logic [__MSB_POS__METADATA__WHOLE_ADDR : 0]
-		__debug_lar_metadata__whole_addr[0 : __LAST_INDEX__NUM_LARS];
+	logic [__MSB_POS__METADATA__DATA_INDEX : 0]
+		__debug_lar_metadata__data_index[0 : __LAST_INDEX__NUM_LARS];
 	`endif		// FORMAL
 
 	logic [__MSB_POS__METADATA__TAG : 0]
@@ -400,8 +418,8 @@ module Snow64LarFile(input logic clk,
 
 		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
 		begin
-			__debug_lar_metadata__whole_addr[i]
-				<= __lar_metadata__whole_addr[i];
+			__debug_lar_metadata__data_index[i]
+				<= __lar_metadata__data_index[i];
 			__debug_lar_metadata__tag[i]
 				<= __lar_metadata__tag[i];
 			__debug_lar_metadata__data_type[i]
@@ -423,20 +441,23 @@ module Snow64LarFile(input logic clk,
 
 
 	// Used for allocating/deallocating shared data.
-	logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
+	//logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
+	//	__lar_tag_stack[0 : __LAST_INDEX__NUM_LARS];
+	//logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
+	//	__curr_tag_stack_index;
+	logic [__MSB_POS__METADATA__TAG : 0]
 		__lar_tag_stack[0 : __LAST_INDEX__NUM_LARS];
-	logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
+	logic [__MSB_POS__METADATA__TAG : 0]
 		__curr_tag_stack_index;
 
 	`ifndef FORMAL
-	logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
+	logic [__MSB_POS__METADATA__TAG : 0]
 		__tag_search_0, __tag_search_1, __tag_search_2, __tag_search_3,
 		__tag_search_final;
 	`else // if !defined(FORMAL)
 	logic __found_tag;
-	logic __eek;
-	logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
-		__debug_tag_search_final;
+	//logic __eek;
+	logic [__MSB_POS__METADATA__TAG : 0] __debug_tag_search_final;
 
 	initial
 	begin
@@ -459,44 +480,46 @@ module Snow64LarFile(input logic clk,
 
 	//`define TAG(index) __lar_metadata[index] `METADATA__TAG
 
-	`define metadata_whole_addr(index) \
-		__lar_metadata__whole_addr[index]
+	//`define metadata_whole_addr(index) \
+	//	__lar_metadata__data_index[index]
+	`define metadata_data_index(index) \
+		__lar_metadata__data_index[index]
 
 	`define metadata_addr_offset_8(index) \
-		__lar_metadata__whole_addr[index] \
+		__lar_metadata__data_index[index] \
 			[__METADATA__ADDR_OFFSET_8__INDEX_HI \
 			: __METADATA__ADDR_OFFSET_8__INDEX_LO]
-	`define metadata_addr_base_ptr_8(index) \
-		__lar_metadata__whole_addr[index] \
-			[__METADATA__ADDR_BASE_PTR_8__INDEX_HI \
-			: __METADATA__ADDR_BASE_PTR_8__INDEX_LO]
+	//`define metadata_addr_base_ptr_8(index) \
+	//	__lar_metadata__data_index[index] \
+	//		[__METADATA__ADDR_BASE_PTR_8__INDEX_HI \
+	//		: __METADATA__ADDR_BASE_PTR_8__INDEX_LO]
 
 	`define metadata_addr_offset_16(index) \
-		__lar_metadata__whole_addr[index] \
+		__lar_metadata__data_index[index] \
 			[__METADATA__ADDR_OFFSET_16__INDEX_HI \
 			: __METADATA__ADDR_OFFSET_16__INDEX_LO]
-	`define metadata_addr_base_ptr_16(index) \
-		__lar_metadata__whole_addr[index] \
-			[__METADATA__ADDR_BASE_PTR_16__INDEX_HI \
-			: __METADATA__ADDR_BASE_PTR_16__INDEX_LO]
+	//`define metadata_addr_base_ptr_16(index) \
+	//	__lar_metadata__data_index[index] \
+	//		[__METADATA__ADDR_BASE_PTR_16__INDEX_HI \
+	//		: __METADATA__ADDR_BASE_PTR_16__INDEX_LO]
 
 	`define metadata_addr_offset_32(index) \
-		__lar_metadata__whole_addr[index] \
+		__lar_metadata__data_index[index] \
 			[__METADATA__ADDR_OFFSET_32__INDEX_HI \
 			: __METADATA__ADDR_OFFSET_32__INDEX_LO]
-	`define metadata_addr_base_ptr_32(index) \
-		__lar_metadata__whole_addr[index] \
-			[__METADATA__ADDR_BASE_PTR_32__INDEX_HI \
-			: __METADATA__ADDR_BASE_PTR_32__INDEX_LO]
+	//`define metadata_addr_base_ptr_32(index) \
+	//	__lar_metadata__data_index[index] \
+	//		[__METADATA__ADDR_BASE_PTR_32__INDEX_HI \
+	//		: __METADATA__ADDR_BASE_PTR_32__INDEX_LO]
 
 	`define metadata_addr_offset_64(index) \
-		__lar_metadata__whole_addr[index] \
+		__lar_metadata__data_index[index] \
 			[__METADATA__ADDR_OFFSET_64__INDEX_HI \
 			: __METADATA__ADDR_OFFSET_64__INDEX_LO]
-	`define metadata_addr_base_ptr_64(index) \
-		__lar_metadata__whole_addr[index] \
-			[__METADATA__ADDR_BASE_PTR_64__INDEX_HI \
-			: __METADATA__ADDR_BASE_PTR_64__INDEX_LO]
+	//`define metadata_addr_base_ptr_64(index) \
+	//	__lar_metadata__data_index[index] \
+	//		[__METADATA__ADDR_BASE_PTR_64__INDEX_HI \
+	//		: __METADATA__ADDR_BASE_PTR_64__INDEX_LO]
 
 
 
@@ -552,7 +575,7 @@ module Snow64LarFile(input logic clk,
 
 		for (__i=0; __i<__ARR_SIZE__NUM_LARS; __i=__i+1)
 		begin
-			__lar_metadata__whole_addr[__i] = 0;
+			__lar_metadata__data_index[__i] = 0;
 
 			if (__i == 0)
 			begin
@@ -602,8 +625,73 @@ module Snow64LarFile(input logic clk,
 	begin \
 		__out_rd_``which``__data \
 			<= `shareddata_tagged_data(`RD_INDEX(which));\
-		__out_rd_``which``__addr \
-			<= `metadata_whole_addr(`RD_INDEX(which)); \
+		/* __out_rd_``which``__addr */ \
+		/* 	<= `metadata_whole_addr(`RD_INDEX(which)); */ \
+		case (`metadata_data_type(`RD_INDEX(which))) \
+		PkgSnow64Cpu::DataTypBFloat16: \
+		begin \
+			__out_rd_``which``__addr \
+				<= {`shareddata_tagged_base_addr(`RD_INDEX(which)), \
+					`EXTRACT_DATA_INDEX__16 \
+					(__METADATA__DATA_INDEX__INDEX_HI, \
+					`metadata_data_index \
+					(`RD_INDEX(which)))}; \
+		end \
+		\
+		/* We don't care about DataTypReserved */ \
+		PkgSnow64Cpu::DataTypReserved: \
+		begin \
+			__out_rd_``which``__addr \
+				<= {`shareddata_tagged_base_addr(`RD_INDEX(which)), \
+				{`MP2WIDTH(__METADATA__DATA_INDEX__INDEX_HI){1'b0}}}; \
+		end \
+		\
+		/* An integer of either signedness */ \
+		default: \
+		begin \
+			case (`metadata_int_type_size(`RD_INDEX(which))) \
+			PkgSnow64Cpu::IntTypSz8: \
+			begin \
+				__out_rd_``which``__addr \
+					<= {`shareddata_tagged_base_addr(`RD_INDEX(which)), \
+						`EXTRACT_DATA_INDEX__8 \
+						(__METADATA__DATA_INDEX__INDEX_HI, \
+						`metadata_data_index \
+						(`RD_INDEX(which)))}; \
+			end \
+			\
+			PkgSnow64Cpu::IntTypSz16: \
+			begin \
+				__out_rd_``which``__addr \
+					<= {`shareddata_tagged_base_addr(`RD_INDEX(which)), \
+						`EXTRACT_DATA_INDEX__16 \
+						(__METADATA__DATA_INDEX__INDEX_HI, \
+						`metadata_data_index \
+						(`RD_INDEX(which)))}; \
+			end \
+			\
+			PkgSnow64Cpu::IntTypSz32: \
+			begin \
+				__out_rd_``which``__addr \
+					<= {`shareddata_tagged_base_addr(`RD_INDEX(which)), \
+						`EXTRACT_DATA_INDEX__32 \
+						(__METADATA__DATA_INDEX__INDEX_HI, \
+						`metadata_data_index \
+						(`RD_INDEX(which)))}; \
+			end \
+			\
+			PkgSnow64Cpu::IntTypSz64: \
+			begin \
+				__out_rd_``which``__addr \
+					<= {`shareddata_tagged_base_addr(`RD_INDEX(which)), \
+						`EXTRACT_DATA_INDEX__64 \
+						(__METADATA__DATA_INDEX__INDEX_HI, \
+						`metadata_data_index \
+						(`RD_INDEX(which)))}; \
+			end \
+			endcase \
+		end \
+		endcase \
 		__out_rd_``which``__tag \
 			<= `metadata_tag(`RD_INDEX(which)); \
 		__out_rd_``which``__data_type \
@@ -628,113 +716,101 @@ module Snow64LarFile(input logic clk,
 	`ifdef FORMAL
 	`define actual_tag_search_0 (`do_tag_search(1) | `do_tag_search(2) \
 		| `do_tag_search(3))
-	`define actual_tag_search_1 (`do_tag_search(4) | `do_tag_search(5) \
-		| `do_tag_search(6) | `do_tag_search(7))
-	`define actual_tag_search_2 (`do_tag_search(8) | `do_tag_search(9) \
-		| `do_tag_search(10) | `do_tag_search(11))
-	`define actual_tag_search_3 (`do_tag_search(12) | `do_tag_search(13) \
-		| `do_tag_search(14) | `do_tag_search(15))
+	`define actual_tag_search_1 0
+	`define actual_tag_search_2 0
+	`define actual_tag_search_3 0
 
 	`define actual_tag_search_final (`actual_tag_search_0 \
 		| `actual_tag_search_1 | `actual_tag_search_2 \
 		| `actual_tag_search_3)
 
 	`else // if !defined(FORMAL)
-	always @(*)
-	begin
-		`define actual_tag_search_0 __tag_search_0
-		__tag_search_0 = `do_tag_search(1) | `do_tag_search(2)
-			| `do_tag_search(3);
-	end
-	always @(*)
-	begin
-		`define actual_tag_search_1 __tag_search_1
-		__tag_search_1 = `do_tag_search(4) | `do_tag_search(5)
-			| `do_tag_search(6) | `do_tag_search(7);
-	end
-	always @(*)
-	begin
-		`define actual_tag_search_2 __tag_search_2
-		__tag_search_2 = `do_tag_search(8) | `do_tag_search(9)
-			| `do_tag_search(10) | `do_tag_search(11);
-	end
-	always @(*)
-	begin
-		`define actual_tag_search_3 __tag_search_3
-		__tag_search_3 = `do_tag_search(12) | `do_tag_search(13)
-			| `do_tag_search(14) | `do_tag_search(15);
-	end
-	always @(*)
-	begin
-		`define actual_tag_search_final __tag_search_final
-		__tag_search_final = __tag_search_0 | __tag_search_1
-			| __tag_search_2 | __tag_search_3;
-	end
+	`define actual_tag_search_0 __tag_search_0
+	assign __tag_search_0 = `do_tag_search(1) | `do_tag_search(2)
+		| `do_tag_search(3);
+
+	`define actual_tag_search_1 __tag_search_1
+	assign __tag_search_1 = `do_tag_search(4) | `do_tag_search(5)
+		| `do_tag_search(6) | `do_tag_search(7);
+
+	`define actual_tag_search_2 __tag_search_2
+	assign __tag_search_2 = `do_tag_search(8) | `do_tag_search(9)
+		| `do_tag_search(10) | `do_tag_search(11);
+
+	`define actual_tag_search_3 __tag_search_3
+	assign __tag_search_3 = `do_tag_search(12) | `do_tag_search(13)
+		| `do_tag_search(14) | `do_tag_search(15);
+
+	`define actual_tag_search_final __tag_search_final
+	assign __tag_search_final = __tag_search_0 | __tag_search_1
+		| __tag_search_2 | __tag_search_3;
 	`endif		// FORMAL
 
 
 
-	`ifdef FORMAL
-	logic __found;
+	//`ifdef FORMAL
+	//logic __found;
 
-	logic __found_indices[0 : __LAST_INDEX__NUM_LARS];
-	initial
-	begin
-		integer i;
+	//logic __found_indices[0 : __LAST_INDEX__NUM_LARS];
+	//initial
+	//begin
+	//	integer i;
 
-		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
-		begin
-			__found_indices[i] = 0;
-		end
+	//	for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+	//	begin
+	//		__found_indices[i] = 0;
+	//	end
 
-		__found = 0;
-		__eek = 0;
-	end
+	//	__found = 0;
+	//	__eek = 0;
+	//end
 
-	always @(posedge clk)
-	begin
-	if (!((real_in_rd_a == 0) && (real_in_rd_b == 0)
-		&& (real_in_rd_c == 0) && (real_in_wr == 0)))
-	begin
-		integer i;
+	//always @(posedge clk)
+	//begin
+	//if (!((real_in_rd_a == 0) && (real_in_rd_b == 0)
+	//	&& (real_in_rd_c == 0) && (real_in_wr == 0)))
+	//begin
+	//	integer i;
 
-		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
-		begin
-			__found_indices[i] = 0;
-		end
+	//	for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+	//	begin
+	//		__found_indices[i] = 0;
+	//	end
 
-		__found = 0;
-		__eek = 0;
+	//	__found = 0;
+	//	__eek = 0;
 
-		//__debug_tag_search_final = 0;
+	//	//__debug_tag_search_final = 0;
 
-		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
-		begin
-			if (`shareddata_ref_count(i)
-				&& (`shareddata_base_addr(i)
-				== __in_wr__incoming_base_addr.base_addr))
-			begin
-				if (!__found)
-				begin
-					//__debug_tag_search_final = i;
-					__found = 1;
-					__found_indices[i] = 1;
-				end
+	//	for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+	//	begin
+	//		if (`shareddata_ref_count(i)
+	//			&& (`shareddata_base_addr(i)
+	//			== __in_wr__incoming_base_addr.base_addr))
+	//		begin
+	//			if (!__found)
+	//			begin
+	//				//__debug_tag_search_final = i;
+	//				__found = 1;
+	//				__found_indices[i] = 1;
+	//			end
 
-				else // if (__found)
-				begin
-					__eek = 1;
-				end
-			end
-		end
-	end
-	end
+	//			else // if (__found)
+	//			begin
+	//				__eek = 1;
+	//			end
+	//		end
+	//	end
+	//end
+	//end
 
-	`endif		// FORMAL
+	//`endif		// FORMAL
 
 
-	`define wr_metadata_whole_addr \
-		`metadata_whole_addr(__in_wr__index)
+	//`define wr_metadata_whole_addr \
+	//	`metadata_whole_addr(__in_wr__index)
+	`define wr_metadata_data_index \
+		`metadata_data_index(__in_wr__index)
 	`define wr_metadata_data_type \
 		`metadata_data_type(__in_wr__index)
 	`define wr_metadata_int_type_size \
@@ -859,7 +935,63 @@ module Snow64LarFile(input logic clk,
 				// PkgSnow64LarFile::WriteTypSt
 				default:
 				begin
-					`wr_metadata_whole_addr <= __in_wr__addr;
+					//`wr_metadata_whole_addr <= __in_wr__addr;
+
+					case (__in_wr__data_type)
+					PkgSnow64Cpu::DataTypBFloat16:
+					begin
+						// BFloat16's are 16-bit, or two bytes.
+						`wr_metadata_data_index
+							<= `EXTRACT_DATA_INDEX__16(
+							__METADATA__DATA_INDEX__INDEX_HI,
+							__in_wr__addr);
+					end
+
+					// We don't care about DataTypReserved
+					PkgSnow64Cpu::DataTypReserved:
+					begin
+						`wr_metadata_data_index <= 0;
+					end
+
+					// An integer of either signedness
+					default:
+					begin
+						case (__in_wr__int_type_size)
+						PkgSnow64Cpu::IntTypSz8:
+						begin
+							`wr_metadata_data_index
+								<= `EXTRACT_DATA_INDEX__8(
+								__METADATA__DATA_INDEX__INDEX_HI,
+								__in_wr__addr);
+						end
+
+						PkgSnow64Cpu::IntTypSz16:
+						begin
+							`wr_metadata_data_index
+								<= `EXTRACT_DATA_INDEX__16(
+								__METADATA__DATA_INDEX__INDEX_HI,
+								__in_wr__addr);
+						end
+
+						PkgSnow64Cpu::IntTypSz32:
+						begin
+							`wr_metadata_data_index
+								<= `EXTRACT_DATA_INDEX__32(
+								__METADATA__DATA_INDEX__INDEX_HI,
+								__in_wr__addr);
+						end
+
+						PkgSnow64Cpu::IntTypSz64:
+						begin
+							`wr_metadata_data_index
+								<= `EXTRACT_DATA_INDEX__64(
+								__METADATA__DATA_INDEX__INDEX_HI,
+								__in_wr__addr);
+						end
+						endcase
+					end
+					endcase
+
 					`wr_metadata_data_type <= __in_wr__data_type;
 					`wr_metadata_int_type_size <= __in_wr__int_type_size;
 
@@ -1168,15 +1300,16 @@ module Snow64LarFile(input logic clk,
 	`undef wr_to_allocate_shareddata_ref_count
 
 
-	`undef metadata_whole_addr
+	//`undef metadata_whole_addr
+	`undef metadata_data_index
 	`undef metadata_addr_offset_8
-	`undef metadata_addr_base_ptr_8
+	//`undef metadata_addr_base_ptr_8
 	`undef metadata_addr_offset_16
-	`undef metadata_addr_base_ptr_16
+	//`undef metadata_addr_base_ptr_16
 	`undef metadata_addr_offset_32
-	`undef metadata_addr_base_ptr_32
+	//`undef metadata_addr_base_ptr_32
 	`undef metadata_addr_offset_64
-	`undef metadata_addr_base_ptr_64
+	//`undef metadata_addr_base_ptr_64
 
 	`undef metadata_tag
 	`undef metadata_data_type

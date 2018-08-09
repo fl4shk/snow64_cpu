@@ -223,4 +223,17 @@
 `define MSB_POS__SNOW64_COUNT_LEADING_ZEROS_64_OUT \
 	`WIDTH2MP(`WIDTH__SNOW64_COUNT_LEADING_ZEROS_64_OUT)
 
+`define EXTRACT_DATA_INDEX__8(msb_pos, to_extract_from) \
+	{to_extract_from[msb_pos:0]}
+
+`define EXTRACT_DATA_INDEX__16(msb_pos, to_extract_from) \
+	{to_extract_from[msb_pos:1], 1'b0}
+
+`define EXTRACT_DATA_INDEX__32(msb_pos, to_extract_from) \
+	{to_extract_from[msb_pos:2], 2'b0}
+
+`define EXTRACT_DATA_INDEX__64(msb_pos, to_extract_from) \
+	{to_extract_from[msb_pos:3], 3'b0}
+
+
 `endif		// src__slash__misc_defines_header_sv
