@@ -925,28 +925,87 @@ module Snow64LarFile(input logic clk,
 				// Used for port-mapped input instructions
 				PkgSnow64LarFile::WriteTypDataAndType:
 				begin
-					//if (`wr_metadata_tag != __UNALLOCATED_TAG)
-					//begin
-					//	`wr_metadata_data_type <= __in_wr__data_type;
-					//	`wr_metadata_int_type_size
-					//		<= __in_wr__int_type_size;
+					if (`wr_metadata_tag != __UNALLOCATED_TAG)
+					begin
+						`wr_metadata_data_type <= __in_wr__data_type;
+						`wr_metadata_int_type_size
+							<= __in_wr__int_type_size;
 
 
-					//	// Data identical to what we have means we might
-					//	// not have to touch memory.
-					//	if (`wr_curr_shareddata_data != __in_wr__data)
-					//	begin
-					//		`wr_curr_shareddata_dirty <= 1;
-					//	end
-					//	`wr_curr_shareddata_data <= __in_wr__data;
-					//end
+						// We basically have to convert the index from one
+						// type to another here.
+						case (__in_wr__data_type)
+						PkgSnow64Cpu::DataTypBFloat16:
+						begin
+							// BFloat16's here are actually 16-bit, or two
+							// bytes.
+							`wr_metadata_data_index
+								<= `EXTRACT_DATA_INDEX__16(
+								__METADATA__DATA_INDEX__INDEX_HI,
+								`wr_metadata_data_index);
+						end
 
-					//stop_mem_write();
+						PkgSnow64Cpu::DataTypReserved:
+						begin
+							// As usual, we don't care about
+							// DataTypReserved.
+							`wr_metadata_data_index <= 0;
+						end
 
-					//`ifdef FORMAL
-					//__debug_tag_search_final <= 0;
-					//__found_tag <= 0;
-					//`endif		// FORMAL
+						default:
+						begin
+							case (__in_wr__int_type_size)
+							PkgSnow64Cpu::IntTypSz8:
+							begin
+								`wr_metadata_data_index
+									<= `EXTRACT_DATA_INDEX__8(
+									__METADATA__DATA_INDEX__INDEX_HI,
+									`wr_metadata_data_index);
+							end
+
+							PkgSnow64Cpu::IntTypSz16:
+							begin
+								`wr_metadata_data_index
+									<= `EXTRACT_DATA_INDEX__16(
+									__METADATA__DATA_INDEX__INDEX_HI,
+									`wr_metadata_data_index);
+							end
+
+							PkgSnow64Cpu::IntTypSz32:
+							begin
+								`wr_metadata_data_index
+									<= `EXTRACT_DATA_INDEX__32(
+									__METADATA__DATA_INDEX__INDEX_HI,
+									`wr_metadata_data_index);
+							end
+
+							PkgSnow64Cpu::IntTypSz64:
+							begin
+								`wr_metadata_data_index
+									<= `EXTRACT_DATA_INDEX__64(
+									__METADATA__DATA_INDEX__INDEX_HI,
+									`wr_metadata_data_index);
+							end
+							endcase
+						end
+						endcase
+
+
+						// Data identical to what we have means we might
+						// not have to touch memory.
+						if (`wr_curr_shareddata_data != __in_wr__data)
+						begin
+							`wr_curr_shareddata_dirty <= 1;
+						end
+						`wr_curr_shareddata_data <= __in_wr__data;
+					end
+
+					stop_mem_write();
+
+					`ifdef FORMAL
+					__debug_tag_search_final <= 0;
+					__found_tag <= 0;
+					`endif		// FORMAL
 				end
 
 				// PkgSnow64LarFile::WriteTypLd or
