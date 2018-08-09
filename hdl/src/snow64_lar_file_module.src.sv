@@ -925,27 +925,28 @@ module Snow64LarFile(input logic clk,
 				// Used for port-mapped input instructions
 				PkgSnow64LarFile::WriteTypDataAndType:
 				begin
-					if (`wr_metadata_tag != __UNALLOCATED_TAG)
-					begin
-						`wr_metadata_data_type <= __in_wr__data_type;
-						`wr_metadata_int_type_size
-							<= __in_wr__int_type_size;
+					//if (`wr_metadata_tag != __UNALLOCATED_TAG)
+					//begin
+					//	`wr_metadata_data_type <= __in_wr__data_type;
+					//	`wr_metadata_int_type_size
+					//		<= __in_wr__int_type_size;
 
-						// Data identical to what we have means we might
-						// not have to touch memory.
-						if (`wr_curr_shareddata_data != __in_wr__data)
-						begin
-							`wr_curr_shareddata_dirty <= 1;
-						end
-						`wr_curr_shareddata_data <= __in_wr__data;
-					end
 
-					stop_mem_write();
+					//	// Data identical to what we have means we might
+					//	// not have to touch memory.
+					//	if (`wr_curr_shareddata_data != __in_wr__data)
+					//	begin
+					//		`wr_curr_shareddata_dirty <= 1;
+					//	end
+					//	`wr_curr_shareddata_data <= __in_wr__data;
+					//end
 
-					`ifdef FORMAL
-					__debug_tag_search_final <= 0;
-					__found_tag <= 0;
-					`endif		// FORMAL
+					//stop_mem_write();
+
+					//`ifdef FORMAL
+					//__debug_tag_search_final <= 0;
+					//__found_tag <= 0;
+					//`endif		// FORMAL
 				end
 
 				// PkgSnow64LarFile::WriteTypLd or
@@ -1086,9 +1087,9 @@ module Snow64LarFile(input logic clk,
 								// memory if 
 								`wr_curr_shareddata_dirty <= 0;
 
-								//// For good measure.
-								//`wr_curr_shareddata_base_addr <= 0;
-								//`wr_curr_shareddata_data <= 0;
+								// For good measure.
+								`wr_curr_shareddata_base_addr <= 0;
+								`wr_curr_shareddata_data <= 0;
 							end
 
 							// There was at least one other reference to
