@@ -1,18 +1,49 @@
 `include "src/snow64_lar_file_defines.header.sv"
 
+// For when we're done formally verifying the LAR file itself.
+// Actually, at the time of this writing, the LAR file is almost done being
+// formally verified!
+`ifdef FORMAL
+`undef FORMAL
+`endif		// FORMAL
 
 module Snow64LarFile(input logic clk,
-	input PkgSnow64LarFile::PortIn_LarFile_Ctrl in_ctrl,
-	input PkgSnow64LarFile::PortIn_LarFile_Read in_rd_a, in_rd_b, in_rd_c,
-	input PkgSnow64LarFile::PortIn_LarFile_Write in_wr,
-	input PkgSnow64LarFile::PortIn_LarFile_MemRead in_mem_read,
-	input PkgSnow64LarFile::PortIn_LarFile_MemWrite in_mem_write,
+	input PkgSnow64LarFile::PortIn_LarFile in,
+	output PkgSnow64LarFile::PortOut_LarFile out);
 
-	output PkgSnow64LarFile::PortOut_LarFile_Read
-		out_rd_a, out_rd_b, out_rd_c,
-	output PkgSnow64LarFile::PortOut_LarFile_MemRead out_mem_read,
-	output PkgSnow64LarFile::PortOut_LarFile_MemWrite out_mem_write,
-	output PkgSnow64LarFile::PortOut_LarFile_WaitForMe out_wait_for_me);
+
+	PkgSnow64LarFile::PartialPortIn_LarFile_Ctrl real_in_ctrl;
+	PkgSnow64LarFile::PartialPortIn_LarFile_Read 
+		real_in_rd_a, real_in_rd_b, real_in_rd_c;
+	PkgSnow64LarFile::PartialPortIn_LarFile_Write real_in_wr;
+	PkgSnow64LarFile::PartialPortIn_LarFile_MemRead real_in_mem_read;
+	PkgSnow64LarFile::PartialPortIn_LarFile_MemWrite real_in_mem_write;
+
+	PkgSnow64LarFile::PartialPortOut_LarFile_Read
+		real_out_rd_a, real_out_rd_b, real_out_rd_c;
+	PkgSnow64LarFile::PartialPortOut_LarFile_MemRead real_out_mem_read;
+	PkgSnow64LarFile::PartialPortOut_LarFile_MemWrite
+		real_out_mem_write;
+	PkgSnow64LarFile::PartialPortOut_LarFile_WaitForMe
+		real_out_wait_for_me;
+
+	assign real_in_ctrl = in.ctrl;
+	assign real_in_rd_a = in.rd_a;
+	assign real_in_rd_b = in.rd_b;
+	assign real_in_rd_c = in.rd_c;
+	assign real_in_wr = in.wr;
+	assign real_in_mem_read = in.mem_read;
+	assign real_in_mem_write = in.mem_write;
+
+
+	assign out.rd_a = real_out_rd_a;
+	assign out.rd_b = real_out_rd_b;
+	assign out.rd_c = real_out_rd_c;
+	assign out.mem_read = real_out_mem_read;
+	assign out.mem_write = real_out_mem_write;
+	assign out.wait_for_me = real_out_wait_for_me;
+
+
 
 	import PkgSnow64Cpu::CpuAddr;
 	import PkgSnow64LarFile::LarIndex;
@@ -132,8 +163,8 @@ module Snow64LarFile(input logic clk,
 		= `MAKE_INDEX_HI(__METADATA__INT_TYPE_SIZE__INDEX_LO,
 		`WIDTH__SNOW64_CPU_INT_TYPE_SIZE);
 
-	localparam __MSB_POS__METADATA = __METADATA__INT_TYPE_SIZE__INDEX_HI;
-	localparam __WIDTH__METADATA = `MP2WIDTH(__MSB_POS__METADATA);
+	//localparam __MSB_POS__METADATA = __METADATA__INT_TYPE_SIZE__INDEX_HI;
+	//localparam __WIDTH__METADATA = `MP2WIDTH(__MSB_POS__METADATA);
 
 
 
@@ -162,89 +193,139 @@ module Snow64LarFile(input logic clk,
 		`WIDTH__SNOW64_LAR_FILE_SHAREDDATA_DIRTY);
 
 
-	localparam __MSB_POS__SHAREDDATA = __SHAREDDATA__DIRTY__INDEX_HI;
-	localparam __WIDTH__SHAREDDATA = `MP2WIDTH(__MSB_POS__SHAREDDATA);
+	//localparam __MSB_POS__SHAREDDATA = __SHAREDDATA__DIRTY__INDEX_HI;
+	//localparam __WIDTH__SHAREDDATA = `MP2WIDTH(__MSB_POS__SHAREDDATA);
 
+	localparam __MSB_POS__METADATA__WHOLE_ADDR
+		= __METADATA__WHOLE_ADDR__INDEX_HI
+		- __METADATA__WHOLE_ADDR__INDEX_LO;
+	localparam __WIDTH__METADATA__WHOLE_ADDR
+		= `MP2WIDTH(__MSB_POS__METADATA__WHOLE_ADDR);
 
-	wire __in_ctrl__pause_auto_mem_write = in_ctrl.pause_auto_mem_write;
+	localparam __MSB_POS__METADATA__TAG
+		= __METADATA__TAG__INDEX_HI
+		- __METADATA__TAG__INDEX_LO;
+	localparam __WIDTH__METADATA__TAG
+		= `MP2WIDTH(__MSB_POS__METADATA__TAG);
+
+	localparam __MSB_POS__METADATA__DATA_TYPE
+		= __METADATA__DATA_TYPE__INDEX_HI
+		- __METADATA__DATA_TYPE__INDEX_LO;
+	localparam __WIDTH__METADATA__DATA_TYPE
+		= `MP2WIDTH(__MSB_POS__METADATA__DATA_TYPE);
+
+	localparam __MSB_POS__METADATA__INT_TYPE_SIZE
+		= __METADATA__INT_TYPE_SIZE__INDEX_HI
+		- __METADATA__INT_TYPE_SIZE__INDEX_LO;
+	localparam __WIDTH__METADATA__INT_TYPE_SIZE
+		= `MP2WIDTH(__MSB_POS__METADATA__INT_TYPE_SIZE);
+
+	localparam __MSB_POS__SHAREDDATA__BASE_ADDR
+		= __SHAREDDATA__BASE_ADDR__INDEX_HI
+		- __SHAREDDATA__BASE_ADDR__INDEX_LO;
+	localparam __WIDTH__SHAREDDATA__BASE_ADDR
+		= `MP2WIDTH(__MSB_POS__SHAREDDATA__BASE_ADDR);
+
+	localparam __MSB_POS__SHAREDDATA__DATA
+		= __SHAREDDATA__DATA__INDEX_HI
+		- __SHAREDDATA__DATA__INDEX_LO;
+	localparam __WIDTH__SHAREDDATA__DATA
+		= `MP2WIDTH(__MSB_POS__SHAREDDATA__DATA);
+
+	localparam __MSB_POS__SHAREDDATA__REF_COUNT
+		= __SHAREDDATA__REF_COUNT__INDEX_HI
+		- __SHAREDDATA__REF_COUNT__INDEX_LO;
+	localparam __WIDTH__SHAREDDATA__REF_COUNT
+		= `MP2WIDTH(__MSB_POS__SHAREDDATA__REF_COUNT);
+
+	localparam __MSB_POS__SHAREDDATA__DIRTY
+		= __SHAREDDATA__DIRTY__INDEX_HI
+		- __SHAREDDATA__DIRTY__INDEX_LO;
+	localparam __WIDTH__SHAREDDATA__DIRTY
+		= `MP2WIDTH(__MSB_POS__SHAREDDATA__DIRTY);
+
+	wire __in_ctrl__pause_auto_mem_write 
+		= real_in_ctrl.pause_auto_mem_write;
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] 
-		__in_rd_a__index = in_rd_a.index,
-		__in_rd_b__index = in_rd_b.index,
-		__in_rd_c__index = in_rd_c.index;
+		__in_rd_a__index = real_in_rd_a.index,
+		__in_rd_b__index = real_in_rd_b.index,
+		__in_rd_c__index = real_in_rd_c.index;
 
-	wire __in_wr__req = in_wr.req;
+	wire __in_wr__req = real_in_wr.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0] __in_wr__write_type
-		= in_wr.write_type;
+		= real_in_wr.write_type;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] __captured_in_wr_index;
-	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] __in_wr__index = in_wr.index;
-	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_wr__data = in_wr.data;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_wr__addr = in_wr.addr;
+	wire [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] __in_wr__index
+		= real_in_wr.index;
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_wr__data
+		= real_in_wr.data;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_wr__addr = real_in_wr.addr;
 	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] __in_wr__data_type
-		= in_wr.data_type;
+		= real_in_wr.data_type;
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __in_wr__int_type_size
-		= in_wr.int_type_size;
+		= real_in_wr.int_type_size;
 
 
-	wire __in_mem_read__busy = in_mem_read.busy;
+	wire __in_mem_read__busy = real_in_mem_read.busy;
 	wire [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_DATA:0]
-		__in_mem_read__data = in_mem_read.data;
+		__in_mem_read__data = real_in_mem_read.data;
 
-	wire __in_mem_write__busy = in_mem_write.busy;
+	wire __in_mem_write__busy = real_in_mem_write.busy;
 
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] 
 		__out_rd_a__data, __out_rd_b__data, __out_rd_c__data;
-	assign out_rd_a.data = __out_rd_a__data;
-	assign out_rd_b.data = __out_rd_b__data;
-	assign out_rd_c.data = __out_rd_c__data;
+	assign real_out_rd_a.data = __out_rd_a__data;
+	assign real_out_rd_b.data = __out_rd_b__data;
+	assign real_out_rd_c.data = __out_rd_c__data;
 
 	logic [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__out_rd_a__addr, __out_rd_b__addr, __out_rd_c__addr;
-	assign out_rd_a.addr = __out_rd_a__addr;
-	assign out_rd_b.addr = __out_rd_b__addr;
-	assign out_rd_c.addr = __out_rd_c__addr;
+	assign real_out_rd_a.addr = __out_rd_a__addr;
+	assign real_out_rd_b.addr = __out_rd_b__addr;
+	assign real_out_rd_c.addr = __out_rd_c__addr;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
 		__out_rd_a__tag, __out_rd_b__tag, __out_rd_c__tag;
-	assign out_rd_a.tag = __out_rd_a__tag;
-	assign out_rd_b.tag = __out_rd_b__tag;
-	assign out_rd_c.tag = __out_rd_c__tag;
+	assign real_out_rd_a.tag = __out_rd_a__tag;
+	assign real_out_rd_b.tag = __out_rd_b__tag;
+	assign real_out_rd_c.tag = __out_rd_c__tag;
 
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
 		__out_rd_a__data_type, __out_rd_b__data_type,
 		__out_rd_c__data_type;
-	assign out_rd_a.data_type = __out_rd_a__data_type;
-	assign out_rd_b.data_type = __out_rd_b__data_type;
-	assign out_rd_c.data_type = __out_rd_c__data_type;
+	assign real_out_rd_a.data_type = __out_rd_a__data_type;
+	assign real_out_rd_b.data_type = __out_rd_b__data_type;
+	assign real_out_rd_c.data_type = __out_rd_c__data_type;
 
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
 		__out_rd_a__int_type_size, __out_rd_b__int_type_size,
 		__out_rd_c__int_type_size;
-	assign out_rd_a.int_type_size = __out_rd_a__int_type_size;
-	assign out_rd_b.int_type_size = __out_rd_b__int_type_size;
-	assign out_rd_c.int_type_size = __out_rd_c__int_type_size;
+	assign real_out_rd_a.int_type_size = __out_rd_a__int_type_size;
+	assign real_out_rd_b.int_type_size = __out_rd_b__int_type_size;
+	assign real_out_rd_c.int_type_size = __out_rd_c__int_type_size;
 
 	logic __out_mem_read__req;
-	assign out_mem_read.req = __out_mem_read__req;
+	assign real_out_mem_read.req = __out_mem_read__req;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__out_mem_read__base_addr;
-	assign out_mem_read.base_addr = __out_mem_read__base_addr;
+	assign real_out_mem_read.base_addr = __out_mem_read__base_addr;
 
 	logic __out_mem_write__req;
-	assign out_mem_write.req = __out_mem_write__req;
+	assign real_out_mem_write.req = __out_mem_write__req;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __out_mem_write__data;
-	assign out_mem_write.data = __out_mem_write__data;
+	assign real_out_mem_write.data = __out_mem_write__data;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__out_mem_write__base_addr;
-	assign out_mem_write.base_addr = __out_mem_write__base_addr;
+	assign real_out_mem_write.base_addr = __out_mem_write__base_addr;
 
 	logic __out_wait_for_me__busy;
-	assign out_wait_for_me.busy = __out_wait_for_me__busy;
+	assign real_out_wait_for_me.busy = __out_wait_for_me__busy;
 
 	assign __out_wait_for_me__busy
 		= (__wr_load_state != PkgSnow64LarFile::WrLdStIdle);
@@ -253,42 +334,64 @@ module Snow64LarFile(input logic clk,
 	// The arrays of LAR metadata and shared data.
 	//logic [__MSB_POS__METADATA:0] __lar_metadata
 	//	[0 : __LAST_INDEX__NUM_LARS];
-	logic [__METADATA__WHOLE_ADDR__INDEX_HI
-		- __METADATA__WHOLE_ADDR__INDEX_LO : 0]
-		__lar_metadata__whole_addr[0 : __LAST_INDEX__NUM_LARS],
+	logic [__MSB_POS__METADATA__WHOLE_ADDR : 0]
+		__lar_metadata__whole_addr[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__METADATA__WHOLE_ADDR : 0]
 		__debug_lar_metadata__whole_addr[0 : __LAST_INDEX__NUM_LARS];
+	`endif		// FORMAL
 
-	logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO: 0]
-		__lar_metadata__tag[0 : __LAST_INDEX__NUM_LARS],
+	logic [__MSB_POS__METADATA__TAG : 0]
+		__lar_metadata__tag[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__METADATA__TAG : 0]
 		__debug_lar_metadata__tag[0 : __LAST_INDEX__NUM_LARS];
-	logic [__METADATA__DATA_TYPE__INDEX_HI
-		- __METADATA__DATA_TYPE__INDEX_LO : 0]
-		__lar_metadata__data_type[0 : __LAST_INDEX__NUM_LARS],
+	`endif		// FORMAL
+
+	logic [__MSB_POS__METADATA__DATA_TYPE : 0]
+		__lar_metadata__data_type[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__METADATA__DATA_TYPE : 0]
 		__debug_lar_metadata__data_type[0 : __LAST_INDEX__NUM_LARS];
-	logic [__METADATA__INT_TYPE_SIZE__INDEX_HI
-		- __METADATA__INT_TYPE_SIZE__INDEX_LO : 0]
-		__lar_metadata__int_type_size[0 : __LAST_INDEX__NUM_LARS],
+	`endif		// FORMAL
+
+	logic [__MSB_POS__METADATA__INT_TYPE_SIZE : 0]
+		__lar_metadata__int_type_size[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__METADATA__INT_TYPE_SIZE : 0]
 		__debug_lar_metadata__int_type_size[0 : __LAST_INDEX__NUM_LARS];
+	`endif		// FORMAL
 
 
 	//logic [__MSB_POS__SHAREDDATA:0] __lar_shareddata
 	//	[0 : __LAST_INDEX__NUM_LARS];
-	logic [__SHAREDDATA__BASE_ADDR__INDEX_HI
-		- __SHAREDDATA__BASE_ADDR__INDEX_LO : 0]
-		__lar_shareddata__base_addr[0 : __LAST_INDEX__NUM_LARS],
+	logic [__MSB_POS__SHAREDDATA__BASE_ADDR : 0]
+		__lar_shareddata__base_addr[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__SHAREDDATA__BASE_ADDR : 0]
 		__debug_lar_shareddata__base_addr[0 : __LAST_INDEX__NUM_LARS];
-	logic [__SHAREDDATA__DATA__INDEX_HI
-		- __SHAREDDATA__DATA__INDEX_LO : 0]
-		__lar_shareddata__data[0 : __LAST_INDEX__NUM_LARS],
+	`endif		// FORMAL
+
+	logic [__MSB_POS__SHAREDDATA__DATA : 0]
+		__lar_shareddata__data[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__SHAREDDATA__DATA : 0]
 		__debug_lar_shareddata__data[0 : __LAST_INDEX__NUM_LARS];
-	logic [__SHAREDDATA__REF_COUNT__INDEX_HI
-		- __SHAREDDATA__REF_COUNT__INDEX_LO : 0]
-		__lar_shareddata__ref_count[0 : __LAST_INDEX__NUM_LARS],
+	`endif		// FORMAL
+
+	logic [__MSB_POS__SHAREDDATA__REF_COUNT : 0]
+		__lar_shareddata__ref_count[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__SHAREDDATA__REF_COUNT : 0]
 		__debug_lar_shareddata__ref_count[0 : __LAST_INDEX__NUM_LARS];
-	logic [__SHAREDDATA__DIRTY__INDEX_HI
-		- __SHAREDDATA__DIRTY__INDEX_LO : 0]
-		__lar_shareddata__dirty[0 : __LAST_INDEX__NUM_LARS],
+	`endif		// FORMAL
+
+	logic [__MSB_POS__SHAREDDATA__DIRTY : 0]
+		__lar_shareddata__dirty[0 : __LAST_INDEX__NUM_LARS];
+	`ifdef FORMAL
+	logic [__MSB_POS__SHAREDDATA__DIRTY : 0]
 		__debug_lar_shareddata__dirty[0 : __LAST_INDEX__NUM_LARS];
+	`endif		// FORMAL
 
 	`ifdef FORMAL
 	always_ff @(posedge clk)
@@ -351,7 +454,7 @@ module Snow64LarFile(input logic clk,
 
 	// Incoming base_addr to be written to a LAR
 	PkgSnow64LarFile::LarIncomingBaseAddr __in_wr__incoming_base_addr;
-	assign __in_wr__incoming_base_addr = in_wr.addr;
+	assign __in_wr__incoming_base_addr = real_in_wr.addr;
 
 
 	//`define TAG(index) __lar_metadata[index] `METADATA__TAG
@@ -523,47 +626,47 @@ module Snow64LarFile(input logic clk,
 		? index : 0)
 
 	`ifdef FORMAL
-	`define __real_tag_search_0 (`do_tag_search(1) | `do_tag_search(2) \
+	`define actual_tag_search_0 (`do_tag_search(1) | `do_tag_search(2) \
 		| `do_tag_search(3))
-	`define __real_tag_search_1 (`do_tag_search(4) | `do_tag_search(5) \
+	`define actual_tag_search_1 (`do_tag_search(4) | `do_tag_search(5) \
 		| `do_tag_search(6) | `do_tag_search(7))
-	`define __real_tag_search_2 (`do_tag_search(8) | `do_tag_search(9) \
+	`define actual_tag_search_2 (`do_tag_search(8) | `do_tag_search(9) \
 		| `do_tag_search(10) | `do_tag_search(11))
-	`define __real_tag_search_3 (`do_tag_search(12) | `do_tag_search(13) \
+	`define actual_tag_search_3 (`do_tag_search(12) | `do_tag_search(13) \
 		| `do_tag_search(14) | `do_tag_search(15))
 
-	`define __real_tag_search_final (`__real_tag_search_0 \
-		| `__real_tag_search_1 | `__real_tag_search_2 \
-		| `__real_tag_search_3)
+	`define actual_tag_search_final (`actual_tag_search_0 \
+		| `actual_tag_search_1 | `actual_tag_search_2 \
+		| `actual_tag_search_3)
 
 	`else // if !defined(FORMAL)
 	always @(*)
 	begin
-		`define __real_tag_search_0 __tag_search_0
+		`define actual_tag_search_0 __tag_search_0
 		__tag_search_0 = `do_tag_search(1) | `do_tag_search(2)
 			| `do_tag_search(3);
 	end
 	always @(*)
 	begin
-		`define __real_tag_search_1 __tag_search_1
+		`define actual_tag_search_1 __tag_search_1
 		__tag_search_1 = `do_tag_search(4) | `do_tag_search(5)
 			| `do_tag_search(6) | `do_tag_search(7);
 	end
 	always @(*)
 	begin
-		`define __real_tag_search_2 __tag_search_2
+		`define actual_tag_search_2 __tag_search_2
 		__tag_search_2 = `do_tag_search(8) | `do_tag_search(9)
 			| `do_tag_search(10) | `do_tag_search(11);
 	end
 	always @(*)
 	begin
-		`define __real_tag_search_3 __tag_search_3
+		`define actual_tag_search_3 __tag_search_3
 		__tag_search_3 = `do_tag_search(12) | `do_tag_search(13)
 			| `do_tag_search(14) | `do_tag_search(15);
 	end
 	always @(*)
 	begin
-		`define __real_tag_search_final __tag_search_final
+		`define actual_tag_search_final __tag_search_final
 		__tag_search_final = __tag_search_0 | __tag_search_1
 			| __tag_search_2 | __tag_search_3;
 	end
@@ -590,9 +693,8 @@ module Snow64LarFile(input logic clk,
 
 	always @(posedge clk)
 	begin
-
-	if (!((in_rd_a == 0) && (in_rd_b == 0) && (in_rd_c == 0)
-		&& (in_wr == 0)))
+	if (!((real_in_rd_a == 0) && (real_in_rd_b == 0)
+		&& (real_in_rd_c == 0) && (real_in_wr == 0)))
 	begin
 		integer i;
 
@@ -649,28 +751,28 @@ module Snow64LarFile(input logic clk,
 	`define wr_curr_shareddata_base_addr \
 		`shareddata_tagged_base_addr(__in_wr__index)
 	`define wr_aliased_shareddata_base_addr \
-		`shareddata_base_addr(`__real_tag_search_final)
+		`shareddata_base_addr(`actual_tag_search_final)
 	`define wr_to_allocate_shareddata_base_addr \
 		`shareddata_base_addr(`top_metadata_tag)
 
 	`define wr_curr_shareddata_data \
 		`shareddata_tagged_data(__in_wr__index)
 	`define wr_aliased_shareddata_data \
-		`shareddata_data(`__real_tag_search_final)
+		`shareddata_data(`actual_tag_search_final)
 	`define wr_to_allocate_shareddata_data \
 		`shareddata_data(`top_metadata_tag)
 
 	`define wr_curr_shareddata_dirty \
 		`shareddata_tagged_dirty(__in_wr__index)
 	`define wr_aliased_shareddata_dirty \
-		`shareddata_dirty(`__real_tag_search_final)
+		`shareddata_dirty(`actual_tag_search_final)
 	`define wr_to_allocate_shareddata_dirty \
 		`shareddata_dirty(`top_metadata_tag)
 
 	`define wr_curr_shareddata_ref_count \
 		`shareddata_tagged_ref_count(__in_wr__index)
 	`define wr_aliased_shareddata_ref_count \
-		`shareddata_ref_count(`__real_tag_search_final)
+		`shareddata_ref_count(`actual_tag_search_final)
 	`define wr_to_allocate_shareddata_ref_count \
 		`shareddata_ref_count(`top_metadata_tag)
 
@@ -762,22 +864,22 @@ module Snow64LarFile(input logic clk,
 					`wr_metadata_int_type_size <= __in_wr__int_type_size;
 
 					`ifdef FORMAL
-					__debug_tag_search_final <= `__real_tag_search_final;
-					__found_tag <= `__real_tag_search_final != 0;
+					__debug_tag_search_final <= `actual_tag_search_final;
+					__found_tag <= `actual_tag_search_final != 0;
 					`endif		// FORMAL
 
 					// The address's data is already in at least one LAR.
-					if (`__real_tag_search_final != 0)
+					if (`actual_tag_search_final != 0)
 					begin
 						// A tag already exists.  We set our tag to the
 						// existing one.
-						`wr_metadata_tag <= `__real_tag_search_final;
+						`wr_metadata_tag <= `actual_tag_search_final;
 
 						// Loads of data we already had don't affect the
 						// dirty flag.
 
 						// If our existing tag ISN'T the one we found.
-						if (`__real_tag_search_final != `wr_metadata_tag)
+						if (`actual_tag_search_final != `wr_metadata_tag)
 						begin
 							`wr_aliased_shareddata_ref_count
 								<= `wr_aliased_shareddata_ref_count + 1;
@@ -859,7 +961,7 @@ module Snow64LarFile(input logic clk,
 					end
 
 					// We didn't find any aliases of __in_wr__addr.
-					else // if (`__real_tag_search_final == 0)
+					else // if (`actual_tag_search_final == 0)
 					begin
 						case (`wr_curr_shareddata_ref_count)
 						// This is from before we were allocated.
@@ -1092,140 +1194,13 @@ module Snow64LarFile(input logic clk,
 	`undef shareddata_dirty
 	`undef shareddata_tagged_dirty
 
-	`undef __real_tag_search_0
-	`undef __real_tag_search_1
-	`undef __real_tag_search_2
-	`undef __real_tag_search_3
-	`undef __real_tag_search_final
+	`undef actual_tag_search_0
+	`undef actual_tag_search_1
+	`undef actual_tag_search_2
+	`undef actual_tag_search_3
+	`undef actual_tag_search_final
 	`undef do_tag_search
 
 
 
 endmodule
-
-
-//module DebugSnow64LarFile(input logic clk,
-//	input logic in_ctrl__pause_auto_mem_write,
-//
-//	input logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0]
-//		in_rd_a__index, in_rd_b__index, in_rd_c__index,
-//
-//	input logic in_wr__req,
-//	input logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
-//		in_wr__write_type,
-//	input logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] in_wr__index,
-//	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] in_wr__data,
-//	input logic [`MSB_POS__SNOW64_CPU_ADDR:0] in_wr__addr,
-//	input logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] in_wr__data_type,
-//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-//		in_wr__int_type_size,
-//
-//	input logic in_mem_read__busy,
-//	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] in_mem_read__data,
-//
-//	input logic in_mem_write__busy,
-//
-//	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-//		out_rd_a__data, out_rd_b__data, out_rd_c__data,
-//	output logic [`MSB_POS__SNOW64_CPU_ADDR:0]
-//		out_rd_a__addr, out_rd_b__addr, out_rd_c__addr,
-//	output logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
-//		out_rd_a__tag, out_rd_b__tag, out_rd_c__tag,
-//	output logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
-//		out_rd_a__data_type, out_rd_b__data_type,
-//		out_rd_c__data_type,
-//	output logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-//		out_rd_a__int_type_size, out_rd_b__int_type_size,
-//		out_rd_c__int_type_size,
-//
-//	output logic out_mem_read__req,
-//	output logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
-//		out_mem_read__base_addr,
-//
-//	output logic out_mem_write__req,
-//	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_mem_write__data,
-//	output logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
-//		out_mem_write__base_addr,
-//
-//	output logic out_wait_for_me__busy);
-//
-//	// inputs
-//	PkgSnow64LarFile::PortIn_LarFile_Ctrl in_ctrl;
-//	PkgSnow64LarFile::PortIn_LarFile_Read in_rd_a, in_rd_b, in_rd_c;
-//	PkgSnow64LarFile::PortIn_LarFile_Write in_wr;
-//	PkgSnow64LarFile::PortIn_LarFile_MemRead in_mem_read;
-//	PkgSnow64LarFile::PortIn_LarFile_MemWrite in_mem_write;
-//
-//	// outputs
-//	PkgSnow64LarFile::PortOut_LarFile_Read out_rd_a, out_rd_b, out_rd_c;
-//	PkgSnow64LarFile::PortOut_LarFile_MemRead out_mem_read;
-//	PkgSnow64LarFile::PortOut_LarFile_MemWrite out_mem_write;
-//	PkgSnow64LarFile::PortOut_LarFile_WaitForMe out_wait_for_me;
-//
-//	always @(*) in_ctrl.pause_auto_mem_write
-//		= in_ctrl__pause_auto_mem_write;
-//
-//	always @(*) in_rd_a.index = in_rd_a__index;
-//	always @(*) in_rd_b.index = in_rd_b__index;
-//	always @(*) in_rd_c.index = in_rd_c__index;
-//
-//	always @(*) in_wr.req = in_wr__req;
-//	always @(*) in_wr.write_type = in_wr__write_type;
-//	always @(*) in_wr.index = in_wr__index;
-//	always @(*) in_wr.data = in_wr__data;
-//	always @(*) in_wr.addr = in_wr__addr;
-//	always @(*) in_wr.data_type = in_wr__data_type;
-//	always @(*) in_wr.int_type_size = in_wr__int_type_size;
-//
-//	always @(*) in_mem_read.busy = in_mem_read__busy;
-//	always @(*) in_mem_read.data = in_mem_read__data;
-//
-//	always @(*) in_mem_write.busy = in_mem_write__busy;
-//
-//	assign out_rd_a__data = out_rd_a.data;
-//	assign out_rd_b__data = out_rd_b.data;
-//	assign out_rd_c__data = out_rd_c.data;
-//
-//	assign out_rd_a__addr = out_rd_a.addr;
-//	assign out_rd_b__addr = out_rd_b.addr;
-//	assign out_rd_c__addr = out_rd_c.addr;
-//
-//	assign out_rd_a__tag = out_rd_a.tag;
-//	assign out_rd_b__tag = out_rd_b.tag;
-//	assign out_rd_c__tag = out_rd_c.tag;
-//
-//	assign out_rd_a__data_type = out_rd_a.data_type;
-//	assign out_rd_b__data_type = out_rd_b.data_type;
-//	assign out_rd_c__data_type = out_rd_c.data_type;
-//
-//	assign out_rd_a__int_type_size = out_rd_a.int_type_size;
-//	assign out_rd_b__int_type_size = out_rd_b.int_type_size;
-//	assign out_rd_c__int_type_size = out_rd_c.int_type_size;
-//
-//	assign out_mem_read__req = out_mem_read.req;
-//	assign out_mem_read__base_addr = out_mem_read.base_addr;
-//
-//	assign out_mem_write__req = out_mem_write.req;
-//	assign out_mem_write__data = out_mem_write.data;
-//	assign out_mem_write__base_addr = out_mem_write.base_addr;
-//
-//	assign out_wait_for_me__busy = out_wait_for_me.busy;
-//
-//
-//	Snow64LarFile inst_lar_file(.clk(clk),
-//		.in_ctrl(in_ctrl),
-//
-//		.in_rd_a(in_rd_a), .in_rd_b(in_rd_b), .in_rd_c(in_rd_c),
-//
-//		.in_wr(in_wr),
-//		.in_mem_read(in_mem_read),
-//		.in_mem_write(in_mem_write),
-//
-//		.out_rd_a(out_rd_a), .out_rd_b(out_rd_b),
-//		.out_rd_c(out_rd_c),
-//
-//		.out_mem_read(out_mem_read),
-//		.out_mem_write(out_mem_write),
-//		.out_wait_for_me(out_wait_for_me));
-//
-//endmodule

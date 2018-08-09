@@ -52,12 +52,12 @@ typedef struct packed
 	// This is used to tell the LAR file to stop writing to memory with the
 	// round-robin method of writing to memory.
 	logic pause_auto_mem_write;
-} PortIn_LarFile_Ctrl;
+} PartialPortIn_LarFile_Ctrl;
 
 typedef struct packed
 {
 	LarIndex index;
-} PortIn_LarFile_Read;
+} PartialPortIn_LarFile_Read;
 
 
 typedef struct packed
@@ -83,18 +83,18 @@ typedef struct packed
 	// WriteTypOnlyData)
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
-} PortIn_LarFile_Write;
+} PartialPortIn_LarFile_Write;
 
 typedef struct packed
 {
 	logic busy;
 	LarData data;
-} PortIn_LarFile_MemRead;
+} PartialPortIn_LarFile_MemRead;
 
 typedef struct packed
 {
 	logic busy;
-} PortIn_LarFile_MemWrite;
+} PartialPortIn_LarFile_MemWrite;
 
 typedef struct packed
 {
@@ -117,14 +117,14 @@ typedef struct packed
 
 	// It turns out that nobody besides the LAR file needs to know which
 	// LARs are dirty!
-} PortOut_LarFile_Read;
+} PartialPortOut_LarFile_Read;
 
 // Tell the outside world when we want to read from memory.
 typedef struct packed
 {
 	logic req;
 	LarBaseAddr base_addr;
-} PortOut_LarFile_MemRead;
+} PartialPortOut_LarFile_MemRead;
 
 // Tell the outside world when we want to write to memory.
 typedef struct packed
@@ -132,14 +132,36 @@ typedef struct packed
 	logic req;
 	LarData data;
 	LarBaseAddr base_addr;
-} PortOut_LarFile_MemWrite;
+} PartialPortOut_LarFile_MemWrite;
 
 // Wait for me!
 // This indicates that we can't accept any commands.
 typedef struct packed
 {
 	logic busy;
-} PortOut_LarFile_WaitForMe;
+} PartialPortOut_LarFile_WaitForMe;
+
+typedef struct packed
+{
+	logic [`MPOFTYPE(PartialPortIn_LarFile_Ctrl):0] ctrl;
+
+	logic [`MPOFTYPE(PartialPortIn_LarFile_Read):0] rd_a;
+	logic [`MPOFTYPE(PartialPortIn_LarFile_Read):0] rd_b;
+	logic [`MPOFTYPE(PartialPortIn_LarFile_Read):0] rd_c;
+	logic [`MPOFTYPE(PartialPortIn_LarFile_Write):0] wr;
+	logic [`MPOFTYPE(PartialPortIn_LarFile_MemRead):0] mem_read;
+	logic [`MPOFTYPE(PartialPortIn_LarFile_MemWrite):0] mem_write;
+} PortIn_LarFile;
+
+typedef struct packed
+{
+	logic [`MPOFTYPE(PartialPortOut_LarFile_Read):0] rd_a;
+	logic [`MPOFTYPE(PartialPortOut_LarFile_Read):0] rd_b;
+	logic [`MPOFTYPE(PartialPortOut_LarFile_Read):0] rd_c;
+	logic [`MPOFTYPE(PartialPortOut_LarFile_MemRead):0] mem_read;
+	logic [`MPOFTYPE(PartialPortOut_LarFile_MemWrite):0] mem_write;
+	logic [`MPOFTYPE(PartialPortOut_LarFile_WaitForMe):0] wait_for_me;
+} PortOut_LarFile;
 
 
 typedef struct packed

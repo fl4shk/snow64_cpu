@@ -9,6 +9,11 @@
 `define MP2WIDTH(some_msb_pos) ((some_msb_pos) + 1)
 `define ARR_SIZE_TO_LAST_INDEX(some_arr_size) ((some_arr_size) - 1)
 
+// MSB_POS of some type... used for approximating the ability to put a
+// packed struct into another packed struct with Icarus Verilog.
+// ...Ideally, Icarus Verilog would already support that directly, but....
+`define MPOFTYPE(some_type) `WIDTH2MP($bits(some_type))
+
 `define MAKE_NEXT_INDEX_LO(some_prev_index_hi) \
 	((some_prev_index_hi) + 1)
 `define MAKE_INDEX_HI(some_index_lo, some_width) \

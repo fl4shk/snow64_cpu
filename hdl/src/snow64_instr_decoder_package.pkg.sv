@@ -156,8 +156,10 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_CPU_ADDR:0] signext_imm;
 	//logic [`MSB_POS__SNOW64_CPU_ADDR:0] zeroext_imm;
 
-	// If we should stall the pipeline because of this instruction
-	logic stall;
+
+	//// If we should stall the pipeline because of this instruction
+	//logic stall;
+
 
 	// If this instruction should be treated as a nop.
 	logic nop;
