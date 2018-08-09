@@ -1,9 +1,10 @@
 `include "src/snow64_lar_file_defines.header.sv"
 
-//// For when we're done formally verifying the LAR file itself.
-//`ifdef FORMAL
-//`undef FORMAL
-//`endif		// FORMAL
+// For when we're done formally verifying the LAR file itself.
+// As of this writing, formal verification is totally done.
+`ifdef FORMAL
+`undef FORMAL
+`endif		// FORMAL
 
 module Snow64LarFile(input logic clk,
 	input PkgSnow64LarFile::PortIn_LarFile in,
