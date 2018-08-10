@@ -1,10 +1,10 @@
 `include "src/snow64_lar_file_defines.header.sv"
 
-// For when we're done formally verifying the LAR file itself.
-// As of this writing, formal verification is totally done.
-`ifdef FORMAL
-`undef FORMAL
-`endif		// FORMAL
+//// For when we're done formally verifying the LAR file itself.
+//// As of this writing, formal verification is totally done.
+//`ifdef FORMAL
+//`undef FORMAL
+//`endif		// FORMAL
 
 module Snow64LarFile(input logic clk,
 	input PkgSnow64LarFile::PortIn_LarFile in,
@@ -60,16 +60,16 @@ module Snow64LarFile(input logic clk,
 	import PkgSnow64LarFile::LarRefCount;
 	import PkgSnow64LarFile::LarDirty;
 
-	`ifndef FORMAL
+	//`ifndef FORMAL
 	localparam __ARR_SIZE__NUM_LARS = `ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS;
 	localparam __LAST_INDEX__NUM_LARS 
 		= `LAST_INDEX__SNOW64_LAR_FILE_NUM_LARS;
-	`else // if defined(FORMAL)
-	// Verify the LAR file when there are only Four LARs 
-	localparam __ARR_SIZE__NUM_LARS = 4;
-	localparam __LAST_INDEX__NUM_LARS
-		= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__NUM_LARS);
-	`endif // FORMAL
+	//`else // if defined(FORMAL)
+	//// Verify the LAR file when there are only Four LARs 
+	//localparam __ARR_SIZE__NUM_LARS = 4;
+	//localparam __LAST_INDEX__NUM_LARS
+	//	= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__NUM_LARS);
+	//`endif // FORMAL
 
 
 	`ifdef FORMAL
@@ -734,9 +734,12 @@ module Snow64LarFile(input logic clk,
 	`ifdef FORMAL
 	`define actual_tag_search_0 (`do_tag_search(1) | `do_tag_search(2) \
 		| `do_tag_search(3))
-	`define actual_tag_search_1 0
-	`define actual_tag_search_2 0
-	`define actual_tag_search_3 0
+	`define actual_tag_search_1 (`do_tag_search(4) | `do_tag_search(5) \
+		| `do_tag_search(6) | `do_tag_search(7))
+	`define actual_tag_search_2 (`do_tag_search(8) | `do_tag_search(9) \
+		| `do_tag_search(10) | `do_tag_search(11))
+	`define actual_tag_search_3 (`do_tag_search(12) | `do_tag_search(13) \
+		| `do_tag_search(14) | `do_tag_search(15))
 
 	`define actual_tag_search_final (`actual_tag_search_0 \
 		| `actual_tag_search_1 | `actual_tag_search_2 \
