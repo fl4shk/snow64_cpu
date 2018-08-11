@@ -38,20 +38,23 @@ typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 	WriteTypSt
 } LarFileWriteType;
 
-typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_LOAD_STATE:0]
+typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_STATE:0]
 {
-	WrLdStIdle,
-	WrLdStReqMemRead,
-	WrLdStWaitForMemRead,
-	//WrLdStFinishing
-	WrLdStEek
-} WriteLoadState;
+	WrStIdle,
+	WrStStartLdSt,
+	WrStWaitForJustMemRead,
+	WrStWaitForJustMemWrite,
+
+	WrStWaitForMemReadAndMemWrite,
+	WrStBad0,
+	WrStBad1,
+	WrStBad2
+} WriteState;
 
 typedef struct packed
 {
-	// This is used to tell the LAR file to stop writing to memory with the
-	// round-robin method of writing to memory.
-	logic pause_auto_mem_write;
+	//logic mem_bus_guard_instr_load_busy;
+	logic mem_bus_guard_busy;
 } PartialPortIn_LarFile_Ctrl;
 
 typedef struct packed
@@ -87,13 +90,13 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic busy;
+	logic valid, busy;
 	LarData data;
 } PartialPortIn_LarFile_MemRead;
 
 typedef struct packed
 {
-	logic busy;
+	logic valid, busy;
 } PartialPortIn_LarFile_MemWrite;
 
 typedef struct packed

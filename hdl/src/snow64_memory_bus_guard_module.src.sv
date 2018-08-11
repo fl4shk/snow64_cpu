@@ -7,6 +7,31 @@ module Snow64MemoryBusGuard(input logic clk,
 	input PkgSnow64MemoryBusGuard::PortIn_MemoryBusGuard in,
 	output PkgSnow64MemoryBusGuard::PortOut_MemoryBusGuard out);
 
+	PkgSnow64MemoryBusGuard::State __state;
+	PkgSnow64MemoryBusGuard::RequestType __req_type;
+
+	initial
+	begin
+		__state = PkgSnow64MemoryBusGuard::StIdle;
+		__req_type = PkgSnow64MemoryBusGuard::ReqTypReadInstr;
+	end
+
+
+	`ifdef FORMAL
+	localparam __ENUM__STATE__IDLE = PkgSnow64MemoryBusGuard::StIdle;
+	localparam __ENUM__STATE__WAIT_FOR_MEM
+		= PkgSnow64MemoryBusGuard::StWaitForMem;
+
+	localparam __ENUM__REQUEST_TYPE__READ_INSTR
+		= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
+	localparam __ENUM__REQUEST_TYPE__READ_DATA
+		= PkgSnow64MemoryBusGuard::ReqTypReadData;
+	localparam __ENUM__REQUEST_TYPE__WRITE_DATA
+		= PkgSnow64MemoryBusGuard::ReqTypWriteData;
+	localparam __ENUM__REQUEST_TYPE__BAD
+		= PkgSnow64MemoryBusGuard::ReqTypBad;
+	`endif
+
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_ReqRead
 		real_in_req_read_instr, real_in_req_read_data;
 	assign real_in_req_read_instr = in.req_read_instr;
@@ -78,14 +103,10 @@ module Snow64MemoryBusGuard(input logic clk,
 		real_out_status;
 	assign out.status = real_out_status;
 
-	logic __out_status__can_accept_cmd, __out_status__busy;
-	assign real_out_status.can_accept_cmd = __out_status__can_accept_cmd;
+	wire __out_status__busy
+		= (__state == PkgSnow64MemoryBusGuard::StWaitForMem);
 	assign real_out_status.busy = __out_status__busy;
 
-	initial
-	begin
-		{__out_status__can_accept_cmd, __out_status__busy} = 0;
-	end
 
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_MemAccess
 		real_out_mem_access;
@@ -110,6 +131,72 @@ module Snow64MemoryBusGuard(input logic clk,
 
 		__out_mem_access__mem_acc_type
 			= PkgSnow64MemoryBusGuard::MemAccTypRead;
+	end
+
+
+
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+		PkgSnow64MemoryBusGuard::StIdle:
+		begin
+			// Priority of response:
+			// read data, write data, read instructions
+			// It's assumed that instruction reads WON'T happen multiple
+			// cycles in a row, and that they are infrequent.
+			// 
+			// It is assumed that data reads and wirtes CAN happen multiple
+			// cycles in a row, but only if they're not blocked by a read
+			// of a block of instructions.
+			if (__in_req_read_instr__req)
+			begin
+				__state <= PkgSnow64MemoryBusGuard::StWaitForMem;
+				__req_type <= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
+
+				__out_mem_access__req <= 1;
+			end
+
+			else if (__in_req_read_data__req)
+			begin
+				__state <= PkgSnow64MemoryBusGuard::StWaitForMem;
+				__req_type <= PkgSnow64MemoryBusGuard::ReqTypReadData;
+			end
+
+			else if (__in_req_write_data__req)
+			begin
+				__state <= PkgSnow64MemoryBusGuard::StWaitForMem;
+				__req_type <= PkgSnow64MemoryBusGuard::ReqTypWriteData;
+			end
+		end
+
+		PkgSnow64MemoryBusGuard::StWaitForMem:
+		begin
+			__out_mem_access__req <= 0;
+			//__out_mem_access__addr <= 0;
+			//__out_mem_access__data <= 0;
+			//__out_mem_access__mem_acc_type <= 0;
+			case (__req_type)
+			PkgSnow64MemoryBusGuard::ReqTypReadInstr:
+			begin
+				if (!__in_mem_access__busy)
+				begin
+					
+				end
+			end
+
+			PkgSnow64MemoryBusGuard::ReqTypReadData:
+			begin
+				
+			end
+
+			PkgSnow64MemoryBusGuard::ReqTypWriteData:
+			begin
+				
+			end
+			endcase
+		end
+		endcase
 	end
 
 endmodule

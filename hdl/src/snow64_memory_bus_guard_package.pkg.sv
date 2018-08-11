@@ -8,6 +8,20 @@ package PkgSnow64MemoryBusGuard;
 typedef logic [`MSB_POS__SNOW64_CPU_ADDR:0] CpuAddr;
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] LarData;
 
+typedef enum logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__STATE:0]
+{
+	StIdle,
+	StWaitForMem
+} State;
+
+typedef enum logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__REQUEST_TYPE:0]
+{
+	ReqTypReadInstr,
+	ReqTypReadData,
+	ReqTypWriteData,
+	ReqTypBad
+} RequestType;
+
 typedef struct packed
 {
 	logic req;
@@ -34,7 +48,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic can_accept_cmd, busy;
+	logic busy;
 } PartialPortOut_MemoryBusGuard_Status;
 
 
