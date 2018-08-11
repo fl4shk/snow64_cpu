@@ -732,7 +732,7 @@ module Snow64LarFile(input logic clk,
 	`define captured__wr_curr_shareddata_base_addr \
 		`shareddata_tagged_base_addr(__captured_in_wr__index)
 	`define wr_aliased_shareddata_base_addr \
-		`shareddata_base_addr(`actual_tag_search_final)
+		`shareddata_base_addr(__captured_tag_search_final)
 	`define wr_to_allocate_shareddata_base_addr \
 		`shareddata_base_addr(`top_metadata_tag)
 
@@ -741,7 +741,7 @@ module Snow64LarFile(input logic clk,
 	`define captured__wr_curr_shareddata_data \
 		`shareddata_tagged_data(__captured_in_wr__index)
 	`define wr_aliased_shareddata_data \
-		`shareddata_data(`actual_tag_search_final)
+		`shareddata_data(__captured_tag_search_final)
 	`define wr_to_allocate_shareddata_data \
 		`shareddata_data(`top_metadata_tag)
 
@@ -750,14 +750,14 @@ module Snow64LarFile(input logic clk,
 	`define captured__wr_curr_shareddata_dirty \
 		`shareddata_tagged_dirty(__captured_in_wr__index)
 	`define wr_aliased_shareddata_dirty \
-		`shareddata_dirty(`actual_tag_search_final)
+		`shareddata_dirty(__captured_tag_search_final)
 	`define wr_to_allocate_shareddata_dirty \
 		`shareddata_dirty(`top_metadata_tag)
 
 	`define captured__wr_curr_shareddata_ref_count \
 		`shareddata_tagged_ref_count(__captured_in_wr__index)
 	`define wr_aliased_shareddata_ref_count \
-		`shareddata_ref_count(`actual_tag_search_final)
+		`shareddata_ref_count(__captured_tag_search_final)
 	`define wr_to_allocate_shareddata_ref_count \
 		`shareddata_ref_count(`top_metadata_tag)
 
@@ -1492,7 +1492,105 @@ module Snow64LarFile(input logic clk,
 
 		PkgSnow64LarFile::WrStStartLdSt:
 		begin
-			
+			// The address's data is already in at least one LAR.
+			// 
+			// This is the best case scenario.  It's the analog of a cache
+			// hit in a conventional cache.
+			if (__captured_tag_search_final != 0)
+			begin
+				// A tag already exists.  We set our tag to the existing
+				// one.
+				`captured__wr_metadata_tag <= __captured_tag_search_final;
+
+				// Loads of data we already had don't affect the dirty
+				// flag.
+
+				// If our existing tag ISN'T the one we found.
+				if (__captured_tag_search_final
+					!= `captured__wr_metadata_tag)
+				begin
+					stop_mem_read();
+					`wr_aliased_shareddata_ref_count
+						<= `wr_aliased_shareddata_ref_count + 1;
+
+					if (__captured_in_wr__write_type
+						== PkgSnow64LarFile::WriteTypSt)
+					begin
+						// Make a copy of our data to the new address.
+						// This also causes us to need to set the dirty
+						// flag.
+						`wr_aliased_shareddata_data
+							<= `captured__wr_curr_shareddata_data;
+						`wr_aliased_shareddata_dirty <= 1;
+					end
+
+					case (`captured__wr_curr_shareddata_ref_count)
+					// We haven't been allocated yet.
+					0:
+					begin
+						stop_mem_write();
+						__wr_state <= PkgSnow64LarFile::WrStIdle;
+					end
+
+					// There were no other references to us, so deallocate
+					// the old tag (pushing it onto the stack), and (if we
+					// were dirty) send our old data out to memory.
+					1:
+					begin
+						// Deallocate our old tag.
+						`above_top_metadata_tag
+							<= `captured__wr_metadata_tag;
+						__curr_tag_stack_index <= __curr_tag_stack_index
+							+ 1;
+
+						// Since we're deallocating stuff, we need to write
+						// our old data back to memory if it's not already
+						// up to date.
+
+						if (`captured__wr_curr_shareddata_dirty)
+						begin
+							__wr_state <= PkgSnow64LarFile
+								::WrStWaitForJustMemWrite;
+							send_shareddata_to_mem
+								(`captured__wr_metadata_tag);
+						end
+						else
+						begin
+							// We need to go back to our previous state.
+							__wr_state <= PkgSnow64LarFile::WrStIdle;
+							stop_mem_write();
+						end
+
+						// We were the only LAR that cared about our old
+						// shared data, which means our old shared data
+						// becomes free for other use.
+						`captured__wr_curr_shareddata_ref_count <= 0;
+
+
+						`captured__wr_curr_shareddata_dirty <= 0;
+
+						// For good measure.
+						`captured__wr_curr_shareddata_base_addr <= 0;
+						`captured__wr_curr_shareddata_data <= 0;
+					end
+
+					// There was at least one other reference to us, so
+					// don't deallocate anything, but do decrement the
+					// reference count.
+					// In this situation, all that happens is that our tag
+					// changes and our shared data loses a reference, but
+					// our new shared data gains a reference.
+					default:
+					begin
+						__wr_state <= PkgSnow64LarFile::WrStIdle;
+						`captured__wr_curr_shareddata_ref_count
+							<= `captured__wr_curr_shareddata_ref_count
+							- 1;
+						stop_mem_write();
+					end
+					endcase
+				end
+			end
 		end
 
 		PkgSnow64LarFile::WrStWaitForJustMemRead:
