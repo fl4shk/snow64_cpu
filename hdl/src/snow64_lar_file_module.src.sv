@@ -260,6 +260,8 @@ module Snow64LarFile(input logic clk,
 	logic [__MSB_POS__METADATA__TAG:0] __captured_in_wr__index;
 	// Incoming base_addr to be written to a LAR
 	PkgSnow64LarFile::LarIncomingBaseAddr __captured_in_wr__base_addr;
+	PkgSnow64LarFile::LarIncomingBaseAddr __in_wr__incoming_base_addr;
+	assign __in_wr__incoming_base_addr = __in_wr__addr;
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] __captured_in_wr__data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
 		__captured_in_wr__int_type_size;
@@ -551,6 +553,7 @@ module Snow64LarFile(input logic clk,
 		__captured_in_wr__int_type_size = 0;
 		__captured_in_mem_read__valid = 0;
 		__captured_in_mem_write__valid = 0;
+		__captured_tag_search_final = 0;
 		__curr_tag_stack_index = __LAST_INDEX__NUM_LARS;
 		{__out_rd_a__data, __out_rd_b__data, __out_rd_c__data} = 0;
 		{__out_rd_a__addr, __out_rd_b__addr, __out_rd_c__addr} = 0;
@@ -660,7 +663,7 @@ module Snow64LarFile(input logic clk,
 	`define do_tag_search(index) \
 		((`shareddata_ref_count(index) \
 		&& (`shareddata_base_addr(index) \
-		== __captured_in_wr__base_addr.base_addr)) \
+		== __in_wr__incoming_base_addr.base_addr)) \
 		? index : 0)
 
 	`ifdef FORMAL
