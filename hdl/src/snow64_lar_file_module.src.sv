@@ -781,11 +781,11 @@ module Snow64LarFile(input logic clk,
 		__out_mem_write__req <= 0;
 	endtask : stop_mem_write
 
-	task send_shareddata_to_mem(input LarTag tag);
+	task prep_mem_write(input LarTag tag);
 		__out_mem_write__req <= 1;
 		__out_mem_write__data <= `shareddata_data(tag);
 		__out_mem_write__base_addr <= `shareddata_base_addr(tag);
-	endtask : send_shareddata_to_mem
+	endtask : prep_mem_write
 
 	//always @(posedge clk)
 	//begin
@@ -1028,8 +1028,7 @@ module Snow64LarFile(input logic clk,
 	//							// it's not already up to date.
 	//							if (`wr_curr_shareddata_dirty)
 	//							begin
-	//								send_shareddata_to_mem
-	//									(`wr_metadata_tag);
+	//								prep_mem_write(`wr_metadata_tag);
 	//								__wr_state <= 
 	//							end
 	//							else
@@ -1143,7 +1142,7 @@ module Snow64LarFile(input logic clk,
 	//							!= __in_wr__incoming_base_addr.base_addr)
 	//							&& `wr_curr_shareddata_dirty)
 	//						begin
-	//							send_shareddata_to_mem(`wr_metadata_tag);
+	//							prep_mem_write(`wr_metadata_tag);
 
 	//							if (__in_wr__write_type
 	//								== PkgSnow64LarFile::WriteTypLd)
@@ -1551,8 +1550,7 @@ module Snow64LarFile(input logic clk,
 						begin
 							__wr_state <= PkgSnow64LarFile
 								::WrStWaitForJustMemWrite;
-							send_shareddata_to_mem
-								(`captured__wr_metadata_tag);
+							prep_mem_write(`captured__wr_metadata_tag);
 						end
 						else
 						begin
@@ -1587,6 +1585,60 @@ module Snow64LarFile(input logic clk,
 							<= `captured__wr_curr_shareddata_ref_count
 							- 1;
 						stop_mem_write();
+					end
+					endcase
+				end
+
+				// Nobody had the address we were looking for.
+				else // if (__captured_tag_search_final == 0)
+				begin
+					case (`captured__wr_curr_shareddata_ref_count)
+					// This is from before we were allocated.
+
+					0:
+					begin
+						stop_mem_write();
+
+						// Allocate a new element of shared data.
+						`captured__wr_metadata_tag <= `top_metadata_tag;
+						__curr_tag_stack_index <= __curr_tag_stack_index
+							- 1;
+						`wr_to_allocate_shareddata_base_addr
+							<= __captured_in_wr__base_addr.base_addr;
+
+						// Within the run of the current program, we are
+						// the first LAR to ever reference this element of
+						// shared data.
+						`wr_to_allocate_shareddata_ref_count <= 1;
+
+						if (__captured_in_wr__write_type
+							== PkgSnow64LarFile::WriteTypLd)
+						begin
+							// Because we haven't been allocated yet, we
+							// only need to perform a data read.
+							__wr_state <= PkgSnow64LarFile
+								::WrStWaitForJustMemRead;
+							prep_mem_read();
+
+							// A load of fresh data marks us as clean.
+							`wr_to_allocate_shareddata_data <= 0;
+						end
+
+						else // if (__captured_in_wr__write_type
+							// == PkgSnow64LarFile::WriteTypSt)
+						begin
+							__wr_state <= PkgSnow64LarFile::WrStIdle;
+							// Simple default behavior... if you do a store
+							// before there was any data in a LAR, why not
+							// make the result data zero?
+							// 
+							// ...In actuality, it the data will already be
+							// zero anyway.
+							`wr_to_allocate_shareddata_data <= 0;
+
+							// Stores mark the data as dirty.
+							`wr_to_allocate_shareddata_dirty <= 1;
+						end
 					end
 					endcase
 				end
