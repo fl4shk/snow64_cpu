@@ -445,12 +445,11 @@ module Snow64LarFile(input logic clk,
 	logic [__MSB_POS__METADATA__TAG : 0]
 		__curr_tag_stack_index;
 
-	logic [__MSB_POS__METADATA__TAG:0] __captured_tag_search_final;
-	`ifndef FORMAL
 	logic [__MSB_POS__METADATA__TAG : 0]
 		__tag_search_0, __tag_search_1, __tag_search_2, __tag_search_3,
-		__tag_search_final;
-	`else // if !defined(FORMAL)
+		__tag_search_final, __captured_tag_search_final;
+
+	`ifdef FORMAL
 	logic __found_tag;
 	//logic __eek;
 	logic [__MSB_POS__METADATA__TAG : 0] __debug_tag_search_final;
@@ -666,33 +665,10 @@ module Snow64LarFile(input logic clk,
 		== __in_wr__incoming_base_addr.base_addr)) \
 		? index : 0)
 
-	`ifdef FORMAL
-	`define actual_tag_search_0 (`do_tag_search(1) | `do_tag_search(2) \
-		| `do_tag_search(3))
-		`ifndef SMALL_LAR_FILE
-		`define actual_tag_search_1 \
-			(`do_tag_search(4) | `do_tag_search(5) \
-			| `do_tag_search(6) | `do_tag_search(7))
-		`define actual_tag_search_2  \
-			(`do_tag_search(8) | `do_tag_search(9) \
-			| `do_tag_search(10) | `do_tag_search(11))
-		`define actual_tag_search_3 \
-			(`do_tag_search(12) | `do_tag_search(13) \
-			| `do_tag_search(14) | `do_tag_search(15))
-		`else // if defined(SMALL_LAR_FILE)
-		`define actual_tag_search_1 0
-		`define actual_tag_search_2 0
-		`define actual_tag_search_3 0 
-		`endif		// !defined(SMALL_LAR_FILE)
-
-	`define actual_tag_search_final (`actual_tag_search_0 \
-		| `actual_tag_search_1 | `actual_tag_search_2 \
-		| `actual_tag_search_3)
-
-	`else // if !defined(FORMAL)
 	assign __tag_search_0 = `do_tag_search(1) | `do_tag_search(2)
 		| `do_tag_search(3);
 
+	`ifndef SMALL_LAR_FILE
 	assign __tag_search_1 = `do_tag_search(4) | `do_tag_search(5)
 		| `do_tag_search(6) | `do_tag_search(7);
 
@@ -701,16 +677,14 @@ module Snow64LarFile(input logic clk,
 
 	assign __tag_search_3 = `do_tag_search(12) | `do_tag_search(13)
 		| `do_tag_search(14) | `do_tag_search(15);
+	`else
+	assign __tag_search_1 = 0;
+	assign __tag_search_2 = 0;
+	assign __tag_search_3 = 0;
+	`endif		// if !defined(SMALL_LAR_FILE)
 
 	assign __tag_search_final = __tag_search_0 | __tag_search_1
 		| __tag_search_2 | __tag_search_3;
-
-	`define actual_tag_search_0 __tag_search_0
-	`define actual_tag_search_1 __tag_search_1
-	`define actual_tag_search_2 __tag_search_2
-	`define actual_tag_search_3 __tag_search_3
-	`define actual_tag_search_final __tag_search_final
-	`endif		// FORMAL
 
 
 
@@ -791,499 +765,6 @@ module Snow64LarFile(input logic clk,
 		__out_mem_write__base_addr
 			<= `shareddata_base_addr(`captured__wr_metadata_tag);
 	endtask : prep_mem_write
-
-	//always @(posedge clk)
-	//begin
-	//	case (__wr_state)
-	//	PkgSnow64LarFile::WrStIdle:
-	//	begin
-	//		stop_mem_read();
-	//		__captured_in_wr__index <= __in_wr__index;
-	//		__captured_in_mem_read__valid <= 0;
-	//		__captured_in_mem_write__valid <= 0;
-
-	//		if (__in_wr__req && (__in_wr__index != 0))
-	//		begin
-	//			case (__in_wr__write_type)
-	//			// Mostly ALU/FPU operations.
-	//			PkgSnow64LarFile::WriteTypOnlyData:
-	//			begin
-	//				if (`wr_metadata_tag != __UNALLOCATED_TAG)
-	//				begin
-	//					// Data identical to what we have means we might
-	//					// not have to touch memory.
-	//					if (`wr_curr_shareddata_data != __in_wr__data)
-	//					begin
-	//						`wr_curr_shareddata_dirty <= 1;
-	//					end
-	//					`wr_curr_shareddata_data <= __in_wr__data;
-	//				end
-
-	//				stop_mem_write();
-
-	//				`ifdef FORMAL
-	//				__debug_tag_search_final <= 0;
-	//				__found_tag <= 0;
-	//				`endif		// FORMAL
-	//			end
-
-	//			// Used for port-mapped input instructions
-	//			PkgSnow64LarFile::WriteTypDataAndType:
-	//			begin
-	//				if (`wr_metadata_tag != __UNALLOCATED_TAG)
-	//				begin
-	//					`wr_metadata_data_type <= __in_wr__data_type;
-	//					`wr_metadata_int_type_size
-	//						<= __in_wr__int_type_size;
-
-
-	//					// We basically have to convert the index from one
-	//					// type to another here.
-	//					case (__in_wr__data_type)
-	//					PkgSnow64Cpu::DataTypBFloat16:
-	//					begin
-	//						// BFloat16's here are actually 16-bit, or two
-	//						// bytes.
-	//						`wr_metadata_data_index
-	//							<= `EXTRACT_DATA_INDEX__16(
-	//							__METADATA__DATA_INDEX__INDEX_HI,
-	//							`wr_metadata_data_index);
-	//					end
-
-	//					PkgSnow64Cpu::DataTypReserved:
-	//					begin
-	//						// As usual, we don't care about
-	//						// DataTypReserved.
-	//						`wr_metadata_data_index <= 0;
-	//					end
-
-	//					// An integer of either signedness
-	//					default:
-	//					begin
-	//						case (__in_wr__int_type_size)
-	//						PkgSnow64Cpu::IntTypSz8:
-	//						begin
-	//							`wr_metadata_data_index
-	//								<= `EXTRACT_DATA_INDEX__8(
-	//								__METADATA__DATA_INDEX__INDEX_HI,
-	//								`wr_metadata_data_index);
-	//						end
-
-	//						PkgSnow64Cpu::IntTypSz16:
-	//						begin
-	//							`wr_metadata_data_index
-	//								<= `EXTRACT_DATA_INDEX__16(
-	//								__METADATA__DATA_INDEX__INDEX_HI,
-	//								`wr_metadata_data_index);
-	//						end
-
-	//						PkgSnow64Cpu::IntTypSz32:
-	//						begin
-	//							`wr_metadata_data_index
-	//								<= `EXTRACT_DATA_INDEX__32(
-	//								__METADATA__DATA_INDEX__INDEX_HI,
-	//								`wr_metadata_data_index);
-	//						end
-
-	//						PkgSnow64Cpu::IntTypSz64:
-	//						begin
-	//							`wr_metadata_data_index
-	//								<= `EXTRACT_DATA_INDEX__64(
-	//								__METADATA__DATA_INDEX__INDEX_HI,
-	//								`wr_metadata_data_index);
-	//						end
-	//						endcase
-	//					end
-	//					endcase
-
-
-	//					// Data identical to what we have means we might
-	//					// not have to touch memory.
-	//					if (`wr_curr_shareddata_data != __in_wr__data)
-	//					begin
-	//						`wr_curr_shareddata_dirty <= 1;
-	//					end
-	//					`wr_curr_shareddata_data <= __in_wr__data;
-	//				end
-
-	//				stop_mem_write();
-
-	//				`ifdef FORMAL
-	//				__debug_tag_search_final <= 0;
-	//				__found_tag <= 0;
-	//				`endif		// FORMAL
-	//			end
-
-	//			// PkgSnow64LarFile::WriteTypLd or
-	//			// PkgSnow64LarFile::WriteTypSt
-	//			default:
-	//			begin
-	//				case (__in_wr__data_type)
-	//				PkgSnow64Cpu::DataTypBFloat16:
-	//				begin
-	//					// BFloat16's are 16-bit, or two bytes.
-	//					`wr_metadata_data_index
-	//						<= `EXTRACT_DATA_INDEX__16(
-	//						__METADATA__DATA_INDEX__INDEX_HI,
-	//						__in_wr__addr);
-	//				end
-
-	//				// We don't care about DataTypReserved
-	//				PkgSnow64Cpu::DataTypReserved:
-	//				begin
-	//					`wr_metadata_data_index <= 0;
-	//				end
-
-	//				// An integer of either signedness
-	//				default:
-	//				begin
-	//					case (__in_wr__int_type_size)
-	//					PkgSnow64Cpu::IntTypSz8:
-	//					begin
-	//						`wr_metadata_data_index
-	//							<= `EXTRACT_DATA_INDEX__8(
-	//							__METADATA__DATA_INDEX__INDEX_HI,
-	//							__in_wr__addr);
-	//					end
-
-	//					PkgSnow64Cpu::IntTypSz16:
-	//					begin
-	//						`wr_metadata_data_index
-	//							<= `EXTRACT_DATA_INDEX__16(
-	//							__METADATA__DATA_INDEX__INDEX_HI,
-	//							__in_wr__addr);
-	//					end
-
-	//					PkgSnow64Cpu::IntTypSz32:
-	//					begin
-	//						`wr_metadata_data_index
-	//							<= `EXTRACT_DATA_INDEX__32(
-	//							__METADATA__DATA_INDEX__INDEX_HI,
-	//							__in_wr__addr);
-	//					end
-
-	//					PkgSnow64Cpu::IntTypSz64:
-	//					begin
-	//						`wr_metadata_data_index
-	//							<= `EXTRACT_DATA_INDEX__64(
-	//							__METADATA__DATA_INDEX__INDEX_HI,
-	//							__in_wr__addr);
-	//					end
-	//					endcase
-	//				end
-	//				endcase
-
-	//				`wr_metadata_data_type <= __in_wr__data_type;
-	//				`wr_metadata_int_type_size <= __in_wr__int_type_size;
-
-	//				`ifdef FORMAL
-	//				__debug_tag_search_final <= `actual_tag_search_final;
-	//				__found_tag <= `actual_tag_search_final != 0;
-	//				`endif		// FORMAL
-
-	//				// The address's data is already in at least one LAR.
-	//				if (`actual_tag_search_final != 0)
-	//				begin
-	//					// A tag already exists.  We set our tag to the
-	//					// existing one.
-	//					`wr_metadata_tag <= `actual_tag_search_final;
-
-	//					// Loads of data we already had don't affect the
-	//					// dirty flag.
-
-	//					// If our existing tag ISN'T the one we found.
-	//					if (`actual_tag_search_final != `wr_metadata_tag)
-	//					begin
-	//						`wr_aliased_shareddata_ref_count
-	//							<= `wr_aliased_shareddata_ref_count + 1;
-
-	//						if (__in_wr__write_type 
-	//							== PkgSnow64LarFile::WriteTypSt)
-	//						begin
-	//							// Make a copy of our data to the new
-	//							// address.  This also causes us to need to
-	//							// set the dirty flag.
-	//							`wr_aliased_shareddata_data
-	//								<= `wr_curr_shareddata_data;
-	//							`wr_aliased_shareddata_dirty <= 1;
-	//						end
-
-
-	//						case (`wr_curr_shareddata_ref_count)
-	//						// We haven't been allocated yet.
-	//						0:
-	//						begin
-	//							stop_mem_write();
-	//						end
-
-	//						// There were no other references to us, so
-	//						// deallocate the old tag (pushing it onto the
-	//						// stack), and (if we were dirty) send our old
-	//						// data out to memory.
-	//						1:
-	//						begin
-	//							// Deallocate our old tag.
-	//							`above_top_metadata_tag
-	//								<= `wr_metadata_tag;
-	//							__curr_tag_stack_index
-	//								<= __curr_tag_stack_index + 1;
-
-	//							// Since we're deallocating stuff, we need
-	//							// to write our old data back to memory if
-	//							// it's not already up to date.
-	//							if (`wr_curr_shareddata_dirty)
-	//							begin
-	//								prep_mem_write(`wr_metadata_tag);
-	//								__wr_state <= 
-	//							end
-	//							else
-	//							begin
-	//								stop_mem_write();
-	//							end
-
-	//							// We were the only LAR that cared about
-	//							// our old shared data, which means our old
-	//							// shared data becomes free for other use.
-	//							`wr_curr_shareddata_ref_count <= 0;
-
-	//							// We don't need to write any data out to
-	//							// memory if 
-	//							`wr_curr_shareddata_dirty <= 0;
-
-	//							// For good measure.
-	//							`wr_curr_shareddata_base_addr <= 0;
-	//							`wr_curr_shareddata_data <= 0;
-	//						end
-
-	//						// There was at least one other reference to
-	//						// us, so don't deallocate anything, but do
-	//						// decrement the reference count.
-	//						default:
-	//						begin
-	//							`wr_curr_shareddata_ref_count
-	//								<= `wr_curr_shareddata_ref_count - 1;
-	//							stop_mem_write();
-	//						end
-	//						endcase
-	//					end
-
-	//					else
-	//					begin
-	//						stop_mem_write();
-	//					end
-	//				end
-
-	//				// We didn't find any aliases of __in_wr__addr.
-	//				else // if (`actual_tag_search_final == 0)
-	//				begin
-	//					case (`wr_curr_shareddata_ref_count)
-	//					// This is from before we were allocated.
-	//					0:
-	//					begin
-	//						// Allocate a new element of shared data.
-	//						`wr_metadata_tag <= `top_metadata_tag;
-	//						__curr_tag_stack_index
-	//							<= __curr_tag_stack_index - 1;
-
-	//						`wr_to_allocate_shareddata_base_addr
-	//							<= __in_wr__incoming_base_addr.base_addr;
-
-	//						// Within the run of the current program we are
-	//						// the first LAR to ever reference this element
-	//						// of shared data.
-	//						`wr_to_allocate_shareddata_ref_count <= 1;
-
-	//						if (__in_wr__write_type
-	//							== PkgSnow64LarFile::WriteTypLd)
-	//						begin
-	//							//`wr_to_allocate_shareddata_data
-	//							//	<= __in_wr__data;
-	//							//__wr_state
-	//							//	<= PkgSnow64LarFile::WrStWaitForMem;
-
-
-	//							// Because we haven't been allocated yet,
-	//							// we only need to perform a data read.
-	//							__wr_state <= PkgSnow64LarFile
-	//								::WrStWaitForJustMemRead;
-	//							prep_mem_read();
-
-	//							// Loads mark the data as clean.
-	//							`wr_to_allocate_shareddata_dirty <= 0;
-	//						end
-	//						else // if (__in_wr__write_type
-	//							// == PkgSnow64LarFile::WriteTypSt)
-	//						begin
-	//							// Simple default behavior... if you do a
-	//							// store before there was any data in a
-	//							// LAR, why not make the result data zero?
-	//							// 
-	//							// ...In actuality, it the data will
-	//							// already be zero anyway.
-	//							`wr_to_allocate_shareddata_data <= 0;
-
-	//							// Stores mark the data as dirty.
-	//							`wr_to_allocate_shareddata_dirty <= 1;
-	//						end
-
-	//						stop_mem_write();
-	//					end
-
-	//					// We were the only reference, so don't perform any
-	//					// allocation or deallocation, and don't change the
-	//					// reference count.  Note however that this can
-	//					// still cause a write back to memory.
-	//					// 
-	//					// Also, it can cause a read from memory.
-	//					1:
-	//					begin
-	//						`wr_curr_shareddata_base_addr
-	//							<= __in_wr__incoming_base_addr.base_addr;
-
-	//						// If we changed our address and our data is
-	//						// dirty, we need to write our old data back to
-	//						// memory.
-	//						if ((`wr_curr_shareddata_base_addr
-	//							!= __in_wr__incoming_base_addr.base_addr)
-	//							&& `wr_curr_shareddata_dirty)
-	//						begin
-	//							prep_mem_write(`wr_metadata_tag);
-
-	//							if (__in_wr__write_type
-	//								== PkgSnow64LarFile::WriteTypLd)
-	//							begin
-	//								// We need to perform both a read and a
-	//								// write.
-	//								__wr_state <= PkgSnow64LarFile
-	//									::WrStWaitForMemReadAndMemWrite;
-	//								prep_mem_read();
-	//							end
-	//							else // if (__in_wr__write_type
-	//								// == PkgSnow64LarFile::WriteTypSt)
-	//							begin
-	//								// We only need to perform a write
-	//								__wr_state <= PkgSnow64LarFile
-	//									::WrStWaitForJustMemWrite;
-	//							end
-	//						end
-
-	//						// Our old data is already clean, so we don't
-	//						// need to write it out to memory.
-	//						// However, if the instruction is for a load,
-	//						// we do still need to read from memory.
-	//						else
-	//						begin
-	//							stop_mem_write();
-
-	//							if (__in_wr__write_type
-	//								== PkgSnow64LarFile::WriteTypLd)
-	//							begin
-	//								__wr_state <= PkgSnow64LarFile
-	//									::WrStWaitForJustMemRead;
-	//							end
-	//						end
-
-	//						if (__in_wr__write_type
-	//							== PkgSnow64LarFile::WriteTypLd)
-	//						begin
-	//							// Loads of fresh data mark us as clean.
-	//							`wr_curr_shareddata_dirty <= 0;
-	//						end
-	//						else // if (__in_wr__write_type
-	//							// == PkgSnow64LarFile::WriteTypSt)
-	//						begin
-	//							// We don't need to change our data in this
-	//							// case, but we do need to mark stuff as
-	//							// dirty.
-	//							`wr_curr_shareddata_dirty <= 1;
-	//						end
-	//					end
-
-	//					// There was at least one other reference to our
-	//					// data, so don't deallocate anything, but do
-	//					// decrement the old reference count.
-	//					default:
-	//					begin
-	//						// Allocate a new element of shared data.
-	//						`wr_metadata_tag <= `top_metadata_tag;
-	//						__curr_tag_stack_index
-	//							<= __curr_tag_stack_index - 1;
-
-	//						// Set the base_addr and ref_count of our
-	//						// allocated element shared data.
-	//						`wr_to_allocate_shareddata_base_addr
-	//							<= __in_wr__incoming_base_addr.base_addr;
-
-	//						`wr_to_allocate_shareddata_ref_count <= 1;
-
-	//						if (__in_wr__write_type
-	//							== PkgSnow64LarFile::WriteTypLd)
-	//						begin
-	//							// Because at least one othe LARs has our
-	//							// previous data, we do not need to store
-	//							// it back to memory yet, but since nobody
-	//							// has our new address, we need to load
-	//							// that address's data from memory.
-	//							__wr_state <= PkgSnow64LarFile
-	//								::WrStWaitForJustMemRead;
-	//							prep_mem_read();
-
-	//							// Loads always provide clean data.
-	//							`wr_to_allocate_shareddata_dirty <= 0;
-	//						end
-	//						else // if (__in_wr__write_type
-	//							// == PkgSnow64LarFile::WriteTypSt)
-	//						begin
-	//							// Make a copy of our old data over to the
-	//							// freshly allocated element of shared
-	//							// data.
-	//							`wr_to_allocate_shareddata_data
-	//								<= `wr_curr_shareddata_data;
-
-	//							// Also, since this is a store, mark it as
-	//							// dirty.
-	//							`wr_to_allocate_shareddata_dirty <= 1;
-	//						end
-	//						
-	//						// Decrement the old reference count.
-	//						`wr_curr_shareddata_ref_count
-	//							<= `wr_curr_shareddata_ref_count - 1;
-	//						stop_mem_write();
-	//					end
-	//					endcase
-	//				end
-
-	//			end
-	//			endcase
-	//		end
-
-	//		else // if (!(__in_wr__req && (__in_wr__index != 0)))
-	//		begin
-	//			// Temporary!  We should really be sending out the data of
-	//			// dirty LARs when we're not trying to write to the LAR
-	//			// file.
-	//			//__out_mem_write__req <= 0;
-	//			stop_mem_write();
-	//			stop_mem_read();
-	//		end
-	//	end
-
-	//	PkgSnow64LarFile::WrStWaitForJustMemRead:
-	//	begin
-	//		
-	//	end
-
-	//	PkgSnow64LarFile::WrStWaitForJustMemWrite:
-	//	begin
-	//		
-	//	end
-
-	//	PkgSnow64LarFile::WrStWaitForMemReadAndMemWrite:
-	//	begin
-	//		
-	//	end
-	//	endcase
-	//end
 
 	always @(posedge clk)
 	begin
@@ -1427,12 +908,11 @@ module Snow64LarFile(input logic clk,
 					`incoming__wr_metadata_int_type_size
 						<= __in_wr__int_type_size;
 
-					__captured_tag_search_final
-						<= `actual_tag_search_final;
+					__captured_tag_search_final <= __tag_search_final;
 
 					`ifdef FORMAL
-					__debug_tag_search_final <= `actual_tag_search_final;
-					__found_tag <= `actual_tag_search_final != 0;
+					__debug_tag_search_final <= __tag_search_final;
+					__found_tag <= __tag_search_final != 0;
 					`endif		// FORMAL
 
 					case (__in_wr__data_type)
@@ -1935,11 +1415,6 @@ module Snow64LarFile(input logic clk,
 	`undef shareddata_dirty
 	`undef shareddata_tagged_dirty
 
-	`undef actual_tag_search_0
-	`undef actual_tag_search_1
-	`undef actual_tag_search_2
-	`undef actual_tag_search_3
-	`undef actual_tag_search_final
 	`undef do_tag_search
 
 

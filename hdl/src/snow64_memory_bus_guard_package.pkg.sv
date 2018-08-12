@@ -8,18 +8,20 @@ package PkgSnow64MemoryBusGuard;
 typedef logic [`MSB_POS__SNOW64_CPU_ADDR:0] CpuAddr;
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] LarData;
 
-typedef enum logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__STATE:0]
-{
-	StIdle,
-	StWaitForMem
-} State;
+//typedef enum logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__STATE:0]
+//{
+//	StIdle,
+//	StOneReqWaitForMem,
+//	StTwoReqsWaitForMem0,
+//	StTwoReqsWaitForMem1
+//} State;
 
 typedef enum logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__REQUEST_TYPE:0]
 {
+	ReqTypNone,
 	ReqTypReadInstr,
 	ReqTypReadData,
-	ReqTypWriteData,
-	ReqTypBad
+	ReqTypWriteData
 } RequestType;
 
 typedef struct packed
@@ -37,25 +39,25 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic busy;
+	logic valid, busy;
 	LarData data;
 } PartialPortOut_MemoryBusGuard_ReqRead;
 
 typedef struct packed
 {
-	logic busy;
+	logic valid, busy;
 } PartialPortOut_MemoryBusGuard_ReqWrite;
 
-typedef struct packed
-{
-	logic busy;
-} PartialPortOut_MemoryBusGuard_Status;
+//typedef struct packed
+//{
+//	logic busy;
+//} PartialPortOut_MemoryBusGuard_Status;
 
 
 // The memory input interface
 typedef struct packed
 {
-	logic busy;
+	logic valid, busy;
 	LarData data;
 } PartialPortIn_MemoryBusGuard_MemAccess;
 
@@ -94,7 +96,7 @@ typedef struct packed
 	logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_ReqWrite):0]
 		req_write_data;
 
-	logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_Status):0] status;
+	//logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_Status):0] status;
 
 	logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_MemAccess):0]
 		mem_access;
