@@ -39,13 +39,19 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic valid;
+	// valid:  indicate command complete
+	// cmd_accepted:  indicate command accepted (used for clearing the
+	// FIFO)
+	logic valid, cmd_accepted;
 	LarData data;
 } PartialPortOut_MemoryBusGuard_ReqRead;
 
 typedef struct packed
 {
-	logic valid;
+	// valid:  indicate command complete
+	// cmd_accepted:  indicate command accepted (used for clearing the
+	// FIFO)
+	logic valid, cmd_accepted;
 } PartialPortOut_MemoryBusGuard_ReqWrite;
 
 

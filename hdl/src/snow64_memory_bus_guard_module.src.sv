@@ -79,18 +79,26 @@ module Snow64MemoryBusGuard(input logic clk,
 	assign out.req_read_data = real_out_req_read_data;
 
 	logic __out_req_read_instr__valid, __out_req_read_data__valid;
+	logic __out_req_read_instr__cmd_accepted,
+		__out_req_read_data__cmd_accepted;
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__out_req_read_instr__data, __out_req_read_data__data;
 
 	assign real_out_req_read_instr.valid = __out_req_read_instr__valid;
+	assign real_out_req_read_instr.cmd_accepted
+		= __out_req_read_instr__cmd_accepted;
 	assign real_out_req_read_instr.data = __out_req_read_instr__data;
 
 	assign real_out_req_read_data.valid = __out_req_read_data__valid;
+	assign real_out_req_read_data.cmd_accepted
+		= __out_req_read_data__cmd_accepted;
 	assign real_out_req_read_data.data = __out_req_read_data__data;
 
 	initial
 	begin
 		{__out_req_read_instr__valid, __out_req_read_data__valid} = 0;
+		{__out_req_read_instr__cmd_accepted,
+			__out_req_read_data__cmd_accepted} = 0;
 		{__out_req_read_instr__data, __out_req_read_data__data} = 0;
 	end
 
@@ -98,12 +106,15 @@ module Snow64MemoryBusGuard(input logic clk,
 		real_out_req_write_data;
 	assign out.req_write_data = real_out_req_write_data;
 
-	logic __out_req_write_data__valid;
+	logic __out_req_write_data__valid, __out_req_write_data__cmd_accepted;
 	assign real_out_req_write_data.valid = __out_req_write_data__valid;
+	assign real_out_req_write_data.cmd_accepted
+		= __out_req_write_data__cmd_accepted;
 
 	initial
 	begin
 		__out_req_write_data__valid = 0;
+		__out_req_write_data__cmd_accepted = 0;
 	end
 
 
@@ -175,6 +186,10 @@ module Snow64MemoryBusGuard(input logic clk,
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
 				prep_mem_read(__in_req_read_instr__addr);
+
+				__out_req_read_instr__cmd_accepted <= 1;
+				__out_req_read_data__cmd_accepted <= 0;
+				__out_req_write_data__cmd_accepted <= 0;
 			end
 
 			// LAR file wants to read data.
@@ -183,6 +198,10 @@ module Snow64MemoryBusGuard(input logic clk,
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadData;
 				prep_mem_read(__in_req_read_data__addr);
+
+				__out_req_read_instr__cmd_accepted <= 0;
+				__out_req_read_data__cmd_accepted <= 1;
+				__out_req_write_data__cmd_accepted <= 0;
 			end
 
 			// LAR file wants to write data.
@@ -191,6 +210,10 @@ module Snow64MemoryBusGuard(input logic clk,
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypWriteData;
 				prep_mem_write();
+
+				__out_req_read_instr__cmd_accepted <= 0;
+				__out_req_read_data__cmd_accepted <= 0;
+				__out_req_write_data__cmd_accepted <= 1;
 			end
 
 			else
@@ -198,7 +221,20 @@ module Snow64MemoryBusGuard(input logic clk,
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypNone;
 				stop_mem_access();
+
+				__out_req_read_instr__cmd_accepted <= 0;
+				__out_req_read_data__cmd_accepted <= 0;
+				__out_req_write_data__cmd_accepted <= 0;
 			end
+		end
+
+		else // if (__stall)
+		begin
+			stop_mem_access();
+
+			__out_req_read_instr__cmd_accepted <= 0;
+			__out_req_read_data__cmd_accepted <= 0;
+			__out_req_write_data__cmd_accepted <= 0;
 		end
 	end
 
