@@ -39,25 +39,20 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic valid, busy;
+	logic valid;
 	LarData data;
 } PartialPortOut_MemoryBusGuard_ReqRead;
 
 typedef struct packed
 {
-	logic valid, busy;
+	logic valid;
 } PartialPortOut_MemoryBusGuard_ReqWrite;
-
-//typedef struct packed
-//{
-//	logic busy;
-//} PartialPortOut_MemoryBusGuard_Status;
 
 
 // The memory input interface
 typedef struct packed
 {
-	logic valid, busy;
+	logic valid;
 	LarData data;
 } PartialPortIn_MemoryBusGuard_MemAccess;
 

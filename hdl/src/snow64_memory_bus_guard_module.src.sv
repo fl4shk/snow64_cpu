@@ -10,15 +10,15 @@ module Snow64MemoryBusGuard(input logic clk,
 	import PkgSnow64MemoryBusGuard::CpuAddr;
 	import PkgSnow64MemoryBusGuard::LarData;
 
-	struct packed
-	{
-		logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__REQUEST_TYPE:0] req_type;
-	} __stage_0_to_1_data, __stage_1_to_2_data;
+	typedef logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__REQUEST_TYPE:0]
+		RequestType;
 
+	logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__REQUEST_TYPE:0]
+		__stage_0_to_1__req_type, __stage_1_to_2__req_type;
 
 	initial
 	begin
-		{__stage_0_to_1_data, __stage_1_to_2_data} = 0;
+		{__stage_0_to_1__req_type, __stage_1_to_2__req_type} = 0;
 	end
 
 
@@ -67,7 +67,8 @@ module Snow64MemoryBusGuard(input logic clk,
 		real_in_mem_access;
 	assign real_in_mem_access = in.mem_access;
 
-	wire __in_mem_access__busy = real_in_mem_access.busy;
+	wire __in_mem_access__valid = real_in_mem_access.valid;
+
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_mem_access__data
 		= real_in_mem_access.data;
 
@@ -78,22 +79,18 @@ module Snow64MemoryBusGuard(input logic clk,
 	assign out.req_read_data = real_out_req_read_data;
 
 	logic __out_req_read_instr__valid, __out_req_read_data__valid;
-	logic __out_req_read_instr__busy, __out_req_read_data__busy;
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__out_req_read_instr__data, __out_req_read_data__data;
 
-	assign real_out_req_read_instr.busy = __out_req_read_instr__busy;
 	assign real_out_req_read_instr.valid = __out_req_read_instr__valid;
 	assign real_out_req_read_instr.data = __out_req_read_instr__data;
 
-	assign real_out_req_read_data.busy = __out_req_read_data__busy;
 	assign real_out_req_read_data.valid = __out_req_read_data__valid;
 	assign real_out_req_read_data.data = __out_req_read_data__data;
 
 	initial
 	begin
 		{__out_req_read_instr__valid, __out_req_read_data__valid} = 0;
-		//{__out_req_read_instr__busy, __out_req_read_data__busy} = 0;
 		{__out_req_read_instr__data, __out_req_read_data__data} = 0;
 	end
 
@@ -101,23 +98,13 @@ module Snow64MemoryBusGuard(input logic clk,
 		real_out_req_write_data;
 	assign out.req_write_data = real_out_req_write_data;
 
-	logic __out_req_write_data__valid, __out_req_write_data__busy;
+	logic __out_req_write_data__valid;
 	assign real_out_req_write_data.valid = __out_req_write_data__valid;
-	assign real_out_req_write_data.busy = __out_req_write_data__busy;
 
 	initial
 	begin
-		//{__out_req_write_data__valid, __out_req_write_data__busy} = 0;
 		__out_req_write_data__valid = 0;
 	end
-
-	//PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_Status
-	//	real_out_status;
-	//assign out.status = real_out_status;
-
-	//wire __out_status__busy
-	//	= (__state == PkgSnow64MemoryBusGuard::StWaitForMem);
-	//assign real_out_status.busy = __out_status__busy;
 
 
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_MemAccess
@@ -135,6 +122,15 @@ module Snow64MemoryBusGuard(input logic clk,
 	assign real_out_mem_access.data = __out_mem_access__data;
 	assign real_out_mem_access.mem_acc_type
 		= __out_mem_access__mem_acc_type;
+
+
+	// Basically the "global valid signal" method of stalling.
+	// This is used for simplicity, and because this pipeline will never
+	// stall when we are interfacing with purely synchronous block RAM that
+	// has the same clock rate as us.
+	wire __stall = ((__stage_1_to_2__req_type
+		!= PkgSnow64MemoryBusGuard::ReqTypNone)
+		&& (!__in_mem_access__valid));
 
 	initial
 	begin
@@ -165,102 +161,104 @@ module Snow64MemoryBusGuard(input logic clk,
 		__out_mem_access__data <= __in_req_write_data__data;
 	endtask : prep_mem_write
 
-	assign __out_req_read_instr__busy
-		= ((__stage_0_to_1_data.req_type
-			== PkgSnow64MemoryBusGuard::ReqTypReadInstr)
-			|| (__stage_1_to_2_data.req_type
-			== PkgSnow64MemoryBusGuard::ReqTypReadInstr));
-	assign __out_req_read_data__busy
-		= ((__stage_0_to_1_data.req_type
-			== PkgSnow64MemoryBusGuard::ReqTypReadData)
-			|| (__stage_1_to_2_data.req_type
-			== PkgSnow64MemoryBusGuard::ReqTypReadData));
-	assign __out_req_write_data__busy
-		= ((__stage_0_to_1_data.req_type
-			== PkgSnow64MemoryBusGuard::ReqTypWriteData)
-			|| (__stage_1_to_2_data.req_type
-			== PkgSnow64MemoryBusGuard::ReqTypWriteData));
 
 	// Stage 0:  Accept a request, drive memory bus.
 	always @(posedge clk)
 	begin
-		// Instruction reader thing requested a block of instructions.
-		if (__in_req_read_instr__req)
+		// If we're stalling, that means we can't drive the memory bus, and
+		// therefore we have nothing to send down the pipe to later stages.
+		if (!__stall)
 		begin
-			__stage_0_to_1_data.req_type
-				<= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
-			prep_mem_read(__in_req_read_instr__addr);
-		end
+			// Instruction reader thing requested a block of instructions.
+			if (__in_req_read_instr__req)
+			begin
+				__stage_0_to_1__req_type
+					<= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
+				prep_mem_read(__in_req_read_instr__addr);
+			end
 
-		// LAR file wants to read data.
-		else if (__in_req_read_data__req)
-		begin
-			__stage_0_to_1_data.req_type
-				<= PkgSnow64MemoryBusGuard::ReqTypReadData;
-			prep_mem_read(__in_req_read_data__addr);
-		end
+			// LAR file wants to read data.
+			else if (__in_req_read_data__req)
+			begin
+				__stage_0_to_1__req_type
+					<= PkgSnow64MemoryBusGuard::ReqTypReadData;
+				prep_mem_read(__in_req_read_data__addr);
+			end
 
-		// LAR file wants to write data.
-		else if (__in_req_write_data__req)
-		begin
-			__stage_0_to_1_data.req_type
-				<= PkgSnow64MemoryBusGuard::ReqTypWriteData;
-			prep_mem_write();
-		end
+			// LAR file wants to write data.
+			else if (__in_req_write_data__req)
+			begin
+				__stage_0_to_1__req_type
+					<= PkgSnow64MemoryBusGuard::ReqTypWriteData;
+				prep_mem_write();
+			end
 
-		else
-		begin
-			__stage_0_to_1_data.req_type
-				<= PkgSnow64MemoryBusGuard::ReqTypNone;
-			stop_mem_access();
+			else
+			begin
+				__stage_0_to_1__req_type
+					<= PkgSnow64MemoryBusGuard::ReqTypNone;
+				stop_mem_access();
+			end
 		end
 	end
 
-	// Stage 1:  Idle
+	// Stage 1:  Idle while the memory (or memory controller, as the case
+	// may be) sees our request and synchronously drives its own outputs.
 	always_ff @(posedge clk)
 	begin
-		__stage_1_to_2_data <= __stage_0_to_1_data;
+		if (!__stall)
+		begin
+			__stage_1_to_2__req_type <= __stage_0_to_1__req_type;
+		end
 	end
 
 	// Stage 2:  Let requester know that stuff is done.
-	// Here, we're assuming that block RAM with synchronous reads and
-	// synchronous writes, running at the same clock rate as us, is being
-	// used.
+	// Here, it's possible
 	always_ff @(posedge clk)
 	begin
-		case (__stage_1_to_2_data.req_type)
-		PkgSnow64MemoryBusGuard::ReqTypReadInstr:
+		if (!__stall)
 		begin
-			__out_req_read_instr__valid <= 1;
-			__out_req_read_data__valid <= 0;
-			__out_req_write_data__valid <= 0;
+			case (__stage_1_to_2__req_type)
+			PkgSnow64MemoryBusGuard::ReqTypReadInstr:
+			begin
+				__out_req_read_instr__valid <= 1;
+				__out_req_read_data__valid <= 0;
+				__out_req_write_data__valid <= 0;
 
-			__out_req_read_instr__data <= __in_mem_access__data;
+				__out_req_read_instr__data <= __in_mem_access__data;
+			end
+
+			PkgSnow64MemoryBusGuard::ReqTypReadData:
+			begin
+				__out_req_read_instr__valid <= 0;
+				__out_req_read_data__valid <= 1;
+				__out_req_write_data__valid <= 0;
+
+				__out_req_read_data__data <= __in_mem_access__data;
+			end
+
+			PkgSnow64MemoryBusGuard::ReqTypWriteData:
+			begin
+				__out_req_read_instr__valid <= 0;
+				__out_req_read_data__valid <= 0;
+				__out_req_write_data__valid <= 1;
+			end
+
+			default:
+			begin
+				__out_req_read_instr__valid <= 0;
+				__out_req_read_data__valid <= 0;
+				__out_req_write_data__valid <= 0;
+			end
+			endcase
 		end
 
-		PkgSnow64MemoryBusGuard::ReqTypReadData:
+		else // if (__stall)
 		begin
 			__out_req_read_instr__valid <= 0;
-			__out_req_read_data__valid <= 1;
-			__out_req_write_data__valid <= 0;
-
-			__out_req_read_data__data <= __in_mem_access__data;
-		end
-
-		PkgSnow64MemoryBusGuard::ReqTypWriteData:
-		begin
-			__out_req_read_instr__valid <= 0;
-			__out_req_read_data__valid <= 0;
-			__out_req_write_data__valid <= 1;
-		end
-
-		default:
-		begin
-			__out_req_read_instr__valid <= 0;
 			__out_req_read_data__valid <= 0;
 			__out_req_write_data__valid <= 0;
 		end
-		endcase
 	end
 
 endmodule
