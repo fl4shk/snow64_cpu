@@ -75,7 +75,7 @@ typedef struct packed
 	logic req;
 	CpuAddr addr;
 	LarData data;
-	MemAccessType mem_acc_type;
+	logic mem_acc_type;
 } PartialPortOut_MemoryBusGuard_MemAccess;
 
 typedef struct packed

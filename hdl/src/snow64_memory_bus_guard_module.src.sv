@@ -16,11 +16,6 @@ module Snow64MemoryBusGuard(input logic clk,
 	logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__REQUEST_TYPE:0]
 		__stage_0_to_1__req_type, __stage_1_to_2__req_type;
 
-	initial
-	begin
-		{__stage_0_to_1__req_type, __stage_1_to_2__req_type} = 0;
-	end
-
 
 	`ifdef FORMAL
 	localparam __ENUM__REQUEST_TYPE__NONE
@@ -43,34 +38,16 @@ module Snow64MemoryBusGuard(input logic clk,
 	assign real_in_req_read_instr = in.req_read_instr;
 	assign real_in_req_read_data = in.req_read_data;
 
-	wire __in_req_read_instr__req
-		= real_in_req_read_instr.req;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_req_read_instr__addr
-		= real_in_req_read_instr.addr;
-
-	wire __in_req_read_data__req
-		= real_in_req_read_data.req;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_req_read_data__addr
-		= real_in_req_read_data.addr;
 
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_ReqWrite
 		real_in_req_write_data;
 	assign real_in_req_write_data = in.req_write_data;
 
-	wire __in_req_write_data__req = real_in_req_write_data.req;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __in_req_write_data__addr
-		= real_in_req_write_data.addr;
-	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_req_write_data__data
-		= real_in_req_write_data.data;
 
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_MemAccess
 		real_in_mem_access;
 	assign real_in_mem_access = in.mem_access;
 
-	wire __in_mem_access__valid = real_in_mem_access.valid;
-
-	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __in_mem_access__data
-		= real_in_mem_access.data;
 
 
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_ReqRead
@@ -78,44 +55,14 @@ module Snow64MemoryBusGuard(input logic clk,
 	assign out.req_read_instr = real_out_req_read_instr;
 	assign out.req_read_data = real_out_req_read_data;
 
-	logic __out_req_read_instr__valid, __out_req_read_data__valid;
-	logic __out_req_read_instr__cmd_accepted,
-		__out_req_read_data__cmd_accepted;
-	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__out_req_read_instr__data, __out_req_read_data__data;
 
-	assign real_out_req_read_instr.valid = __out_req_read_instr__valid;
-	assign real_out_req_read_instr.cmd_accepted
-		= __out_req_read_instr__cmd_accepted;
-	assign real_out_req_read_instr.data = __out_req_read_instr__data;
 
-	assign real_out_req_read_data.valid = __out_req_read_data__valid;
-	assign real_out_req_read_data.cmd_accepted
-		= __out_req_read_data__cmd_accepted;
-	assign real_out_req_read_data.data = __out_req_read_data__data;
-
-	initial
-	begin
-		{__out_req_read_instr__valid, __out_req_read_data__valid} = 0;
-		{__out_req_read_instr__cmd_accepted,
-			__out_req_read_data__cmd_accepted} = 0;
-		{__out_req_read_instr__data, __out_req_read_data__data} = 0;
-	end
 
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_ReqWrite
 		real_out_req_write_data;
 	assign out.req_write_data = real_out_req_write_data;
 
-	logic __out_req_write_data__valid, __out_req_write_data__cmd_accepted;
-	assign real_out_req_write_data.valid = __out_req_write_data__valid;
-	assign real_out_req_write_data.cmd_accepted
-		= __out_req_write_data__cmd_accepted;
 
-	initial
-	begin
-		__out_req_write_data__valid = 0;
-		__out_req_write_data__cmd_accepted = 0;
-	end
 
 
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_MemAccess
@@ -123,17 +70,64 @@ module Snow64MemoryBusGuard(input logic clk,
 	assign out.mem_access = real_out_mem_access;
 
 
-	logic __out_mem_access__req;
-	logic [`MSB_POS__SNOW64_CPU_ADDR:0] __out_mem_access__addr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __out_mem_access__data;
-	PkgSnow64MemoryBusGuard::MemAccessType __out_mem_access__mem_acc_type;
 
-	assign real_out_mem_access.req = __out_mem_access__req;
-	assign real_out_mem_access.addr = __out_mem_access__addr;
-	assign real_out_mem_access.data = __out_mem_access__data;
-	assign real_out_mem_access.mem_acc_type
-		= __out_mem_access__mem_acc_type;
 
+
+	`ifdef FORMAL
+	wire __formal__in_req_read_instr__req
+		= real_in_req_read_instr.req;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_req_read_instr__addr
+		= real_in_req_read_instr.addr;
+
+	wire __formal__in_req_read_data__req
+		= real_in_req_read_data.req;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_req_read_data__addr
+		= real_in_req_read_data.addr;
+
+
+	wire __formal__in_req_write_data__req = real_in_req_write_data.req;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_req_write_data__addr
+		= real_in_req_write_data.addr;
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__formal__in_req_write_data__data
+		= real_in_req_write_data.data;
+
+
+	wire __formal__in_mem_access__valid = real_in_mem_access.valid;
+
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__formal__in_mem_access__data
+		= real_in_mem_access.data;
+
+
+	wire __formal__out_req_read_instr__valid
+		= real_out_req_read_instr.valid;
+	wire __formal__out_req_read_instr__cmd_accepted
+		= real_out_req_read_instr.cmd_accepted;
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__formal__out_req_read_instr__data = real_out_req_read_instr.data;
+
+	wire __formal__out_req_read_data__valid = real_out_req_read_data.valid;
+	wire __formal__out_req_read_data__cmd_accepted
+		= real_out_req_read_data.cmd_accepted;
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__formal__out_req_read_data__data = real_out_req_read_data.data;
+
+
+	wire __formal__out_req_write_data__valid
+		= real_out_req_write_data.valid;
+	wire __formal__out_req_write_data__cmd_accepted
+		= real_out_req_write_data.cmd_accepted;
+
+
+	wire __formal__out_mem_access__req = real_out_mem_access.req;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__out_mem_access__addr
+		= real_out_mem_access.addr;
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __formal__out_mem_access__data
+		= real_out_mem_access.data;
+	wire __formal__out_mem_access__mem_acc_type
+		= real_out_mem_access.mem_acc_type;
+	`endif		// FORMAL
 
 	// Basically the "global valid signal" method of stalling.
 	// This is used for simplicity, and because this pipeline will never
@@ -141,35 +135,43 @@ module Snow64MemoryBusGuard(input logic clk,
 	// has the same clock rate as us.
 	wire __stall = ((__stage_1_to_2__req_type
 		!= PkgSnow64MemoryBusGuard::ReqTypNone)
-		&& (!__in_mem_access__valid));
+		&& (!real_in_mem_access.valid));
 
 	initial
 	begin
-		{__out_mem_access__req, __out_mem_access__addr,
-			__out_mem_access__data} = 0;
+		{__stage_0_to_1__req_type, __stage_1_to_2__req_type} = 0;
 
-		__out_mem_access__mem_acc_type
+		{real_out_req_read_instr.valid, real_out_req_read_data.valid} = 0;
+		{real_out_req_read_instr.cmd_accepted,
+			real_out_req_read_data.cmd_accepted} = 0;
+		{real_out_req_read_instr.data, real_out_req_read_data.data} = 0;
+		real_out_req_write_data.valid = 0;
+		real_out_req_write_data.cmd_accepted = 0;
+		{real_out_mem_access.req, real_out_mem_access.addr,
+			real_out_mem_access.data} = 0;
+
+		real_out_mem_access.mem_acc_type
 			= PkgSnow64MemoryBusGuard::MemAccTypRead;
 	end
 
 
 	task stop_mem_access;
-		__out_mem_access__req <= 0;
+		real_out_mem_access.req <= 0;
 	endtask : stop_mem_access
 
 	task prep_mem_read(input CpuAddr addr);
-		__out_mem_access__req <= 1;
-		__out_mem_access__addr <= addr;
-		__out_mem_access__mem_acc_type
+		real_out_mem_access.req <= 1;
+		real_out_mem_access.addr <= addr;
+		real_out_mem_access.mem_acc_type
 			<= PkgSnow64MemoryBusGuard::MemAccTypRead;
 	endtask : prep_mem_read
 
 	task prep_mem_write;
-		__out_mem_access__req <= 1;
-		__out_mem_access__addr <= __in_req_write_data__addr;
-		__out_mem_access__mem_acc_type
+		real_out_mem_access.req <= 1;
+		real_out_mem_access.addr <= real_in_req_write_data.addr;
+		real_out_mem_access.mem_acc_type
 			<= PkgSnow64MemoryBusGuard::MemAccTypWrite;
-		__out_mem_access__data <= __in_req_write_data__data;
+		real_out_mem_access.data <= real_in_req_write_data.data;
 	endtask : prep_mem_write
 
 
@@ -181,39 +183,39 @@ module Snow64MemoryBusGuard(input logic clk,
 		if (!__stall)
 		begin
 			// Instruction reader thing requested a block of instructions.
-			if (__in_req_read_instr__req)
+			if (real_in_req_read_instr.req)
 			begin
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
-				prep_mem_read(__in_req_read_instr__addr);
+				prep_mem_read(real_in_req_read_instr.addr);
 
-				__out_req_read_instr__cmd_accepted <= 1;
-				__out_req_read_data__cmd_accepted <= 0;
-				__out_req_write_data__cmd_accepted <= 0;
+				real_out_req_read_instr.cmd_accepted <= 1;
+				real_out_req_read_data.cmd_accepted <= 0;
+				real_out_req_write_data.cmd_accepted <= 0;
 			end
 
 			// LAR file wants to read data.
-			else if (__in_req_read_data__req)
+			else if (real_in_req_read_data.req)
 			begin
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadData;
-				prep_mem_read(__in_req_read_data__addr);
+				prep_mem_read(real_in_req_read_data.addr);
 
-				__out_req_read_instr__cmd_accepted <= 0;
-				__out_req_read_data__cmd_accepted <= 1;
-				__out_req_write_data__cmd_accepted <= 0;
+				real_out_req_read_instr.cmd_accepted <= 0;
+				real_out_req_read_data.cmd_accepted <= 1;
+				real_out_req_write_data.cmd_accepted <= 0;
 			end
 
 			// LAR file wants to write data.
-			else if (__in_req_write_data__req)
+			else if (real_in_req_write_data.req)
 			begin
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypWriteData;
 				prep_mem_write();
 
-				__out_req_read_instr__cmd_accepted <= 0;
-				__out_req_read_data__cmd_accepted <= 0;
-				__out_req_write_data__cmd_accepted <= 1;
+				real_out_req_read_instr.cmd_accepted <= 0;
+				real_out_req_read_data.cmd_accepted <= 0;
+				real_out_req_write_data.cmd_accepted <= 1;
 			end
 
 			else
@@ -222,9 +224,9 @@ module Snow64MemoryBusGuard(input logic clk,
 					<= PkgSnow64MemoryBusGuard::ReqTypNone;
 				stop_mem_access();
 
-				__out_req_read_instr__cmd_accepted <= 0;
-				__out_req_read_data__cmd_accepted <= 0;
-				__out_req_write_data__cmd_accepted <= 0;
+				real_out_req_read_instr.cmd_accepted <= 0;
+				real_out_req_read_data.cmd_accepted <= 0;
+				real_out_req_write_data.cmd_accepted <= 0;
 			end
 		end
 
@@ -232,9 +234,9 @@ module Snow64MemoryBusGuard(input logic clk,
 		begin
 			stop_mem_access();
 
-			__out_req_read_instr__cmd_accepted <= 0;
-			__out_req_read_data__cmd_accepted <= 0;
-			__out_req_write_data__cmd_accepted <= 0;
+			real_out_req_read_instr.cmd_accepted <= 0;
+			real_out_req_read_data.cmd_accepted <= 0;
+			real_out_req_write_data.cmd_accepted <= 0;
 		end
 	end
 
@@ -257,43 +259,43 @@ module Snow64MemoryBusGuard(input logic clk,
 			case (__stage_1_to_2__req_type)
 			PkgSnow64MemoryBusGuard::ReqTypReadInstr:
 			begin
-				__out_req_read_instr__valid <= 1;
-				__out_req_read_data__valid <= 0;
-				__out_req_write_data__valid <= 0;
+				real_out_req_read_instr.valid <= 1;
+				real_out_req_read_data.valid <= 0;
+				real_out_req_write_data.valid <= 0;
 
-				__out_req_read_instr__data <= __in_mem_access__data;
+				real_out_req_read_instr.data <= real_in_mem_access.data;
 			end
 
 			PkgSnow64MemoryBusGuard::ReqTypReadData:
 			begin
-				__out_req_read_instr__valid <= 0;
-				__out_req_read_data__valid <= 1;
-				__out_req_write_data__valid <= 0;
+				real_out_req_read_instr.valid <= 0;
+				real_out_req_read_data.valid <= 1;
+				real_out_req_write_data.valid <= 0;
 
-				__out_req_read_data__data <= __in_mem_access__data;
+				real_out_req_read_data.data <= real_in_mem_access.data;
 			end
 
 			PkgSnow64MemoryBusGuard::ReqTypWriteData:
 			begin
-				__out_req_read_instr__valid <= 0;
-				__out_req_read_data__valid <= 0;
-				__out_req_write_data__valid <= 1;
+				real_out_req_read_instr.valid <= 0;
+				real_out_req_read_data.valid <= 0;
+				real_out_req_write_data.valid <= 1;
 			end
 
 			default:
 			begin
-				__out_req_read_instr__valid <= 0;
-				__out_req_read_data__valid <= 0;
-				__out_req_write_data__valid <= 0;
+				real_out_req_read_instr.valid <= 0;
+				real_out_req_read_data.valid <= 0;
+				real_out_req_write_data.valid <= 0;
 			end
 			endcase
 		end
 
 		else // if (__stall)
 		begin
-			__out_req_read_instr__valid <= 0;
-			__out_req_read_data__valid <= 0;
-			__out_req_write_data__valid <= 0;
+			real_out_req_read_instr.valid <= 0;
+			real_out_req_read_data.valid <= 0;
+			real_out_req_write_data.valid <= 0;
 		end
 	end
 
