@@ -80,26 +80,26 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic [`MPOFTYPE(PartialPortIn_MemoryBusGuard_ReqRead):0]
+	logic `STRUCTDIM(PartialPortIn_MemoryBusGuard_ReqRead)
 		req_read_instr, req_read_data;
 
-	logic [`MPOFTYPE(PartialPortIn_MemoryBusGuard_ReqWrite):0]
+	logic `STRUCTDIM(PartialPortIn_MemoryBusGuard_ReqWrite)
 		req_write_data;
 
-	logic [`MPOFTYPE(PartialPortIn_MemoryBusGuard_MemAccess):0] mem_access;
+	logic `STRUCTDIM(PartialPortIn_MemoryBusGuard_MemAccess) mem_access;
 } PortIn_MemoryBusGuard;
 
 typedef struct packed
 {
-	logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_ReqRead):0]
+	logic `STRUCTDIM(PartialPortOut_MemoryBusGuard_ReqRead)
 		req_read_instr, req_read_data;
 
-	logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_ReqWrite):0]
+	logic `STRUCTDIM(PartialPortOut_MemoryBusGuard_ReqWrite)
 		req_write_data;
 
-	//logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_Status):0] status;
+	//logic `STRUCTDIM(PartialPortOut_MemoryBusGuard_Status) status;
 
-	logic [`MPOFTYPE(PartialPortOut_MemoryBusGuard_MemAccess):0]
+	logic `STRUCTDIM(PartialPortOut_MemoryBusGuard_MemAccess)
 		mem_access;
 } PortOut_MemoryBusGuard;
 

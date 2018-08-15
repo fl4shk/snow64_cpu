@@ -146,24 +146,24 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic [`MPOFTYPE(PartialPortIn_LarFile_Ctrl):0] ctrl;
+	logic `STRUCTDIM(PartialPortIn_LarFile_Ctrl) ctrl;
 
-	logic [`MPOFTYPE(PartialPortIn_LarFile_Read):0] rd_a;
-	logic [`MPOFTYPE(PartialPortIn_LarFile_Read):0] rd_b;
-	logic [`MPOFTYPE(PartialPortIn_LarFile_Read):0] rd_c;
-	logic [`MPOFTYPE(PartialPortIn_LarFile_Write):0] wr;
-	logic [`MPOFTYPE(PartialPortIn_LarFile_MemRead):0] mem_read;
-	logic [`MPOFTYPE(PartialPortIn_LarFile_MemWrite):0] mem_write;
+	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_a;
+	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_b;
+	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_c;
+	logic `STRUCTDIM(PartialPortIn_LarFile_Write) wr;
+	logic `STRUCTDIM(PartialPortIn_LarFile_MemRead) mem_read;
+	logic `STRUCTDIM(PartialPortIn_LarFile_MemWrite) mem_write;
 } PortIn_LarFile;
 
 typedef struct packed
 {
-	logic [`MPOFTYPE(PartialPortOut_LarFile_Read):0] rd_a;
-	logic [`MPOFTYPE(PartialPortOut_LarFile_Read):0] rd_b;
-	logic [`MPOFTYPE(PartialPortOut_LarFile_Read):0] rd_c;
-	logic [`MPOFTYPE(PartialPortOut_LarFile_MemRead):0] mem_read;
-	logic [`MPOFTYPE(PartialPortOut_LarFile_MemWrite):0] mem_write;
-	logic [`MPOFTYPE(PartialPortOut_LarFile_WaitForMe):0] wait_for_me;
+	logic `STRUCTDIM(PartialPortOut_LarFile_Read) rd_a;
+	logic `STRUCTDIM(PartialPortOut_LarFile_Read) rd_b;
+	logic `STRUCTDIM(PartialPortOut_LarFile_Read) rd_c;
+	logic `STRUCTDIM(PartialPortOut_LarFile_MemRead) mem_read;
+	logic `STRUCTDIM(PartialPortOut_LarFile_MemWrite) mem_write;
+	logic `STRUCTDIM(PartialPortOut_LarFile_WaitForMe) wait_for_me;
 } PortOut_LarFile;
 
 

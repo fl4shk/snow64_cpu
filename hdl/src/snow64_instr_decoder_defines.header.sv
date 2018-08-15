@@ -5,6 +5,8 @@
 
 `include "src/misc_defines.header.sv"
 
+// A maximum of 8 basic instruction groups.  If necessary, "extended"
+// instruction groups may be added.
 `define WIDTH__SNOW64_IENC_GROUP 3
 `define MSB_POS__SNOW64_IENC_GROUP `WIDTH2MP(`WIDTH__SNOW64_IENC_GROUP)
 

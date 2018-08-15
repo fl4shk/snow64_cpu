@@ -85,16 +85,15 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic [`MPOFTYPE(PartialPortIn_Cpu_Interrupt):0]
-		interrupt;
-	logic [`MPOFTYPE(PartialPortIn_Cpu_ExtDataAccess):0]
+	logic `STRUCTDIM(PartialPortIn_Cpu_Interrupt) interrupt;
+	logic `STRUCTDIM(PartialPortIn_Cpu_ExtDataAccess)
 		ext_dat_acc_mem, ext_dat_acc_port_mapped_io;
 } PortIn_Cpu;
 
 
 typedef struct packed
 {
-	logic [`MPOFTYPE(PartialPortOut_Cpu_ExtDataAccess):0]
+	logic `STRUCTDIM(PartialPortOut_Cpu_ExtDataAccess)
 		ext_dat_acc_mem, ext_dat_acc_port_mapped_io;
 } PortOut_Cpu;
 
