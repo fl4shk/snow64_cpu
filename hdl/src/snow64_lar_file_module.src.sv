@@ -280,7 +280,7 @@ module Snow64LarFile(input logic clk,
 		__formal__in_wr__write_type = real_in_wr.write_type;
 
 	wire [__MSB_POS__METADATA__TAG:0] __formal__in_wr__index
-		= real_in_wr.index[__MSB_POS__METADATA__TAG:0];
+		= __in_wr__index;
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__in_wr__data = real_in_wr.data;
@@ -828,6 +828,17 @@ module Snow64LarFile(input logic clk,
 						`incoming__wr_metadata_int_type_size
 							<= real_in_wr.int_type_size;
 
+						// Data identical to what we have means we might
+						// not have to touch memory.
+						if (`incoming__wr_curr_shareddata_data
+							!= real_in_wr.data)
+						begin
+							`incoming__wr_curr_shareddata_dirty <= 1;
+						end
+						`incoming__wr_curr_shareddata_data
+							<= real_in_wr.data;
+
+
 						// We basically have to convert the index from one
 						// type to another here.
 						case (real_in_wr.data_type)
@@ -886,17 +897,6 @@ module Snow64LarFile(input logic clk,
 							endcase
 						end
 						endcase
-
-
-						// Data identical to what we have means we might
-						// not have to touch memory.
-						if (`incoming__wr_curr_shareddata_data
-							!= real_in_wr.data)
-						begin
-							`incoming__wr_curr_shareddata_dirty <= 1;
-						end
-						`incoming__wr_curr_shareddata_data
-							<= real_in_wr.data;
 					end
 
 
@@ -1043,7 +1043,6 @@ module Snow64LarFile(input logic clk,
 						// Since we're deallocating stuff, we need to write
 						// our old data back to memory if it's not already
 						// up to date.
-
 						if (`captured__wr_curr_shareddata_dirty)
 						begin
 							__wr_state <= PkgSnow64LarFile
