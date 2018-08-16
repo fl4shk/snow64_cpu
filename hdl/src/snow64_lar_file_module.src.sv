@@ -994,6 +994,8 @@ module Snow64LarFile(input logic clk,
 			// hit in a conventional cache.
 			if (__captured_tag_search_final != 0)
 			begin
+				// We'll never need to read from memory if there was a
+				// "hit".
 				stop_mem_read();
 
 				// A tag already exists.  We set our tag to the existing
@@ -1023,6 +1025,8 @@ module Snow64LarFile(input logic clk,
 
 					case (`captured__wr_curr_shareddata_ref_count)
 					// We haven't been allocated yet.
+					// Since we haven't been allocated yet, we don't need
+					// to do a write back to memory.
 					0:
 					begin
 						stop_mem_write();
@@ -1034,7 +1038,8 @@ module Snow64LarFile(input logic clk,
 					// were dirty) send our old data out to memory.
 					1:
 					begin
-						// Deallocate our old tag.
+						// Deallocate our old tag.  Note that this is
+						// actually the only case where we will ever do so.
 						`above_top_metadata_tag
 							<= `captured__wr_metadata_tag;
 						__curr_tag_stack_index <= __curr_tag_stack_index
@@ -1049,7 +1054,7 @@ module Snow64LarFile(input logic clk,
 								::WrStWaitForJustMemWrite;
 							prep_mem_write();
 						end
-						else
+						else // if (!`captured__wr_curr_shareddata_dirty)
 						begin
 							// We need to go back to our previous state.
 							__wr_state <= PkgSnow64LarFile::WrStIdle;
@@ -1130,7 +1135,7 @@ module Snow64LarFile(input logic clk,
 						prep_mem_read();
 
 						// A load of fresh data marks us as clean.
-						`wr_to_allocate_shareddata_data <= 0;
+						`wr_to_allocate_shareddata_dirty <= 0;
 					end
 
 					else // if (__captured_in_wr__write_type
@@ -1159,8 +1164,8 @@ module Snow64LarFile(input logic clk,
 					`captured__wr_curr_shareddata_base_addr
 						<= __captured_in_wr__base_addr.base_addr;
 
-					if (`captured__wr_curr_shareddata_base_addr
-						!= __captured_in_wr__base_addr.base_addr)
+					//if (`captured__wr_curr_shareddata_base_addr
+					//	!= __captured_in_wr__base_addr.base_addr)
 					begin
 						if (`captured__wr_curr_shareddata_dirty)
 						begin
@@ -1231,20 +1236,20 @@ module Snow64LarFile(input logic clk,
 
 								// Stores to an address nobody has yet
 								// marks our NEW data as dirty.
-								`captured__wr_curr_shareddata_data <= 1;
+								`captured__wr_curr_shareddata_dirty <= 1;
 							end
 						end
 					end
 
-					// If we already had the data from the address, we
-					// can just do nothing here... though we're
-					// definitely wasting a cycle!
-					else
-					begin
-						__wr_state <= PkgSnow64LarFile::WrStIdle;
-						stop_mem_write();
-						stop_mem_read();
-					end
+					//// If we already had the data from the address, we
+					//// can just do nothing here... though we're
+					//// definitely wasting a cycle!
+					//else
+					//begin
+					//	__wr_state <= PkgSnow64LarFile::WrStIdle;
+					//	stop_mem_write();
+					//	stop_mem_read();
+					//end
 				end
 
 				// There are other LARs that have our old data, but
