@@ -467,39 +467,39 @@
 //
 //endmodule
 
-module FakeInstrCacheTestBench;
-	import PkgSnow64InstrCache::MSB_POS__LINE;
-	import PkgSnow64InstrCache::MSB_POS__LINE_PACKED_OUTER_DIM;
-	import PkgSnow64InstrCache::MSB_POS__LINE_PACKED_INNER_DIM;
-	import PkgSnow64InstrCache::LAST_INDEX__NUM_LINES;
-
-	logic __clk;
-
-	initial
-	begin
-		__clk = 0;
-	end
-
-	always
-	begin
-		#1
-		__clk = !__clk;
-	end
-
-	PkgSnow64InstrCache::IncomingAddr test_incoming_addr;
-
-
-	logic [MSB_POS__LINE_PACKED_OUTER_DIM:0]
-		[MSB_POS__LINE_PACKED_INNER_DIM:0]
-		lines_arr[0 : LAST_INDEX__NUM_LINES];
-
-	always_ff @(posedge __clk)
-	begin
-		test_incoming_addr.base_addr <= 0;
-		test_incoming_addr.tag <= 0;
-		test_incoming_addr.line_index <= 0;
-		test_incoming_addr.dont_care <= 0;
-	end
-
-
-endmodule
+//module FakeInstrCacheTestBench;
+//	import PkgSnow64InstrCache::MSB_POS__LINE;
+//	import PkgSnow64InstrCache::MSB_POS__LINE_PACKED_OUTER_DIM;
+//	import PkgSnow64InstrCache::MSB_POS__LINE_PACKED_INNER_DIM;
+//	import PkgSnow64InstrCache::LAST_INDEX__NUM_LINES;
+//
+//	logic __clk;
+//
+//	initial
+//	begin
+//		__clk = 0;
+//	end
+//
+//	always
+//	begin
+//		#1
+//		__clk = !__clk;
+//	end
+//
+//	PkgSnow64InstrCache::IncomingAddr test_incoming_addr;
+//
+//
+//	logic [MSB_POS__LINE_PACKED_OUTER_DIM:0]
+//		[MSB_POS__LINE_PACKED_INNER_DIM:0]
+//		lines_arr[0 : LAST_INDEX__NUM_LINES];
+//
+//	always_ff @(posedge __clk)
+//	begin
+//		test_incoming_addr.base_addr <= 0;
+//		test_incoming_addr.tag <= 0;
+//		test_incoming_addr.line_index <= 0;
+//		test_incoming_addr.dont_care <= 0;
+//	end
+//
+//
+//endmodule

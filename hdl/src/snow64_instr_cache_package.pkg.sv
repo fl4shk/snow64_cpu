@@ -3,8 +3,8 @@
 
 package PkgSnow64InstrCache;
 
-localparam WIDTH__LINE = `WIDTH__SNOW64_ICACHE_LINE;
-localparam MSB_POS__LINE = `WIDTH2MP(WIDTH__LINE);
+localparam WIDTH__LINE_DATA = `WIDTH__SNOW64_ICACHE_LINE_DATA;
+localparam MSB_POS__LINE_DATA = `WIDTH2MP(WIDTH__LINE_DATA);
 
 localparam WIDTH__LINE_PACKED_OUTER_DIM
 	= `WIDTH__SNOW64_ICACHE_LINE_PACKED_OUTER_DIM;
@@ -27,37 +27,44 @@ localparam LAST_INDEX__NUM_LINES
 	= `ARR_SIZE_TO_LAST_INDEX(ARR_SIZE__NUM_LINES);
 
 
+typedef logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__BASE_ADDR:0]
+	BaseAddr;
+typedef logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__TAG:0] Tag;
+typedef logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__LINE_INDEX:0]
+	LineIndex;
+
+typedef logic [`MSB_POS__SNOW64_CPU_ADDR:0] CpuAddr;
+typedef logic [`MSB_POS__SNOW64_ICACHE_LINE_DATA:0] LineData;
+typedef logic [`MSB_POS__SNOW64_INSTR:0] Instr;
+
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__BASE_ADDR:0] base_addr;
-	logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__TAG:0] tag;
-	logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__LINE_INDEX:0] line_index;
+	BaseAddr base_addr;
+	Tag tag;
+	LineIndex line_index;
 
 	logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__DONT_CARE:0] dont_care;
 } IncomingAddr;
 
 
-typedef logic [`MSB_POS__SNOW64_CPU_ADDR:0] CpuAddr;
-typedef logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] LarData;
 
 typedef struct packed
 {
 	logic valid;
-	LarData data;
+	LineData data;
 } PartialPortIn_InstrCache_MemAccess;
 
 typedef struct packed
 {
 	logic req;
 	CpuAddr addr;
-	LarData data;
 } PartialPortIn_InstrCache_ReqRead;
 
 typedef struct packed
 {
 	logic valid;
-	LarData data;
+	Instr instr;
 } PartialPortOut_InstrCache_ReqRead;
 
 typedef struct packed
