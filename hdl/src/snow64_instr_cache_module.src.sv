@@ -16,8 +16,8 @@ module Snow64InstrCache(input logic clk,
 	localparam __LAST_INDEX__NUM_LINES
 		= PkgSnow64InstrCache::LAST_INDEX__NUM_LINES;
 
-	localparam __MSB_POS__EFFECTIVE_ADDR__LOW_BASE_ADDR
-		= `MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__LOW_BASE_ADDR;
+	localparam __MSB_POS__EFFECTIVE_ADDR__ARR_INDEX
+		= `MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__ARR_INDEX;
 	localparam __MSB_POS__EFFECTIVE_ADDR__TAG
 		= `MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__TAG;
 	localparam __MSB_POS__EFFECTIVE_ADDR__LINE_INDEX
@@ -71,9 +71,9 @@ module Snow64InstrCache(input logic clk,
 	wire [__MSB_POS__EFFECTIVE_ADDR__TAG:0]
 		__formal__in_req_read__effective_addr__tag
 		= __in_req_read__effective_addr.tag;
-	wire [__MSB_POS__EFFECTIVE_ADDR__LOW_BASE_ADDR:0]
-		__formal__in_req_read__effective_addr__low_base_addr
-		= __in_req_read__effective_addr.low_base_addr;
+	wire [__MSB_POS__EFFECTIVE_ADDR__ARR_INDEX:0]
+		__formal__in_req_read__effective_addr__arr_index
+		= __in_req_read__effective_addr.arr_index;
 	wire [__MSB_POS__EFFECTIVE_ADDR__LINE_INDEX:0]
 		__formal__in_req_read__effective_addr__line_index
 		= __in_req_read__effective_addr.line_index;
