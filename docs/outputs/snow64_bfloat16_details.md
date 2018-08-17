@@ -1,7 +1,7 @@
 # Snow64 BFloat16 Details
 * General Notes
-	* A <i>BFloat16</i> is simply the high 16-bit half of an IEEE
-	binary32 float.
+	* A <i>BFloat16</i> is simply the high 16-bit half of an IEEE binary32
+	float.
 	* Note that this is different from the IEEE binary16 float format!
 	* For Snow64's BFloat16 implementation, there are no NaN or infinities,
 	and zero is the only subnormal.  If the exponent of a BFloat16 is

@@ -35,6 +35,7 @@ define(`NOTE_S32',`Note:  signed 32-bit integer(s)')dnl
 define(`NOTE_U64',`Note:  unsigned 64-bit integer(s)')dnl
 define(`NOTE_S64',`Note:  signed 64-bit integer(s)')dnl
 define(`NOTE_BFLOAT16',`Note:  BFloat16 format floating point number.')dnl
+define(`CAST_TO_TYPE_OF',`cast\_to\_type\_of\_$1($2)')dnl
 # Snow64 Instruction Set
 * Notes
 	* There are no Instruction LARs (the typical instruction fetch of most
@@ -168,6 +169,9 @@ NEWLINE()NEWLINE()
 	affects both scalar and vector operations.
 	* Note:  also, for each of these instructions, the address field is not
 	used as an operand, just the data field.
+		* Example:  CODE(adds d1, d2, d3)
+			* Effect:  CODE(d1.sdata <= CAST_TO_TYPE_OF(d1,d2.sdata)
+			\+ CAST_TO_TYPE_OF(d1,d3.sdata))
 	* Instructions:
 		* BOLD(add) dDest, dSrc0, dSrc1
 			* OPCODE(0x0)
@@ -212,7 +216,7 @@ NEWLINE()NEWLINE()
 			* Note:  Shift right
 			* Note:  dSrc0's signedness is used to determine the type of
 			right shift:  
-				* If dSrc0 is unsigned, a logic right shift is performed
+				* If dSrc0 is unsigned, a logical right shift is performed
 				* If dSrc0 is signed, an arithmetic right shift is
 				performed
 			* Note:  dSrc1 is always treated as unsigned (due to being a

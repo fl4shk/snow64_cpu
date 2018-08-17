@@ -1,19 +1,11 @@
 include(src/include/misc_defines.m4)dnl
-define(`UINT8_T',`CODE(uint8\_t)')dnl
-define(`INT8_T',`CODE(int8\_t)')dnl
-define(`UINT16_T',`CODE(uint16\_t)')dnl
-define(`INT16_T',`CODE(int16\_t)')dnl
-define(`UINT32_T',`CODE(uint32\_t)')dnl
-define(`INT32_T',`CODE(int32\_t)')dnl
-define(`UINT64_T',`CODE(uint64\_t)')dnl
-define(`INT64_T',`CODE(int64\_t)')dnl
 define(`INTEGER_TYPES',`CODE(uint8\_t), CODE(int8\_t), CODE(uint16\_t),
 	CODE(int16\_t), CODE(uint32\_t), CODE(int32\_t), CODE(uint64\_t), and
 	CODE(int64\_t)')dnl
 # Snow64 BFloat16 Details
 * General Notes
-	* A ITALIC(BFloat16) is simply the high 16-bit half of an IEEE
-	binary32 float.
+	* A ITALIC(BFloat16) is simply the high 16-bit half of an IEEE binary32
+	float.
 	* Note that this is different from the IEEE binary16 float format!
 	* For Snow64's BFloat16 implementation, there are no NaN or infinities,
 	and zero is the only subnormal.  If the exponent of a BFloat16 is

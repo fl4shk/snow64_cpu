@@ -129,7 +129,7 @@ typedef enum logic
 	OpTypeVector
 } OperationType;
 
-localparam WIDTH__INSTR = 32;
+localparam WIDTH__INSTR = `WIDTH__SNOW64_INSTR;
 localparam MSB_POS__INSTR = `WIDTH2MP(WIDTH__INSTR);
 localparam WIDTH__ADDR = `WIDTH__SNOW64_CPU_ADDR;
 localparam MSB_POS__ADDR = `WIDTH2MP(WIDTH__ADDR);

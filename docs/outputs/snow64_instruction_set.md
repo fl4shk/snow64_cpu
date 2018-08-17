@@ -133,6 +133,9 @@ operation;
 	affects both scalar and vector operations.
 	* Note:  also, for each of these instructions, the address field is not
 	used as an operand, just the data field.
+		* Example:  <code>adds d1</code>
+			* Effect:  <code>d1.sdata <= cast\_to\_type\_of\_d1(d2.sdata)
+			\+ cast\_to\_type\_of\_d1(d3.sdata)</code>
 	* Instructions:
 		* <b>add</b> dDest, dSrc0, dSrc1
 			* Opcode:  0x0
@@ -198,7 +201,7 @@ operation treats all operands as 16-bit signed integers.
 			* Note:  Shift right
 			* Note:  dSrc0's signedness is used to determine the type of
 			right shift:  
-				* If dSrc0 is unsigned, a logic right shift is performed
+				* If dSrc0 is unsigned, a logical right shift is performed
 				* If dSrc0 is signed, an arithmetic right shift is
 				performed
 			* Note:  dSrc1 is always treated as unsigned (due to being a
@@ -364,7 +367,7 @@ Opcode Group:  0b011
 	* Note:  These are actually type conversion instructions as actual
 	writes to memory are done lazily
 	* Effect:
-		* These instructions marks <code>dA</code> as dirty, change its address to
+		* These instructions mark <code>dA</code> as dirty, change its address to
 		the effective address (see next bullet), and sets its type.
 		* The 64-bit effective address is computed as follows:
 			<code>(dB.address + extend\_to\_64(dC.sdata) 

@@ -49,7 +49,7 @@ $(OUTPUTS) : $(OUTDIR)/%.md : %.m4 src/include/*.m4
 	m4 $< > $@
 
 $(PDFS) : %.pdf : %.md
-	md2pdf $< > $@
+	md2pdf $< $@
 $(HTML) : %.html : %.md
 	markdown $< > $@
 
