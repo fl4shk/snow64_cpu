@@ -16,10 +16,10 @@ localparam WIDTH__LINE_PACKED_INNER_DIM
 localparam MSB_POS__LINE_PACKED_INNER_DIM
 	= `WIDTH2MP(WIDTH__LINE_PACKED_INNER_DIM);
 
-localparam WIDTH__INCOMING_ADDR__BASE_ADDR
-	= `WIDTH__SNOW64_ICACHE_INCOMING_ADDR__BASE_ADDR;
-localparam MSB_POS__INCOMING_ADDR__BASE_ADDR
-	= `WIDTH2MP(WIDTH__INCOMING_ADDR__BASE_ADDR);
+localparam WIDTH__EFFECTIVE_ADDR__LOW_BASE_ADDR
+	= `WIDTH__SNOW64_ICACHE_EFFECTIVE_ADDR__LOW_BASE_ADDR;
+localparam MSB_POS__EFFECTIVE_ADDR__LOW_BASE_ADDR
+	= `WIDTH2MP(WIDTH__EFFECTIVE_ADDR__LOW_BASE_ADDR);
 
 
 localparam ARR_SIZE__NUM_LINES = `ARR_SIZE__SNOW64_ICACHE_NUM_LINES;
@@ -27,10 +27,13 @@ localparam LAST_INDEX__NUM_LINES
 	= `ARR_SIZE_TO_LAST_INDEX(ARR_SIZE__NUM_LINES);
 
 
-typedef logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__BASE_ADDR:0]
-	BaseAddr;
-typedef logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__TAG:0] Tag;
-typedef logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__LINE_INDEX:0]
+// BaseAddr, the index into the icache.
+//typedef logic [`MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__BASE_ADDR:0]
+//	BaseAddr;
+typedef logic [`MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__TAG:0] Tag;
+typedef logic [`MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__LOW_BASE_ADDR:0]
+	LowBaseAddr;
+typedef logic [`MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__LINE_INDEX:0]
 	LineIndex;
 
 typedef logic [`MSB_POS__SNOW64_CPU_ADDR:0] CpuAddr;
@@ -40,13 +43,12 @@ typedef logic [`MSB_POS__SNOW64_INSTR:0] Instr;
 
 typedef struct packed
 {
-	BaseAddr base_addr;
 	Tag tag;
+	LowBaseAddr low_base_addr;
 	LineIndex line_index;
 
-	logic [`MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__DONT_CARE:0] dont_care;
-} IncomingAddr;
-
+	logic [`MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__DONT_CARE:0] dont_care;
+} EffectiveAddr;
 
 
 typedef struct packed

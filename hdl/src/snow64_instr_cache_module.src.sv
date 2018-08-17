@@ -16,12 +16,12 @@ module Snow64InstrCache(input logic clk,
 	localparam __LAST_INDEX__NUM_LINES
 		= PkgSnow64InstrCache::LAST_INDEX__NUM_LINES;
 
-	localparam __MSB_POS__INCOMING_ADDR__BASE_ADDR
-		= `MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__BASE_ADDR;
-	localparam __MSB_POS__INCOMING_ADDR__TAG
-		= `MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__TAG;
-	localparam __MSB_POS__INCOMING_ADDR__LINE_INDEX
-		= `MSB_POS__SNOW64_ICACHE_INCOMING_ADDR__LINE_INDEX;
+	localparam __MSB_POS__EFFECTIVE_ADDR__LOW_BASE_ADDR
+		= `MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__LOW_BASE_ADDR;
+	localparam __MSB_POS__EFFECTIVE_ADDR__TAG
+		= `MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__TAG;
+	localparam __MSB_POS__EFFECTIVE_ADDR__LINE_INDEX
+		= `MSB_POS__SNOW64_ICACHE_EFFECTIVE_ADDR__LINE_INDEX;
 
 	PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
 		real_in_req_read;
@@ -41,6 +41,12 @@ module Snow64InstrCache(input logic clk,
 		real_out_mem_access;
 	assign out.mem_access = real_out_mem_access;
 
+
+	PkgSnow64InstrCache::EffectiveAddr __in_req_read__effective_addr;
+	assign __in_req_read__effective_addr = real_in_req_read.addr;
+
+
+	// Locals (not ports)
 	logic [__MSB_POS__LINE_PACKED_OUTER_DIM:0]
 		[__MSB_POS__LINE_PACKED_INNER_DIM:0]
 		__lines_arr[0 : __LAST_INDEX__NUM_LINES];
@@ -48,36 +54,37 @@ module Snow64InstrCache(input logic clk,
 	PkgSnow64InstrCache::Tag __tags_arr[0 : __LAST_INDEX__NUM_LINES];
 	logic __valid_flags_arr[0 : __LAST_INDEX__NUM_LINES];
 
-	PkgSnow64InstrCache::IncomingAddr __in_rd__incoming_addr;
-	assign __in_rd__incoming_addr = real_in_req_read.addr;
 
 
 	`ifdef FORMAL
-	wire __formal__in_req_read__req = real_in_req_read.req;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_req_read__addr 
-		= real_in_req_read.addr;
+	//wire __formal__in_req_read__req = real_in_req_read.req;
+	//wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_req_read__addr 
+	//	= real_in_req_read.addr;
 
-	wire __formal__in_mem_access__valid = real_in_mem_access.valid;
-	wire [__MSB_POS__LINE_DATA:0] __formal__in_mem_access__data
-		= real_in_mem_access.data;
+	//wire __formal__in_mem_access__valid = real_in_mem_access.valid;
+	//wire [__MSB_POS__LINE_DATA:0] __formal__in_mem_access__data
+	//	= real_in_mem_access.data;
 
-	wire [__MSB_POS__INCOMING_ADDR__BASE_ADDR:0]
-		__formal__in_rd__incoming_addr__base_addr
-		= __in_rd__incoming_addr.base_addr;
-	wire [__MSB_POS__INCOMING_ADDR__TAG:0]
-		__formal__in_rd__incoming_addr__tag
-		= __in_rd__incoming_addr.tag;
-	wire [__MSB_POS__INCOMING_ADDR__LINE_INDEX:0]
-		__formal__in_rd__incoming_addr__line_index
-		= __in_rd__incoming_addr.line_index;
+	//wire [__MSB_POS__EFFECTIVE_ADDR__BASE_ADDR:0]
+	//	__formal__in_req_read__effective_addr__base_addr
+	//	= __in_req_read__effective_addr.base_addr;
+	wire [__MSB_POS__EFFECTIVE_ADDR__TAG:0]
+		__formal__in_req_read__effective_addr__tag
+		= __in_req_read__effective_addr.tag;
+	wire [__MSB_POS__EFFECTIVE_ADDR__LOW_BASE_ADDR:0]
+		__formal__in_req_read__effective_addr__low_base_addr
+		= __in_req_read__effective_addr.low_base_addr;
+	wire [__MSB_POS__EFFECTIVE_ADDR__LINE_INDEX:0]
+		__formal__in_req_read__effective_addr__line_index
+		= __in_req_read__effective_addr.line_index;
 
-	wire __formal__out_req_read__valid = real_out_req_read.valid;
-	wire [`MSB_POS__SNOW64_INSTR:0] __formal__out_req_read__instr
-		= real_out_req_read.instr;
+	//wire __formal__out_req_read__valid = real_out_req_read.valid;
+	//wire [`MSB_POS__SNOW64_INSTR:0] __formal__out_req_read__instr
+	//	= real_out_req_read.instr;
 
-	wire __formal__out_mem_access__req = real_out_mem_access.req;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__out_mem_access__addr
-		= real_out_mem_access.addr;
+	//wire __formal__out_mem_access__req = real_out_mem_access.req;
+	//wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__out_mem_access__addr
+	//	= real_out_mem_access.addr;
 	`endif		// FORMAL
 
 
