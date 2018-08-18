@@ -360,62 +360,62 @@ module Snow64LarFile(input logic clk,
 
 	// The arrays of LAR metadata and shared data.
 	logic [__MSB_POS__METADATA__DATA_INDEX : 0]
-		__lar_metadata__data_index[0 : __LAST_INDEX__NUM_LARS];
+		__lar_metadata__data_index[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__METADATA__DATA_INDEX : 0]
-		__debug_lar_metadata__data_index[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_metadata__data_index[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 	logic [__MSB_POS__METADATA__TAG : 0]
-		__lar_metadata__tag[0 : __LAST_INDEX__NUM_LARS];
+		__lar_metadata__tag[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__METADATA__TAG : 0]
-		__debug_lar_metadata__tag[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_metadata__tag[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 	logic [__MSB_POS__METADATA__DATA_TYPE : 0]
-		__lar_metadata__data_type[0 : __LAST_INDEX__NUM_LARS];
+		__lar_metadata__data_type[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__METADATA__DATA_TYPE : 0]
-		__debug_lar_metadata__data_type[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_metadata__data_type[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 	logic [__MSB_POS__METADATA__INT_TYPE_SIZE : 0]
-		__lar_metadata__int_type_size[0 : __LAST_INDEX__NUM_LARS];
+		__lar_metadata__int_type_size[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__METADATA__INT_TYPE_SIZE : 0]
-		__debug_lar_metadata__int_type_size[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_metadata__int_type_size[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 
 	//logic [__MSB_POS__SHAREDDATA:0] __lar_shareddata
-	//	[0 : __LAST_INDEX__NUM_LARS];
+	//	[__ARR_SIZE__NUM_LARS];
 	logic [__MSB_POS__SHAREDDATA__BASE_ADDR : 0]
-		__lar_shareddata__base_addr[0 : __LAST_INDEX__NUM_LARS];
+		__lar_shareddata__base_addr[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__SHAREDDATA__BASE_ADDR : 0]
-		__debug_lar_shareddata__base_addr[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_shareddata__base_addr[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 	logic [__MSB_POS__SHAREDDATA__DATA : 0]
-		__lar_shareddata__data[0 : __LAST_INDEX__NUM_LARS];
+		__lar_shareddata__data[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__SHAREDDATA__DATA : 0]
-		__debug_lar_shareddata__data[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_shareddata__data[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 	logic [__MSB_POS__SHAREDDATA__REF_COUNT : 0]
-		__lar_shareddata__ref_count[0 : __LAST_INDEX__NUM_LARS];
+		__lar_shareddata__ref_count[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__SHAREDDATA__REF_COUNT : 0]
-		__debug_lar_shareddata__ref_count[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_shareddata__ref_count[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 	logic [__MSB_POS__SHAREDDATA__DIRTY : 0]
-		__lar_shareddata__dirty[0 : __LAST_INDEX__NUM_LARS];
+		__lar_shareddata__dirty[__ARR_SIZE__NUM_LARS];
 	`ifdef FORMAL
 	logic [__MSB_POS__SHAREDDATA__DIRTY : 0]
-		__debug_lar_shareddata__dirty[0 : __LAST_INDEX__NUM_LARS];
+		__debug_lar_shareddata__dirty[__ARR_SIZE__NUM_LARS];
 	`endif		// FORMAL
 
 	`ifdef FORMAL
@@ -449,11 +449,11 @@ module Snow64LarFile(input logic clk,
 
 	// Used for allocating/deallocating shared data.
 	//logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
-	//	__lar_tag_stack[0 : __LAST_INDEX__NUM_LARS];
+	//	__lar_tag_stack[__ARR_SIZE__NUM_LARS];
 	//logic [__METADATA__TAG__INDEX_HI - __METADATA__TAG__INDEX_LO : 0]
 	//	__curr_tag_stack_index;
 	logic [__MSB_POS__METADATA__TAG : 0]
-		__lar_tag_stack[0 : __LAST_INDEX__NUM_LARS];
+		__lar_tag_stack[__ARR_SIZE__NUM_LARS];
 	logic [__MSB_POS__METADATA__TAG : 0]
 		__curr_tag_stack_index;
 

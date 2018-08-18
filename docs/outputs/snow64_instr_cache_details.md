@@ -13,9 +13,9 @@
 		instructions, we can ignore <code>in\_addr[1:0]</code>.
 		* This leaves us with <code>in\_addr[4:2]</code> as the "true" index into
 		the cache line.
-		* We can use SystemVerilog's multidimensional packed arrays, as
+		* We can use SystemVerilog's multidimensional packed arrays as
 		follows:
-			* <code>logic [31:0][7:0] lines\_arr[0 : (1 << 15) - 1];</code>
+			* <code>logic [31:0][7:0] lines\_arr[1 << 15];</code>
 	* The index into the array of cache lines is <code>in\_addr[63:49]</code>
 	* The index into
 * Structure

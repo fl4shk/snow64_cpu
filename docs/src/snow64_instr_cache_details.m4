@@ -16,7 +16,7 @@ include(src/include/misc_defines.m4)dnl
 		the cache line.
 		* We can use SystemVerilog's multidimensional packed arrays as
 		follows:
-			* CODE(logic [31:0][7:0] lines\_arr[0 : (1 << 15) - 1];)
+			* CODE(logic [31:0][7:0] lines\_arr[1 << 15];)
 	* The index into the array of cache lines is CODE(in\_addr[63:49])
 	* The index into
 * Structure

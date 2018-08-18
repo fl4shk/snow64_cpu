@@ -37,6 +37,11 @@ typedef logic [`MSB_POS__SNOW64_CPU_ADDR:0] CpuAddr;
 typedef logic [`MSB_POS__SNOW64_ICACHE_LINE_DATA:0] LineData;
 typedef logic [`MSB_POS__SNOW64_INSTR:0] Instr;
 
+typedef enum logic
+{
+	StIdle,
+	StWaitForMem
+} State;
 
 typedef struct packed
 {
