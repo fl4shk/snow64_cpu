@@ -16,8 +16,9 @@
 		* We can use SystemVerilog's multidimensional packed arrays as
 		follows:
 			* <code>logic [31:0][7:0] lines\_arr[1 << 15];</code>
-	* The index into the array of cache lines is <code>in\_addr[63:49]</code>
-	* The index into
-* Structure
-	* With 32 kiB of cache, that means we look at the top 15 bits of the
-	original address.
+	* Effective Address
+		* The tag of a cache entry is <code>in\_addr[63:15]</code>
+		* The index into the array of cache lines is <code>in\_addr[14:5]</code>
+		* The index into a single cache line is <code>in\_addr[4:2]</code>
+		* <code>in\_addr[1:0]</code> is forcibly aligned to the size of an
+		instruction (set to <code>2'b00</code>).
