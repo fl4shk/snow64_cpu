@@ -75,8 +75,8 @@ module Snow64InstrCache(input logic clk,
 	logic __state;
 
 
-	//logic [__MSB_POS__EFFECTIVE_ADDR__TAG:0]
-	//	__captured_in_req_read__effective_addr__tag;
+	logic [__MSB_POS__EFFECTIVE_ADDR__TAG:0]
+		__captured_in_req_read__effective_addr__tag;
 	logic [__MSB_POS__EFFECTIVE_ADDR__ARR_INDEX:0]
 		__captured_in_req_read__effective_addr__arr_index;
 	logic [__MSB_POS__EFFECTIVE_ADDR__LINE_INDEX:0]
@@ -84,36 +84,36 @@ module Snow64InstrCache(input logic clk,
 
 
 	`ifdef FORMAL
-	//localparam __ENUM__STATE__IDLE = PkgSnow64InstrCache::StIdle;
-	//localparam __ENUM__STATE__WAIT_FOR_MEM
-	//	= PkgSnow64InstrCache::StWaitForMem;
+	localparam __ENUM__STATE__IDLE = PkgSnow64InstrCache::StIdle;
+	localparam __ENUM__STATE__WAIT_FOR_MEM
+		= PkgSnow64InstrCache::StWaitForMem;
 
-	//logic [__MSB_POS__LINE_PACKED_OUTER_DIM:0]
-	//	[__MSB_POS__LINE_PACKED_INNER_DIM:0]
-	//	__debug_lines_arr[__ARR_SIZE__NUM_LINES];
+	logic [__MSB_POS__LINE_PACKED_OUTER_DIM:0]
+		[__MSB_POS__LINE_PACKED_INNER_DIM:0]
+		__debug_lines_arr[__ARR_SIZE__NUM_LINES];
 
-	//PkgSnow64InstrCache::Tag __debug_tags_arr[__ARR_SIZE__NUM_LINES];
-	//logic __debug_valid_flags_arr[__ARR_SIZE__NUM_LINES];
+	PkgSnow64InstrCache::Tag __debug_tags_arr[__ARR_SIZE__NUM_LINES];
+	logic __debug_valid_flags_arr[__ARR_SIZE__NUM_LINES];
 
-	//always @(posedge clk)
-	//begin
-	//	integer i;
-	//	for (i=0; i<__ARR_SIZE__NUM_LINES; i=i+1)
-	//	begin
-	//		__debug_lines_arr[i] <= __lines_arr[i];
-	//		__debug_tags_arr[i] <= __tags_arr[i];
-	//		__debug_valid_flags_arr[i] <= __valid_flags_arr[i];
-	//	end
-	//end
+	always @(posedge clk)
+	begin
+		integer i;
+		for (i=0; i<__ARR_SIZE__NUM_LINES; i=i+1)
+		begin
+			__debug_lines_arr[i] <= __lines_arr[i];
+			__debug_tags_arr[i] <= __tags_arr[i];
+			__debug_valid_flags_arr[i] <= __valid_flags_arr[i];
+		end
+	end
 
 
-	//wire __formal__in_req_read__req = real_in_req_read.req;
-	//wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_req_read__addr 
-	//	= real_in_req_read.addr;
+	wire __formal__in_req_read__req = real_in_req_read.req;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_req_read__addr 
+		= real_in_req_read.addr;
 
-	//wire __formal__in_mem_access__valid = real_in_mem_access.valid;
-	//wire [__MSB_POS__LINE_DATA:0] __formal__in_mem_access__data
-	//	= real_in_mem_access.data;
+	wire __formal__in_mem_access__valid = real_in_mem_access.valid;
+	wire [__MSB_POS__LINE_DATA:0] __formal__in_mem_access__data
+		= real_in_mem_access.data;
 
 	wire [__MSB_POS__EFFECTIVE_ADDR__TAG:0]
 		__formal__in_req_read__effective_addr__tag
@@ -125,13 +125,13 @@ module Snow64InstrCache(input logic clk,
 		__formal__in_req_read__effective_addr__line_index
 		= __in_req_read__effective_addr.line_index;
 
-	//wire __formal__out_req_read__valid = real_out_req_read.valid;
-	//wire [`MSB_POS__SNOW64_INSTR:0] __formal__out_req_read__instr
-	//	= real_out_req_read.instr;
+	wire __formal__out_req_read__valid = real_out_req_read.valid;
+	wire [`MSB_POS__SNOW64_INSTR:0] __formal__out_req_read__instr
+		= real_out_req_read.instr;
 
-	//wire __formal__out_mem_access__req = real_out_mem_access.req;
-	//wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__out_mem_access__addr
-	//	= real_out_mem_access.addr;
+	wire __formal__out_mem_access__req = real_out_mem_access.req;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__out_mem_access__addr
+		= real_out_mem_access.addr;
 	`endif		// FORMAL
 
 	initial
@@ -149,7 +149,7 @@ module Snow64InstrCache(input logic clk,
 		__state = PkgSnow64InstrCache::StIdle;
 		real_out_req_read = 0;
 		real_out_mem_access = 0;
-		//__captured_in_req_read__effective_addr__tag = 0;
+		__captured_in_req_read__effective_addr__tag = 0;
 		__captured_in_req_read__effective_addr__arr_index = 0;
 		__captured_in_req_read__effective_addr__line_index = 0;
 	end
@@ -161,8 +161,12 @@ module Snow64InstrCache(input logic clk,
 	`define CURR_CONTAINED_VALID_FLAG \
 		__valid_flags_arr[__in_req_read__effective_addr.arr_index]
 
+	`define CAPTURED_CONTAINED_TAG \
+		__tags_arr[__captured_in_req_read__effective_addr__arr_index]
 	`define CAPTURED_CONTAINED_LINE \
 		__lines_arr[__captured_in_req_read__effective_addr__arr_index]
+	`define CAPTURED_CONTAINED_VALID_FLAG \
+		__valid_flags_arr[__captured_in_req_read__effective_addr__arr_index]
 
 	always_ff @(posedge clk)
 	begin
@@ -178,9 +182,51 @@ module Snow64InstrCache(input logic clk,
 				begin
 					real_out_req_read.valid <= 1;
 
-					real_out_req_read.instr
-						<= `CURR_CONTAINED_LINE
-						[__in_req_read__effective_addr.line_index];
+					//real_out_req_read.instr
+					//	<= `CURR_CONTAINED_LINE
+					//	[__in_req_read__effective_addr.line_index];
+					case (__in_req_read__effective_addr.line_index)
+					0:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[0];
+					end
+					1:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[1];
+					end
+					2:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[2];
+					end
+					3:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[3];
+					end
+					4:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[4];
+					end
+					5:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[5];
+					end
+					6:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[6];
+					end
+					7:
+					begin
+						real_out_req_read.instr
+							<= `CURR_CONTAINED_LINE[7];
+					end
+					endcase
 
 					real_out_mem_access.req <= 0;
 				end
@@ -194,16 +240,12 @@ module Snow64InstrCache(input logic clk,
 					real_out_mem_access.req <= 1;
 					real_out_mem_access.addr <= __addr_for_miss;
 
-					//__captured_in_req_read__effective_addr__tag
-					//	<= __in_req_read__effective_addr.tag;
+					__captured_in_req_read__effective_addr__tag
+						<= __in_req_read__effective_addr.tag;
 					__captured_in_req_read__effective_addr__arr_index
 						<= __in_req_read__effective_addr.arr_index;
 					__captured_in_req_read__effective_addr__line_index
 						<= __in_req_read__effective_addr.line_index;
-
-					`CURR_CONTAINED_TAG
-						<= __in_req_read__effective_addr.tag;
-					`CURR_CONTAINED_VALID_FLAG <= 1;
 				end
 			end
 
@@ -221,10 +263,48 @@ module Snow64InstrCache(input logic clk,
 			begin
 				__state <= PkgSnow64InstrCache::StIdle;
 
+				`CAPTURED_CONTAINED_TAG
+					<= __captured_in_req_read__effective_addr__tag;
+				`CAPTURED_CONTAINED_VALID_FLAG <= 1;
+
 				real_out_req_read.valid <= 1;
 
-				real_out_req_read.instr <= __in_mem_access__data
-					[__captured_in_req_read__effective_addr__line_index];
+				//real_out_req_read.instr <= __in_mem_access__data
+				//	[__captured_in_req_read__effective_addr__line_index];
+				case (__captured_in_req_read__effective_addr__line_index)
+				0:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[0];
+				end
+				1:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[1];
+				end
+				2:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[2];
+				end
+				3:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[3];
+				end
+				4:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[4];
+				end
+				5:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[5];
+				end
+				6:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[6];
+				end
+				7:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[7];
+				end
+				endcase
 				`CAPTURED_CONTAINED_LINE <= real_in_mem_access.data;
 			end
 		end
@@ -235,6 +315,8 @@ module Snow64InstrCache(input logic clk,
 	`undef CURR_CONTAINED_TAG
 	`undef CURR_CONTAINED_VALID_FLAG
 
+	`undef CAPTURED_CONTAINED_TAG
 	`undef CAPTURED_CONTAINED_LINE
+	`undef CAPTURED_CONTAINED_VALID_FLAG
 
 endmodule
