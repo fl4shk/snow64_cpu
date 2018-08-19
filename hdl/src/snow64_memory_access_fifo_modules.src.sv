@@ -23,7 +23,7 @@ module Snow64MemoryAccessReadFifo(input logic clk,
 
 
 	logic __state;
-	logic [`MSB_POS__SNOW64_CPU_ADDR:0] __captured_in_req_read__addr;
+	logic __cmd_was_accepted;
 
 
 	`ifdef FORMAL
@@ -59,7 +59,7 @@ module Snow64MemoryAccessReadFifo(input logic clk,
 	initial
 	begin
 		__state = PkgSnow64MemoryAccessFifo::RdFifoStIdle;
-		__captured_in_req_read__addr = 0;
+		__cmd_was_accepted = 0;
 
 		real_out_req_read = 0;
 		real_out_to_memory_bus_guard = 0;
@@ -70,12 +70,49 @@ module Snow64MemoryAccessReadFifo(input logic clk,
 		case (__state)
 		PkgSnow64MemoryAccessFifo::RdFifoStIdle:
 		begin
-			
+			real_out_req_read.valid <= 0;
+
+			if (real_in_req_read.req)
+			begin
+				__state <= PkgSnow64MemoryAccessFifo::RdFifoStWaitForMem;
+
+				real_out_to_memory_bus_guard.req <= 1;
+				real_out_to_memory_bus_guard.addr <= real_in_req_read.addr;
+
+				real_out_req_read.busy <= 1;
+
+				__cmd_was_accepted <= 0;
+			end
+
+			else // if (!real_in_req_read.req)
+			begin
+				real_out_to_memory_bus_guard.req <= 0;
+				real_out_req_read.busy <= 0;
+			end
 		end
 
 		PkgSnow64MemoryAccessFifo::RdFifoStWaitForMem:
 		begin
-			
+			if (real_in_from_memory_bus_guard.cmd_accepted)
+			begin
+				__cmd_was_accepted <= 1;
+				real_out_to_memory_bus_guard.req <= 0;
+			end
+
+			// ...On the off chance that SOMEHOW the memory bus guard
+			// already has our data, we can make this work.
+			if ((real_in_from_memory_bus_guard.cmd_accepted
+				|| __cmd_was_accepted)
+				&& (real_in_from_memory_bus_guard.valid))
+			begin
+				// Grant the requested data.
+				__state <= PkgSnow64MemoryAccessFifo::RdFifoStIdle;
+
+				real_out_req_read.valid <= 1;
+				real_out_req_read.busy <= 0;
+				real_out_req_read.data
+					<= real_in_from_memory_bus_guard.data;
+			end
 		end
 		endcase
 	end
