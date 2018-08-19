@@ -1,5 +1,6 @@
 `include "src/snow64_memory_access_fifo_defines.header.sv"
 
+// Single-element FIFOs.
 package PkgSnow64MemoryAccessFifo;
 
 
@@ -56,12 +57,47 @@ typedef struct packed
 
 // Snow64MemoryAccessWriteFifo
 
+typedef enum logic
+{
+	WrFifoStIdle,
+	WrFifoStWaitForMem
+} WriteFifoState;
+
+typedef struct packed
+{
+	logic req;
+
+	// This address is generally aligned to the size of LarData.
+	CpuAddr addr;
+	LarData data;
+} PartialPortIn_WriteFifo_ReqWrite;
+
 typedef struct packed
 {
 	logic valid, cmd_accepted;
 } PartialPortIn_WriteFifo_FromMemoryBusGuard;
 
+typedef struct packed
+{
+	logic valid, busy;
+} PartialPortOut_WriteFifo_ReqWrite;
+
+typedef PartialPortIn_WriteFifo_ReqWrite
+	PartialPortOut_WriteFifo_ToMemoryBusGuard;
 
 
+typedef struct packed
+{
+	logic `STRUCTDIM(PartialPortIn_WriteFifo_ReqWrite) req_write;
+	logic `STRUCTDIM(PartialPortIn_WriteFifo_FromMemoryBusGuard)
+		from_memory_bus_guard;
+} PortIn_MemoryAccessWriteFifo;
+
+typedef struct packed
+{
+	logic `STRUCTDIM(PartialPortOut_WriteFifo_ReqWrite) req_write;
+	logic `STRUCTDIM(PartialPortOut_WriteFifo_ToMemoryBusGuard)
+		to_memory_bus_guard;
+} PortOut_MemoryAccessWriteFifo;
 
 endpackage : PkgSnow64MemoryAccessFifo
