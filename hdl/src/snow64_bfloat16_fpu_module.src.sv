@@ -85,8 +85,8 @@ module Snow64BFloat16Fpu(input logic clk,
 
 	Snow64BFloat16Add __inst_submodule_add(.clk(clk),
 		.in(__in_submodule_add), .out(__out_submodule_add));
-	Snow64BFloat16Slt __inst_submodule_slt(.in(__in_submodule_slt),
-		.out(__out_submodule_slt));
+	Snow64BFloat16Slt __inst_submodule_slt(.clk(clk),
+		.in(__in_submodule_slt), .out(__out_submodule_slt));
 	Snow64BFloat16Mul __inst_submodule_mul(.clk(clk),
 		.in(__in_submodule_mul), .out(__out_submodule_mul));
 	Snow64BFloat16Div __inst_submodule_div(.clk(clk),

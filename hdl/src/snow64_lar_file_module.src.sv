@@ -6,9 +6,6 @@
 //`undef FORMAL
 //`endif		// FORMAL
 
-`ifdef FORMAL
-`define SMALL_LAR_FILE
-`endif
 
 module Snow64LarFile(input logic clk,
 	input PkgSnow64LarFile::PortIn_LarFile in,
@@ -64,21 +61,9 @@ module Snow64LarFile(input logic clk,
 	import PkgSnow64LarFile::LarRefCount;
 	import PkgSnow64LarFile::LarDirty;
 
-	`ifndef FORMAL
 	localparam __ARR_SIZE__NUM_LARS = `ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS;
 	localparam __LAST_INDEX__NUM_LARS 
 		= `LAST_INDEX__SNOW64_LAR_FILE_NUM_LARS;
-	`else // if defined(FORMAL)
-		`ifdef SMALL_LAR_FILE
-		// Verify the LAR file when there are only Four LARs 
-		localparam __ARR_SIZE__NUM_LARS = 4;
-		`else // if !defined(SMALL_LAR_FILE)
-		localparam __ARR_SIZE__NUM_LARS
-			= `ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS;
-		`endif		// SMALL_LAR_FILE
-		localparam __LAST_INDEX__NUM_LARS
-			= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__NUM_LARS);
-	`endif // FORMAL
 
 
 	`ifdef FORMAL
@@ -1429,6 +1414,7 @@ module Snow64LarFile(input logic clk,
 	`undef shareddata_tagged_dirty
 
 	`undef do_tag_search
+
 
 
 

@@ -503,3 +503,14 @@
 //
 //
 //endmodule
+
+//`ifdef SVFORMAL
+//module TestMemAccess(input logic clk,
+//	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] in_data,
+//
+//	output logic out_req_wr,
+//	output logic [`MSB_POS__SNOW64_CPU_ADDR:0] out_addr,
+//	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_data);
+//
+//endmodule
+//`endif		// SVFORMAL

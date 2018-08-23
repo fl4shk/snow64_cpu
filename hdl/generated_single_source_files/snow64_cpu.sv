@@ -8,7 +8,7 @@
 
 // src/misc_defines.header.sv
 
-`default_nettype none
+//`default_nettype none
 
 
 
@@ -1478,14 +1478,15 @@ endpackage : PkgSnow64Cpu
 
 
 
-// A single icache line is as long as a single LAR
+// A single icache line is as long as a single LAR.
+// This is done for simplicity purposes.
 
 
 
 
 
-//`define WIDTH__SNOW64_ICACHE_LINE_PACKED_OUTER_DIM 64
-//`define WIDTH__SNOW64_ICACHE_LINE_PACKED_OUTER_DIM 16
+//`define WIDTH__SNOW64_ICACHE_LINE_PACKED_INNER_DIM 64
+//`define WIDTH__SNOW64_ICACHE_LINE_PACKED_INNER_DIM 16
 
 
 
@@ -1496,8 +1497,20 @@ endpackage : PkgSnow64Cpu
 
 
 
-// Max possible number of addresses whose data is stored.
+// log2 of the max possible number of addresses whose data is stored.
 
+//`define WIDTH__SNOW64_ICACHE_EFFECTIVE_ADDR__BYTE_BASE_ADDR 12
+
+//`define WIDTH__SNOW64_ICACHE_EFFECTIVE_ADDR__BYTE_BASE_ADDR 10
+
+// To guarantee that the formal verification will complete in a reasonable
+// amount of time, we use a smaller instruction cache.
+
+//`define WIDTH__SNOW64_ICACHE_EFFECTIVE_ADDR__BYTE_BASE_ADDR 8
+//`define WIDTH__SNOW64_ICACHE_EFFECTIVE_ADDR__BYTE_BASE_ADDR 7
+
+
+		// FORMAL
 
 
 
@@ -1556,14 +1569,14 @@ localparam WIDTH__LINE_DATA = 256;
 localparam MSB_POS__LINE_DATA = ((WIDTH__LINE_DATA) - 1);
 
 localparam WIDTH__LINE_PACKED_OUTER_DIM
-	= 32;
+	= 
+	(256
+	/ 32);
 localparam MSB_POS__LINE_PACKED_OUTER_DIM
 	= ((WIDTH__LINE_PACKED_OUTER_DIM) - 1);
 
 localparam WIDTH__LINE_PACKED_INNER_DIM
-	= 
-	(256
-	/ 32);
+	= 32;
 localparam MSB_POS__LINE_PACKED_INNER_DIM
 	= ((WIDTH__LINE_PACKED_INNER_DIM) - 1);
 
@@ -1574,7 +1587,7 @@ localparam MSB_POS__LINE_PACKED_INNER_DIM
 
 
 localparam ARR_SIZE__NUM_LINES = 
-	((1 << 15)
+	((1 << 9)
 	/ (256 / 8));
 localparam LAST_INDEX__NUM_LINES
 	= ((ARR_SIZE__NUM_LINES) - 1);
@@ -1585,7 +1598,7 @@ typedef logic [
 	(64
 	- 
 	$clog2(
-	((1 << 15)
+	((1 << 9)
 	/ (256 / 8)))
 	- 
 	($clog2(
@@ -1596,7 +1609,7 @@ typedef logic [
 typedef logic [
 	((
 	$clog2(
-	((1 << 15)
+	((1 << 9)
 	/ (256 / 8)))) - 1):0]
 	ArrIndex;
 typedef logic [
@@ -1667,6 +1680,236 @@ typedef struct packed
 
 
 endpackage : PkgSnow64InstrCache
+
+
+
+// src/snow64_memory_access_fifo_defines.header.sv
+
+//`include "src/misc_defines.header.sv"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// src__slash__snow64_lar_file_defines_header_sv
+
+
+
+
+
+
+		// src__slash__snow64_memory_access_fifo_defines_header_sv
+
+// Single-element FIFOs.
+package PkgSnow64MemoryAccessFifo;
+
+
+typedef logic [((64) - 1):0] CpuAddr;
+typedef logic [
+	((256) - 1):0] LarData;
+
+
+// Snow64MemoryAccessReadFifo
+
+typedef enum logic
+{
+	RdFifoStIdle,
+	RdFifoStWaitForMem
+} ReadFifoState;
+
+typedef struct packed
+{
+	logic req;
+
+	// This address is generally aligned to the size of LarData.
+	CpuAddr addr;
+} PartialPortIn_ReadFifo_ReqRead;
+
+typedef struct packed
+{
+	logic valid, cmd_accepted;
+	LarData data;
+} PartialPortIn_ReadFifo_FromMemoryBusGuard;
+
+typedef struct packed
+{
+	logic valid, busy;
+	LarData data;
+} PartialPortOut_ReadFifo_ReqRead;
+
+typedef PartialPortIn_ReadFifo_ReqRead
+	PartialPortOut_ReadFifo_ToMemoryBusGuard;
+
+
+typedef struct packed
+{
+	logic [(($bits(PartialPortIn_ReadFifo_ReqRead)) - 1):0] req_read;
+	logic [(($bits(PartialPortIn_ReadFifo_FromMemoryBusGuard)) - 1):0]
+		from_memory_bus_guard;
+} PortIn_MemoryAccessReadFifo;
+
+typedef struct packed
+{
+	logic [(($bits(PartialPortOut_ReadFifo_ReqRead)) - 1):0] req_read;
+	logic [(($bits(PartialPortOut_ReadFifo_ToMemoryBusGuard)) - 1):0]
+		to_memory_bus_guard;
+} PortOut_MemoryAccessReadFifo;
+
+
+// Snow64MemoryAccessWriteFifo
+
+typedef enum logic
+{
+	WrFifoStIdle,
+	WrFifoStWaitForMem
+} WriteFifoState;
+
+typedef struct packed
+{
+	logic req;
+
+	// This address is generally aligned to the size of LarData.
+	CpuAddr addr;
+	LarData data;
+} PartialPortIn_WriteFifo_ReqWrite;
+
+typedef struct packed
+{
+	logic valid, cmd_accepted;
+} PartialPortIn_WriteFifo_FromMemoryBusGuard;
+
+typedef struct packed
+{
+	logic valid, busy;
+} PartialPortOut_WriteFifo_ReqWrite;
+
+typedef PartialPortIn_WriteFifo_ReqWrite
+	PartialPortOut_WriteFifo_ToMemoryBusGuard;
+
+
+typedef struct packed
+{
+	logic [(($bits(PartialPortIn_WriteFifo_ReqWrite)) - 1):0] req_write;
+	logic [(($bits(PartialPortIn_WriteFifo_FromMemoryBusGuard)) - 1):0]
+		from_memory_bus_guard;
+} PortIn_MemoryAccessWriteFifo;
+
+typedef struct packed
+{
+	logic [(($bits(PartialPortOut_WriteFifo_ReqWrite)) - 1):0] req_write;
+	logic [(($bits(PartialPortOut_WriteFifo_ToMemoryBusGuard)) - 1):0]
+		to_memory_bus_guard;
+} PortOut_MemoryAccessWriteFifo;
+
+endpackage : PkgSnow64MemoryAccessFifo
 
 
 
@@ -4757,6 +5000,19 @@ endmodule
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// src__slash__snow64_instr_cache_defines_header_sv
 
 
@@ -5259,6 +5515,17 @@ endmodule
 //
 //
 //endmodule
+
+//`ifdef SVFORMAL
+//module TestMemAccess(input logic clk,
+//	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] in_data,
+//
+//	output logic out_req_wr,
+//	output logic [`MSB_POS__SNOW64_CPU_ADDR:0] out_addr,
+//	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_data);
+//
+//endmodule
+//`endif		// SVFORMAL
 
 
 
@@ -7608,74 +7875,6 @@ module Snow64Cpu(input logic clk,
 
 	//assign out.test = __out_test;
 
-	PkgSnow64Cpu::PartialPortIn_Cpu_Interrupt real_in_interrupt;
-	assign real_in_interrupt = in.interrupt;
-
-	wire __in_interrupt__req = real_in_interrupt.req;
-
-
-
-	PkgSnow64Cpu::PartialPortIn_Cpu_ExtDataAccess
-		real_in_ext_dat_acc_mem, real_in_ext_dat_acc_port_mapped_io;
-	assign real_in_ext_dat_acc_mem
-		= in.ext_dat_acc_mem;
-	assign real_in_ext_dat_acc_port_mapped_io
-		= in.ext_dat_acc_port_mapped_io;
-
-	wire __in_ext_dat_acc_mem__busy
-		= real_in_ext_dat_acc_mem.busy,
-		__in_ext_dat_acc_port_mapped_io__busy 
-		= real_in_ext_dat_acc_port_mapped_io.busy;
-
-	wire [
-	((256) - 1):0]
-		__in_ext_dat_acc_mem__data
-		= real_in_ext_dat_acc_mem.data,
-		__in_ext_dat_acc_port_mapped_io__data 
-		= real_in_ext_dat_acc_port_mapped_io.data;
-
-
-
-
-	PkgSnow64Cpu::PartialPortOut_Cpu_ExtDataAccess
-		real_out_ext_dat_acc_mem, real_out_ext_dat_acc_port_mapped_io;
-	assign out.ext_dat_acc_mem
-		= real_out_ext_dat_acc_mem;
-	assign out.ext_dat_acc_port_mapped_io
-		= real_out_ext_dat_acc_port_mapped_io;
-
-
-	logic __out_ext_dat_acc_mem__req,
-		__out_ext_dat_acc_port_mapped_io__req;
-	assign real_out_ext_dat_acc_mem.req
-		= __out_ext_dat_acc_mem__req;
-	assign real_out_ext_dat_acc_port_mapped_io.req
-		= __out_ext_dat_acc_port_mapped_io__req;
-
-
-	PkgSnow64Cpu::ExtDataAccessType __out_ext_dat_acc_mem__access_type,
-		__out_ext_dat_acc_port_mapped_io__access_type;
-	assign real_out_ext_dat_acc_mem.access_type
-		= __out_ext_dat_acc_mem__access_type;
-	assign real_out_ext_dat_acc_port_mapped_io.access_type
-		= __out_ext_dat_acc_port_mapped_io__access_type;
-
-	logic [((64) - 1):0]
-		__out_ext_dat_acc_mem__addr,
-		__out_ext_dat_acc_port_mapped_io__addr;
-	assign real_out_ext_dat_acc_mem.addr
-		= __out_ext_dat_acc_mem__addr;
-	assign real_out_ext_dat_acc_port_mapped_io.addr
-		= __out_ext_dat_acc_port_mapped_io__addr;
-
-	logic [
-	((256) - 1):0]
-		__out_ext_dat_acc_mem__data,
-		__out_ext_dat_acc_port_mapped_io__data;
-	assign real_out_ext_dat_acc_mem.data
-		= __out_ext_dat_acc_mem__data;
-	assign real_out_ext_dat_acc_port_mapped_io.data
-		= __out_ext_dat_acc_port_mapped_io__data;
 
 endmodule
 
@@ -9285,8 +9484,8 @@ module Snow64BFloat16Fpu(input logic clk,
 
 	Snow64BFloat16Add __inst_submodule_add(.clk(clk),
 		.in(__in_submodule_add), .out(__out_submodule_add));
-	Snow64BFloat16Slt __inst_submodule_slt(.in(__in_submodule_slt),
-		.out(__out_submodule_slt));
+	Snow64BFloat16Slt __inst_submodule_slt(.clk(clk),
+		.in(__in_submodule_slt), .out(__out_submodule_slt));
 	Snow64BFloat16Mul __inst_submodule_mul(.clk(clk),
 		.in(__in_submodule_mul), .out(__out_submodule_mul));
 	Snow64BFloat16Div __inst_submodule_div(.clk(clk),
@@ -9480,6 +9679,19 @@ endmodule
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// src__slash__snow64_instr_cache_defines_header_sv
 
 
@@ -9502,7 +9714,7 @@ module Snow64InstrCache(input logic clk,
 		= 
 	((
 	$clog2(
-	((1 << 15)
+	((1 << 9)
 	/ (256 / 8)))) - 1);
 	localparam __MSB_POS__EFFECTIVE_ADDR__TAG
 		= 
@@ -9510,7 +9722,7 @@ module Snow64InstrCache(input logic clk,
 	(64
 	- 
 	$clog2(
-	((1 << 15)
+	((1 << 9)
 	/ (256 / 8)))
 	- 
 	($clog2(
@@ -9518,12 +9730,19 @@ module Snow64InstrCache(input logic clk,
 	/ 32)))
 	- 
 	$clog2(32 / 8))) - 1);
+
+	localparam __WIDTH__EFFECTIVE_ADDR__LINE_INDEX
+		= 
+	($clog2(
+	(256
+	/ 32)));
 	localparam __MSB_POS__EFFECTIVE_ADDR__LINE_INDEX
 		= 
 	((
 	($clog2(
 	(256
 	/ 32)))) - 1);
+
 	//localparam __MSB_POS__LINE_BYTE_INDEX
 	//	= `MSB_POS__SNOW64_ICACHE_LINE_BYTE_INDEX;
 	localparam __MSB_POS__EFFECTIVE_ADDR__DONT_CARE
@@ -9565,6 +9784,9 @@ module Snow64InstrCache(input logic clk,
 	logic [__MSB_POS__LINE_PACKED_OUTER_DIM:0]
 		[__MSB_POS__LINE_PACKED_INNER_DIM:0]
 		__lines_arr[__ARR_SIZE__NUM_LINES];
+	wire [__MSB_POS__LINE_PACKED_OUTER_DIM:0]
+		[__MSB_POS__LINE_PACKED_INNER_DIM:0] __in_mem_access__data
+		= real_in_mem_access.data;
 
 	PkgSnow64InstrCache::Tag __tags_arr[__ARR_SIZE__NUM_LINES];
 	logic __valid_flags_arr[__ARR_SIZE__NUM_LINES];
@@ -9581,55 +9803,55 @@ module Snow64InstrCache(input logic clk,
 
 
 	
+	localparam __ENUM__STATE__IDLE = PkgSnow64InstrCache::StIdle;
+	localparam __ENUM__STATE__WAIT_FOR_MEM
+		= PkgSnow64InstrCache::StWaitForMem;
+
+	logic [__MSB_POS__LINE_PACKED_OUTER_DIM:0]
+		[__MSB_POS__LINE_PACKED_INNER_DIM:0]
+		__debug_lines_arr[__ARR_SIZE__NUM_LINES];
+
+	PkgSnow64InstrCache::Tag __debug_tags_arr[__ARR_SIZE__NUM_LINES];
+	logic __debug_valid_flags_arr[__ARR_SIZE__NUM_LINES];
+
+	always @(posedge clk)
+	begin
+		integer i;
+		for (i=0; i<__ARR_SIZE__NUM_LINES; i=i+1)
+		begin
+			__debug_lines_arr[i] <= __lines_arr[i];
+			__debug_tags_arr[i] <= __tags_arr[i];
+			__debug_valid_flags_arr[i] <= __valid_flags_arr[i];
+		end
+	end
 
 
+	wire __formal__in_req_read__req = real_in_req_read.req;
+	wire [((64) - 1):0] __formal__in_req_read__addr 
+		= real_in_req_read.addr;
 
+	wire __formal__in_mem_access__valid = real_in_mem_access.valid;
+	wire [__MSB_POS__LINE_DATA:0] __formal__in_mem_access__data
+		= real_in_mem_access.data;
 
+	wire [__MSB_POS__EFFECTIVE_ADDR__TAG:0]
+		__formal__in_req_read__effective_addr__tag
+		= __in_req_read__effective_addr.tag;
+	wire [__MSB_POS__EFFECTIVE_ADDR__ARR_INDEX:0]
+		__formal__in_req_read__effective_addr__arr_index
+		= __in_req_read__effective_addr.arr_index;
+	wire [__MSB_POS__EFFECTIVE_ADDR__LINE_INDEX:0]
+		__formal__in_req_read__effective_addr__line_index
+		= __in_req_read__effective_addr.line_index;
 
+	wire __formal__out_req_read__valid = real_out_req_read.valid;
+	wire [((32) - 1):0] __formal__out_req_read__instr
+		= real_out_req_read.instr;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		// FORMAL
+	wire __formal__out_mem_access__req = real_out_mem_access.req;
+	wire [((64) - 1):0] __formal__out_mem_access__addr
+		= real_out_mem_access.addr;
+			// FORMAL
 
 	initial
 	begin
@@ -9680,10 +9902,60 @@ module Snow64InstrCache(input logic clk,
 		__valid_flags_arr[__in_req_read__effective_addr.arr_index])
 				begin
 					real_out_req_read.valid <= 1;
-					real_out_req_read.instr
-						<= 
-		__lines_arr[__in_req_read__effective_addr.arr_index]
-						[__in_req_read__effective_addr.line_index];
+
+					//real_out_req_read.instr
+					//	<= `CURR_CONTAINED_LINE
+					//	[__in_req_read__effective_addr.line_index];
+					case (__in_req_read__effective_addr.line_index)
+					0:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][0];
+					end
+					1:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][1];
+					end
+					2:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][2];
+					end
+					3:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][3];
+					end
+					4:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][4];
+					end
+					5:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][5];
+					end
+					6:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][6];
+					end
+					7:
+					begin
+						real_out_req_read.instr
+							<= 
+		__lines_arr[__in_req_read__effective_addr.arr_index][7];
+					end
+					endcase
 
 					real_out_mem_access.req <= 0;
 				end
@@ -9705,11 +9977,68 @@ module Snow64InstrCache(input logic clk,
 						<= __in_req_read__effective_addr.line_index;
 				end
 			end
+
+			else
+			begin
+				real_out_req_read.valid <= 0;
+			end
 		end
 
 		PkgSnow64InstrCache::StWaitForMem:
 		begin
-			
+			real_out_mem_access.req <= 0;
+
+			if (real_in_mem_access.valid)
+			begin
+				__state <= PkgSnow64InstrCache::StIdle;
+
+				
+		__tags_arr[__captured_in_req_read__effective_addr__arr_index]
+					<= __captured_in_req_read__effective_addr__tag;
+				
+		__valid_flags_arr[__captured_in_req_read__effective_addr__arr_index] <= 1;
+
+				real_out_req_read.valid <= 1;
+
+				//real_out_req_read.instr <= __in_mem_access__data
+				//	[__captured_in_req_read__effective_addr__line_index];
+				case (__captured_in_req_read__effective_addr__line_index)
+				0:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[0];
+				end
+				1:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[1];
+				end
+				2:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[2];
+				end
+				3:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[3];
+				end
+				4:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[4];
+				end
+				5:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[5];
+				end
+				6:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[6];
+				end
+				7:
+				begin
+					real_out_req_read.instr <= __in_mem_access__data[7];
+				end
+				endcase
+				
+		__lines_arr[__captured_in_req_read__effective_addr__arr_index] <= real_in_mem_access.data;
+			end
 		end
 		endcase
 	end
@@ -10868,20 +11197,20 @@ module Snow64MemoryBusGuard(input logic clk,
 
 
 	
+	localparam __ENUM__REQUEST_TYPE__NONE
+		= PkgSnow64MemoryBusGuard::ReqTypNone;
+	localparam __ENUM__REQUEST_TYPE__READ_INSTR
+		= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
+	localparam __ENUM__REQUEST_TYPE__READ_DATA
+		= PkgSnow64MemoryBusGuard::ReqTypReadData;
+	localparam __ENUM__REQUEST_TYPE__WRITE_DATA
+		= PkgSnow64MemoryBusGuard::ReqTypWriteData;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+	localparam __ENUM__MEM_ACCESS_TYPE__READ
+		= PkgSnow64MemoryBusGuard::MemAccTypRead;
+	localparam __ENUM__MEM_ACCESS_TYPE__WRITE
+		= PkgSnow64MemoryBusGuard::MemAccTypWrite;
+	
 
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_ReqRead
 		real_in_req_read_instr, real_in_req_read_data;
@@ -10924,60 +11253,65 @@ module Snow64MemoryBusGuard(input logic clk,
 
 
 	
+	wire __formal__in_req_read_instr__req
+		= real_in_req_read_instr.req;
+	wire [((64) - 1):0] __formal__in_req_read_instr__addr
+		= real_in_req_read_instr.addr;
+
+	wire __formal__in_req_read_data__req
+		= real_in_req_read_data.req;
+	wire [((64) - 1):0] __formal__in_req_read_data__addr
+		= real_in_req_read_data.addr;
 
 
+	wire __formal__in_req_write_data__req = real_in_req_write_data.req;
+	wire [((64) - 1):0] __formal__in_req_write_data__addr
+		= real_in_req_write_data.addr;
+	wire [
+	((256) - 1):0]
+		__formal__in_req_write_data__data
+		= real_in_req_write_data.data;
 
 
+	wire __formal__in_mem_access__valid = real_in_mem_access.valid;
+
+	wire [
+	((256) - 1):0]
+		__formal__in_mem_access__data
+		= real_in_mem_access.data;
 
 
+	wire __formal__out_req_read_instr__valid
+		= real_out_req_read_instr.valid;
+	wire __formal__out_req_read_instr__cmd_accepted
+		= real_out_req_read_instr.cmd_accepted;
+	wire [
+	((256) - 1):0]
+		__formal__out_req_read_instr__data = real_out_req_read_instr.data;
+
+	wire __formal__out_req_read_data__valid = real_out_req_read_data.valid;
+	wire __formal__out_req_read_data__cmd_accepted
+		= real_out_req_read_data.cmd_accepted;
+	wire [
+	((256) - 1):0]
+		__formal__out_req_read_data__data = real_out_req_read_data.data;
 
 
+	wire __formal__out_req_write_data__valid
+		= real_out_req_write_data.valid;
+	wire __formal__out_req_write_data__cmd_accepted
+		= real_out_req_write_data.cmd_accepted;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		// FORMAL
+	wire __formal__out_mem_access__req = real_out_mem_access.req;
+	wire [((64) - 1):0] __formal__out_mem_access__addr
+		= real_out_mem_access.addr;
+	wire [
+	((256) - 1):0] __formal__out_mem_access__data
+		= real_out_mem_access.data;
+	wire __formal__out_mem_access__mem_acc_type
+		= real_out_mem_access.mem_acc_type;
+			// FORMAL
 
 	// Basically the "global valid signal" method of stalling.
 	// This is used for simplicity, and because this pipeline will never
@@ -11330,68 +11664,67 @@ module Snow64LarFile(input logic clk,
 	import PkgSnow64LarFile::LarDirty;
 
 	
-	localparam __ARR_SIZE__NUM_LARS = 16;
-	localparam __LAST_INDEX__NUM_LARS 
-		= 
-	((16) - 1);
+
+
+
+ // if defined(FORMAL)
+		
+		// Verify the LAR file when there are only Four LARs 
+		localparam __ARR_SIZE__NUM_LARS = 4;
+		
+
+
+		// SMALL_LAR_FILE
+		localparam __LAST_INDEX__NUM_LARS
+			= ((__ARR_SIZE__NUM_LARS) - 1);
+	 // FORMAL
+
+
 	
+	// Mostly ALU/FPU operations.
+	localparam __ENUM__WRITE_TYPE__ONLY_DATA 
+		= PkgSnow64LarFile::WriteTypOnlyData;
 
+	// Used for port-mapped input instructions
+	localparam __ENUM__WRITE_TYPE__DATA_AND_TYPE
+		= PkgSnow64LarFile::WriteTypDataAndType;
 
+	// Used for load and store instructions.
+	localparam __ENUM__WRITE_TYPE__LD = PkgSnow64LarFile::WriteTypLd;
+	localparam __ENUM__WRITE_TYPE__ST = PkgSnow64LarFile::WriteTypSt;
 
+	localparam __ENUM__WRITE_STATE__IDLE
+		= PkgSnow64LarFile::WrStIdle;
+	localparam __ENUM__WRITE_STATE__START_LD_ST
+		= PkgSnow64LarFile::WrStStartLdSt;
+	localparam __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_READ
+		= PkgSnow64LarFile::WrStWaitForJustMemRead;
+	localparam __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE
+		= PkgSnow64LarFile::WrStWaitForJustMemWrite;
 
+	localparam __ENUM__WRITE_STATE__WAIT_FOR_MEM_READ_AND_MEM_WRITE
+		= PkgSnow64LarFile::WrStWaitForMemReadAndMemWrite;
+	localparam __ENUM__WRITE_STATE__BAD_0
+		= PkgSnow64LarFile::WrStBad0;
+	localparam __ENUM__WRITE_STATE__BAD_1
+		= PkgSnow64LarFile::WrStBad1;
+	localparam __ENUM__WRITE_STATE__BAD_2
+		= PkgSnow64LarFile::WrStBad2;
 
+	localparam __ENUM__DATA_TYPE__UNSGN_INT
+		= PkgSnow64Cpu::DataTypUnsgnInt;
+	localparam __ENUM__DATA_TYPE__SGN_INT
+		= PkgSnow64Cpu::DataTypSgnInt;
+	localparam __ENUM__DATA_TYPE__BFLOAT16
+		= PkgSnow64Cpu::DataTypBFloat16;
+	localparam __ENUM__DATA_TYPE__RESERVED
+		= PkgSnow64Cpu::DataTypReserved;
 
-
-
-
- // FORMAL
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		// FORMAL
+	localparam __ENUM__INT_TYPE_SIZE__8 = PkgSnow64Cpu::IntTypSz8;
+	localparam __ENUM__INT_TYPE_SIZE__16 = PkgSnow64Cpu::IntTypSz16;
+	localparam __ENUM__INT_TYPE_SIZE__32 = PkgSnow64Cpu::IntTypSz32;
+	localparam __ENUM__INT_TYPE_SIZE__64 = PkgSnow64Cpu::IntTypSz64;
+			// FORMAL
 
 	localparam __UNALLOCATED_TAG = 0;
 
@@ -11549,97 +11882,121 @@ module Snow64LarFile(input logic clk,
 		= real_in_wr.index[__MSB_POS__METADATA__TAG:0];
 
 	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		// FORMAL
+	//wire __formal__in_ctrl__mem_bus_guard_instr_load_busy
+	//	= real_in_ctrl.mem_bus_guard_instr_load_busy;
+	wire __formal__in_ctrl__mem_bus_guard_busy 
+		= real_in_ctrl.mem_bus_guard_busy;
+
+	wire [__MSB_POS__METADATA__TAG:0] 
+		__formal__in_rd_a__index
+		= real_in_rd_a.index[__MSB_POS__METADATA__TAG:0],
+		__formal__in_rd_b__index
+		= real_in_rd_b.index[__MSB_POS__METADATA__TAG:0],
+		__formal__in_rd_c__index
+		= real_in_rd_c.index[__MSB_POS__METADATA__TAG:0];
+
+	wire __formal__in_wr__req = real_in_wr.req;
+	wire [
+	((2) - 1):0]
+		__formal__in_wr__write_type = real_in_wr.write_type;
+
+	wire [__MSB_POS__METADATA__TAG:0] __formal__in_wr__index
+		= __in_wr__index;
+
+	wire [
+	((256) - 1):0]
+		__formal__in_wr__data = real_in_wr.data;
+	wire [((64) - 1):0]
+		__formal__in_wr__addr = real_in_wr.addr;
+	wire [
+	((2) - 1):0]
+		__formal__in_wr__data_type = real_in_wr.data_type;
+	wire [
+	((2) - 1):0]
+		__formal__in_wr__int_type_size = real_in_wr.int_type_size;
+
+
+	wire __formal__in_mem_read__valid = real_in_mem_read.valid;
+	wire __formal__in_mem_read__busy = real_in_mem_read.busy;
+	wire [
+	((256) - 1):0]
+		__formal__in_mem_read__data = real_in_mem_read.data;
+
+	wire __formal__in_mem_write__valid = real_in_mem_write.valid;
+	wire __formal__in_mem_write__busy = real_in_mem_write.busy;
+
+
+
+	wire [
+	((256) - 1):0] 
+		__formal__out_rd_a__data = real_out_rd_a.data;
+	wire [
+	((256) - 1):0] 
+		__formal__out_rd_b__data = real_out_rd_b.data;
+	wire [
+	((256) - 1):0] 
+		__formal__out_rd_c__data = real_out_rd_c.data;
+
+	wire [((64) - 1):0]
+		__formal__out_rd_a__addr = real_out_rd_a.addr;
+	wire [((64) - 1):0]
+		__formal__out_rd_b__addr = real_out_rd_b.addr;
+	wire [((64) - 1):0]
+		__formal__out_rd_c__addr = real_out_rd_c.addr;
+
+	wire [
+	((4) - 1):0]
+		__formal__out_rd_a__tag = real_out_rd_a.tag;
+	wire [
+	((4) - 1):0]
+		__formal__out_rd_b__tag = real_out_rd_b.tag;
+	wire [
+	((4) - 1):0]
+		__formal__out_rd_c__tag = real_out_rd_c.tag;
+
+	wire [
+	((2) - 1):0]
+		__formal__out_rd_a__data_type = real_out_rd_a.data_type;
+	wire [
+	((2) - 1):0]
+		__formal__out_rd_b__data_type = real_out_rd_b.data_type;
+	wire [
+	((2) - 1):0]
+		__formal__out_rd_c__data_type = real_out_rd_c.data_type;
+
+	wire [
+	((2) - 1):0]
+		__formal__out_rd_a__int_type_size = real_out_rd_a.int_type_size;
+	wire [
+	((2) - 1):0]
+		__formal__out_rd_b__int_type_size = real_out_rd_b.int_type_size;
+	wire [
+	((2) - 1):0]
+		__formal__out_rd_c__int_type_size = real_out_rd_c.int_type_size;
+
+	wire __formal__out_mem_read__req = real_out_mem_read.req;
+
+	wire [
+	((
+	
+	(64 - 5)) - 1):0]
+		__formal__out_mem_read__base_addr = real_out_mem_read.base_addr;
+
+	wire __formal__out_mem_write__req = real_out_mem_write.req;
+
+	wire [
+	((256) - 1):0] __formal__out_mem_write__data
+		= real_out_mem_write.data;
+
+	wire [
+	((
+	
+	(64 - 5)) - 1):0]
+		__formal__out_mem_write__base_addr
+		= real_out_mem_write.base_addr;
+
+	wire __formal__out_wait_for_me__busy = real_out_wait_for_me.busy;
+			// FORMAL
 
 	assign real_out_wait_for_me.busy
 		= (__wr_state != PkgSnow64LarFile::WrStIdle);
@@ -11649,30 +12006,30 @@ module Snow64LarFile(input logic clk,
 	logic [__MSB_POS__METADATA__DATA_INDEX : 0]
 		__lar_metadata__data_index[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__METADATA__DATA_INDEX : 0]
+		__debug_lar_metadata__data_index[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 	logic [__MSB_POS__METADATA__TAG : 0]
 		__lar_metadata__tag[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__METADATA__TAG : 0]
+		__debug_lar_metadata__tag[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 	logic [__MSB_POS__METADATA__DATA_TYPE : 0]
 		__lar_metadata__data_type[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__METADATA__DATA_TYPE : 0]
+		__debug_lar_metadata__data_type[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 	logic [__MSB_POS__METADATA__INT_TYPE_SIZE : 0]
 		__lar_metadata__int_type_size[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__METADATA__INT_TYPE_SIZE : 0]
+		__debug_lar_metadata__int_type_size[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 
 	//logic [__MSB_POS__SHAREDDATA:0] __lar_shareddata
@@ -11680,58 +12037,58 @@ module Snow64LarFile(input logic clk,
 	logic [__MSB_POS__SHAREDDATA__BASE_ADDR : 0]
 		__lar_shareddata__base_addr[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__SHAREDDATA__BASE_ADDR : 0]
+		__debug_lar_shareddata__base_addr[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 	logic [__MSB_POS__SHAREDDATA__DATA : 0]
 		__lar_shareddata__data[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__SHAREDDATA__DATA : 0]
+		__debug_lar_shareddata__data[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 	logic [__MSB_POS__SHAREDDATA__REF_COUNT : 0]
 		__lar_shareddata__ref_count[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__SHAREDDATA__REF_COUNT : 0]
+		__debug_lar_shareddata__ref_count[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 	logic [__MSB_POS__SHAREDDATA__DIRTY : 0]
 		__lar_shareddata__dirty[__ARR_SIZE__NUM_LARS];
 	
-
-
-		// FORMAL
+	logic [__MSB_POS__SHAREDDATA__DIRTY : 0]
+		__debug_lar_shareddata__dirty[__ARR_SIZE__NUM_LARS];
+			// FORMAL
 
 	
+	always_ff @(posedge clk)
+	begin
+		integer i;
 
+		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			__debug_lar_metadata__data_index[i]
+				<= __lar_metadata__data_index[i];
+			__debug_lar_metadata__tag[i]
+				<= __lar_metadata__tag[i];
+			__debug_lar_metadata__data_type[i]
+				<= __lar_metadata__data_type[i];
+			__debug_lar_metadata__int_type_size[i]
+				<= __lar_metadata__int_type_size[i];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		// FORMAL
+			__debug_lar_shareddata__base_addr[i]
+				<= __lar_shareddata__base_addr[i];
+			__debug_lar_shareddata__data[i]
+				<= __lar_shareddata__data[i];
+			__debug_lar_shareddata__ref_count[i]
+				<= __lar_shareddata__ref_count[i];
+			__debug_lar_shareddata__dirty[i]
+				<= __lar_shareddata__dirty[i];
+		end
+	end
+			// FORMAL
 
 
 	// Used for allocating/deallocating shared data.
@@ -11749,16 +12106,16 @@ module Snow64LarFile(input logic clk,
 		__tag_search_final, __captured_tag_search_final;
 
 	
+	logic __found_tag;
+	//logic __eek;
+	logic [__MSB_POS__METADATA__TAG : 0] __debug_tag_search_final;
 
-
-
-
-
-
-
-
-
-		// FORMAL
+	initial
+	begin
+		__debug_tag_search_final = 0;
+		__found_tag = 0;
+	end
+			// FORMAL
 
 
 	//`define TAG(index) __lar_metadata[index] `METADATA__TAG
@@ -12342,91 +12699,19 @@ module Snow64LarFile(input logic clk,
 		? 3 : 0);
 
 	
-	assign __tag_search_1 = 
-		((
-		__lar_shareddata__ref_count[4]
-		&& (
-		__lar_shareddata__base_addr[4]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 4 : 0) | 
-		((
-		__lar_shareddata__ref_count[5]
-		&& (
-		__lar_shareddata__base_addr[5]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 5 : 0)
-		| 
-		((
-		__lar_shareddata__ref_count[6]
-		&& (
-		__lar_shareddata__base_addr[6]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 6 : 0) | 
-		((
-		__lar_shareddata__ref_count[7]
-		&& (
-		__lar_shareddata__base_addr[7]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 7 : 0);
-
-	assign __tag_search_2 = 
-		((
-		__lar_shareddata__ref_count[8]
-		&& (
-		__lar_shareddata__base_addr[8]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 8 : 0) | 
-		((
-		__lar_shareddata__ref_count[9]
-		&& (
-		__lar_shareddata__base_addr[9]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 9 : 0)
-		| 
-		((
-		__lar_shareddata__ref_count[10]
-		&& (
-		__lar_shareddata__base_addr[10]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 10 : 0) | 
-		((
-		__lar_shareddata__ref_count[11]
-		&& (
-		__lar_shareddata__base_addr[11]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 11 : 0);
-
-	assign __tag_search_3 = 
-		((
-		__lar_shareddata__ref_count[12]
-		&& (
-		__lar_shareddata__base_addr[12]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 12 : 0) | 
-		((
-		__lar_shareddata__ref_count[13]
-		&& (
-		__lar_shareddata__base_addr[13]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 13 : 0)
-		| 
-		((
-		__lar_shareddata__ref_count[14]
-		&& (
-		__lar_shareddata__base_addr[14]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 14 : 0) | 
-		((
-		__lar_shareddata__ref_count[15]
-		&& (
-		__lar_shareddata__base_addr[15]
-		== __in_wr__incoming_base_addr.base_addr))
-		? 15 : 0);
-	
 
 
 
-		// if !defined(SMALL_LAR_FILE)
+
+
+
+
+
+
+	assign __tag_search_1 = 0;
+	assign __tag_search_2 = 0;
+	assign __tag_search_3 = 0;
+			// if !defined(SMALL_LAR_FILE)
 
 	assign __tag_search_final = __tag_search_0 | __tag_search_1
 		| __tag_search_2 | __tag_search_3;
@@ -12575,9 +12860,9 @@ module Snow64LarFile(input logic clk,
 
 
 					
-
-
-		// FORMAL
+					__debug_tag_search_final <= 0;
+					__found_tag <= 0;
+							// FORMAL
 				end
 
 				// Used for port-mapped input instructions
@@ -12713,9 +12998,9 @@ module Snow64LarFile(input logic clk,
 
 
 					
-
-
-		// FORMAL
+					__debug_tag_search_final <= 0;
+					__found_tag <= 0;
+							// FORMAL
 				end
 
 				// PkgSnow64LarFile::WriteTypLd or
@@ -12736,9 +13021,9 @@ module Snow64LarFile(input logic clk,
 					__captured_tag_search_final <= __tag_search_final;
 
 					
-
-
-		// FORMAL
+					__debug_tag_search_final <= __tag_search_final;
+					__found_tag <= __tag_search_final != 0;
+							// FORMAL
 
 					case (real_in_wr.data_type)
 					PkgSnow64Cpu::DataTypBFloat16:
@@ -13414,6 +13699,1478 @@ module Snow64LarFile(input logic clk,
 
 	
 
+
+	
+	localparam __INCOMING_BASE_ADDR__INDEX_HI = 63;
+	localparam __INCOMING_BASE_ADDR__INDEX_LO = 5;
+
+	
+	
+
+	
+	
+
+	
+	
+	
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+
+
+	
+
+	
+
+	
+
+	
+
+
+
+	integer i, j;
+	(* keep *) logic [__MSB_POS__METADATA__TAG:0]
+		__total_num_references;
+		
+	(* keep *) logic [__MSB_POS__METADATA__TAG:0]
+		__curr_num_references;
+
+	(* keep *) logic [__MSB_POS__METADATA__TAG:0]
+		__num_unique_tags;
+	//(* keep *) logic __no_unique_tags;
+
+	(* keep *) logic __found_unique_tag;
+	(* keep *) logic __found_tag_in_stack;
+	(* keep *) logic __found_tag_outside_stack;
+
+	//(* keep *) logic [__MSB_POS__METADATA__TAG:0]
+	//	__unique_tags[0 : __LAST_INDEX__NUM_LARS];
+	(* keep *) logic __unique_tags[0 : __LAST_INDEX__NUM_LARS];
+
+	(* keep *) logic [__MSB_POS__METADATA__TAG:0]
+		__found_tags_per_ref[0 : __LAST_INDEX__NUM_LARS];
+
+	(* keep *) logic __tags_that_should_be_in_stack
+		[0 : __LAST_INDEX__NUM_LARS];
+
+	//logic __tag_was_changed_to_nonzero[0 : __LAST_INDEX__NUM_LARS];
+	//logic __curr_tag_stack_index_was_decremented;
+	(* keep *) logic __did_init;
+
+	//logic __did_find_mem_write;
+
+
+	//logic [1:0] __debug_lar_metadata__data_type [0:15];
+	//logic [1:0] __debug_lar_metadata__int_type_size [0:15];
+	//logic [3:0] __debug_lar_metadata__tag [0:15];
+	//logic [63:0] __debug_lar_metadata__whole_addr [0:15];
+	//logic [58:0] __debug_lar_shareddata__base_addr [0:15];
+	//logic [255:0] __debug_lar_shareddata__data [0:15];
+	//logic __debug_lar_shareddata__dirty [0:15];
+	//logic [3:0] __debug_lar_shareddata__ref_count [0:15];
+	//logic [3:0] __debug_lar_tag_stack [0:15];
+
+	task formal_shared_init;
+		assume(real_in_ctrl == 0);
+		assume(real_in_rd_a == 0);
+		assume(real_in_rd_b == 0);
+		assume(real_in_rd_c == 0);
+		assume(real_in_wr == 0);
+		assume(real_in_mem_read == 0);
+		assume(real_in_mem_write == 0);
+
+		//assert(__eek == 0);
+		//assert(__found == 0);
+
+		//assert(__curr_tag_stack_index_was_decremented == 0);
+		assert(__curr_tag_stack_index == __LAST_INDEX__NUM_LARS);
+
+		assert({__formal__out_rd_a__data, __formal__out_rd_b__data,
+			__formal__out_rd_c__data} == 0);
+		assert({__formal__out_rd_a__addr, __formal__out_rd_b__addr,
+			__formal__out_rd_c__addr} == 0);
+		assert({__formal__out_rd_a__tag, __formal__out_rd_b__tag,
+			__formal__out_rd_c__tag} == 0);
+		assert({__formal__out_rd_a__data_type,
+			__formal__out_rd_b__data_type, __formal__out_rd_c__data_type}
+			== 0);
+		assert({__formal__out_rd_a__int_type_size,
+			__formal__out_rd_b__int_type_size,
+			__formal__out_rd_c__int_type_size} == 0);
+		assert(__formal__out_mem_read__req == 0);
+		assert(__formal__out_mem_read__base_addr == 0);
+		assert(__formal__out_mem_write__req == 0);
+		assert(__formal__out_mem_write__data == 0);
+		assert(__formal__out_mem_write__base_addr == 0);
+		assert(__formal__out_wait_for_me__busy == 0);
+
+		assert(__found_tag == 0);
+		assert(__debug_tag_search_final == 0);
+		assert(__wr_state == 0);
+		assert(__captured_in_wr__index == 0);
+		assert(__captured_in_wr__data_type == 0);
+		assert(__captured_in_wr__int_type_size == 0);
+		assert(__captured_in_wr__base_addr == 0);
+		assert(__captured_in_wr__write_type == 0);
+		assert(__captured_in_mem_read__valid == 0);
+		assert(__captured_in_mem_write__valid == 0);
+		assert(__captured_tag_search_final == 0);
+	endtask
+
+	initial
+	begin
+		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			//__tag_was_changed_to_nonzero[i] = 0;
+			//assert(__tag_was_changed_to_nonzero[i] == 0);
+			assert(__lar_metadata__data_index[i] == 0);
+			assert(__lar_metadata__tag[i] == 0);
+			assert(__lar_metadata__data_type[i] == 0);
+			assert(__lar_metadata__int_type_size[i] == 0);
+			assert(__lar_shareddata__base_addr[i] == 0);
+			assert(__lar_shareddata__data[i] == 0);
+			assert(__lar_shareddata__ref_count[i] == 0);
+			assert(__lar_shareddata__dirty[i] == 0);
+			assert(__lar_tag_stack[i] == i);
+			//assert(__found_indices[i] == 0);
+		end
+
+		__did_init = 0;
+		assert(__did_init == 0);
+
+		formal_shared_init();
+	end
+
+	//always @(*)
+	always @(posedge clk)
+	begin
+
+	if (!__did_init)
+	begin
+		__did_init = 1;
+		assert(__did_init == 1);
+
+		formal_shared_init();
+	end
+
+	else // if (__did_init)
+	begin
+		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			if (__lar_shareddata__ref_count[i] == 0)
+			begin
+				assert(__lar_shareddata__base_addr[i] == 0);
+			end
+
+			else // if (__lar_shareddata__ref_count[i] != 0)
+			begin
+				for (j=0; j<__ARR_SIZE__NUM_LARS; j=j+1)
+				begin
+					if ((__lar_shareddata__ref_count[j] != 0)
+						&& (i != j))
+					begin
+						assert(__lar_shareddata__base_addr[i]
+							!= __lar_shareddata__base_addr[j]);
+					end
+				end
+			end
+		end
+
+		// Check the memory access stuff.
+		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			// We should REALLY be in a state where we're trying to write
+			// our old data back to memory.
+
+			// Here is the case where we found the tag we were looking for,
+			// and we also deallocated our old one.
+			if (($past(__lar_shareddata__ref_count[i]) != 0)
+				&& (__lar_shareddata__ref_count[i] == 0))
+			begin
+				assert($past(__wr_state)
+					== __ENUM__WRITE_STATE__START_LD_ST);
+
+				// We had to have found a tag for this situation to occur.
+				assert(__captured_tag_search_final != 0);
+
+				assert(__curr_tag_stack_index
+					== ($past(__curr_tag_stack_index) + 1));
+				assert(__lar_tag_stack[__curr_tag_stack_index] == i);
+
+				// If we deallocated a tag, that means there had to have
+				// been only one reference.
+				assert($past(__lar_shareddata__ref_count[i]) == 1);
+
+				// Deallocation means that, if our data is dirty, it should
+				// be sent back to main memory.
+				if ($past(__lar_shareddata__dirty[i]))
+				begin
+					// We definitely need to be requesting a write.
+					assert(__formal__out_mem_write__req);
+					assert(__formal__out_mem_write__data
+						== $past(__lar_shareddata__data[i]));
+					assert(__formal__out_mem_write__base_addr
+						== $past(__lar_shareddata__base_addr[i]));
+
+					// If there was a "hit" that also caused us to
+					// deallocate a piece of shared data, we won't need to
+					// read from memory, just 
+					assert(__wr_state
+						== __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE);
+				end
+
+				else // if (!$past(__lar_shareddata__dirty[i]))
+				begin
+					assert(__wr_state == __ENUM__WRITE_STATE__IDLE);
+				end
+			end
+
+			// We changed our address, but our reference count didn't
+			// change.  This is a very special situation, as it means we
+			// were the only reference, but we also changed our address (as
+			// well as our data to that of the new address).
+			if (($past(__lar_shareddata__ref_count[i]) == 1)
+				&& (__lar_shareddata__ref_count[i] == 1)
+				&& !$stable(__lar_shareddata__base_addr[i]))
+			begin
+				// For this to have happened, we need to have NOT found a
+				// tag, and the tag stack needs to have remained constant.
+				assert(__captured_tag_search_final == 0);
+
+				assert($stable(__curr_tag_stack_index));
+
+				for (j=0; j<__ARR_SIZE__NUM_LARS; j=j+1)
+				begin
+					assert($stable(__lar_tag_stack[j]));
+				end
+
+				assert($past(__wr_state)
+					== __ENUM__WRITE_STATE__START_LD_ST);
+
+				if ($past(__lar_shareddata__dirty[i]))
+				begin
+					if (__captured_in_wr__write_type
+						== __ENUM__WRITE_TYPE__LD)
+					begin
+						assert(__wr_state
+							> __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_READ);
+						assert(__wr_state
+							> __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE);
+					end
+
+					else // if (__captured_in_wr__write_type
+						// == __ENUM__WRITE_TYPE__ST)
+					begin
+						assert(__wr_state
+							==
+							__ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE);
+					end
+				end
+
+				else // if (!$past(__lar_shareddata__dirty[i]))
+				begin
+					if (__captured_in_wr__write_type
+						== __ENUM__WRITE_TYPE__LD)
+					begin
+						assert(__wr_state
+							==
+							__ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_READ);
+					end
+
+					else // if (__captured_in_wr__write_type
+						// == __ENUM__WRITE_TYPE__ST)
+					begin
+
+						assert(__wr_state
+							== __ENUM__WRITE_STATE__IDLE);
+					end
+				end
+			end
+
+		end
+
+		case (__wr_state)
+		__ENUM__WRITE_STATE__IDLE:
+		begin
+			if ($past(__wr_state) == __ENUM__WRITE_STATE__START_LD_ST)
+			begin
+				//assert(__captured_tag_search_final != 0);
+
+				//begin
+				//	for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+				//	begin
+				//		if (i == $past(__lar_metadata__tag
+				//			[__captured_in_wr__index]))
+				//		begin
+				//			assert(__lar_shareddata__dirty[i]);
+				//		end
+
+				//		else
+				//		begin
+				//			assert($stable(__lar_shareddata__dirty[i]));
+				//		end
+				//	end
+				//end
+
+				if (__captured_tag_search_final != 0)
+				begin
+					if (__captured_tag_search_final
+						!= __debug_lar_metadata__tag
+						[__captured_in_wr__index])
+					begin
+						if (__captured_in_wr__write_type
+							== __ENUM__WRITE_TYPE__ST)
+						begin
+							assert(__lar_shareddata__dirty
+								[__captured_tag_search_final]);
+						end
+
+						case(__debug_lar_shareddata__ref_count
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]])
+						0:
+						begin
+							for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+							begin
+								if (i != __captured_tag_search_final)
+								begin
+									assert($stable(__lar_shareddata__dirty
+										[i]));
+								end
+							end
+						end
+
+						1:
+						begin
+							assert(!__debug_lar_shareddata__dirty
+								[__debug_lar_metadata__tag
+								[__captured_in_wr__index]]);
+							assert(!__lar_shareddata__dirty
+								[__debug_lar_metadata__tag
+								[__captured_in_wr__index]]);
+
+							// We deallocated here.
+							for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+							begin
+								if (i == __debug_lar_metadata__tag
+									[__captured_in_wr__index])
+								begin
+									assert(!__lar_shareddata__dirty[i]);
+								end
+								else if (i != __captured_tag_search_final)
+								begin
+									assert($stable(__lar_shareddata__dirty
+										[i]));
+								end
+							end
+						end
+
+						default:
+						begin
+							for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+							begin
+								if (i != __captured_tag_search_final)
+								begin
+									assert($stable(__lar_shareddata__dirty
+										[i]));
+								end
+							end
+						end
+						endcase
+					end
+
+					else // if (__captured_tag_search_final
+						// == __debug_lar_metadata__tag
+						// [__captured_in_wr__index])
+					begin
+						for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+						begin
+							assert($stable(__lar_shareddata__dirty[i]));
+						end
+					end
+				end
+
+				else // if (__captured_tag_search_final == 0)
+				begin
+					// There had to have been a store
+					assert(__captured_in_wr__write_type
+						== __ENUM__WRITE_TYPE__ST);
+
+					case(__debug_lar_shareddata__ref_count
+						[__debug_lar_metadata__tag
+						[__captured_in_wr__index]])
+					0:
+					begin
+						assert(__curr_tag_stack_index
+							== ($past(__curr_tag_stack_index) - 1));
+						assert(__lar_shareddata__ref_count[__lar_tag_stack
+							[__curr_tag_stack_index + 1]] == 1);
+						assert(__lar_shareddata__base_addr
+							[__lar_tag_stack[__curr_tag_stack_index + 1]]
+							== 
+		__captured_in_wr__base_addr
+		[__INCOMING_BASE_ADDR__INDEX_HI : __INCOMING_BASE_ADDR__INDEX_LO]);
+						assert(__lar_metadata__tag[__captured_in_wr__index]
+							== __lar_tag_stack
+							[__curr_tag_stack_index + 1]);
+						assert(__lar_shareddata__dirty
+							[__lar_tag_stack[__curr_tag_stack_index + 1]]);
+						assert(__lar_shareddata__data
+							[__lar_tag_stack[__curr_tag_stack_index + 1]]
+							== 0);
+					end
+
+					1:
+					begin
+						assert(__lar_shareddata__base_addr
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]]
+							== 
+		__captured_in_wr__base_addr
+		[__INCOMING_BASE_ADDR__INDEX_HI : __INCOMING_BASE_ADDR__INDEX_LO]);
+
+						assert(__lar_shareddata__dirty
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]]);
+
+						assert(!__debug_lar_shareddata__dirty
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]]);
+						assert(__lar_shareddata__ref_count
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]] == 1);
+
+						assert($stable(__curr_tag_stack_index));
+					end
+
+					default:
+					begin
+						//assert(__lar_shareddata__dirty
+						//	[__debug_lar_metadata__tag
+						//	[__captured_in_wr__index]]);
+						assert(__lar_shareddata__data[__lar_tag_stack
+							[__curr_tag_stack_index + 1]]
+							== __debug_lar_shareddata__data
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]]);
+						assert(__lar_shareddata__ref_count
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]]
+							== (__debug_lar_shareddata__ref_count
+							[__debug_lar_metadata__tag
+							[__captured_in_wr__index]] - 1));
+
+						assert(__lar_shareddata__ref_count[__lar_tag_stack
+							[__curr_tag_stack_index + 1]] == 1);
+						assert(__lar_shareddata__base_addr
+							[__lar_tag_stack[__curr_tag_stack_index + 1]]
+							== 
+		__captured_in_wr__base_addr
+		[__INCOMING_BASE_ADDR__INDEX_HI : __INCOMING_BASE_ADDR__INDEX_LO]);
+
+						assert(__curr_tag_stack_index
+							== ($past(__curr_tag_stack_index) - 1));
+					end
+					endcase
+				end
+			end
+
+			else if ($past(__wr_state) != __ENUM__WRITE_STATE__IDLE)
+			begin
+				for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+				begin
+					assert($stable(__lar_shareddata__dirty[i]));
+				end
+			end
+
+			else if (($past(__wr_state) == __ENUM__WRITE_STATE__IDLE)
+				&& $past(__formal__in_wr__req)
+				&& ($past(__formal__in_wr__index) != 0))
+			begin
+				for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+				begin
+					if (i == __lar_metadata__tag[__captured_in_wr__index])
+					begin
+						if ((i != 0)
+							&& ($past(__lar_shareddata__data[i])
+							!= $past(__formal__in_wr__data)))
+						begin
+							assert(__lar_shareddata__dirty[i]);
+							//assert(`CURR_SHAREDDATA_TAGGED_DATA(i)
+							//	== $past(__formal__in_wr__data));
+							assert(__lar_shareddata__data[i]
+								== $past(__formal__in_wr__data));
+						end
+
+						else
+						begin
+							assert($stable(__lar_shareddata__dirty[i]));
+							assert($stable(__lar_shareddata__data[i]));
+						end
+					end
+
+					else
+					begin
+						assert($stable(__lar_shareddata__dirty[i]));
+						assert($stable(__lar_shareddata__data[i]));
+					end
+
+					assert($stable(__lar_shareddata__base_addr[i]));
+					assert($stable(__lar_shareddata__ref_count[i]));
+				end
+				for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+				begin
+					assert($stable(__lar_metadata__tag[i]));
+				end
+
+				case (__captured_in_wr__write_type)
+				__ENUM__WRITE_TYPE__ONLY_DATA:
+				begin
+					for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+					begin
+						assert($stable(__lar_metadata__data_index[i]));
+						assert($stable(__lar_metadata__int_type_size[i]));
+						assert($stable(__lar_metadata__data_type[i]));
+					end
+				end
+
+				default:
+				begin
+					assert(__captured_in_wr__write_type
+						== __ENUM__WRITE_TYPE__DATA_AND_TYPE);
+
+					for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+					begin
+						assert(__lar_metadata__data_index[i]
+							<= $past(__lar_metadata__data_index[i]));
+					end
+				end
+				endcase
+			end
+
+			else
+			begin
+				for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+				begin
+					assert($stable(__lar_metadata__tag[i]));
+					assert($stable(__lar_metadata__data_index[i]));
+					assert($stable(__lar_metadata__data_type[i]));
+					assert($stable(__lar_metadata__int_type_size[i]));
+					assert($stable(__lar_shareddata__dirty[i]));
+					assert($stable(__lar_shareddata__data[i]));
+					assert($stable(__lar_shareddata__base_addr[i]));
+					assert($stable(__lar_shareddata__ref_count[i]));
+				end
+			end
+		end
+
+		__ENUM__WRITE_STATE__START_LD_ST:
+		begin
+			for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+			begin
+				assert($stable(__lar_shareddata__dirty[i]));
+			end
+		end
+
+		// Anything where we have to touch memory
+		default:
+		begin
+			if ($past(__wr_state) == __ENUM__WRITE_STATE__START_LD_ST)
+			begin
+				// If we had to touch memory, the index CAN'T have been
+				// index zero.
+				assert(__captured_in_wr__index != 0);
+
+				// We found a tag
+				if (__captured_tag_search_final != 0)
+				begin
+					if (__captured_tag_search_final
+						!= __debug_lar_metadata__tag
+						[__captured_in_wr__index])
+					begin
+						if (__captured_in_wr__write_type
+							== __ENUM__WRITE_TYPE__LD)
+						begin
+							case (__debug_lar_shareddata__ref_count
+								[__debug_lar_metadata__tag
+								[__captured_in_wr__index]])
+							0:
+							begin
+								for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+								begin
+									assert($stable
+										(__lar_shareddata__dirty[i]));
+								end
+							end
+
+							1:
+							begin
+								assert(!__lar_shareddata__dirty
+									[__debug_lar_metadata__tag
+									[__captured_in_wr__index]]);
+
+								for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+								begin
+									if (i != __debug_lar_metadata__tag
+										[__captured_in_wr__index])
+									begin
+										assert($stable
+											(__lar_shareddata__dirty[i]));
+									end
+								end
+							end
+
+							default:
+							begin
+								for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+								begin
+									assert($stable
+										(__lar_shareddata__dirty[i]));
+								end
+							end
+							endcase
+						end
+
+						else // if (__captured_in_wr__write_type
+							// == __ENUM__WRITE_TYPE__ST)
+						begin
+							assert(__lar_shareddata__dirty
+								[__captured_tag_search_final]);
+
+							case (__debug_lar_shareddata__ref_count
+								[__debug_lar_metadata__tag
+								[__captured_in_wr__index]])
+							0:
+							begin
+								for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+								begin
+									if (i != __captured_tag_search_final)
+									begin
+										assert($stable
+											(__lar_shareddata__dirty[i]));
+									end
+								end
+							end
+
+							1:
+							begin
+								assert(!__lar_shareddata__dirty
+									[__debug_lar_metadata__tag
+									[__captured_in_wr__index]]);
+
+								for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+								begin
+									if ((i != __captured_tag_search_final)
+										&& (i != __debug_lar_metadata__tag
+										[__captured_in_wr__index]))
+									begin
+										assert($stable
+											(__lar_shareddata__dirty[i]));
+									end
+								end
+							end
+
+							default:
+							begin
+								for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+								begin
+									if (i != __captured_tag_search_final)
+									begin
+										assert($stable
+											(__lar_shareddata__dirty[i]));
+									end
+								end
+							end
+							endcase
+						end
+					end
+
+					else // if (__captured_tag_search_final
+						// == __debug_lar_metadata__tag
+						// [__captured_in_wr__index])
+					begin
+						for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+						begin
+							assert($stable(__lar_shareddata__dirty[i]));
+						end
+					end
+				end
+
+				else // if (__captured_tag_search_final == 0)
+				begin
+					case (__debug_lar_shareddata__ref_count
+						[__debug_lar_metadata__tag
+						[__captured_in_wr__index]])
+					0:
+					begin
+						assert(__curr_tag_stack_index
+							== ($past(__curr_tag_stack_index) - 1));
+						
+						if (__captured_in_wr__write_type
+							== __ENUM__WRITE_TYPE__LD)
+						begin
+							assert(!__lar_shareddata__dirty
+								[$past(__lar_tag_stack
+								[__curr_tag_stack_index])]);
+						end
+
+						else // if (__captured_in_wr__write_type
+							// == __ENUM__WRITE_TYPE__ST)
+						begin
+							assert(__lar_shareddata__dirty
+								[$past(__lar_tag_stack
+								[__curr_tag_stack_index])]);
+						end
+
+						for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+						begin
+							if (i != $past(__lar_tag_stack
+								[__curr_tag_stack_index]))
+							begin
+								assert($stable(__lar_shareddata__dirty
+									[i]));
+							end
+						end
+					end
+
+					1:
+					begin
+						assert($stable(__curr_tag_stack_index));
+
+						if (__captured_in_wr__write_type
+							== __ENUM__WRITE_TYPE__LD)
+						begin
+							assert(!__lar_shareddata__dirty
+								[__lar_metadata__tag
+								[__captured_in_wr__index]]);
+						end
+
+						else // if (__captured_in_wr__write_type
+							// == __ENUM__WRITE_TYPE__ST)
+						begin
+							assert(__lar_shareddata__dirty
+								[__lar_metadata__tag
+								[__captured_in_wr__index]]);
+						end
+
+						for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+						begin
+							if (i != __lar_metadata__tag
+								[__captured_in_wr__index])
+							begin
+								assert($stable(__lar_shareddata__dirty
+									[i]));
+							end
+						end
+					end
+
+					default:
+					begin
+						assert(__curr_tag_stack_index
+							== ($past(__curr_tag_stack_index) - 1));
+						
+						if (__captured_in_wr__write_type
+							== __ENUM__WRITE_TYPE__LD)
+						begin
+							assert(!__lar_shareddata__dirty
+								[$past(__lar_tag_stack
+								[__curr_tag_stack_index])]);
+						end
+
+						else // if (__captured_in_wr__write_type
+							// == __ENUM__WRITE_TYPE__ST)
+						begin
+							assert(__lar_shareddata__dirty
+								[$past(__lar_tag_stack
+								[__curr_tag_stack_index])]);
+						end
+
+						for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+						begin
+							if (i != $past(__lar_tag_stack
+								[__curr_tag_stack_index]))
+							begin
+								assert($stable(__lar_shareddata__dirty
+									[i]));
+							end
+						end
+					end
+					endcase
+				end
+			end
+
+			else
+			begin
+				for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+				begin
+					assert($stable(__lar_shareddata__dirty[i]));
+				end
+			end
+
+
+			if (__captured_in_wr__write_type != __ENUM__WRITE_TYPE__LD)
+			begin
+				assert(__captured_in_wr__write_type
+					== __ENUM__WRITE_TYPE__ST);
+			end
+		end
+		endcase
+
+
+		if (__wr_state != __ENUM__WRITE_STATE__IDLE)
+		begin
+			assert(__captured_in_wr__index != 0);
+
+			if (__wr_state != __ENUM__WRITE_STATE__START_LD_ST)
+			begin
+				assert(__lar_metadata__tag[__captured_in_wr__index] != 0);
+			end
+		end
+
+		//if (__formal__out_mem_write__req)
+		//begin
+		//	assert(!__formal__out_mem_read__req);
+		//end
+
+		//if (__formal__out_mem_read__req)
+		//begin
+		//	assert(!__formal__out_mem_write__req);
+		//end
+
+
+		if (__wr_state == __ENUM__WRITE_STATE__IDLE)
+		begin
+			assert(__formal__out_wait_for_me__busy == 0);
+		end
+		else
+		begin
+			assert(__formal__out_wait_for_me__busy == 1);
+		end
+
+		case (__wr_state)
+		__ENUM__WRITE_STATE__IDLE:
+		begin
+			assert(__formal__out_mem_read__req == 0);
+			assert(__formal__out_mem_write__req == 0);
+		end
+
+		__ENUM__WRITE_STATE__START_LD_ST:
+		begin
+			assert($past(__formal__in_wr__req)
+				&& ($past(__formal__in_wr__index) != 0));
+			assert(__captured_in_wr__index != 0);
+			assert(__captured_in_mem_read__valid == 0);
+			assert(__captured_in_mem_write__valid == 0);
+
+			assert ($past(__wr_state) == __ENUM__WRITE_STATE__IDLE);
+		end
+
+		__ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_READ:
+		begin
+			assert(__captured_in_wr__write_type
+				== __ENUM__WRITE_TYPE__LD);
+
+			assert(($past(__wr_state) == __ENUM__WRITE_STATE__START_LD_ST)
+				|| ($past(__wr_state)
+				== __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_READ));
+
+			assert(!__formal__out_mem_write__req);
+			assert(__formal__out_mem_read__base_addr
+				== 
+		__captured_in_wr__base_addr
+		[__INCOMING_BASE_ADDR__INDEX_HI : __INCOMING_BASE_ADDR__INDEX_LO]);
+
+			if ($past(__wr_state)
+				== __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_READ)
+			begin
+				assert(!__formal__out_mem_read__req);
+				assert($stable(__formal__out_mem_read__base_addr));
+			end
+			else
+			begin
+				assert(__formal__out_mem_read__req);
+				assert(__formal__out_mem_read__base_addr
+					== 
+		__captured_in_wr__base_addr
+		[__INCOMING_BASE_ADDR__INDEX_HI : __INCOMING_BASE_ADDR__INDEX_LO]);
+			end
+
+			assert($stable(__captured_in_wr__write_type));
+			assert($stable(__captured_in_wr__base_addr));
+			assert($stable(__captured_in_wr__index));
+			assert($stable(__captured_in_wr__data_type));
+			assert($stable(__captured_in_wr__int_type_size));
+		end
+		__ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE:
+		begin
+			assert(__captured_in_wr__write_type
+				>= __ENUM__WRITE_TYPE__LD);
+			assert(($past(__wr_state) == __ENUM__WRITE_STATE__START_LD_ST)
+				|| ($past(__wr_state)
+				== __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE));
+
+			assert(!__formal__out_mem_read__req);
+
+			if ($past(__wr_state)
+				== __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE)
+			begin
+				assert(!__formal__out_mem_write__req);
+				assert($stable(__formal__out_mem_write__base_addr));
+				assert($stable(__formal__out_mem_write__data));
+			end
+			else
+			begin
+				assert(__formal__out_mem_write__req);
+				//assert(__formal__out_mem_write__base_addr
+				//	== ($past(__lar_shareddata__base_addr
+				//	[$past(__lar_metadata__tag
+				//	[__captured_in_wr__index])])));
+				//assert(__formal__out_mem_write__data
+				//	== (__lar_shareddata__data
+				//	[$past(__lar_metadata__tag
+				//	[__captured_in_wr__index])]));
+				//assert(__formal__out_mem_write__base_addr
+				//	== $past(__lar_shareddata__base_addr
+				//	[$past(__lar_metadata__tag
+				//	[__captured_in_wr__index])]));
+				assert(__formal__out_mem_write__base_addr
+					== __debug_lar_shareddata__base_addr
+					[__debug_lar_metadata__tag[__captured_in_wr__index]]);
+				assert(__formal__out_mem_write__data
+					== __debug_lar_shareddata__data
+					[__debug_lar_metadata__tag[__captured_in_wr__index]]);
+			end
+
+			assert($stable(__captured_in_wr__write_type));
+			assert($stable(__captured_in_wr__base_addr));
+			assert($stable(__captured_in_wr__index));
+			assert($stable(__captured_in_wr__data_type));
+			assert($stable(__captured_in_wr__int_type_size));
+		end
+
+		__ENUM__WRITE_STATE__WAIT_FOR_MEM_READ_AND_MEM_WRITE:
+		begin
+			assert(__captured_in_wr__write_type
+				== __ENUM__WRITE_TYPE__LD);
+
+			assert(($past(__wr_state) == __ENUM__WRITE_STATE__START_LD_ST)
+				|| ($past(__wr_state)
+				== __ENUM__WRITE_STATE__WAIT_FOR_MEM_READ_AND_MEM_WRITE));
+
+			assert(__formal__out_mem_read__base_addr
+				== 
+		__captured_in_wr__base_addr
+		[__INCOMING_BASE_ADDR__INDEX_HI : __INCOMING_BASE_ADDR__INDEX_LO]);
+
+			if ($past(__wr_state)
+				== __ENUM__WRITE_STATE__WAIT_FOR_MEM_READ_AND_MEM_WRITE)
+			begin
+				assert(!__formal__out_mem_read__req);
+				assert(!__formal__out_mem_write__req);
+
+				assert($stable(__formal__out_mem_read__base_addr));
+				assert($stable(__formal__out_mem_write__base_addr));
+				assert($stable(__formal__out_mem_write__data));
+			end
+
+			else
+			begin
+				assert(__formal__out_mem_read__req);
+				assert(__formal__out_mem_write__req);
+
+				assert(__formal__out_mem_read__base_addr
+					== 
+		__captured_in_wr__base_addr
+		[__INCOMING_BASE_ADDR__INDEX_HI : __INCOMING_BASE_ADDR__INDEX_LO]);
+				//assert(__formal__out_mem_write__base_addr
+				//	== ($past(__lar_shareddata__base_addr
+				//	[$past(__lar_metadata__tag
+				//	[__captured_in_wr__index])])));
+				//assert(__formal__out_mem_write__data
+				//	== (__lar_shareddata__data
+				//	[$past(__lar_metadata__tag
+				//	[__captured_in_wr__index])]));
+
+				//assert(__formal__out_mem_write__base_addr
+				//	== $past(__lar_shareddata__base_addr
+				//	[$past(__lar_metadata__tag
+				//	[__captured_in_wr__index])]));
+				//assert(__formal__out_mem_write__base_addr
+				//	== $past(__lar_shareddata__base_addr
+				//	[$past(__lar_metadata__tag
+				//	[__captured_in_wr__index])]));
+				assert(__formal__out_mem_write__base_addr
+					== __debug_lar_shareddata__base_addr
+					[__debug_lar_metadata__tag[__captured_in_wr__index]]);
+				assert(__formal__out_mem_write__data
+					== __debug_lar_shareddata__data
+					[__debug_lar_metadata__tag[__captured_in_wr__index]]);
+			end
+
+			//if ($past(__wr_state) == __ENUM__WRITE_STATE__START_LD_ST)
+			//begin
+			//	assert(__formal__out_mem_write__base_addr
+			//		== $past(__lar_shareddata__base_addr
+			//		[$past(__lar_metadata__tag
+			//		[__captured_in_wr__index])]));
+			//end
+
+			assert($stable(__captured_in_wr__write_type));
+			assert($stable(__captured_in_wr__base_addr));
+			assert($stable(__captured_in_wr__index));
+			assert($stable(__captured_in_wr__data_type));
+			assert($stable(__captured_in_wr__int_type_size));
+		end
+		endcase
+
+		assert(__wr_state < __ENUM__WRITE_STATE__BAD_0);
+
+		//for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		//begin
+		//	assert(__found_indices[i] == 0);
+		//end
+		//assert(__eek == 0);
+
+
+		__num_unique_tags = 0;
+		assert(__num_unique_tags == 0);
+
+		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			__unique_tags[i] = 0;
+			assert(__unique_tags[i] == 0);
+		end
+
+		//for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		//begin
+		//	if (__lar_metadata__tag[i] != 0)
+		//	begin
+		//		__found_unique_tag = 0;
+		//		assert(__found_unique_tag == 0);
+
+		//		for (j=1; j<__ARR_SIZE__NUM_LARS; j=j+1)
+		//		begin
+		//			if ((__unique_tags[j] != 0) && (j < __num_unique_tags))
+		//			begin
+		//				if (__unique_tags[j] == __lar_metadata__tag[i])
+		//				begin
+		//					__found_unique_tag = 1;
+		//				end
+		//			end
+		//		end
+
+		//		if (!__found_unique_tag)
+		//		begin
+		//			__unique_tags[__num_unique_tags]
+		//				= __lar_metadata__tag[i];
+		//			__num_unique_tags = __num_unique_tags + 1;
+		//		end
+		//	end
+		//end
+
+		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			if (__lar_metadata__tag[i] != 0)
+			begin
+				__found_unique_tag = 0;
+				assert(__found_unique_tag == 0);
+
+				if (__unique_tags[__lar_metadata__tag[i]])
+				begin
+					__found_unique_tag = 1;
+				end
+
+				if (!__found_unique_tag)
+				begin
+					__unique_tags[__lar_metadata__tag[i]] = 1;
+					__num_unique_tags = __num_unique_tags + 1;
+				end
+			end
+		end
+
+
+
+		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			__tags_that_should_be_in_stack[i] = 1;
+			assert(__tags_that_should_be_in_stack[i] == 1);
+		end
+
+		//for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		//begin
+		//	if ((__unique_tags[i] != 0) && (i < __num_unique_tags))
+		//	begin
+		//		__tags_that_should_be_in_stack[i] = 0;
+		//		assert(__tags_that_should_be_in_stack[i] == 0);
+		//	end
+		//end
+
+		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			if (__lar_shareddata__ref_count[i])
+			begin
+				__tags_that_should_be_in_stack[i] = 0;
+			end
+		end
+
+		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			__found_tag_in_stack = 0;
+			__found_tag_outside_stack = 0;
+
+			for (j=0; j<__ARR_SIZE__NUM_LARS; j=j+1)
+			begin
+				// in stack
+				if (j <= __curr_tag_stack_index)
+				begin
+					if (__lar_tag_stack[j] == i)
+					begin
+						assert(!__found_tag_in_stack);
+						__found_tag_in_stack = 1;
+					end
+				end
+
+				// outside of stack
+				else // if (j > __curr_tag_stack_index)
+				begin
+					if (__lar_tag_stack[j] == i)
+					begin
+						//assert(!__found_tag_outside_stack);
+						__found_tag_outside_stack = 1;
+					end
+				end
+			end
+
+			if (__tags_that_should_be_in_stack[i])
+			begin
+				assert(__found_tag_in_stack);
+				//assert(!__found_tag_outside_stack);
+			end
+
+			else // if (!__tags_that_should_be_in_stack[i])
+			begin
+				assert(!__found_tag_in_stack);
+				//assert(__found_tag_outside_stack);
+			end
+		end
+
+		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			__found_tags_per_ref[i] = 0;
+
+			for (j=0; j<__ARR_SIZE__NUM_LARS; j=j+1)
+			begin
+				if (__lar_metadata__tag[j] == i)
+				begin
+					__found_tags_per_ref[i] = __found_tags_per_ref[i] + 1;
+				end
+			end
+
+			assert(__found_tags_per_ref[i]
+				== __lar_shareddata__ref_count[i]);
+		end
+
+		__total_num_references = 0;
+		assert(__total_num_references == 0);
+
+		for (i=0; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			__total_num_references = __total_num_references
+				+ __lar_shareddata__ref_count[i];
+		end
+
+		// Less than __ARR_SIZE__NUM_LARS because there are only 15
+		// allocatable LARs, not 16, due to dzero always being zero.
+		assert(__total_num_references < __ARR_SIZE__NUM_LARS);
+
+		if (__curr_tag_stack_index < __LAST_INDEX__NUM_LARS)
+		begin
+			assert(__total_num_references > 0);
+		end
+
+
+		//if (__total_num_references > 0)
+		//begin
+		//	assert((__LAST_INDEX__NUM_LARS - __curr_tag_stack_index)
+		//		== __num_unique_tags);
+		//end
+		//else
+		if (__total_num_references == 0)
+		begin
+			assert(__num_unique_tags == 0);
+		end
+
+		if (__wr_state > __ENUM__WRITE_STATE__START_LD_ST)
+		begin
+			if ($past(__curr_tag_stack_index) != __curr_tag_stack_index)
+			begin
+				assert((__curr_tag_stack_index
+					== ($past(__curr_tag_stack_index) - 1))
+					|| (__curr_tag_stack_index
+					== ($past(__curr_tag_stack_index) + 1)));
+
+				// It had to have been a write that changed the stack index.
+				assert($past(__formal__in_wr__req, 2));
+			end
+		end
+
+		//__did_find_mem_write = 0;
+
+		//for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		//begin
+		//	if (($past(__lar_shareddata__ref_count[i]) == 1)
+		//		&& (__lar_shareddata__ref_count[i] == 0))
+		//	begin
+		//		assert(__did_find_mem_write == 0);
+		//		assert(__formal__out_mem_write__req == 1);
+		//		assert(__formal__out_mem_write__data
+		//			== __debug_lar_shareddata__data[i]);
+		//		assert(__formal__out_mem_write__base_addr
+		//			== __debug_lar_shareddata__base_addr[i]);
+		//		__did_find_mem_write = 1;
+		//	end
+		//end
+
+		//if (__did_find_mem_write == 0)
+		//begin
+		//	assert(__formal__out_mem_write__req == 0);
+		//end
+
+
+		if ($past(__curr_tag_stack_index) == 0)
+		begin
+			assert(__curr_tag_stack_index != __LAST_INDEX__NUM_LARS);
+		end
+
+		else if ($past(__curr_tag_stack_index) == __LAST_INDEX__NUM_LARS)
+		begin
+			assert(__curr_tag_stack_index != 0);
+		end
+
+		// dzero must remain zero!
+		assert(__lar_metadata__tag[0] == 0);
+		assert(__lar_metadata__data_index[0] == 0);
+		assert(__lar_metadata__data_type[0] == 0);
+		assert(__lar_metadata__int_type_size[0] == 0);
+		assert(__lar_shareddata__data[0] == 0);
+		assert(__lar_shareddata__base_addr[0] == 0);
+		assert(__lar_shareddata__ref_count[0] == 0);
+		assert(__lar_shareddata__dirty[0] == 0);
+		assert(__lar_tag_stack[0] == 0);
+
+		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			assert(__lar_tag_stack[i] != 0);
+		end
+
+		if (__found_tag)
+		begin
+			assert(__debug_tag_search_final != 0);
+		end
+
+		//if (__debug_lar_metadata__tag[`PAST_READ_INDEX(a)]
+		//	== __debug_lar_metadata__tag[`PAST_READ_INDEX(b)])
+		//begin
+		//	assert(__debug_lar_metadata__whole_addr[`PAST_READ_INDEX(a)]
+		//		[__INCOMING_BASE_ADDR__INDEX_HI
+		//		: __INCOMING_BASE_ADDR__INDEX_LO]
+		//		== __debug_lar_metadata__whole_addr[`PAST_READ_INDEX(b)]
+		//		[__INCOMING_BASE_ADDR__INDEX_HI
+		//		: __INCOMING_BASE_ADDR__INDEX_LO]);
+		//end
+
+		//for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		//begin
+		//	for (j=1; j<__ARR_SIZE__NUM_LARS; j=j+1)
+		//	begin
+		//		if (__lar_metadata__tag[i] == __lar_metadata__tag[j])
+		//		begin
+		//			assert(__lar_metadata__whole_addr[i]
+		//				[__INCOMING_BASE_ADDR__INDEX_HI
+		//				: __INCOMING_BASE_ADDR__INDEX_LO]
+		//				== __lar_metadata__whole_addr[j]
+		//				[__INCOMING_BASE_ADDR__INDEX_HI
+		//				: __INCOMING_BASE_ADDR__INDEX_LO]);
+		//		end
+		//	end
+		//end
+
+		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			case (__lar_metadata__data_type[i])
+			__ENUM__DATA_TYPE__RESERVED:
+			begin
+				assert(__lar_metadata__data_index[i] == 0);
+			end
+
+			__ENUM__DATA_TYPE__BFLOAT16:
+			begin
+				assert(__lar_metadata__data_index[i][0] == 0);
+			end
+
+			default:
+			begin
+				case (__lar_metadata__int_type_size[i])
+				__ENUM__INT_TYPE_SIZE__8:
+				begin
+				end
+
+				__ENUM__INT_TYPE_SIZE__16:
+				begin
+					assert(__lar_metadata__data_index[i][0] == 0);
+				end
+
+				__ENUM__INT_TYPE_SIZE__32:
+				begin
+					assert(__lar_metadata__data_index[i][1:0] == 0);
+				end
+
+				__ENUM__INT_TYPE_SIZE__64:
+				begin
+					assert(__lar_metadata__data_index[i][2:0] == 0);
+				end
+				endcase
+			end
+			endcase
+		end
+
+		for (i=1; i<__ARR_SIZE__NUM_LARS; i=i+1)
+		begin
+			assert(__debug_lar_metadata__tag[i]
+				== $past(__lar_metadata__tag[i]));
+			assert(__debug_lar_metadata__data_index[i]
+				== $past(__lar_metadata__data_index[i]));
+			assert(__debug_lar_metadata__data_type[i]
+				== $past(__lar_metadata__data_type[i]));
+			assert(__debug_lar_metadata__int_type_size[i]
+				== $past(__lar_metadata__int_type_size[i]));
+
+			assert(__debug_lar_shareddata__data[i]
+				== $past(__lar_shareddata__data[i]));
+			assert(__debug_lar_shareddata__base_addr[i]
+				== $past(__lar_shareddata__base_addr[i]));
+			assert(__debug_lar_shareddata__dirty[i]
+				== $past(__lar_shareddata__dirty[i]));
+			assert(__debug_lar_shareddata__ref_count[i]
+				== $past(__lar_shareddata__ref_count[i]));
+		end
+
+		if ($past(__formal__in_rd_a__index) != 0)
+		begin
+			assert(__formal__out_rd_a__addr 
+				== {__debug_lar_shareddata__base_addr
+				[__debug_lar_metadata__tag[$past(__formal__in_rd_a__index)]],
+				__debug_lar_metadata__data_index[$past(__formal__in_rd_a__index)]});
+			assert(__formal__out_rd_a__data
+				== __debug_lar_shareddata__data
+				[__debug_lar_metadata__tag[$past(__formal__in_rd_a__index)]]);
+			assert(__formal__out_rd_a__data_type
+				== __debug_lar_metadata__data_type[$past(__formal__in_rd_a__index)]);
+			assert(__formal__out_rd_a__int_type_size
+				== __debug_lar_metadata__int_type_size
+				[$past(__formal__in_rd_a__index)]);
+			assert(__formal__out_rd_a__tag
+				== __debug_lar_metadata__tag[$past(__formal__in_rd_a__index)]);
+		end
+		else // if (`PAST_READ_INDEX(a) == 0)
+		begin
+			assert(__formal__out_rd_a__addr == 0);
+			assert(__formal__out_rd_a__data == 0);
+			assert(__formal__out_rd_a__data_type == 0);
+			assert(__formal__out_rd_a__int_type_size == 0);
+			assert(__formal__out_rd_a__tag == 0);
+		end
+
+		if ($past(__formal__in_rd_b__index) != 0)
+		begin
+			assert(__formal__out_rd_b__addr 
+				== {__debug_lar_shareddata__base_addr
+				[__debug_lar_metadata__tag[$past(__formal__in_rd_b__index)]],
+				__debug_lar_metadata__data_index[$past(__formal__in_rd_b__index)]});
+			assert(__formal__out_rd_b__data
+				== __debug_lar_shareddata__data
+				[__debug_lar_metadata__tag[$past(__formal__in_rd_b__index)]]);
+			assert(__formal__out_rd_b__data_type
+				== __debug_lar_metadata__data_type[$past(__formal__in_rd_b__index)]);
+			assert(__formal__out_rd_b__int_type_size
+				== __debug_lar_metadata__int_type_size
+				[$past(__formal__in_rd_b__index)]);
+			assert(__formal__out_rd_b__tag
+				== __debug_lar_metadata__tag[$past(__formal__in_rd_b__index)]);
+		end
+		else // if (`PAST_READ_INDEX(b) == 0)
+		begin
+			assert(__formal__out_rd_b__addr == 0);
+			assert(__formal__out_rd_b__data == 0);
+			assert(__formal__out_rd_b__data_type == 0);
+			assert(__formal__out_rd_b__int_type_size == 0);
+			assert(__formal__out_rd_b__tag == 0);
+		end
+
+		if ($past(__formal__in_rd_c__index) != 0)
+		begin
+			assert(__formal__out_rd_c__addr 
+				== {__debug_lar_shareddata__base_addr
+				[__debug_lar_metadata__tag[$past(__formal__in_rd_c__index)]],
+				__debug_lar_metadata__data_index[$past(__formal__in_rd_c__index)]});
+			assert(__formal__out_rd_c__data
+				== __debug_lar_shareddata__data
+				[__debug_lar_metadata__tag[$past(__formal__in_rd_c__index)]]);
+			assert(__formal__out_rd_c__data_type
+				== __debug_lar_metadata__data_type[$past(__formal__in_rd_c__index)]);
+			assert(__formal__out_rd_c__int_type_size
+				== __debug_lar_metadata__int_type_size
+				[$past(__formal__in_rd_c__index)]);
+			assert(__formal__out_rd_c__tag
+				== __debug_lar_metadata__tag[$past(__formal__in_rd_c__index)]);
+		end
+		else // if (`PAST_READ_INDEX(c) == 0)
+		begin
+			assert(__formal__out_rd_c__addr == 0);
+			assert(__formal__out_rd_c__data == 0);
+			assert(__formal__out_rd_c__data_type == 0);
+			assert(__formal__out_rd_c__int_type_size == 0);
+			assert(__formal__out_rd_c__tag == 0);
+		end
+
+
+		
+		
+		
+		
+		
+		
+
+		
+		
+
+		
+
+
+		
+		
+		
+		
+
+		
+		
+		
+		
+
+
+	end
+	end
+			// SVFORMAL
 
 
 endmodule
@@ -14439,5 +16196,266 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 			end
 		endcase
 	end
+
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// src__slash__snow64_memory_access_fifo_defines_header_sv
+
+module Snow64MemoryAccessReadFifo(input logic clk,
+	input PkgSnow64MemoryAccessFifo::PortIn_MemoryAccessReadFifo in,
+	output PkgSnow64MemoryAccessFifo::PortOut_MemoryAccessReadFifo out);
+
+	PkgSnow64MemoryAccessFifo::PartialPortIn_ReadFifo_ReqRead
+		real_in_req_read;
+	assign real_in_req_read = in.req_read;
+
+	PkgSnow64MemoryAccessFifo::PartialPortIn_ReadFifo_FromMemoryBusGuard
+		real_in_from_memory_bus_guard;
+	assign real_in_from_memory_bus_guard = in.from_memory_bus_guard;
+
+	PkgSnow64MemoryAccessFifo::PartialPortOut_ReadFifo_ReqRead
+		real_out_req_read;
+	assign out.req_read = real_out_req_read;
+
+
+	PkgSnow64MemoryAccessFifo::PartialPortOut_ReadFifo_ToMemoryBusGuard
+		real_out_to_memory_bus_guard;
+	assign out.to_memory_bus_guard = real_out_to_memory_bus_guard;
+
+
+	logic __state;
+	logic __cmd_was_accepted;
+
+
+	
+	localparam __ENUM__STATE__IDLE
+		= PkgSnow64MemoryAccessFifo::RdFifoStIdle;
+	localparam __ENUM__STATE__WAIT_FOR_MEM
+		= PkgSnow64MemoryAccessFifo::RdFifoStWaitForMem;
+
+	wire __formal__in_req_read__req = real_in_req_read.req;
+	wire [((64) - 1):0] __formal__in_req_read__addr
+		= real_in_req_read.addr;
+
+	wire __formal__in_from_memory_bus_guard__valid
+		= real_in_from_memory_bus_guard.valid;
+	wire __formal__in_from_memory_bus_guard__cmd_accepted
+		= real_in_from_memory_bus_guard.cmd_accepted;
+	wire [
+	((256) - 1):0]
+		__formal__in_from_memory_bus_guard__data
+		= real_in_from_memory_bus_guard.data;
+
+	wire __formal__out_req_read__valid = real_out_req_read.valid;
+	wire __formal__out_req_read__busy = real_out_req_read.busy;
+	wire [
+	((256) - 1):0] __formal__out_req_read__data
+		= real_out_req_read.data;
+
+	wire __formal__out_to_memory_bus_guard__req
+		= real_out_to_memory_bus_guard.req;
+	wire [((64) - 1):0]
+		__formal__out_to_memory_bus_guard__addr
+		= real_out_to_memory_bus_guard.addr;
+			// FORMAL
+
+	initial
+	begin
+		__state = PkgSnow64MemoryAccessFifo::RdFifoStIdle;
+		__cmd_was_accepted = 0;
+
+		real_out_req_read = 0;
+		real_out_to_memory_bus_guard = 0;
+	end
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+		PkgSnow64MemoryAccessFifo::RdFifoStIdle:
+		begin
+			real_out_req_read.valid <= 0;
+
+			if (real_in_req_read.req)
+			begin
+				__state <= PkgSnow64MemoryAccessFifo::RdFifoStWaitForMem;
+
+				real_out_to_memory_bus_guard.req <= 1;
+				real_out_to_memory_bus_guard.addr <= real_in_req_read.addr;
+
+				real_out_req_read.busy <= 1;
+
+				__cmd_was_accepted <= 0;
+			end
+
+			else // if (!real_in_req_read.req)
+			begin
+				real_out_to_memory_bus_guard.req <= 0;
+				real_out_req_read.busy <= 0;
+			end
+		end
+
+		PkgSnow64MemoryAccessFifo::RdFifoStWaitForMem:
+		begin
+			if (real_in_from_memory_bus_guard.cmd_accepted)
+			begin
+				__cmd_was_accepted <= 1;
+				real_out_to_memory_bus_guard.req <= 0;
+			end
+
+			// ...On the off chance that SOMEHOW the memory bus guard
+			// already has our data, we can make this work.
+			if ((real_in_from_memory_bus_guard.cmd_accepted
+				|| __cmd_was_accepted)
+				&& (real_in_from_memory_bus_guard.valid))
+			begin
+				// Grant the requested data.
+				__state <= PkgSnow64MemoryAccessFifo::RdFifoStIdle;
+
+				real_out_req_read.valid <= 1;
+				real_out_req_read.busy <= 0;
+				real_out_req_read.data
+					<= real_in_from_memory_bus_guard.data;
+			end
+		end
+		endcase
+	end
+
+
+endmodule
+
+module Snow64MemoryAccessWriteFifo(input logic clk,
+	input PkgSnow64MemoryAccessFifo::PortIn_MemoryAccessWriteFifo in,
+	output PkgSnow64MemoryAccessFifo::PortOut_MemoryAccessWriteFifo out);
+
+	PkgSnow64MemoryAccessFifo::PartialPortIn_WriteFifo_ReqWrite
+		real_in_req_write;
+	assign real_in_req_write = in.req_write;
+
+	PkgSnow64MemoryAccessFifo::PartialPortIn_WriteFifo_FromMemoryBusGuard
+		real_in_from_memory_bus_guard;
+	assign real_in_from_memory_bus_guard = in.from_memory_bus_guard;
+
+	PkgSnow64MemoryAccessFifo::PartialPortOut_WriteFifo_ReqWrite
+		real_out_req_write;
+	assign out.req_write = real_out_req_write;
+
+
+	PkgSnow64MemoryAccessFifo::PartialPortOut_WriteFifo_ToMemoryBusGuard
+		real_out_to_memory_bus_guard;
+	assign out.to_memory_bus_guard = real_out_to_memory_bus_guard;
+
+
+	logic __state;
+	logic __cmd_was_accepted;
+
+
+	
+	localparam __ENUM__STATE__IDLE
+		= PkgSnow64MemoryAccessFifo::WrFifoStIdle;
+	localparam __ENUM__STATE__WAIT_FOR_MEM
+		= PkgSnow64MemoryAccessFifo::WrFifoStWaitForMem;
+
+	wire __formal__in_req_write__req = real_in_req_write.req;
+	wire [((64) - 1):0] __formal__in_req_write__addr
+		= real_in_req_write.addr;
+
+	wire __formal__in_from_memory_bus_guard__valid
+		= real_in_from_memory_bus_guard.valid;
+	wire __formal__in_from_memory_bus_guard__cmd_accepted
+		= real_in_from_memory_bus_guard.cmd_accepted;
+	wire [
+	((256) - 1):0] __formal__in_req_write__data
+		= real_in_req_write.data;
+
+	wire __formal__out_req_write__valid = real_out_req_write.valid;
+	wire __formal__out_req_write__busy = real_out_req_write.busy;
+
+	wire __formal__out_to_memory_bus_guard__req
+		= real_out_to_memory_bus_guard.req;
+	wire [((64) - 1):0]
+		__formal__out_to_memory_bus_guard__addr
+		= real_out_to_memory_bus_guard.addr;
+	wire [
+	((256) - 1):0]
+		__formal__out_to_memory_bus_guard__data
+		= real_out_to_memory_bus_guard.data;
+			// FORMAL
+
+	initial
+	begin
+		__state = PkgSnow64MemoryAccessFifo::WrFifoStIdle;
+		__cmd_was_accepted = 0;
+
+		real_out_req_write = 0;
+		real_out_to_memory_bus_guard = 0;
+	end
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+		PkgSnow64MemoryAccessFifo::WrFifoStIdle:
+		begin
+			real_out_req_write.valid <= 0;
+
+			if (real_in_req_write.req)
+			begin
+				__state <= PkgSnow64MemoryAccessFifo::WrFifoStWaitForMem;
+
+				real_out_to_memory_bus_guard.req <= 1;
+				real_out_to_memory_bus_guard.addr <= real_in_req_write.addr;
+				real_out_to_memory_bus_guard.data
+					<= real_in_req_write.data;
+
+
+				real_out_req_write.busy <= 1;
+
+				__cmd_was_accepted <= 0;
+			end
+
+			else // if (!real_in_req_write.req)
+			begin
+				real_out_to_memory_bus_guard.req <= 0;
+				real_out_req_write.busy <= 0;
+			end
+		end
+
+		PkgSnow64MemoryAccessFifo::WrFifoStWaitForMem:
+		begin
+			if (real_in_from_memory_bus_guard.cmd_accepted)
+			begin
+				__cmd_was_accepted <= 1;
+				real_out_to_memory_bus_guard.req <= 0;
+			end
+
+			// ...On the off chance that SOMEHOW the memory bus guard
+			// already has our data, we can make this work.
+			if ((real_in_from_memory_bus_guard.cmd_accepted
+				|| __cmd_was_accepted)
+				&& (real_in_from_memory_bus_guard.valid))
+			begin
+				// Grant the requested data.
+				__state <= PkgSnow64MemoryAccessFifo::WrFifoStIdle;
+
+				real_out_req_write.valid <= 1;
+				real_out_req_write.busy <= 0;
+				//real_out_req_write.data
+				//	<= real_in_from_memory_bus_guard.data;
+			end
+		end
+		endcase
+	end
+
 
 endmodule

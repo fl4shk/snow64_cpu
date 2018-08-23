@@ -6,7 +6,16 @@
 //`include "src/misc_defines.header.sv"
 `include "src/snow64_cpu_defines.header.sv"
 
+`ifdef FORMAL
+`define SMALL_LAR_FILE
+`endif
+
+`ifndef SMALL_LAR_FILE
 `define ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS 16
+`else // if (defined(SMALL_LAR_FILE))
+`define ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS 4
+`endif		// !defined(SMALL_LAR_FILE)
+
 `define LAST_INDEX__SNOW64_LAR_FILE_NUM_LARS  \
 	`ARR_SIZE_TO_LAST_INDEX(`ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS)
 

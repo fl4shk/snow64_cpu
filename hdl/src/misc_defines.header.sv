@@ -3,7 +3,7 @@
 
 // src/misc_defines.header.sv
 
-`default_nettype none
+//`default_nettype none
 
 `define WIDTH2MP(some_width) ((some_width) - 1)
 `define MP2WIDTH(some_msb_pos) ((some_msb_pos) + 1)
