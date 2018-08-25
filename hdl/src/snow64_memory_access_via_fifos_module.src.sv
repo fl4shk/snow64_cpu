@@ -113,6 +113,21 @@ module Snow64MemoryAccessViaFifos(input logic clk,
 		out_mem_bus_guard__mem_access}
 		= __out_mem_bus_guard;
 
+	// Connections between the FIFOs and the Snow64MemoryBusGuard.
+	assign __real_in_mem_bus_guard__req_read__instr
+		= __real_out_mem_acc_read_fifo__instr__to_mbg;
+	assign __real_in_mem_bus_guard__req_read__data
+		= __real_out_mem_acc_read_fifo__data__to_mbg;
+	assign __real_in_mem_bus_guard__req_write__data
+		= __real_out_mem_acc_write_fifo__data__to_mbg;
+
+	assign __real_in_mem_acc_read_fifo__instr__from_mbg
+		= __real_out_mem_bus_guard__req_read__instr;
+	assign __real_in_mem_acc_read_fifo__data__from_mbg
+		= __real_out_mem_bus_guard__req_read__data;
+	assign __real_in_mem_acc_write_fifo__data__from_mbg
+		= __real_out_mem_bus_guard__req_write__data;
+
 	`ifdef FORMAL
 	`endif		// FORMAL
 
