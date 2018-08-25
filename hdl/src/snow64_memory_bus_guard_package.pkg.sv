@@ -97,8 +97,6 @@ typedef struct packed
 	logic `STRUCTDIM(PartialPortOut_MemoryBusGuard_ReqWrite)
 		req_write_data;
 
-	//logic `STRUCTDIM(PartialPortOut_MemoryBusGuard_Status) status;
-
 	logic `STRUCTDIM(PartialPortOut_MemoryBusGuard_MemAccess)
 		mem_access;
 } PortOut_MemoryBusGuard;
