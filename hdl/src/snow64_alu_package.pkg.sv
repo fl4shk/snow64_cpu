@@ -111,4 +111,31 @@ localparam MSB_POS__OF_8 = `WIDTH2MP(WIDTH__OF_8);
 //		[`MSB_POS__SNOW64_SIZE_64:0] sliced_data;
 //} PortOut_SliceAndExtend;
 
+
+typedef struct packed
+{
+	logic enable;
+
+	logic do_64_bit;
+
+	logic [`MSB_POS__SNOW64_SIZE_64:0] a, b;
+} PortIn_SubMul;
+
+typedef struct packed
+{
+	logic enable;
+
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+
+	logic [`MSB_POS__SNOW64_SIZE_64:0] a, b;
+} PortIn_VectorMul;
+
+typedef struct packed
+{
+	logic can_accept_cmd, valid;
+	//logic [`MSB_POS__SNOW64_SIZE_64:0] data;
+	logic [`MSB_POS__SNOW64_SIZE_32:0] data_1, data_0;
+} PortOut_Mul;
+
+
 endpackage : PkgSnow64Alu

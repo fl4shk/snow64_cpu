@@ -1,5 +1,4 @@
-`include "src/snow64_alu_defines.header.sv"
-
+`include "src/snow64_alu_defines.header.sv" 
 //module SetLessThanUnsigned #(parameter WIDTH__DATA_INOUT=64)
 //	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b, 
 //	output logic out_data);
@@ -468,3 +467,4 @@ endmodule
 //	end
 //
 //endmodule
+

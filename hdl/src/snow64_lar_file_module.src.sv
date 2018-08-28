@@ -1221,6 +1221,8 @@ module Snow64LarFile(input logic clk,
 
 								// Stores to an address nobody has yet
 								// marks our NEW data as dirty.
+								// In this special case, all we're doing is
+								// changing the address of a LAR.
 								`captured__wr_curr_shareddata_dirty <= 1;
 							end
 						end
