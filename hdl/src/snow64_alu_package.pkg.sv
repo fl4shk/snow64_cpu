@@ -1,5 +1,6 @@
 `include "src/snow64_alu_defines.header.sv"
 `include "src/snow64_cpu_defines.header.sv"
+`include "src/snow64_mul_div_defines.header.sv"
 
 package PkgSnow64Alu;
 
@@ -116,25 +117,36 @@ typedef struct packed
 {
 	logic enable;
 
-	logic do_64_bit;
+	logic do_large;
 
-	logic [`MSB_POS__SNOW64_SIZE_64:0] a, b;
+	logic [`MSB_POS__SNOW64_MUL_DATA_IN:0] a, b;
+
 } PortIn_SubMul;
 
 typedef struct packed
 {
 	logic enable;
 
+	`ifndef FORMAL
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	`else // if defined(FORMAL)
+	logic [`MSB_POS__SNOW64_CPU_FORMAL_VECTOR_MUL_INT_TYPE_SIZE:0]
+		formal_int_type_size;
+	`endif		// !defined(FORMAL)
 
-	logic [`MSB_POS__SNOW64_SIZE_64:0] a, b;
+	logic [`MSB_POS__SNOW64_MUL_DATA_IN:0] a, b;
 } PortIn_VectorMul;
 
 typedef struct packed
 {
 	logic can_accept_cmd, valid;
 	//logic [`MSB_POS__SNOW64_SIZE_64:0] data;
+
+	`ifndef FORMAL
 	logic [`MSB_POS__SNOW64_SIZE_32:0] data_1, data_0;
+	`else		// if defined(FORMAL)
+	logic [`MSB_POS__SNOW64_SIZE_4:0] data_1, data_0;
+	`endif		// !defined(FORMAL)
 } PortOut_Mul;
 
 

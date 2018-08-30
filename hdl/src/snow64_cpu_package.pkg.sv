@@ -40,6 +40,17 @@ typedef enum logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
 } IntTypeSize;
 
 
+`ifdef FORMAL
+typedef enum logic [`MSB_POS__SNOW64_CPU_FORMAL_VECTOR_MUL_INT_TYPE_SIZE:0]
+{
+	FormalIntTypSz1,
+	FormalIntTypSz2,
+	FormalIntTypSz4,
+	FormalIntTypSz8
+} FormalVectorMulIntTypeSize;
+`endif		// FORMAL
+
+
 
 
 

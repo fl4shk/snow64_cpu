@@ -2,6 +2,28 @@
 
 package PkgSnow64SlicedData;
 
+`ifdef FORMAL
+typedef struct packed
+{
+	logic data_7, data_6, data_5, data_4, data_3, data_2, data_1, data_0;
+} FormalSlicedData1;
+
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_SIZE_2:0]
+		data_3, data_2, data_1, data_0;
+} FormalSlicedData2;
+
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_SIZE_4:0] data_1, data_0;
+} FormalSlicedData4;
+
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_SIZE_8:0] data_0;
+} FormalSlicedData8;
+`endif		// FORMAL
 
 typedef struct packed
 {

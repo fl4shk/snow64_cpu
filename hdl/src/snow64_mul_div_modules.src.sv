@@ -1,6 +1,10 @@
-`include "src/snow64_alu_defines.header.sv"
+`include "src/snow64_mul_div_defines.header.sv"
 
 `define OUT_DATA {out.data_1, out.data_0}
+
+
+
+
 module __Snow64SubMul(input logic clk,
 	input PkgSnow64Alu::PortIn_SubMul in,
 	output PkgSnow64Alu::PortOut_Mul out);
@@ -12,24 +16,36 @@ module __Snow64SubMul(input logic clk,
 	enum logic [__MSB_POS__STATE:0]
 	{
 		StIdle,
-		StMul32Adds,
+		StMulMediumAdds,
 
-		StMul64Adds_0,
+		StMulLargeAdds_0,
 
-		StMul64Adds_1,
-		StMul64Adds_2,
-		StMul64Adds_3
+		StMulLargeAdds_1,
+
+		StMulLargeAdds_2,
+		StMulLargeAdds_3,
+		StBad0,
+		StBad1
 	} __state;
 
-	PkgSnow64SlicedData::SlicedData16 __in_a_sliced_16, __in_b_sliced_16;
+	`ifdef FORMAL_MUL
+	PkgSnow64SlicedData::FormalSlicedData2
+	`else // if !defined(FORMAL_MUL)
+	PkgSnow64SlicedData::SlicedData8
+	`endif		// FORMAL_MUL
+		__in_a_sliced_small, __in_b_sliced_small;
 
-	assign {__in_a_sliced_16, __in_b_sliced_16} = {in.a, in.b};
+	assign {__in_a_sliced_small, __in_b_sliced_small} = {in.a, in.b};
 
 	`define MAKE_CURR_PROD(slice_num_a, slice_num_b) \
-	wire [`MSB_POS__SNOW64_SIZE_32:0] \
+	wire [`MSB_POS__SNOW64_SUB_MUL_MEDIUM_DATA:0] \
 		__curr_prod_``slice_num_a``_``slice_num_b \
-			= (`ZERO_EXTEND(32, 16, __in_a_sliced_16.data_``slice_num_a) \
-			* `ZERO_EXTEND(32, 16, __in_b_sliced_16.data_``slice_num_b));
+			= (`ZERO_EXTEND(`WIDTH__SNOW64_SUB_MUL_MEDIUM_DATA, \
+			`WIDTH__SNOW64_SUB_MUL_SMALL_DATA, \
+			__in_a_sliced_small.data_``slice_num_a) \
+			* `ZERO_EXTEND(`WIDTH__SNOW64_SUB_MUL_MEDIUM_DATA, \
+			`WIDTH__SNOW64_SUB_MUL_SMALL_DATA, \
+			__in_b_sliced_small.data_``slice_num_b));
 
 	`MAKE_CURR_PROD(0, 0)
 	`MAKE_CURR_PROD(1, 0)
@@ -50,7 +66,7 @@ module __Snow64SubMul(input logic clk,
 	`undef MAKE_CURR_PROD
 
 
-	logic [`MSB_POS__SNOW64_SIZE_32:0]
+	logic [`MSB_POS__SNOW64_SUB_MUL_MEDIUM_DATA:0]
 		__captured_prod_0_0,
 		__captured_prod_1_0,
 		__captured_prod_2_0,
@@ -66,29 +82,42 @@ module __Snow64SubMul(input logic clk,
 		__captured_prod_2_3,
 		__captured_prod_2_2;
 
-	logic [`MSB_POS__SNOW64_SIZE_64:0]
-		__temp_64_bit_add_result_0, __temp_64_bit_add_result_1,
-		__temp_64_bit_add_result_2;
+	logic [`MSB_POS__SNOW64_SUB_MUL_LARGE_DATA:0]
+		__temp_large_add_result_0, __temp_large_add_result_1,
+		__temp_large_add_result_2;
 
-	`ifdef FORMAL
+	`ifdef FORMAL_MUL
 	localparam __ENUM__STATE__IDLE = StIdle;
-	localparam __ENUM__STATE__MUL32_ADDS = StMul32Adds;
+	localparam __ENUM__STATE__MUL_MEDIUM_ADDS = StMulMediumAdds;
 
-	localparam __ENUM__STATE__MUL64_ADDS_0 = StMul64Adds_0;
-	localparam __ENUM__STATE__MUL64_ADDS_1 = StMul64Adds_1;
-	localparam __ENUM__STATE__MUL64_ADDS_2 = StMul64Adds_2;
-	localparam __ENUM__STATE__MUL64_ADDS_3 = StMul64Adds_3;
+	localparam __ENUM__STATE__MUL_LARGE_ADDS_0 = StMulLargeAdds_0;
+	localparam __ENUM__STATE__MUL_LARGE_ADDS_1 = StMulLargeAdds_1;
+	localparam __ENUM__STATE__MUL_LARGE_ADDS_2 = StMulLargeAdds_2;
+	localparam __ENUM__STATE__MUL_LARGE_ADDS_3 = StMulLargeAdds_3;
+	localparam __ENUM__STATE__BAD_0 = StBad0;
+	localparam __ENUM__STATE__BAD_1 = StBad1;
 
 	wire __formal__in_enable = in.enable;
-	wire __formal__in_do_64_bit = in.do_64_bit;
-	wire [`MSB_POS__SNOW64_SIZE_64:0]
+	wire __formal__in_do_large = in.do_large;
+	wire [`MSB_POS__SNOW64_SUB_MUL_LARGE_DATA:0]
 		__formal__in_a = in.a, __formal__in_b = in.b;
 	wire __formal__out_can_accept_cmd = out.can_accept_cmd,
 		__formal__out_valid = out.valid;
-	wire [`MSB_POS__SNOW64_SIZE_32:0]
+	wire [`MSB_POS__SNOW64_SUB_MUL_MEDIUM_DATA:0]
 		__formal__out_data_1 = out.data_1,
 		__formal__out_data_0 = out.data_0;
+	wire [`MSB_POS__SNOW64_SUB_MUL_LARGE_DATA:0]
+		__formal__out_whole_data = `OUT_DATA;
 
+	wire [`MSB_POS__SNOW64_SUB_MUL_SMALL_DATA:0]
+		__formal__in_a_sliced_small__data_0 = __in_a_sliced_small.data_0,
+		__formal__in_a_sliced_small__data_1 = __in_a_sliced_small.data_1,
+		__formal__in_a_sliced_small__data_2 = __in_a_sliced_small.data_2,
+		__formal__in_a_sliced_small__data_3 = __in_a_sliced_small.data_3,
+		__formal__in_b_sliced_small__data_0 = __in_b_sliced_small.data_0,
+		__formal__in_b_sliced_small__data_1 = __in_b_sliced_small.data_1,
+		__formal__in_b_sliced_small__data_2 = __in_b_sliced_small.data_2,
+		__formal__in_b_sliced_small__data_3 = __in_b_sliced_small.data_3;
 	`endif		// FORMAL
 
 	initial
@@ -97,20 +126,20 @@ module __Snow64SubMul(input logic clk,
 		out.valid = 0;
 		`OUT_DATA = 0;
 
-		__captured_prod_0_0 = 0;
-		__captured_prod_1_0 = 0;
-		__captured_prod_2_0 = 0;
-		__captured_prod_3_0 = 0;
-		__captured_prod_0_1 = 0;
-		__captured_prod_1_1 = 0;
-		__captured_prod_2_1 = 0;
-		__captured_prod_0_2 = 0;
-		__captured_prod_1_2 = 0;
-		__captured_prod_0_3 = 0;
+		{__captured_prod_0_0,
+			__captured_prod_1_0,
+			__captured_prod_2_0,
+			__captured_prod_3_0,
+			__captured_prod_0_1,
+			__captured_prod_1_1,
+			__captured_prod_2_1,
+			__captured_prod_0_2,
+			__captured_prod_1_2,
+			__captured_prod_0_3,
 
-		__captured_prod_3_2 = 0;
-		__captured_prod_2_3 = 0;
-		__captured_prod_2_2 = 0;
+			__captured_prod_3_2,
+			__captured_prod_2_3,
+			__captured_prod_2_2} = 0;
 	end
 
 
@@ -129,10 +158,10 @@ module __Snow64SubMul(input logic clk,
 			begin
 				out.valid <= 0;
 
-				case (in.do_64_bit)
+				case (in.do_large)
 				0:
 				begin
-					__state <= StMul32Adds;
+					__state <= StMulMediumAdds;
 
 					__captured_prod_1_0 <= __curr_prod_1_0;
 					__captured_prod_0_1 <= __curr_prod_0_1;
@@ -148,7 +177,7 @@ module __Snow64SubMul(input logic clk,
 
 				1:
 				begin
-					__state <= StMul64Adds_0;
+					__state <= StMulLargeAdds_0;
 
 					__captured_prod_0_0 <= __curr_prod_0_0;
 					__captured_prod_1_0 <= __curr_prod_1_0;
@@ -161,9 +190,9 @@ module __Snow64SubMul(input logic clk,
 					__captured_prod_1_2 <= __curr_prod_1_2;
 					__captured_prod_0_3 <= __curr_prod_0_3;
 
-					__captured_prod_3_2 <= __curr_prod_3_2;
-					__captured_prod_2_3 <= __curr_prod_2_3;
-					__captured_prod_2_2 <= __curr_prod_2_2;
+					//__captured_prod_3_2 <= __curr_prod_3_2;
+					//__captured_prod_2_3 <= __curr_prod_2_3;
+					//__captured_prod_2_2 <= __curr_prod_2_2;
 
 					`OUT_DATA <= __curr_prod_0_0;
 				end
@@ -176,7 +205,7 @@ module __Snow64SubMul(input logic clk,
 			end
 		end
 
-		StMul32Adds:
+		StMulMediumAdds:
 		begin
 			__state <= StIdle;
 			out.valid <= 1;
@@ -188,44 +217,44 @@ module __Snow64SubMul(input logic clk,
 		end
 
 
-		StMul64Adds_0:
+		StMulLargeAdds_0:
 		begin
-			__state <= StMul64Adds_1;
+			__state <= StMulLargeAdds_1;
 
-			__temp_64_bit_add_result_0
+			__temp_large_add_result_0
 				<= {(__captured_prod_1_0 + __captured_prod_0_1), 16'h0};
 
-			__temp_64_bit_add_result_1
+			__temp_large_add_result_1
 				<= {(__captured_prod_2_0 + __captured_prod_1_1), 32'h0};
 
-			__temp_64_bit_add_result_2
+			__temp_large_add_result_2
 				<= {(__captured_prod_3_0 + __captured_prod_2_1), 48'h0};
 		end
 
-		StMul64Adds_1:
+		StMulLargeAdds_1:
 		begin
-			__state <= StMul64Adds_2;
+			__state <= StMulLargeAdds_2;
 
-			__temp_64_bit_add_result_1 <= __temp_64_bit_add_result_1
+			__temp_large_add_result_1 <= __temp_large_add_result_1
 				+ {__captured_prod_0_2, 32'h0};
-			__temp_64_bit_add_result_2 <= __temp_64_bit_add_result_2
+			__temp_large_add_result_2 <= __temp_large_add_result_2
 				+ {__captured_prod_1_2, 48'h0};
 
-			`OUT_DATA <= `OUT_DATA + __temp_64_bit_add_result_0;
+			`OUT_DATA <= `OUT_DATA + __temp_large_add_result_0;
 		end
 
-		StMul64Adds_2:
+		StMulLargeAdds_2:
 		begin
-			__temp_64_bit_add_result_2 <= __temp_64_bit_add_result_2
+			__temp_large_add_result_2 <= __temp_large_add_result_2
 				+ {__captured_prod_0_3, 48'h0};
-			`OUT_DATA <= `OUT_DATA + __temp_64_bit_add_result_1;
+			`OUT_DATA <= `OUT_DATA + __temp_large_add_result_1;
 		end
 
-		StMul64Adds_3:
+		StMulLargeAdds_3:
 		begin
 			out.valid <= 1;
 			__state <= StIdle;
-			`OUT_DATA <= `OUT_DATA + __temp_64_bit_add_result_2;
+			`OUT_DATA <= `OUT_DATA + __temp_large_add_result_2;
 		end
 
 		endcase

@@ -20,3 +20,4 @@ define(`UINT32_T',`CODE(uint32\_t)')dnl
 define(`INT32_T',`CODE(int32\_t)')dnl
 define(`UINT64_T',`CODE(uint64\_t)')dnl
 define(`INT64_T',`CODE(int64\_t)')dnl
+changecom dnl
