@@ -27,6 +27,7 @@ module Snow64LarFile(input logic clk,
 	PkgSnow64LarFile::PartialPortOut_LarFile_WaitForMe
 		real_out_wait_for_me;
 
+
 	assign real_in_ctrl = in.ctrl;
 	assign real_in_rd_a = in.rd_a;
 	assign real_in_rd_b = in.rd_b;
@@ -288,38 +289,32 @@ module Snow64LarFile(input logic clk,
 
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] 
-		__formal__out_rd_a__data = real_out_rd_a.data;
-	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] 
-		__formal__out_rd_b__data = real_out_rd_b.data;
-	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0] 
+		__formal__out_rd_a__data = real_out_rd_a.data,
+		__formal__out_rd_b__data = real_out_rd_b.data,
 		__formal__out_rd_c__data = real_out_rd_c.data;
+	wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
+		__formal__out_rd_a__scalar_data = real_out_rd_a.scalar_data,
+		__formal__out_rd_b__scalar_data = real_out_rd_b.scalar_data,
+		__formal__out_rd_c__scalar_data = real_out_rd_c.scalar_data;
 
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__out_rd_a__addr = real_out_rd_a.addr;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__out_rd_b__addr = real_out_rd_b.addr;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
+		__formal__out_rd_a__addr = real_out_rd_a.addr,
+		__formal__out_rd_b__addr = real_out_rd_b.addr,
 		__formal__out_rd_c__addr = real_out_rd_c.addr;
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
-		__formal__out_rd_a__tag = real_out_rd_a.tag;
-	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
-		__formal__out_rd_b__tag = real_out_rd_b.tag;
-	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
+		__formal__out_rd_a__tag = real_out_rd_a.tag,
+		__formal__out_rd_b__tag = real_out_rd_b.tag,
 		__formal__out_rd_c__tag = real_out_rd_c.tag;
 
 	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
-		__formal__out_rd_a__data_type = real_out_rd_a.data_type;
-	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
-		__formal__out_rd_b__data_type = real_out_rd_b.data_type;
-	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
+		__formal__out_rd_a__data_type = real_out_rd_a.data_type,
+		__formal__out_rd_b__data_type = real_out_rd_b.data_type,
 		__formal__out_rd_c__data_type = real_out_rd_c.data_type;
 
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-		__formal__out_rd_a__int_type_size = real_out_rd_a.int_type_size;
-	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-		__formal__out_rd_b__int_type_size = real_out_rd_b.int_type_size;
-	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
+		__formal__out_rd_a__int_type_size = real_out_rd_a.int_type_size,
+		__formal__out_rd_b__int_type_size = real_out_rd_b.int_type_size,
 		__formal__out_rd_c__int_type_size = real_out_rd_c.int_type_size;
 
 	wire __formal__out_mem_read__req = real_out_mem_read.req;
@@ -564,14 +559,82 @@ module Snow64LarFile(input logic clk,
 	end
 
 
+	PkgSnow64ScalarDataShifter::PortIn_ScalarDataShifterForRead
+		__in_scalar_data_shifter_for_read_a,
+		__in_scalar_data_shifter_for_read_b,
+		__in_scalar_data_shifter_for_read_c;
+	PkgSnow64ScalarDataShifter::PortOut_ScalarDataShifterForRead
+		__out_scalar_data_shifter_for_read_a,
+		__out_scalar_data_shifter_for_read_b,
+		__out_scalar_data_shifter_for_read_c;
+
+	Snow64ScalarDataShifterForRead __inst_scalar_data_shifter_for_read_a
+		(.in(__in_scalar_data_shifter_for_read_a),
+		.out(__out_scalar_data_shifter_for_read_a));
+	Snow64ScalarDataShifterForRead __inst_scalar_data_shifter_for_read_b
+		(.in(__in_scalar_data_shifter_for_read_b),
+		.out(__out_scalar_data_shifter_for_read_b));
+	Snow64ScalarDataShifterForRead __inst_scalar_data_shifter_for_read_c
+		(.in(__in_scalar_data_shifter_for_read_c),
+		.out(__out_scalar_data_shifter_for_read_c));
+
+
+	`ifdef FORMAL
+		wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+			__formal__in_scalar_data_shifter_for_read_a__to_shift,
+			__formal__in_scalar_data_shifter_for_read_b__to_shift,
+			__formal__in_scalar_data_shifter_for_read_c__to_shift;
+
+		wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
+			__formal__in_scalar_data_shifter_for_read_a__int_type_size,
+			__formal__in_scalar_data_shifter_for_read_b__int_type_size,
+			__formal__in_scalar_data_shifter_for_read_c__int_type_size;
+
+		wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
+			__formal__in_scalar_data_shifter_for_read_a__data_offset,
+			__formal__in_scalar_data_shifter_for_read_b__data_offset,
+			__formal__in_scalar_data_shifter_for_read_c__data_offset;
+
+		assign {__formal__in_scalar_data_shifter_for_read_a__to_shift,
+			__formal__in_scalar_data_shifter_for_read_a__int_type_size,
+			__formal__in_scalar_data_shifter_for_read_a__data_offset}
+			= __in_scalar_data_shifter_for_read_a;
+		assign {__formal__in_scalar_data_shifter_for_read_b__to_shift,
+			__formal__in_scalar_data_shifter_for_read_b__int_type_size,
+			__formal__in_scalar_data_shifter_for_read_b__data_offset}
+			= __in_scalar_data_shifter_for_read_b;
+		assign {__formal__in_scalar_data_shifter_for_read_c__to_shift,
+			__formal__in_scalar_data_shifter_for_read_c__int_type_size,
+			__formal__in_scalar_data_shifter_for_read_c__data_offset}
+			= __in_scalar_data_shifter_for_read_c;
+
+		wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
+			__formal__out_scalar_data_for_read_a__data
+			= __out_scalar_data_shifter_for_read_a.data,
+			__formal__out_scalar_data_for_read_b__data
+			= __out_scalar_data_shifter_for_read_b.data,
+			__formal__out_scalar_data_for_read_c__data
+			= __out_scalar_data_shifter_for_read_c.data;
+	`endif		// FORMAL
 
 	`define RD_INDEX(which) real_in_rd_``which``.index
 
 	`define GEN_RD(which) \
+	always @(*) __in_scalar_data_shifter_for_read_``which``.to_shift \
+		= `shareddata_tagged_data(`RD_INDEX(which)); \
+	always @(*) __in_scalar_data_shifter_for_read_``which``.data_type \
+		= `metadata_data_type(`RD_INDEX(which)); \
+	always @(*) __in_scalar_data_shifter_for_read_``which``.int_type_size \
+		= `metadata_int_type_size(`RD_INDEX(which)); \
+	always @(*) __in_scalar_data_shifter_for_read_``which``.data_offset \
+		= `metadata_data_index(`RD_INDEX(which)); \
+	\
 	always @(posedge clk) \
 	begin \
 		real_out_rd_``which``.data \
-			<= `shareddata_tagged_data(`RD_INDEX(which));\
+			<= `shareddata_tagged_data(`RD_INDEX(which)); \
+		real_out_rd_``which``.scalar_data \
+			<= __out_scalar_data_shifter_for_read_``which.data; \
 		case (`metadata_data_type(`RD_INDEX(which))) \
 		PkgSnow64Cpu::DataTypBFloat16: \
 		begin \

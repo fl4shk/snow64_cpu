@@ -33,15 +33,15 @@
 `define ZERO_EXTEND(some_full_width, some_width_of_arg, some_other_arg) \
 	{{(some_full_width - some_width_of_arg){1'b0}},some_other_arg}
 
-//`define BPRANGE_TO_SHIFTED_MASK(bit_pos_hi, bit_pos_lo) \
-//	(((1 << (bit_pos_hi - bit_pos_lo + 1)) - 1) << bit_pos_lo)
-//`define GET_BITS(to_get_from, mask, shift) \
-//	((to_get_from & mask) >> shift)
-//`define GET_BITS_WITH_RANGE(to_get_from, bit_pos_range_hi,
-//	bit_pos_range_lo) \
-//	`GET_BITS(to_get_from, \
-//		`BPRANGE_TO_SHIFTED_MASK(bit_pos_range_hi, bit_pos_range_lo), \
-//		bit_pos_range_lo)
+`define BPRANGE_TO_SHIFTED_MASK(bit_pos_hi, bit_pos_lo) \
+	(((1 << (bit_pos_hi - bit_pos_lo + 1)) - 1) << bit_pos_lo)
+`define GET_BITS(to_get_from, mask, shift) \
+	((to_get_from & mask) >> shift)
+`define GET_BITS_WITH_RANGE(to_get_from, bit_pos_range_hi,
+	bit_pos_range_lo) \
+	`GET_BITS(to_get_from, \
+		`BPRANGE_TO_SHIFTED_MASK(bit_pos_range_hi, bit_pos_range_lo), \
+		bit_pos_range_lo)
 
 `define INDEX64_8__7_H 63
 `define INDEX64_8__7_L 56
@@ -238,6 +238,22 @@
 
 `define EXTRACT_DATA_INDEX__64(msb_pos, to_extract_from) \
 	{to_extract_from[msb_pos:3], 3'b0}
+
+`define EXTRACT_DATA_INDEX_TYPE_2__8(msb_pos, to_extract_from) \
+	to_extract_from[msb_pos:0]
+
+`define EXTRACT_DATA_INDEX_TYPE_2__16(msb_pos, to_extract_from) \
+	to_extract_from[msb_pos:1]
+
+`define EXTRACT_DATA_INDEX_TYPE_2__32(msb_pos, to_extract_from) \
+	to_extract_from[msb_pos:2]
+
+`define EXTRACT_DATA_INDEX_TYPE_2__64(msb_pos, to_extract_from) \
+	to_extract_from[msb_pos:3]
+
+`define DOWNCAST_TO_8(to_cast) (to_cast[`WIDTH2MP(8):0])
+`define DOWNCAST_TO_16(to_cast) (to_cast[`WIDTH2MP(16):0])
+`define DOWNCAST_TO_32(to_cast) (to_cast[`WIDTH2MP(32):0])
 
 
 `endif		// src__slash__misc_defines_header_sv

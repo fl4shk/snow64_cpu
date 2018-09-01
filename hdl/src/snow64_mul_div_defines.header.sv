@@ -14,9 +14,9 @@
 `define WIDTH__SNOW64_FORMAL_SUB_MUL_LARGE_DATA `WIDTH__SNOW64_SIZE_8
 
 
-`ifdef FORMAL
-`define FORMAL_TINY_MUL
-`endif		// FORMAL
+//`ifdef FORMAL
+//`define FORMAL_TINY_MUL
+//`endif		// FORMAL
 
 
 `ifdef FORMAL_TINY_MUL

@@ -707,10 +707,10 @@ module Snow64NonRestoringDivider #(parameter WIDTH__ARGS=64)
 			end
 		end
 
-		else
-		begin
-			$display("out_quot, out_rem:  %h, %h", out_quot, out_rem);
-		end
+		//else
+		//begin
+		//	$display("out_quot, out_rem:  %h, %h", out_quot, out_rem);
+		//end
 	end
 
 

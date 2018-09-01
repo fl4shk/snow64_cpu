@@ -2,6 +2,7 @@
 
 
 package PkgSnow64LarFile;
+typedef logic [`MSB_POS__SNOW64_SCALAR_DATA:0] ScalarData;
 
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] LarIndex;
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_ADDR_BASE_PTR_8:0]
@@ -102,15 +103,10 @@ typedef struct packed
 typedef struct packed
 {
 	LarData data;
+	ScalarData scalar_data;
+
 	PkgSnow64Cpu::CpuAddr addr;
 
-	// Outside the LAR file itself, this "tag" is used for operand
-	// forwarding by the control unit or whatever you want to call it.
-	// This is very much akin to how I implemented operand forwarding in my
-	// first pipelined CPU, but in that case, I had used the register
-	// indices directly.  Of course, with a DLARs machine, that's not
-	// really a valid option because two registers may actually point to
-	// the same data.
 	LarTag tag;
 
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
