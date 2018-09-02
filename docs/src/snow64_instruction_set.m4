@@ -41,10 +41,10 @@ define(`CAST_TO_TYPE_OF',`cast\_to\_type\_of\_$1($2)')dnl
 	* There are no Instruction LARs (the typical instruction fetch of most
 	computer processors is used instead).
 	* Addresses are 64-bit.
-	* Interrupts are supported (this may be a first for a LARs
-	architecture)
-	* Port-mapped I/O is supported (this may be a first for a LARs
-	architecture)
+	dnl * Interrupts are supported (this may be a first for a LARs
+	dnl architecture)
+	dnl * Port-mapped I/O is supported (this may be a first for a LARs
+	dnl architecture)
 NEWLINE()NEWLINE()
 * Data LARs:
 
@@ -148,11 +148,11 @@ NEWLINE()
 		this))
 	* Other registers:
 		* MDCODE(pc) (the program counter, 64-bit)
-		* MDCODE(ie) (whether or not interrupts are enabled, 1-bit)
-		* MDCODE(ireta) (the interrupt return address, 64-bit)
-		* MDCODE(idsta) (the interrupt destination address, 64-bit;
-		upon an interrupt, the program counter is set to the value in this
-		register)
+		dnl * MDCODE(ie) (whether or not interrupts are enabled, 1-bit)
+		dnl * MDCODE(ireta) (the interrupt return address, 64-bit)
+		dnl * MDCODE(idsta) (the interrupt destination address, 64-bit;
+		dnl upon an interrupt, the program counter is set to the value in this
+		dnl register)
 NEWLINE()NEWLINE()
 ## Instruction Set
 * Note:  All invalid instructions are treated as NOPs.
@@ -259,41 +259,41 @@ OPCODE_GROUP(0b001)
 			* OPCODE(0x2)
 			* Effect:  CODE(pc <= dA.sdata;)
 			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
-		* BOLD(ei)
-			* OPCODE(0x3)
-			* Effect:  CODE(ie <= 1'b1;)
-			* Note:  Enable interrupts
-		* BOLD(di)
-			* OPCODE(0x4)
-			* Effect:  CODE(ie <= 1'b0;)
-			* Note:  Disable interrupts
-		* BOLD(reti)
-			* OPCODE(0x5)
-			* Effect:  CODE(ie <= 1'b1; pc <= ireta;)
-			* Note:  Return from an interrupt
-		* BOLD(cpy) dA, ie
-			* OPCODE(0x6)
-			* Effect:  CODE(dA.sdata <= ie; // acts differently if dA is
-			tagged as a float)
-		* BOLD(cpy) dA, ireta
-			* OPCODE(0x7)
-			* Effect:  CODE(dA.sdata <= ireta;)
-			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
-		* BOLD(cpy) dA, idsta
-			* OPCODE(0x8)
-			* Effect:  CODE(dA.sdata <= idsta;)
-			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
-		* BOLD(cpy) ie, dA
-			* OPCODE(0x9)
-			* Effect:  CODE(ie <= (dA.sdata != 0);)
-		* BOLD(cpy) ireta, dA
-			* OPCODE(0xa)
-			* Effect:  CODE(ireta <= dA.sdata;)
-			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
-		* BOLD(cpy) idsta, dA
-			* OPCODE(0xb)
-			* Effect:  CODE(idsta <= dA.sdata;)
-			* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
+		dnl * BOLD(ei)
+		dnl 	* OPCODE(0x3)
+		dnl 	* Effect:  CODE(ie <= 1'b1;)
+		dnl 	* Note:  Enable interrupts
+		dnl * BOLD(di)
+		dnl 	* OPCODE(0x4)
+		dnl 	* Effect:  CODE(ie <= 1'b0;)
+		dnl 	* Note:  Disable interrupts
+		dnl * BOLD(reti)
+		dnl 	* OPCODE(0x5)
+		dnl 	* Effect:  CODE(ie <= 1'b1; pc <= ireta;)
+		dnl 	* Note:  Return from an interrupt
+		dnl * BOLD(cpy) dA, ie
+		dnl 	* OPCODE(0x6)
+		dnl 	* Effect:  CODE(dA.sdata <= ie; // acts differently if dA is
+		dnl 	tagged as a float)
+		dnl * BOLD(cpy) dA, ireta
+		dnl 	* OPCODE(0x7)
+		dnl 	* Effect:  CODE(dA.sdata <= ireta;)
+		dnl 	* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
+		dnl * BOLD(cpy) dA, idsta
+		dnl 	* OPCODE(0x8)
+		dnl 	* Effect:  CODE(dA.sdata <= idsta;)
+		dnl 	* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
+		dnl * BOLD(cpy) ie, dA
+		dnl 	* OPCODE(0x9)
+		dnl 	* Effect:  CODE(ie <= (dA.sdata != 0);)
+		dnl * BOLD(cpy) ireta, dA
+		dnl 	* OPCODE(0xa)
+		dnl 	* Effect:  CODE(ireta <= dA.sdata;)
+		dnl 	* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
+		dnl * BOLD(cpy) idsta, dA
+		dnl 	* OPCODE(0xb)
+		dnl 	* Effect:  CODE(idsta <= dA.sdata;)
+		dnl 	* NOTE_SUGGEST_LARGEST_MEMORY_ADDR(dA)
 NEWLINE()NEWLINE()
 * Load Instructions:
 OPCODE_GROUP(0b010)
@@ -403,63 +403,63 @@ OPCODE_GROUP(0b011)
 		* BOLD(stf16) dA, dB, dC, simm12
 			* OPCODE(0x8)
 			* NOTE_BFLOAT16()
-NEWLINE()NEWLINE()
-* Port-mapped Input/Output Instructions:
-OPCODE_GROUP(0b100)
-	* Encoding:  MDCODE(100t aaaa bbbb oooo  iiii iiii iiii iiii)
-		* MDCODE(t):  DESCRIBE_SV_OPERATION_TYPE()
-		* MDCODE(a):  dA
-		* MDCODE(b):  dB
-		* MDCODE(o):  opcode
-		* MDCODE(i):  16-bit signed immediate
-	* NOTE_SDATA()
-	* Note:  For the CODE(in...) instructions, the entirety of
-	CODE(dA.data) is set to the received data.  The type of CODE(dA) is set
-	based upon the instruction opcode.
-	* Note:  For CODE(outs), CODE(dA.sdata) is sent to the output port,
-	along with the type of data (in case the particular I/O port cares).
-	* Note:  For CODE(outv), the entirety of CODE(dA.data) is sent to the
-	output port, along with the type of data (in case the particular I/O
-	port cares).
-	* Note:  For each of these instructions, the I/O address used is
-	computed by the formula
-	CODE(CAST_TO_64(dB.sdata) + SIGN_EXTEND_TO_64(simm16))
-	* Instructions:
-		* BOLD(inu8) dA, dB, simm16
-			* OPCODE(0x0)
-			* NOTE_U8()
-		* BOLD(ins8) dA, dB, simm16
-			* OPCODE(0x1)
-			* NOTE_S8()
-		* BOLD(inu16) dA, dB, simm16
-			* OPCODE(0x2)
-			* NOTE_U16()
-		* BOLD(ins16) dA, dB, simm16
-			* OPCODE(0x3)
-			* NOTE_S16()
-		* BOLD(inu32) dA, dB, simm16
-			* OPCODE(0x4)
-			* NOTE_U32()
-		* BOLD(ins32) dA, dB, simm16
-			* OPCODE(0x5)
-			* NOTE_S32()
-		* BOLD(inu64) dA, dB, simm16
-			* OPCODE(0x6)
-			* NOTE_U64()
-		* BOLD(ins64) dA, dB, simm16
-			* OPCODE(0x7)
-			* NOTE_S64()
-		* BOLD(inf16) dA, dB, simm16
-			* OPCODE(0x8)
-			* NOTE_BFLOAT16()
-		* BOLD(out) (actual mnemonics below)
-			* OPCODE(0x9)
-				* BOLD(outs) dA, dB, simm16
-					* MDCODE(t):  0
-					* Note:  CODE(dA.sdata) is simply sent to the output
-					data bus.
-				* BOLD(outv) dA, dB, simm16
-					* MDCODE(t):  1
-					* Note:  The type of CODE(dA) is ignored for this
-					operation as the entirety of the LAR is sent to the
-					port.
+dnl NEWLINE()NEWLINE()
+dnl * Port-mapped Input/Output Instructions:
+dnl OPCODE_GROUP(0b100)
+dnl 	* Encoding:  MDCODE(100t aaaa bbbb oooo  iiii iiii iiii iiii)
+dnl 		* MDCODE(t):  DESCRIBE_SV_OPERATION_TYPE()
+dnl 		* MDCODE(a):  dA
+dnl 		* MDCODE(b):  dB
+dnl 		* MDCODE(o):  opcode
+dnl 		* MDCODE(i):  16-bit signed immediate
+dnl 	* NOTE_SDATA()
+dnl 	* Note:  For the CODE(in...) instructions, the entirety of
+dnl 	CODE(dA.data) is set to the received data.  The type of CODE(dA) is set
+dnl 	based upon the instruction opcode.
+dnl 	* Note:  For CODE(outs), CODE(dA.sdata) is sent to the output port,
+dnl 	along with the type of data (in case the particular I/O port cares).
+dnl 	* Note:  For CODE(outv), the entirety of CODE(dA.data) is sent to the
+dnl 	output port, along with the type of data (in case the particular I/O
+dnl 	port cares).
+dnl 	* Note:  For each of these instructions, the I/O address used is
+dnl 	computed by the formula
+dnl 	CODE(CAST_TO_64(dB.sdata) + SIGN_EXTEND_TO_64(simm16))
+dnl 	* Instructions:
+dnl 		* BOLD(inu8) dA, dB, simm16
+dnl 			* OPCODE(0x0)
+dnl 			* NOTE_U8()
+dnl 		* BOLD(ins8) dA, dB, simm16
+dnl 			* OPCODE(0x1)
+dnl 			* NOTE_S8()
+dnl 		* BOLD(inu16) dA, dB, simm16
+dnl 			* OPCODE(0x2)
+dnl 			* NOTE_U16()
+dnl 		* BOLD(ins16) dA, dB, simm16
+dnl 			* OPCODE(0x3)
+dnl 			* NOTE_S16()
+dnl 		* BOLD(inu32) dA, dB, simm16
+dnl 			* OPCODE(0x4)
+dnl 			* NOTE_U32()
+dnl 		* BOLD(ins32) dA, dB, simm16
+dnl 			* OPCODE(0x5)
+dnl 			* NOTE_S32()
+dnl 		* BOLD(inu64) dA, dB, simm16
+dnl 			* OPCODE(0x6)
+dnl 			* NOTE_U64()
+dnl 		* BOLD(ins64) dA, dB, simm16
+dnl 			* OPCODE(0x7)
+dnl 			* NOTE_S64()
+dnl 		* BOLD(inf16) dA, dB, simm16
+dnl 			* OPCODE(0x8)
+dnl 			* NOTE_BFLOAT16()
+dnl 		* BOLD(out) (actual mnemonics below)
+dnl 			* OPCODE(0x9)
+dnl 				* BOLD(outs) dA, dB, simm16
+dnl 					* MDCODE(t):  0
+dnl 					* Note:  CODE(dA.sdata) is simply sent to the output
+dnl 					data bus.
+dnl 				* BOLD(outv) dA, dB, simm16
+dnl 					* MDCODE(t):  1
+dnl 					* Note:  The type of CODE(dA) is ignored for this
+dnl 					operation as the entirety of the LAR is sent to the
+dnl 					port.

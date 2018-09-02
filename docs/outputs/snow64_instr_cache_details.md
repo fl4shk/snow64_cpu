@@ -1,4 +1,4 @@
-# Snow64 Instruction Cache Details
+ # Snow64 Instruction Cache Details
 * General Notes
 	* The instruction cache is 32 kiB.
 		* This is actually a typical amount of L1 instruction cache.

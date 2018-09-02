@@ -1,13 +1,9 @@
-# Snow64 Instruction Set
+ # Snow64 Instruction Set
 * Notes
 	* There are no Instruction LARs (the typical instruction fetch of most
 	computer processors is used instead).
 	* Addresses are 64-bit.
-	* Interrupts are supported (this may be a first for a LARs
-	architecture)
-	* Port-mapped I/O is supported (this may be a first for a LARs
-	architecture)
-<br><br>
+				<br><br>
 * Data LARs:
 
 		typedef struct packed
@@ -110,12 +106,7 @@
 		this))
 	* Other registers:
 		* `pc` (the program counter, 64-bit)
-		* `ie` (whether or not interrupts are enabled, 1-bit)
-		* `ireta` (the interrupt return address, 64-bit)
-		* `idsta` (the interrupt destination address, 64-bit;
-		upon an interrupt, the program counter is set to the value in this
-		register)
-<br><br>
+										<br><br>
 ## Instruction Set
 * Note:  All invalid instructions are treated as NOPs.
 * ALU Instructions:  Opcode Group:  0b000
@@ -253,54 +244,7 @@ Opcode Group:  0b001
 to have dA.sdata be at least as
 			large as the largest memory address (which might not be
 			64-bit if there isn't enough physical memory for that)
-		* <b>ei</b>
-			* Opcode:  0x3
-			* Effect:  <code>ie <= 1'b1;</code>
-			* Note:  Enable interrupts
-		* <b>di</b>
-			* Opcode:  0x4
-			* Effect:  <code>ie <= 1'b0;</code>
-			* Note:  Disable interrupts
-		* <b>reti</b>
-			* Opcode:  0x5
-			* Effect:  <code>ie <= 1'b1; pc <= ireta;</code>
-			* Note:  Return from an interrupt
-		* <b>cpy</b> dA, ie
-			* Opcode:  0x6
-			* Effect:  <code>dA.sdata <= ie; // acts differently if dA is
-			tagged as a float</code>
-		* <b>cpy</b> dA, ireta
-			* Opcode:  0x7
-			* Effect:  <code>dA.sdata <= ireta;</code>
-			* Note:  It is suggested
-to have dA.sdata be at least as
-			large as the largest memory address (which might not be
-			64-bit if there isn't enough physical memory for that)
-		* <b>cpy</b> dA, idsta
-			* Opcode:  0x8
-			* Effect:  <code>dA.sdata <= idsta;</code>
-			* Note:  It is suggested
-to have dA.sdata be at least as
-			large as the largest memory address (which might not be
-			64-bit if there isn't enough physical memory for that)
-		* <b>cpy</b> ie, dA
-			* Opcode:  0x9
-			* Effect:  <code>ie <= (dA.sdata != 0);</code>
-		* <b>cpy</b> ireta, dA
-			* Opcode:  0xa
-			* Effect:  <code>ireta <= dA.sdata;</code>
-			* Note:  It is suggested
-to have dA.sdata be at least as
-			large as the largest memory address (which might not be
-			64-bit if there isn't enough physical memory for that)
-		* <b>cpy</b> idsta, dA
-			* Opcode:  0xb
-			* Effect:  <code>idsta <= dA.sdata;</code>
-			* Note:  It is suggested
-to have dA.sdata be at least as
-			large as the largest memory address (which might not be
-			64-bit if there isn't enough physical memory for that)
-<br><br>
+																																																																						<br><br>
 * Load Instructions:
 Opcode Group:  0b010
 	* Encoding:  `0100 aaaa bbbb cccc  oooo iiii iiii iiii`
@@ -409,66 +353,3 @@ Opcode Group:  0b011
 		* <b>stf16</b> dA, dB, dC, simm12
 			* Opcode:  0x8
 			* Note:  BFloat16 format floating point number.
-<br><br>
-* Port-mapped Input/Output Instructions:
-Opcode Group:  0b100
-	* Encoding:  `100t aaaa bbbb oooo  iiii iiii iiii iiii`
-		* `t`:  operation type:  if <code>0b0</code>:  scalar
-operation; 
-		else: vector operation
-		* `a`:  dA
-		* `b`:  dB
-		* `o`:  opcode
-		* `i`:  16-bit signed immediate
-	* Note:  `dX.sdata` is simply the current scalar portion of the
-	data LAR called `dX`
-	* Note:  For the <code>in...</code> instructions, the entirety of
-	<code>dA.data</code> is set to the received data.  The type of <code>dA</code> is set
-	based upon the instruction opcode.
-	* Note:  For <code>outs</code>, <code>dA.sdata</code> is sent to the output port,
-	along with the type of data (in case the particular I/O port cares).
-	* Note:  For <code>outv</code>, the entirety of <code>dA.data</code> is sent to the
-	output port, along with the type of data (in case the particular I/O
-	port cares).
-	* Note:  For each of these instructions, the I/O address used is
-	computed by the formula
-	<code>cast\_to\_64(dB.sdata) + sign\_extend\_to\_64(simm16)</code>
-	* Instructions:
-		* <b>inu8</b> dA, dB, simm16
-			* Opcode:  0x0
-			* Note:  unsigned 8-bit integer(s)
-		* <b>ins8</b> dA, dB, simm16
-			* Opcode:  0x1
-			* Note:  signed 8-bit integer(s)
-		* <b>inu16</b> dA, dB, simm16
-			* Opcode:  0x2
-			* Note:  unsigned 16-bit integer(s)
-		* <b>ins16</b> dA, dB, simm16
-			* Opcode:  0x3
-			* Note:  signed 16-bit integer(s)
-		* <b>inu32</b> dA, dB, simm16
-			* Opcode:  0x4
-			* Note:  unsigned 32-bit integer(s)
-		* <b>ins32</b> dA, dB, simm16
-			* Opcode:  0x5
-			* Note:  signed 32-bit integer(s)
-		* <b>inu64</b> dA, dB, simm16
-			* Opcode:  0x6
-			* Note:  unsigned 64-bit integer(s)
-		* <b>ins64</b> dA, dB, simm16
-			* Opcode:  0x7
-			* Note:  signed 64-bit integer(s)
-		* <b>inf16</b> dA, dB, simm16
-			* Opcode:  0x8
-			* Note:  BFloat16 format floating point number.
-		* <b>out</b> (actual mnemonics below)
-			* Opcode:  0x9
-				* <b>outs</b> dA, dB, simm16
-					* `t`:  0
-					* Note:  <code>dA.sdata</code> is simply sent to the output
-					data bus.
-				* <b>outv</b> dA, dB, simm16
-					* `t`:  1
-					* Note:  The type of <code>dA</code> is ignored for this
-					operation as the entirety of the LAR is sent to the
-					port.
