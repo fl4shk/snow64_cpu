@@ -33,6 +33,9 @@
 `define ZERO_EXTEND(some_full_width, some_width_of_arg, some_other_arg) \
 	{{(some_full_width - some_width_of_arg){1'b0}},some_other_arg}
 
+
+`define BPRANGE_TO_MASK(bit_pos_hi, bit_pos_lo) \
+	((1 << (bit_pos_hi - bit_pos_lo + 1)) - 1)
 `define BPRANGE_TO_SHIFTED_MASK(bit_pos_hi, bit_pos_lo) \
 	(((1 << (bit_pos_hi - bit_pos_lo + 1)) - 1) << bit_pos_lo)
 `define GET_BITS(to_get_from, mask, shift) \
@@ -42,6 +45,17 @@
 	`GET_BITS(to_get_from, \
 		`BPRANGE_TO_SHIFTED_MASK(bit_pos_range_hi, bit_pos_range_lo), \
 		bit_pos_range_lo)
+`define GET_CLEARED_BITS(to_clear, mask) (to_clear & (~mask))
+`define GET_CLEARED_BITS_WITH_RANGE(to_clear, bit_pos_range_hi,
+	bit_pos_range_lo) \
+	`GET_CLEARED_BITS(to_clear, (`BPRANGE_TO_MASK(bit_pos_range_hi, \
+	bit_pos_range_lo) << bit_pos_range_lo))
+
+`define GET_SET_BITS(to_set, mask) (to_set | mask)
+`define GET_SET_BITS_WITH_RANGE(to_set, val, bit_pos_range_hi,
+	bit_pos_range_hi) \
+	`GET_SET_BITS(to_set, ((val & `BPRANGE_TO_MASK(bit_pos_range_hi, \
+	bit_pos_range_lo)) << bit_pos_range_lo))
 
 `define INDEX64_8__7_H 63
 `define INDEX64_8__7_L 56

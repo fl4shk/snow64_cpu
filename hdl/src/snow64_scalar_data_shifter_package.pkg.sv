@@ -19,6 +19,7 @@ typedef struct packed
 {
 	LarData to_modify;
 	ScalarData to_shift;
+	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	DataOffset data_offset;
 } PortIn_ScalarDataShifterForWrite;
