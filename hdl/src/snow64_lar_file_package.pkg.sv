@@ -54,12 +54,6 @@ typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_STATE:0]
 
 typedef struct packed
 {
-	//logic mem_bus_guard_instr_load_busy;
-	logic mem_bus_guard_busy;
-} PartialPortIn_LarFile_Ctrl;
-
-typedef struct packed
-{
 	LarIndex index;
 } PartialPortIn_LarFile_Read;
 
@@ -77,11 +71,23 @@ typedef struct packed
 
 	// Data to write into the LAR file (not relevant for WriteTypLd or
 	// WriteTypSt)
-	LarData data;
+	LarData non_ldst_data;
 
-	// Address to write into the LAR file (relevant for WriteTypLd and
+
+	// Which shared data are we writing to (used for WriteTypOnlyData and
+	// WriteTypDataAndType)
+	// This is used so that writing to the array of shared data can be done
+	// without actually looking at the stored tag of the metadata.
+	// 
+	// This may cause loads and stores to slow down?  I'll try to find a
+	// way to prevent that, but I'll take slower loads and stores over not
+	// being able to fit my LAR file into a real FPGA.
+	LarTag non_ldst_tag;
+
+
+	// Address to write into the LAR file (used for WriteTypLd and
 	// WriteTypSt)
-	PkgSnow64Cpu::CpuAddr addr;
+	PkgSnow64Cpu::CpuAddr ldst_addr;
 
 	// New type of the LAR (relevant for all LarFileWriteType's except
 	// WriteTypOnlyData)
@@ -91,32 +97,51 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic valid, busy;
+	logic valid;
 	LarData data;
 } PartialPortIn_LarFile_MemRead;
 
 typedef struct packed
 {
-	logic valid, busy;
+	logic valid;
 } PartialPortIn_LarFile_MemWrite;
+
+//typedef struct packed
+//{
+//	LarData data;
+//	ScalarData scalar_data;
+//
+//	PkgSnow64Cpu::CpuAddr addr;
+//
+//	LarTag tag;
+//
+//	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
+//
+//	// Same int_type_size goodness as in other modules.
+//	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+//
+//	// It turns out that nobody besides the LAR file needs to know which
+//	// LARs are dirty!
+//} PartialPortOut_LarFile_Read;
+
+typedef struct packed
+{
+	LarTag tag;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] data_offset;
+
+	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+} PartialPortOut_LarFile_ReadMetadata;
 
 typedef struct packed
 {
 	LarData data;
 	ScalarData scalar_data;
 
-	PkgSnow64Cpu::CpuAddr addr;
-
-	LarTag tag;
-
-	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
-
-	// Same int_type_size goodness as in other modules.
-	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
-
-	// It turns out that nobody besides the LAR file needs to know which
-	// LARs are dirty!
-} PartialPortOut_LarFile_Read;
+	//PkgSnow64Cpu::CpuAddr addr;
+	LarBaseAddr base_addr;
+} PartialPortOut_LarFile_ReadShareddata;
 
 // Tell the outside world when we want to read from memory.
 typedef struct packed
@@ -142,11 +167,8 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic `STRUCTDIM(PartialPortIn_LarFile_Ctrl) ctrl;
 
-	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_a;
-	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_b;
-	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_c;
+	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_a, rd_b, rd_c;
 	logic `STRUCTDIM(PartialPortIn_LarFile_Write) wr;
 	logic `STRUCTDIM(PartialPortIn_LarFile_MemRead) mem_read;
 	logic `STRUCTDIM(PartialPortIn_LarFile_MemWrite) mem_write;
@@ -154,9 +176,10 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic `STRUCTDIM(PartialPortOut_LarFile_Read) rd_a;
-	logic `STRUCTDIM(PartialPortOut_LarFile_Read) rd_b;
-	logic `STRUCTDIM(PartialPortOut_LarFile_Read) rd_c;
+	logic `STRUCTDIM(PartialPortOut_LarFile_ReadMetadata)
+		rd_metadata_a, rd_metadata_b, rd_metadata_c;
+	logic `STRUCTDIM(PartialPortOut_LarFile_ReadShareddata)
+		rd_shareddata_a, rd_shareddata_b, rd_shareddata_c;
 	logic `STRUCTDIM(PartialPortOut_LarFile_MemRead) mem_read;
 	logic `STRUCTDIM(PartialPortOut_LarFile_MemWrite) mem_write;
 	logic `STRUCTDIM(PartialPortOut_LarFile_WaitForMe) wait_for_me;

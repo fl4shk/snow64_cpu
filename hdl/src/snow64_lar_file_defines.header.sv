@@ -81,7 +81,8 @@
 
 // A "tag" in this case is which refers to the index of the shared data
 // that this LAR cares about.
-`define WIDTH__SNOW64_LAR_FILE_METADATA_TAG `WIDTH__SNOW64_LAR_FILE_INDEX
+`define WIDTH__SNOW64_LAR_FILE_METADATA_TAG \
+	($clog2(`ARR_SIZE__SNOW64_LAR_FILE_NUM_LARS))
 `define MSB_POS__SNOW64_LAR_FILE_METADATA_TAG \
 	`WIDTH2MP(`WIDTH__SNOW64_LAR_FILE_METADATA_TAG)
 
