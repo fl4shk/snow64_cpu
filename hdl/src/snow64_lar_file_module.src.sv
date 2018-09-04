@@ -1,5 +1,111 @@
 `include "src/snow64_lar_file_defines.header.sv"
 
+module __Snow64LarFileTagSearch
+	(input logic [`MSB_POS__SNOW64_CPU_ADDR:0] in_addr,
+	input logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
+		in_lar_shareddata__base_addr_0, in_lar_shareddata__base_addr_1,
+		in_lar_shareddata__base_addr_2, in_lar_shareddata__base_addr_3,
+		in_lar_shareddata__base_addr_4, in_lar_shareddata__base_addr_5,
+		in_lar_shareddata__base_addr_6, in_lar_shareddata__base_addr_7,
+		in_lar_shareddata__base_addr_8, in_lar_shareddata__base_addr_9,
+		in_lar_shareddata__base_addr_10, in_lar_shareddata__base_addr_11,
+		in_lar_shareddata__base_addr_12, in_lar_shareddata__base_addr_13,
+		in_lar_shareddata__base_addr_14, in_lar_shareddata__base_addr_15,
+	input logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_REF_COUNT:0]
+		in_lar_shareddata__ref_count_0, in_lar_shareddata__ref_count_1,
+		in_lar_shareddata__ref_count_2, in_lar_shareddata__ref_count_3,
+		in_lar_shareddata__ref_count_4, in_lar_shareddata__ref_count_5,
+		in_lar_shareddata__ref_count_6, in_lar_shareddata__ref_count_7,
+		in_lar_shareddata__ref_count_8, in_lar_shareddata__ref_count_9,
+		in_lar_shareddata__ref_count_10, in_lar_shareddata__ref_count_11,
+		in_lar_shareddata__ref_count_12, in_lar_shareddata__ref_count_13,
+		in_lar_shareddata__ref_count_14, in_lar_shareddata__ref_count_15,
+	output logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0] out);
+
+	PkgSnow64LarFile::LarIncomingBaseAddr __in_wr__incoming_base_addr;
+	assign __in_wr__incoming_base_addr = in_addr;
+
+	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
+		__tag_search_1,
+		__tag_search_2, __tag_search_3,
+		__tag_search_4, __tag_search_5,
+		__tag_search_6, __tag_search_7,
+		__tag_search_8, __tag_search_9,
+		__tag_search_10, __tag_search_11,
+		__tag_search_12, __tag_search_13,
+		__tag_search_14, __tag_search_15,
+
+		__tag_search_2_to_3,
+		__tag_search_4_to_5, __tag_search_6_to_7,
+		__tag_search_8_to_9, __tag_search_10_to_11,
+		__tag_search_12_to_13, __tag_search_14_to_15,
+
+		__tag_search_1_to_3, __tag_search_4_to_7,
+		__tag_search_8_to_11, __tag_search_12_to_15;
+
+	`define DO_TAG_SEARCH(index) \
+		((in_lar_shareddata__ref_count_``index \
+		&& (in_lar_shareddata__base_addr_``index \
+		== __in_wr__incoming_base_addr.base_addr)) \
+		? index : 0)
+
+	assign __tag_search_1 = `DO_TAG_SEARCH(1);
+	assign __tag_search_2 = `DO_TAG_SEARCH(2);
+	assign __tag_search_3 = `DO_TAG_SEARCH(3);
+
+	`ifdef SMALL_LAR_FILE
+	assign __tag_search_4 = 0;
+	assign __tag_search_5 = 0;
+	assign __tag_search_6 = 0;
+	assign __tag_search_7 = 0;
+	assign __tag_search_8 = 0;
+	assign __tag_search_9 = 0;
+	assign __tag_search_10 = 0;
+	assign __tag_search_11 = 0;
+	assign __tag_search_12 = 0;
+	assign __tag_search_13 = 0;
+	assign __tag_search_14 = 0;
+	assign __tag_search_15 = 0;
+	`else // if (!defined(SMALL_LAR_FILE))
+	assign __tag_search_4 = `DO_TAG_SEARCH(4);
+	assign __tag_search_5 = `DO_TAG_SEARCH(5);
+	assign __tag_search_6 = `DO_TAG_SEARCH(6);
+	assign __tag_search_7 = `DO_TAG_SEARCH(7);
+	assign __tag_search_8 = `DO_TAG_SEARCH(8);
+	assign __tag_search_9 = `DO_TAG_SEARCH(9);
+	assign __tag_search_10 = `DO_TAG_SEARCH(10);
+	assign __tag_search_11 = `DO_TAG_SEARCH(11);
+	assign __tag_search_12 = `DO_TAG_SEARCH(12);
+	assign __tag_search_13 = `DO_TAG_SEARCH(13);
+	assign __tag_search_14 = `DO_TAG_SEARCH(14);
+	assign __tag_search_15 = `DO_TAG_SEARCH(15);
+	`endif		// (defined(SMALL_LAR_FILE))
+
+	`undef DO_TAG_SEARCH
+
+	assign __tag_search_2_to_3 = __tag_search_2 | __tag_search_3;
+
+	assign __tag_search_4_to_5 = __tag_search_4 | __tag_search_5;
+	assign __tag_search_6_to_7 = __tag_search_6 | __tag_search_7;
+	assign __tag_search_8_to_9 = __tag_search_8 | __tag_search_9;
+	assign __tag_search_10_to_11 = __tag_search_10 | __tag_search_11;
+	assign __tag_search_12_to_13 = __tag_search_12 | __tag_search_13;
+	assign __tag_search_14_to_15 = __tag_search_14 | __tag_search_15;
+
+	assign __tag_search_1_to_3 = __tag_search_1 | __tag_search_2_to_3;
+	assign __tag_search_4_to_7
+		= __tag_search_4_to_5 | __tag_search_6_to_7;
+	assign __tag_search_8_to_11
+		= __tag_search_8_to_9 | __tag_search_10_to_11;
+	assign __tag_search_12_to_15
+		= __tag_search_12_to_13 | __tag_search_14_to_15;
+
+	assign out = __tag_search_1_to_3 | __tag_search_4_to_7
+		| __tag_search_8_to_11 | __tag_search_12_to_15;
+
+endmodule
+
+
 module Snow64LarFile(input logic clk,
 	input PkgSnow64LarFile::PortIn_LarFile in,
 	output PkgSnow64LarFile::PortOut_LarFile out);
@@ -120,28 +226,9 @@ module Snow64LarFile(input logic clk,
 
 	// Tag search stuff
 	logic [__MSB_POS__LAR_FILE_METADATA_TAG:0]
-		__tag_search_1,
-		__tag_search_2, __tag_search_3,
-		__tag_search_4, __tag_search_5,
-		__tag_search_6, __tag_search_7,
-		__tag_search_8, __tag_search_9,
-		__tag_search_10, __tag_search_11,
-		__tag_search_12, __tag_search_13,
-		__tag_search_14, __tag_search_15,
-
-		__tag_search_2_to_3,
-		__tag_search_4_to_5, __tag_search_6_to_7,
-		__tag_search_8_to_9, __tag_search_10_to_11,
-		__tag_search_12_to_13, __tag_search_14_to_15,
-
-		__tag_search_1_to_3, __tag_search_4_to_7,
-		__tag_search_8_to_11, __tag_search_12_to_15,
-
 		__captured_tag_search_final;
 
-	PkgSnow64LarFile::LarIncomingBaseAddr
-		__captured_in_wr__base_addr, __in_wr__incoming_base_addr;
-	assign __in_wr__incoming_base_addr = real_in_wr.ldst_addr;
+	PkgSnow64LarFile::LarIncomingBaseAddr __captured_in_wr__base_addr;
 
 	// Metadata
 
@@ -175,6 +262,97 @@ module Snow64LarFile(input logic clk,
 	// This needs to be implemented as block RAM.
 	logic [__MSB_POS__LAR_FILE_SHAREDDATA_DIRTY:0]
 		__lar_shareddata__dirty[__ARR_SIZE__NUM_LARS];
+
+	wire [__MSB_POS__LAR_FILE_METADATA_TAG:0] __out_tag_search;
+	__Snow64LarFileTagSearch __inst_tag_search
+		(.in_addr(real_in_wr.ldst_addr),
+		.in_lar_shareddata__base_addr_0(__lar_shareddata__base_addr[0]),
+		.in_lar_shareddata__base_addr_1(__lar_shareddata__base_addr[1]),
+		.in_lar_shareddata__base_addr_2(__lar_shareddata__base_addr[2]),
+		.in_lar_shareddata__base_addr_3(__lar_shareddata__base_addr[3]),
+		`ifdef SMALL_LAR_FILE
+		.in_lar_shareddata__base_addr_4
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_5
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_6
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_7
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_8
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_9
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_10
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_11
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_12
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_13
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_14
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		.in_lar_shareddata__base_addr_15
+			({{__WIDTH__LAR_FILE_SHAREDDATA_BASE_ADDR{1'b0}}}),
+		`else // if (!defined(SMALL_LAR_FILE))
+		.in_lar_shareddata__base_addr_4(__lar_shareddata__base_addr[4]),
+		.in_lar_shareddata__base_addr_5(__lar_shareddata__base_addr[5]),
+		.in_lar_shareddata__base_addr_6(__lar_shareddata__base_addr[6]),
+		.in_lar_shareddata__base_addr_7(__lar_shareddata__base_addr[7]),
+		.in_lar_shareddata__base_addr_8(__lar_shareddata__base_addr[8]),
+		.in_lar_shareddata__base_addr_9(__lar_shareddata__base_addr[9]),
+		.in_lar_shareddata__base_addr_10(__lar_shareddata__base_addr[10]),
+		.in_lar_shareddata__base_addr_11(__lar_shareddata__base_addr[11]),
+		.in_lar_shareddata__base_addr_12(__lar_shareddata__base_addr[12]),
+		.in_lar_shareddata__base_addr_13(__lar_shareddata__base_addr[13]),
+		.in_lar_shareddata__base_addr_14(__lar_shareddata__base_addr[14]),
+		.in_lar_shareddata__base_addr_15(__lar_shareddata__base_addr[15]),
+		`endif		// SMALL_LAR_FILE
+		.in_lar_shareddata__ref_count_0(__lar_shareddata__ref_count[0]),
+		.in_lar_shareddata__ref_count_1(__lar_shareddata__ref_count[1]),
+		.in_lar_shareddata__ref_count_2(__lar_shareddata__ref_count[2]),
+		.in_lar_shareddata__ref_count_3(__lar_shareddata__ref_count[3]),
+		`ifdef SMALL_LAR_FILE
+		.in_lar_shareddata__ref_count_4
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_5
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_6
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_7
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_8
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_9
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_10
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_11
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_12
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_13
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_14
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		.in_lar_shareddata__ref_count_15
+			({{__WIDTH__LAR_FILE_SHAREDDATA_REF_COUNT{1'b0}}}),
+		`else // if (!defined(SMALL_LAR_FILE))
+		.in_lar_shareddata__ref_count_4(__lar_shareddata__ref_count[4]),
+		.in_lar_shareddata__ref_count_5(__lar_shareddata__ref_count[5]),
+		.in_lar_shareddata__ref_count_6(__lar_shareddata__ref_count[6]),
+		.in_lar_shareddata__ref_count_7(__lar_shareddata__ref_count[7]),
+		.in_lar_shareddata__ref_count_8(__lar_shareddata__ref_count[8]),
+		.in_lar_shareddata__ref_count_9(__lar_shareddata__ref_count[9]),
+		.in_lar_shareddata__ref_count_10(__lar_shareddata__ref_count[10]),
+		.in_lar_shareddata__ref_count_11(__lar_shareddata__ref_count[11]),
+		.in_lar_shareddata__ref_count_12(__lar_shareddata__ref_count[12]),
+		.in_lar_shareddata__ref_count_13(__lar_shareddata__ref_count[13]),
+		.in_lar_shareddata__ref_count_14(__lar_shareddata__ref_count[14]),
+		.in_lar_shareddata__ref_count_15(__lar_shareddata__ref_count[15]),
+		`endif		// SMALL_LAR_FILE
+		.out(__out_tag_search));
 
 
 
@@ -330,62 +508,6 @@ module Snow64LarFile(input logic clk,
 	end
 	`endif		// FORMAL
 
-	`define DO_TAG_SEARCH(index) \
-		((__lar_shareddata__ref_count[index] \
-		&& (__lar_shareddata__base_addr[index] \
-		== __in_wr__incoming_base_addr.base_addr)) \
-		? index : 0)
-
-	assign __tag_search_1 = `DO_TAG_SEARCH(1);
-	assign __tag_search_2 = `DO_TAG_SEARCH(2);
-	assign __tag_search_3 = `DO_TAG_SEARCH(3);
-
-	`ifdef SMALL_LAR_FILE
-	assign __tag_search_4 = 0;
-	assign __tag_search_5 = 0;
-	assign __tag_search_6 = 0;
-	assign __tag_search_7 = 0;
-	assign __tag_search_8 = 0;
-	assign __tag_search_9 = 0;
-	assign __tag_search_10 = 0;
-	assign __tag_search_11 = 0;
-	assign __tag_search_12 = 0;
-	assign __tag_search_13 = 0;
-	assign __tag_search_14 = 0;
-	assign __tag_search_15 = 0;
-	`else // if (!defined(SMALL_LAR_FILE))
-	assign __tag_search_4 = `DO_TAG_SEARCH(4);
-	assign __tag_search_5 = `DO_TAG_SEARCH(5);
-	assign __tag_search_6 = `DO_TAG_SEARCH(6);
-	assign __tag_search_7 = `DO_TAG_SEARCH(7);
-	assign __tag_search_8 = `DO_TAG_SEARCH(8);
-	assign __tag_search_9 = `DO_TAG_SEARCH(9);
-	assign __tag_search_10 = `DO_TAG_SEARCH(10);
-	assign __tag_search_11 = `DO_TAG_SEARCH(11);
-	assign __tag_search_12 = `DO_TAG_SEARCH(12);
-	assign __tag_search_13 = `DO_TAG_SEARCH(13);
-	assign __tag_search_14 = `DO_TAG_SEARCH(14);
-	assign __tag_search_15 = `DO_TAG_SEARCH(15);
-	`endif		// (defined(SMALL_LAR_FILE))
-
-	`undef DO_TAG_SEARCH
-
-	assign __tag_search_2_to_3 = __tag_search_2 | __tag_search_3;
-
-	assign __tag_search_4_to_5 = __tag_search_4 | __tag_search_5;
-	assign __tag_search_6_to_7 = __tag_search_6 | __tag_search_7;
-	assign __tag_search_8_to_9 = __tag_search_8 | __tag_search_9;
-	assign __tag_search_10_to_11 = __tag_search_10 | __tag_search_11;
-	assign __tag_search_12_to_13 = __tag_search_12 | __tag_search_13;
-	assign __tag_search_14_to_15 = __tag_search_14 | __tag_search_15;
-
-	assign __tag_search_1_to_3 = __tag_search_1 | __tag_search_2_to_3;
-	assign __tag_search_4_to_7
-		= __tag_search_4_to_5 | __tag_search_6_to_7;
-	assign __tag_search_8_to_11
-		= __tag_search_8_to_9 | __tag_search_10_to_11;
-	assign __tag_search_12_to_15
-		= __tag_search_12_to_13 | __tag_search_14_to_15;
 
 
 endmodule
