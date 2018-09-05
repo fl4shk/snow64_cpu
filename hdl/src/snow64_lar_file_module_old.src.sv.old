@@ -439,7 +439,7 @@ module Snow64LarFile(input logic clk,
 
 	logic [__MSB_POS__METADATA__TAG : 0]
 		__tag_search_0, __tag_search_1, __tag_search_2, __tag_search_3,
-		__tag_search_final, __captured_tag_search_final;
+		__tag_search_final, __captured_tag_search;
 
 	`ifdef FORMAL
 	logic __found_tag;
@@ -536,7 +536,7 @@ module Snow64LarFile(input logic clk,
 		__captured_in_wr__int_type_size = 0;
 		__captured_in_mem_read__valid = 0;
 		__captured_in_mem_write__valid = 0;
-		__captured_tag_search_final = 0;
+		__captured_tag_search = 0;
 		__curr_tag_stack_index = __LAST_INDEX__NUM_LARS;
 		{real_out_rd_a.data, real_out_rd_b.data,
 			real_out_rd_c.data} = 0;
@@ -765,7 +765,7 @@ module Snow64LarFile(input logic clk,
 	`define captured__wr_curr_shareddata_base_addr \
 		`shareddata_tagged_base_addr(__captured_in_wr__index)
 	`define wr_aliased_shareddata_base_addr \
-		`shareddata_base_addr(__captured_tag_search_final)
+		`shareddata_base_addr(__captured_tag_search)
 	`define wr_to_allocate_shareddata_base_addr \
 		`shareddata_base_addr(`top_metadata_tag)
 
@@ -774,7 +774,7 @@ module Snow64LarFile(input logic clk,
 	`define captured__wr_curr_shareddata_data \
 		`shareddata_tagged_data(__captured_in_wr__index)
 	`define wr_aliased_shareddata_data \
-		`shareddata_data(__captured_tag_search_final)
+		`shareddata_data(__captured_tag_search)
 	`define wr_to_allocate_shareddata_data \
 		`shareddata_data(`top_metadata_tag)
 
@@ -783,14 +783,14 @@ module Snow64LarFile(input logic clk,
 	`define captured__wr_curr_shareddata_dirty \
 		`shareddata_tagged_dirty(__captured_in_wr__index)
 	`define wr_aliased_shareddata_dirty \
-		`shareddata_dirty(__captured_tag_search_final)
+		`shareddata_dirty(__captured_tag_search)
 	`define wr_to_allocate_shareddata_dirty \
 		`shareddata_dirty(`top_metadata_tag)
 
 	`define captured__wr_curr_shareddata_ref_count \
 		`shareddata_tagged_ref_count(__captured_in_wr__index)
 	`define wr_aliased_shareddata_ref_count \
-		`shareddata_ref_count(__captured_tag_search_final)
+		`shareddata_ref_count(__captured_tag_search)
 	`define wr_to_allocate_shareddata_ref_count \
 		`shareddata_ref_count(`top_metadata_tag)
 
@@ -965,7 +965,7 @@ module Snow64LarFile(input logic clk,
 					`incoming__wr_metadata_int_type_size
 						<= real_in_wr.int_type_size;
 
-					__captured_tag_search_final <= __tag_search_final;
+					__captured_tag_search <= __tag_search_final;
 
 					`ifdef FORMAL
 					__debug_tag_search_final <= __tag_search_final;
@@ -1040,7 +1040,7 @@ module Snow64LarFile(input logic clk,
 			// 
 			// This is the best case scenario.  It's the analog of a cache
 			// hit in a conventional cache.
-			if (__captured_tag_search_final != 0)
+			if (__captured_tag_search != 0)
 			begin
 				// We'll never need to read from memory if there was a
 				// "hit".
@@ -1048,13 +1048,13 @@ module Snow64LarFile(input logic clk,
 
 				// A tag already exists.  We set our tag to the existing
 				// one.
-				`captured__wr_metadata_tag <= __captured_tag_search_final;
+				`captured__wr_metadata_tag <= __captured_tag_search;
 
 				// Loads of data we already had don't affect the dirty
 				// flag.
 
 				// If our existing tag ISN'T the one we found.
-				if (__captured_tag_search_final
+				if (__captured_tag_search
 					!= `captured__wr_metadata_tag)
 				begin
 					`wr_aliased_shareddata_ref_count
@@ -1153,7 +1153,7 @@ module Snow64LarFile(input logic clk,
 			// 
 			// This is an analog of a cache miss in a conventional
 			// cache design.
-			else // if (__captured_tag_search_final == 0)
+			else // if (__captured_tag_search == 0)
 			begin
 				case (`captured__wr_curr_shareddata_ref_count)
 				// This is from before we were allocated.

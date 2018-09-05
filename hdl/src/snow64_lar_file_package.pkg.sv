@@ -42,19 +42,19 @@ typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_STATE:0]
 {
 	WrStIdle,
-	WrStStartLdSt,
+	WrStLdStPart0,
+	WrStLdStPart1,
 	WrStWaitForJustMemRead,
 	WrStWaitForJustMemWrite,
 
 	WrStWaitForMemReadAndMemWrite,
 	WrStBad0,
-	WrStBad1,
-	WrStBad2
+	WrStBad1
 } WriteState;
 
 typedef struct packed
 {
-	LarIndex index;
+	logic [`MSB_POS__SNOW64_LAR_FILE_INDEX:0] index;
 } PartialPortIn_LarFile_Read;
 
 
@@ -74,15 +74,15 @@ typedef struct packed
 	LarData non_ldst_data;
 
 
-	// Which shared data are we writing to (used for WriteTypOnlyData and
-	// WriteTypDataAndType)
-	// This is used so that writing to the array of shared data can be done
-	// without actually looking at the stored tag of the metadata.
-	// 
-	// This may cause loads and stores to slow down?  I'll try to find a
-	// way to prevent that, but I'll take slower loads and stores over not
-	// being able to fit my LAR file into a real FPGA.
-	LarTag non_ldst_tag;
+	//// Which shared data are we writing to (used for WriteTypOnlyData and
+	//// WriteTypDataAndType)
+	//// This is used so that writing to the array of shared data can be done
+	//// without actually looking at the stored tag of the metadata.
+	//// 
+	//// This may cause loads and stores to slow down?  I'll try to find a
+	//// way to prevent that, but I'll take slower loads and stores over not
+	//// being able to fit my LAR file into a real FPGA.
+	//LarTag non_ldst_tag;
 
 
 	// Address to write into the LAR file (used for WriteTypLd and
@@ -143,6 +143,11 @@ typedef struct packed
 	LarBaseAddr base_addr;
 } PartialPortOut_LarFile_ReadShareddata;
 
+typedef struct packed
+{
+	logic valid;
+} PartialPortOut_LarFile_Write;
+
 // Tell the outside world when we want to read from memory.
 typedef struct packed
 {
@@ -158,12 +163,6 @@ typedef struct packed
 	LarBaseAddr base_addr;
 } PartialPortOut_LarFile_MemWrite;
 
-// Wait for me!
-// This indicates that we can't accept any commands.
-typedef struct packed
-{
-	logic busy;
-} PartialPortOut_LarFile_WaitForMe;
 
 typedef struct packed
 {
@@ -180,9 +179,9 @@ typedef struct packed
 		rd_metadata_a, rd_metadata_b, rd_metadata_c;
 	logic `STRUCTDIM(PartialPortOut_LarFile_ReadShareddata)
 		rd_shareddata_a, rd_shareddata_b, rd_shareddata_c;
+	logic `STRUCTDIM(PartialPortOut_LarFile_Write) wr;
 	logic `STRUCTDIM(PartialPortOut_LarFile_MemRead) mem_read;
 	logic `STRUCTDIM(PartialPortOut_LarFile_MemWrite) mem_write;
-	logic `STRUCTDIM(PartialPortOut_LarFile_WaitForMe) wait_for_me;
 } PortOut_LarFile;
 
 
