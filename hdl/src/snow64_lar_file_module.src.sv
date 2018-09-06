@@ -337,7 +337,14 @@ module Snow64LarFile(input logic clk,
 	logic [__MSB_POS__LAR_FILE_METADATA_TAG:0]
 		__lar_tag_stack[__ARR_SIZE__NUM_LARS];
 	logic [__MSB_POS__LAR_FILE_METADATA_TAG:0]
-		__curr_tag_stack_index;
+		__curr_tag_stack_index, __above_curr_tag_stack_index,
+		__captured_top_lar_tag;
+
+	logic __captured_in_wr__shareddata_dirty_from_tag;
+	logic [__MSB_POS__LAR_FILE_SHAREDDATA_REF_COUNT:0]
+		__captured_in_wr__shareddata_ref_count_from_tag;
+	logic [__MSB_POS__LAR_FILE_SHAREDDATA_BASE_ADDR:0]
+		__captured_in_wr__shareddata_base_addr_from_tag;
 
 	// Tag search stuff
 	logic [__MSB_POS__LAR_FILE_METADATA_TAG:0]
@@ -759,6 +766,11 @@ module Snow64LarFile(input logic clk,
 		end
 
 		__curr_tag_stack_index = __LAST_INDEX__NUM_LARS;
+		__above_curr_tag_stack_index = 0;
+		__captured_top_lar_tag = 0;
+		__captured_in_wr__shareddata_dirty_from_tag = 0;
+		__captured_in_wr__shareddata_ref_count_from_tag = 0;
+		__captured_in_wr__shareddata_base_addr_from_tag = 0;
 		{real_out_rd_metadata_a, real_out_rd_metadata_b,
 			real_out_rd_metadata_c} = 0;
 		{real_out_rd_shareddata_a, real_out_rd_shareddata_b,
@@ -806,12 +818,67 @@ module Snow64LarFile(input logic clk,
 	`undef RD_TAG
 	`undef GEN_RD
 
-	`define TAGGED_SHAREDDATA_BASE_ADDR(index) \
-		__lar_shareddata__base_addr[__lar_metadata__tag[index]]
-	`define TAGGED_SHAREDDATA_REF_COUNT(index) \
-		__lar_shareddata__ref_count[__lar_metadata__tag[index]]
-	`define TAGGED_SHAREDDATA_DIRTY(index) \
-		__lar_shareddata__dirty[__lar_metadata__tag[index]]
+
+	`define BEFORE_LDST_IN_WR_METADATA_TAG \
+		__lar_metadata__tag[real_in_wr.index]
+
+	`define IN_LDST_CAPTURED_CURR_METADATA_TAG \
+		__captured_in_wr__tag_from_index
+	`define IN_LDST_CAPTURED_TOP_METADATA_TAG \
+		__captured_top_lar_tag
+	`define IN_LDST_CAPTURED_ALIASED_METADATA_TAG \
+		__captured_tag_search
+
+	`define IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA \
+		__captured_out_shareddata_data_rd_for_wr_data
+
+	`define IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR \
+		__captured_in_wr__shareddata_base_addr_from_tag
+	`define IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT \
+		__captured_in_wr__shareddata_ref_count_from_tag
+	`define IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY \
+		__captured_in_wr__shareddata_dirty_from_tag
+
+
+	`define IN_LDST_MODIFIABLE_CURR_METADATA_TAG \
+		__lar_metadata__tag[__captured_in_wr.index]
+	`define IN_LDST_MODIFIABLE_CURR_METADATA_DATA_TYPE \
+		__lar_metadata__data_type[__captured_in_wr.index]
+	`define IN_LDST_MODIFIABLE_CURR_METADATA_INT_TYPE_SIZE \
+		__lar_metadata__int_type_size[__captured_in_wr.index]
+	`define IN_LDST_MODIFIABLE_CURR_METADATA_DATA_OFFSET \
+		__lar_metadata__data_offset[__captured_in_wr.index]
+
+
+	`define IN_LDST_MODIFIABLE_CURR_SHAREDDATA_BASE_ADDR \
+		__lar_shareddata__base_addr[`IN_LDST_CAPTURED_CURR_METADATA_TAG]
+	`define IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT \
+		__lar_shareddata__ref_count[`IN_LDST_CAPTURED_CURR_METADATA_TAG]
+	`define IN_LDST_MODIFIABLE_CURR_SHAREDDATA_DIRTY \
+		__lar_shareddata__dirty[`IN_LDST_CAPTURED_CURR_METADATA_TAG]
+
+	`define IN_LDST_MODIFIABLE_TOP_SHAREDDATA_BASE_ADDR \
+		__lar_shareddata__base_addr[`IN_LDST_CAPTURED_TOP_METADATA_TAG]
+	`define IN_LDST_MODIFIABLE_TOP_SHAREDDATA_REF_COUNT \
+		__lar_shareddata__ref_count[`IN_LDST_CAPTURED_TOP_METADATA_TAG]
+	`define IN_LDST_MODIFIABLE_TOP_SHAREDDATA_DIRTY \
+		__lar_shareddata__dirty[`IN_LDST_CAPTURED_TOP_METADATA_TAG]
+
+	`define IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_BASE_ADDR \
+		__lar_shareddata__base_addr \
+			[`IN_LDST_CAPTURED_ALIASED_METADATA_TAG]
+	`define IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT \
+		__lar_shareddata__ref_count \
+			[`IN_LDST_CAPTURED_ALIASED_METADATA_TAG]
+	`define IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_DIRTY \
+		__lar_shareddata__dirty \
+			[`IN_LDST_CAPTURED_ALIASED_METADATA_TAG]
+
+
+	task finish_ldst;
+		__wr_state <= PkgSnow64LarFile::WrStIdle;
+		real_out_wr.valid <= 1;
+	endtask
 
 	task prep_mem_read;
 		real_out_mem_read.req <= 1;
@@ -829,13 +896,12 @@ module Snow64LarFile(input logic clk,
 
 	task prep_mem_write;
 		real_out_mem_write.req <= 1;
-		real_out_mem_write.data
-			<= __captured_out_shareddata_data_rd_for_wr_data;
+		real_out_mem_write.data <= `IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA;
 
-		// The base_addr of the data is ALWAYS the old data's address.
+		// The base_addr of the data is ALWAYS the old data's address for a
+		// memory write by the LAR file.
 		real_out_mem_write.base_addr
-			<= __lar_shareddata__base_addr
-			[__captured_in_wr__tag_from_index];
+			<= `IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR;
 	endtask : prep_mem_write
 
 	task prep_shareddata_data_write
@@ -861,11 +927,27 @@ module Snow64LarFile(input logic clk,
 			stop_mem_write();
 
 			__captured_in_wr <= real_in_wr;
-			__captured_in_wr__tag_from_index
-				<= __lar_metadata__tag[real_in_wr.index];
-			__captured_tag_search <= __out_tag_search;
-			__captured_out_shareddata_data_rd_for_wr_data
+			`IN_LDST_CAPTURED_CURR_METADATA_TAG
+				<= `BEFORE_LDST_IN_WR_METADATA_TAG;
+
+			`IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY
+				<= __lar_shareddata__dirty
+				[`BEFORE_LDST_IN_WR_METADATA_TAG];
+			`IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT
+				<= __lar_shareddata__ref_count
+				[`BEFORE_LDST_IN_WR_METADATA_TAG];
+			`IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR
+				<= __lar_shareddata__base_addr
+				[`BEFORE_LDST_IN_WR_METADATA_TAG];
+
+			__above_curr_tag_stack_index <= __curr_tag_stack_index + 1;
+
+			`IN_LDST_CAPTURED_ALIASED_METADATA_TAG <= __out_tag_search;
+			`IN_LDST_CAPTURED_TOP_METADATA_TAG
+				<= __lar_tag_stack[__curr_tag_stack_index];
+			`IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA
 				<= __out_shareddata_data_rd_for_wr_data;
+
 			__captured_in_mem_read__valid <= 0;
 			__captured_in_mem_write__valid <= 0;
 
@@ -879,7 +961,8 @@ module Snow64LarFile(input logic clk,
 						!= __UNALLOCATED_TAG)
 					begin
 						real_out_wr.valid <= 1;
-						`TAGGED_SHAREDDATA_DIRTY(real_in_wr.index) <= 1;
+						__lar_shareddata__dirty
+							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
 							(__lar_metadata__tag[real_in_wr.index],
 							real_in_wr.non_ldst_data);
@@ -893,7 +976,8 @@ module Snow64LarFile(input logic clk,
 						!= __UNALLOCATED_TAG)
 					begin
 						real_out_wr.valid <= 1;
-						`TAGGED_SHAREDDATA_DIRTY(real_in_wr.index) <= 1;
+						__lar_shareddata__dirty
+							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
 							(__lar_metadata__tag[real_in_wr.index],
 							real_in_wr.non_ldst_data);
@@ -931,38 +1015,51 @@ module Snow64LarFile(input logic clk,
 		PkgSnow64LarFile::WrStLdStPart0:
 		begin
 			// If we already had the address's data.
-			if (__captured_tag_search != 0)
+			if (`IN_LDST_CAPTURED_ALIASED_METADATA_TAG != 0)
 			begin
 				stop_mem_read();
-				//stop_shareddata_data_write();
 
-				__lar_metadata__tag[__captured_in_wr.index]
-					<= __captured_tag_search;
+				// A tag already exists.  We set our tag to the existing
+				// one.
+				`IN_LDST_MODIFIABLE_CURR_METADATA_TAG
+					<= `IN_LDST_CAPTURED_ALIASED_METADATA_TAG;
 
-				if (__captured_in_wr__tag_from_index
-					!= __captured_tag_search)
+				// If our existing tag ISN'T the one we found.
+				if (`IN_LDST_CAPTURED_ALIASED_METADATA_TAG
+					!= `IN_LDST_CAPTURED_CURR_METADATA_TAG)
 				begin
-					__lar_shareddata__ref_count[__captured_tag_search]
-						<= __lar_shareddata__ref_count
-						[__captured_tag_search] + 1;
+					// The aliased reference count always increments here.
+					`IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT
+						<=
+						`IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT
+						+ 1;
 
 					if (__captured_in_wr.write_type
 						== PkgSnow64LarFile::WriteTypSt)
 					begin
-						// Copy our old data to the new location.
-						prep_shareddata_data_write(__captured_tag_search,
-							__captured_out_shareddata_data_rd_for_wr_data);
-						__lar_shareddata__dirty[__captured_tag_search]
-							<= 1;
+						// Make a copy of our data to the new address.
+						// This also causes us to need to set the dirty
+						// flag.
+						prep_shareddata_data_write
+							(`IN_LDST_CAPTURED_ALIASED_METADATA_TAG,
+							`IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA);
+						`IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_DIRTY <= 1;
 					end
 
-					case (__lar_shareddata__ref_count
-						[__captured_in_wr__tag_from_index])
+					else // if (__captured_in_wr.write_type
+						// == PkgSnow64LarFile::WriteTypLd)
+					begin
+						stop_shareddata_data_write();
+					end
+
+					case (`IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT)
 					// We haven't been allocated yet.
+					// Since we haven't been allocated yet, we don't need
+					// to do a write back to memory.
 					0:
 					begin
 						stop_mem_write();
-						__wr_state <= PkgSnow64LarFile::WrStIdle;
+						finish_ldst();
 					end
 
 					// There were no other references to us, so deallocate
@@ -972,73 +1069,78 @@ module Snow64LarFile(input logic clk,
 					begin
 						// Deallocate our old tag.  Note that this is
 						// actually the only case where we will ever do so.
-						__lar_tag_stack[__curr_tag_stack_index + 1]
-							<= __captured_in_wr__tag_from_index;
-						__curr_tag_stack_index <= __curr_tag_stack_index
-							+ 1;
+						__lar_tag_stack[__above_curr_tag_stack_index]
+							<= `IN_LDST_CAPTURED_CURR_METADATA_TAG;
+						__curr_tag_stack_index
+							<= __above_curr_tag_stack_index;
 
-						if (__lar_shareddata__dirty
-							[__captured_in_wr__tag_from_index])
+						// Since we're deallocating stuff, we need to write
+						// our old data back to memory if it's not already
+						// up to date.
+						if (`IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY)
 						begin
-							// As we've been deallocated, no LAR now has
-							// access to our data, and thus it has to go to
-							// memory.
-							__wr_state <= PkgSnow64LarFile
-								::WrStWaitForJustMemWrite;
-							prep_mem_write();
+							__wr_state <= PkgSnow64LarFile::WrStLdStPart1;
 						end
-						else // if (!__lar_shareddata__dirty
-							// [__captured_in_wr__tag_from_index])
+
+						else
 						begin
-							__wr_state <= PkgSnow64LarFile::WrStIdle;
 							stop_mem_write();
+							finish_ldst();
 						end
 
-						__lar_shareddata__ref_count
-							[__captured_in_wr__tag_from_index] <= 0;
+						// We were the only LAR that cared about our old
+						// shared data, which means our old shared data
+						// becomes free for use.
 
-						__lar_shareddata__dirty
-							[__captured_in_wr__tag_from_index] <= 0;
-
-						// For good measure.
-						__lar_shareddata__base_addr
-							[__captured_in_wr__tag_from_index] <= 0;
-
+						`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT <= 0;
+						`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_DIRTY <= 0;
 					end
 
+					// There was at least one other reference to us, so
+					// don't deallocate anything, but do decrement our old
+					// reference count (we increment our new reference
+					// count as well).
+					// In this situation, all that happens is that our tag
+					// changes and our shared data loses a reference, but
+					// our new shared data gains a reference
 					default:
 					begin
-						__wr_state <= PkgSnow64LarFile::WrStIdle;
-
-						// Decrement our old reference count.
-						__lar_shareddata__ref_count
-							[__captured_in_wr__tag_from_index]
-							<= __lar_shareddata__ref_count
-							[__captured_in_wr__tag_from_index] - 1;
-
 						stop_mem_write();
+						finish_ldst();
+						`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT
+							<=
+							`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT
+							- 1;
 					end
 					endcase
 				end
 
 				// If our address is identical to the one being searched
 				// for, we do nothing useful.
+				// ...This could perhaps just... NOT take an extra cycle.
 				else
 				begin
-					__wr_state <= PkgSnow64LarFile::WrStIdle;
+					// In this case, we do nothing of interest.
+					finish_ldst();
 					stop_mem_write();
+					stop_shareddata_data_write();
 				end
 			end
 
-			// If we didn't already have the address's data.
-			else // if (__captured_tag_search == 0)
+			else // if (`IN_LDST_CAPTURED_ALIASED_METADATA_TAG == 0)
 			begin
-				
 			end
 		end
 
 		PkgSnow64LarFile::WrStLdStPart1:
 		begin
+			__wr_state <= PkgSnow64LarFile::WrStWaitForJustMemWrite;
+			prep_mem_write();
+
+			// For good measure.
+			`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_BASE_ADDR <= 0;
+			prep_shareddata_data_write(`IN_LDST_CAPTURED_CURR_METADATA_TAG,
+				0);
 		end
 
 		PkgSnow64LarFile::WrStWaitForJustMemRead:
@@ -1056,5 +1158,31 @@ module Snow64LarFile(input logic clk,
 		endcase
 	end
 
+	`undef BEFORE_LDST_IN_WR_METADATA_TAG
+	`undef IN_LDST_CAPTURED_CURR_METADATA_TAG
+	`undef IN_LDST_CAPTURED_TOP_METADATA_TAG
+	`undef IN_LDST_CAPTURED_ALIASED_METADATA_TAG
+
+	`undef IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT
+	`undef IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY
+
+
+	`undef IN_LDST_MODIFIABLE_CURR_METADATA_TAG
+	`undef IN_LDST_MODIFIABLE_CURR_METADATA_DATA_TYPE
+	`undef IN_LDST_MODIFIABLE_CURR_METADATA_INT_TYPE_SIZE
+	`undef IN_LDST_MODIFIABLE_CURR_METADATA_DATA_OFFSET
+
+
+	`undef IN_LDST_MODIFIABLE_CURR_SHAREDDATA_BASE_ADDR
+	`undef IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT
+	`undef IN_LDST_MODIFIABLE_CURR_SHAREDDATA_DIRTY
+
+	`undef IN_LDST_MODIFIABLE_TOP_SHAREDDATA_BASE_ADDR
+	`undef IN_LDST_MODIFIABLE_TOP_SHAREDDATA_REF_COUNT
+	`undef IN_LDST_MODIFIABLE_TOP_SHAREDDATA_DIRTY
+
+	`undef IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_BASE_ADDR
+	`undef IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT
+	`undef IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_DIRTY
 
 endmodule
