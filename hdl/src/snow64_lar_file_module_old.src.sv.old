@@ -1163,8 +1163,7 @@ module Snow64LarFile(input logic clk,
 
 					// Allocate a new element of shared data.
 					`captured__wr_metadata_tag <= `top_metadata_tag;
-					__curr_tag_stack_index <= __curr_tag_stack_index
-						- 1;
+					__curr_tag_stack_index <= __curr_tag_stack_index - 1;
 					`wr_to_allocate_shareddata_base_addr
 						<= __captured_in_wr__base_addr.base_addr;
 
@@ -1318,8 +1317,7 @@ module Snow64LarFile(input logic clk,
 
 					// Allocate a new element of shared data
 					`captured__wr_metadata_tag <= `top_metadata_tag;
-					__curr_tag_stack_index <= __curr_tag_stack_index
-						- 1;
+					__curr_tag_stack_index <= __curr_tag_stack_index - 1;
 
 					// Set the base_addr and ref_count of our allocated
 					// element of shared data.

@@ -840,37 +840,37 @@ module Snow64LarFile(input logic clk,
 		__captured_in_wr__shareddata_dirty_from_tag
 
 
-	`define IN_LDST_MODIFIABLE_CURR_METADATA_TAG \
+	`define IN_LDST_MODDABLE_CURR_METADATA_TAG \
 		__lar_metadata__tag[__captured_in_wr.index]
-	`define IN_LDST_MODIFIABLE_CURR_METADATA_DATA_TYPE \
+	`define IN_LDST_MODDABLE_CURR_METADATA_DATA_TYPE \
 		__lar_metadata__data_type[__captured_in_wr.index]
-	`define IN_LDST_MODIFIABLE_CURR_METADATA_INT_TYPE_SIZE \
+	`define IN_LDST_MODDABLE_CURR_METADATA_INT_TYPE_SIZE \
 		__lar_metadata__int_type_size[__captured_in_wr.index]
-	`define IN_LDST_MODIFIABLE_CURR_METADATA_DATA_OFFSET \
+	`define IN_LDST_MODDABLE_CURR_METADATA_DATA_OFFSET \
 		__lar_metadata__data_offset[__captured_in_wr.index]
 
 
-	`define IN_LDST_MODIFIABLE_CURR_SHAREDDATA_BASE_ADDR \
+	`define IN_LDST_MODDABLE_CURR_SHAREDDATA_BASE_ADDR \
 		__lar_shareddata__base_addr[`IN_LDST_CAPTURED_CURR_METADATA_TAG]
-	`define IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT \
+	`define IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT \
 		__lar_shareddata__ref_count[`IN_LDST_CAPTURED_CURR_METADATA_TAG]
-	`define IN_LDST_MODIFIABLE_CURR_SHAREDDATA_DIRTY \
+	`define IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY \
 		__lar_shareddata__dirty[`IN_LDST_CAPTURED_CURR_METADATA_TAG]
 
-	`define IN_LDST_MODIFIABLE_TOP_SHAREDDATA_BASE_ADDR \
+	`define IN_LDST_MODDABLE_TOP_SHAREDDATA_BASE_ADDR \
 		__lar_shareddata__base_addr[`IN_LDST_CAPTURED_TOP_METADATA_TAG]
-	`define IN_LDST_MODIFIABLE_TOP_SHAREDDATA_REF_COUNT \
+	`define IN_LDST_MODDABLE_TOP_SHAREDDATA_REF_COUNT \
 		__lar_shareddata__ref_count[`IN_LDST_CAPTURED_TOP_METADATA_TAG]
-	`define IN_LDST_MODIFIABLE_TOP_SHAREDDATA_DIRTY \
+	`define IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY \
 		__lar_shareddata__dirty[`IN_LDST_CAPTURED_TOP_METADATA_TAG]
 
-	`define IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_BASE_ADDR \
+	`define IN_LDST_MODDABLE_ALIASED_SHAREDDATA_BASE_ADDR \
 		__lar_shareddata__base_addr \
 			[`IN_LDST_CAPTURED_ALIASED_METADATA_TAG]
-	`define IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT \
+	`define IN_LDST_MODDABLE_ALIASED_SHAREDDATA_REF_COUNT \
 		__lar_shareddata__ref_count \
 			[`IN_LDST_CAPTURED_ALIASED_METADATA_TAG]
-	`define IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_DIRTY \
+	`define IN_LDST_MODDABLE_ALIASED_SHAREDDATA_DIRTY \
 		__lar_shareddata__dirty \
 			[`IN_LDST_CAPTURED_ALIASED_METADATA_TAG]
 
@@ -957,7 +957,7 @@ module Snow64LarFile(input logic clk,
 				// Mostly ALU/FPU instructions
 				PkgSnow64LarFile::WriteTypOnlyData:
 				begin
-					if (__lar_metadata__tag[real_in_wr.index]
+					if (`BEFORE_LDST_IN_WR_METADATA_TAG
 						!= __UNALLOCATED_TAG)
 					begin
 						real_out_wr.valid <= 1;
@@ -972,14 +972,14 @@ module Snow64LarFile(input logic clk,
 				// Used for port-mapped input instructions
 				PkgSnow64LarFile::WriteTypDataAndType:
 				begin
-					if (__lar_metadata__tag[real_in_wr.index]
+					if (`BEFORE_LDST_IN_WR_METADATA_TAG
 						!= __UNALLOCATED_TAG)
 					begin
 						real_out_wr.valid <= 1;
 						__lar_shareddata__dirty
 							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
-							(__lar_metadata__tag[real_in_wr.index],
+							(`BEFORE_LDST_IN_WR_METADATA_TAG,
 							real_in_wr.non_ldst_data);
 
 						__lar_metadata__data_type[real_in_wr.index]
@@ -1021,7 +1021,7 @@ module Snow64LarFile(input logic clk,
 
 				// A tag already exists.  We set our tag to the existing
 				// one.
-				`IN_LDST_MODIFIABLE_CURR_METADATA_TAG
+				`IN_LDST_MODDABLE_CURR_METADATA_TAG
 					<= `IN_LDST_CAPTURED_ALIASED_METADATA_TAG;
 
 				// If our existing tag ISN'T the one we found.
@@ -1029,9 +1029,8 @@ module Snow64LarFile(input logic clk,
 					!= `IN_LDST_CAPTURED_CURR_METADATA_TAG)
 				begin
 					// The aliased reference count always increments here.
-					`IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT
-						<=
-						`IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT
+					`IN_LDST_MODDABLE_ALIASED_SHAREDDATA_REF_COUNT
+						<= `IN_LDST_MODDABLE_ALIASED_SHAREDDATA_REF_COUNT
 						+ 1;
 
 					if (__captured_in_wr.write_type
@@ -1043,7 +1042,7 @@ module Snow64LarFile(input logic clk,
 						prep_shareddata_data_write
 							(`IN_LDST_CAPTURED_ALIASED_METADATA_TAG,
 							`IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA);
-						`IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_DIRTY <= 1;
+						`IN_LDST_MODDABLE_ALIASED_SHAREDDATA_DIRTY <= 1;
 					end
 
 					else // if (__captured_in_wr.write_type
@@ -1077,23 +1076,25 @@ module Snow64LarFile(input logic clk,
 						// Since we're deallocating stuff, we need to write
 						// our old data back to memory if it's not already
 						// up to date.
-						if (`IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY)
+						case (`IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY)
+						1:
 						begin
 							__wr_state <= PkgSnow64LarFile::WrStLdStPart1;
 						end
 
-						else
+						0:
 						begin
 							stop_mem_write();
 							finish_ldst();
 						end
+						endcase
 
 						// We were the only LAR that cared about our old
 						// shared data, which means our old shared data
 						// becomes free for use.
 
-						`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT <= 0;
-						`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_DIRTY <= 0;
+						`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT <= 0;
+						`IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY <= 0;
 					end
 
 					// There was at least one other reference to us, so
@@ -1107,9 +1108,8 @@ module Snow64LarFile(input logic clk,
 					begin
 						stop_mem_write();
 						finish_ldst();
-						`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT
-							<=
-							`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT
+						`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT
+							<= `IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT
 							- 1;
 					end
 					endcase
@@ -1117,7 +1117,8 @@ module Snow64LarFile(input logic clk,
 
 				// If our address is identical to the one being searched
 				// for, we do nothing useful.
-				// ...This could perhaps just... NOT take an extra cycle.
+				// ...This could perhaps just... NOT take an extra cycle,
+				// but we'll leave things as they are for now.
 				else
 				begin
 					// In this case, we do nothing of interest.
@@ -1127,8 +1128,159 @@ module Snow64LarFile(input logic clk,
 				end
 			end
 
+			// Nobody had the address we were looking for.
 			else // if (`IN_LDST_CAPTURED_ALIASED_METADATA_TAG == 0)
 			begin
+				case (`IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT)
+				// This is from before we were allocated.
+				0:
+				begin
+					stop_mem_write();
+
+					// Allocate a new element of shared data.
+					`IN_LDST_MODDABLE_CURR_METADATA_TAG
+						<= `IN_LDST_CAPTURED_TOP_METADATA_TAG;
+					__curr_tag_stack_index <= __curr_tag_stack_index - 1;
+
+					`IN_LDST_MODDABLE_TOP_SHAREDDATA_BASE_ADDR
+						<= __captured_in_wr__base_addr.base_addr;
+
+					// Within the run of the current program, we are the
+					// first LAR to ever reference this element of shared
+					// data.
+					`IN_LDST_MODDABLE_TOP_SHAREDDATA_REF_COUNT <= 1;
+
+					case (__captured_in_wr.write_type)
+					PkgSnow64LarFile::WriteTypLd:
+					begin
+						// Because we haven't been allocated yet, we only
+						// need to perform a data read.
+						__wr_state <= PkgSnow64LarFile
+							::WrStWaitForJustMemRead;
+						prep_mem_read();
+
+						// A load of fresh data marks us as clean
+						`IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY <= 0;
+					end
+
+					PkgSnow64LarFile::WriteTypSt:
+					begin
+						finish_ldst();
+						// If you do a store before there was any data in a
+						// LAR, the resulting data WILL be zero.
+
+						// Stores mark the data as dirty.
+						`IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY <= 1;
+					end
+					endcase
+				end
+
+				// We were the only reference, so don't perform any
+				// allocation or deallocation, and don't change the
+				// reference count.  Note however that this can still cause
+				// accessing memory
+				1:
+				begin
+					`IN_LDST_MODDABLE_CURR_SHAREDDATA_BASE_ADDR
+						<= __captured_in_wr__base_addr.base_addr;
+
+					case (`IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY)
+					1:
+					begin
+						prep_mem_write();
+						case (__captured_in_wr.write_type)
+						PkgSnow64LarFile::WriteTypLd:
+						begin
+							__wr_state <= PkgSnow64LarFile
+								::WrStWaitForMemReadAndMemWrite;
+							prep_mem_read();
+
+							// Loads of fresh data mark us as clean.
+							`IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY <= 0;
+						end
+
+						PkgSnow64LarFile::WriteTypSt:
+						begin
+							__wr_state <= PkgSnow64LarFile
+								::WrStWaitForJustMemWrite;
+							stop_mem_read();
+						end
+						endcase
+					end
+
+					0:
+					begin
+						stop_mem_write();
+
+						case (__captured_in_wr.write_type)
+						PkgSnow64LarFile::WriteTypLd:
+						begin
+							__wr_state <= PkgSnow64LarFile
+								::WrStWaitForJustMemRead;
+							prep_mem_read();
+						end
+
+						PkgSnow64LarFile::WriteTypSt:
+						begin
+							stop_mem_read();
+							finish_ldst();
+
+							`IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY <= 1;
+						end
+						endcase
+					end
+					endcase
+				end
+
+				// There are other LARs that have our old data, but no LAR
+				// has the data from our new address.
+				default:
+				begin
+					stop_mem_write();
+
+					// Decrement our old reference count
+					`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT
+						<= `IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT
+						- 1;
+
+					// Allocate a new element of shared data
+					`IN_LDST_MODDABLE_CURR_METADATA_TAG
+						<= `IN_LDST_CAPTURED_TOP_METADATA_TAG;
+					__curr_tag_stack_index <= __curr_tag_stack_index - 1;
+
+					`IN_LDST_MODDABLE_TOP_SHAREDDATA_BASE_ADDR
+						<= __captured_in_wr__base_addr.base_addr;
+					`IN_LDST_MODDABLE_TOP_SHAREDDATA_REF_COUNT <= 1;
+
+					case (__captured_in_wr.write_type)
+					PkgSnow64LarFile::WriteTypLd:
+					begin
+						__wr_state <= PkgSnow64LarFile
+							::WrStWaitForJustMemRead;
+						prep_mem_read();
+
+						// Loads of fresh data mark us as clean.
+						`IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY <= 0;
+					end
+
+					PkgSnow64LarFile::WriteTypSt:
+					begin
+						finish_ldst();
+						stop_mem_read();
+
+						// Make a copy of our old data over to the freshly
+						// allocated element of shared data.
+						prep_shareddata_data_write
+							(`IN_LDST_CAPTURED_TOP_METADATA_TAG,
+							`IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA);
+
+						// Also, since this is a store, mark the copy of
+						// our old data as dirty.
+						`IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY <= 1;
+					end
+					endcase
+				end
+				endcase
 			end
 		end
 
@@ -1138,7 +1290,7 @@ module Snow64LarFile(input logic clk,
 			prep_mem_write();
 
 			// For good measure.
-			`IN_LDST_MODIFIABLE_CURR_SHAREDDATA_BASE_ADDR <= 0;
+			`IN_LDST_MODDABLE_CURR_SHAREDDATA_BASE_ADDR <= 0;
 			prep_shareddata_data_write(`IN_LDST_CAPTURED_CURR_METADATA_TAG,
 				0);
 		end
@@ -1167,22 +1319,22 @@ module Snow64LarFile(input logic clk,
 	`undef IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY
 
 
-	`undef IN_LDST_MODIFIABLE_CURR_METADATA_TAG
-	`undef IN_LDST_MODIFIABLE_CURR_METADATA_DATA_TYPE
-	`undef IN_LDST_MODIFIABLE_CURR_METADATA_INT_TYPE_SIZE
-	`undef IN_LDST_MODIFIABLE_CURR_METADATA_DATA_OFFSET
+	`undef IN_LDST_MODDABLE_CURR_METADATA_TAG
+	`undef IN_LDST_MODDABLE_CURR_METADATA_DATA_TYPE
+	`undef IN_LDST_MODDABLE_CURR_METADATA_INT_TYPE_SIZE
+	`undef IN_LDST_MODDABLE_CURR_METADATA_DATA_OFFSET
 
 
-	`undef IN_LDST_MODIFIABLE_CURR_SHAREDDATA_BASE_ADDR
-	`undef IN_LDST_MODIFIABLE_CURR_SHAREDDATA_REF_COUNT
-	`undef IN_LDST_MODIFIABLE_CURR_SHAREDDATA_DIRTY
+	`undef IN_LDST_MODDABLE_CURR_SHAREDDATA_BASE_ADDR
+	`undef IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT
+	`undef IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY
 
-	`undef IN_LDST_MODIFIABLE_TOP_SHAREDDATA_BASE_ADDR
-	`undef IN_LDST_MODIFIABLE_TOP_SHAREDDATA_REF_COUNT
-	`undef IN_LDST_MODIFIABLE_TOP_SHAREDDATA_DIRTY
+	`undef IN_LDST_MODDABLE_TOP_SHAREDDATA_BASE_ADDR
+	`undef IN_LDST_MODDABLE_TOP_SHAREDDATA_REF_COUNT
+	`undef IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY
 
-	`undef IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_BASE_ADDR
-	`undef IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_REF_COUNT
-	`undef IN_LDST_MODIFIABLE_ALIASED_SHAREDDATA_DIRTY
+	`undef IN_LDST_MODDABLE_ALIASED_SHAREDDATA_BASE_ADDR
+	`undef IN_LDST_MODDABLE_ALIASED_SHAREDDATA_REF_COUNT
+	`undef IN_LDST_MODDABLE_ALIASED_SHAREDDATA_DIRTY
 
 endmodule
