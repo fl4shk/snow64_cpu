@@ -816,6 +816,10 @@ module Snow64LarFile(input logic clk,
 			__lar_tag_stack[__i] = __i;
 		end
 
+		__in_shareddata_data_wr_req = 0;
+		__in_shareddata_data_wr_index = 0;
+		__in_shareddata_data_wr_data = 0;
+
 		__curr_tag_stack_index = __LAST_INDEX__NUM_LARS;
 		__above_curr_tag_stack_index = 0;
 		__captured_top_lar_tag = 0;
@@ -944,10 +948,6 @@ module Snow64LarFile(input logic clk,
 		real_out_mem_read.req <= 0;
 	endtask : stop_mem_read
 
-	task stop_mem_write;
-		real_out_mem_write.req <= 0;
-	endtask : stop_mem_write
-
 	task prep_mem_write;
 		real_out_mem_write.req <= 1;
 		real_out_mem_write.data <= `IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA;
@@ -957,6 +957,10 @@ module Snow64LarFile(input logic clk,
 		real_out_mem_write.base_addr
 			<= `IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR;
 	endtask : prep_mem_write
+
+	task stop_mem_write;
+		real_out_mem_write.req <= 0;
+	endtask : stop_mem_write
 
 	task prep_shareddata_data_write
 		(input logic [__MSB_POS__LAR_FILE_METADATA_TAG:0] n_wr_index,
@@ -1021,6 +1025,11 @@ module Snow64LarFile(input logic clk,
 							(__lar_metadata__tag[real_in_wr.index],
 							real_in_wr.non_ldst_data);
 					end
+					else
+					begin
+						stop_shareddata_data_write();
+						`REAL_OUT_WR__VALID <= 0;
+					end
 				end
 
 				// Used for port-mapped input instructions
@@ -1041,14 +1050,19 @@ module Snow64LarFile(input logic clk,
 						__lar_metadata__int_type_size[real_in_wr.index]
 							<= real_in_wr.int_type_size;
 					end
+					else
+					begin
+						stop_shareddata_data_write();
+						`REAL_OUT_WR__VALID <= 0;
+					end
 				end
 
 				// PkgSnow64LarFile::WriteTypLd or
 				// PkgSnow64LarFile::WriteTypSt
 				default:
 				begin
-					`REAL_OUT_WR__VALID <= 0;
 					stop_shareddata_data_write();
+					`REAL_OUT_WR__VALID <= 0;
 					__wr_state <= PkgSnow64LarFile::WrStLdStPart0;
 
 					__lar_metadata__data_type[real_in_wr.index]
