@@ -66,6 +66,50 @@ module __Snow64LarFileShareddataData(input logic clk,
 	assign out_rd_b_data = __arr[in_rd_b_index];
 	assign out_rd_c_data = __arr[in_rd_c_index];
 	assign out_rd_for_wr_data = __arr[in_rd_for_wr_index];
+	//always @(*)
+	//begin
+	//	if ((in_rd_a_index == in_wr_index) && in_wr_req)
+	//	begin
+	//		out_rd_a_data = in_wr_data;
+	//	end
+	//	else
+	//	begin
+	//		out_rd_a_data = __arr[in_rd_a_index];
+	//	end
+	//end
+	//always @(*)
+	//begin
+	//	if ((in_rd_b_index == in_wr_index) && in_wr_req)
+	//	begin
+	//		out_rd_b_data = in_wr_data;
+	//	end
+	//	else
+	//	begin
+	//		out_rd_b_data = __arr[in_rd_b_index];
+	//	end
+	//end
+	//always @(*)
+	//begin
+	//	if ((in_rd_c_index == in_wr_index) && in_wr_req)
+	//	begin
+	//		out_rd_c_data = in_wr_data;
+	//	end
+	//	else
+	//	begin
+	//		out_rd_c_data = __arr[in_rd_c_index];
+	//	end
+	//end
+	//always @(*)
+	//begin
+	//	if ((in_rd_for_wr_index == in_wr_index) && in_wr_req)
+	//	begin
+	//		out_rd_for_wr_data = in_wr_data;
+	//	end
+	//	else
+	//	begin
+	//		out_rd_for_wr_data = __arr[in_rd_for_wr_index];
+	//	end
+	//end
 
 	`ifdef FORMAL
 	assign out_debug_data_0 = __arr[0];
