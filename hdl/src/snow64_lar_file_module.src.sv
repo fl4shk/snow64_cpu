@@ -55,6 +55,13 @@ module __Snow64LarFileShareddataData(input logic clk,
 	//	//out_rd_c_data = __arr[in_rd_c_index];
 	//	out_rd_c_data <= __arr[in_rd_c_index];
 	//end
+	//always @(posedge clk)
+	//begin
+	//	out_rd_a_data <= __arr[in_rd_a_index];
+	//	out_rd_b_data <= __arr[in_rd_b_index];
+	//	out_rd_c_data <= __arr[in_rd_c_index];
+	//	out_rd_for_wr_data <= __arr[in_rd_for_wr_index];
+	//end
 	assign out_rd_a_data = __arr[in_rd_a_index];
 	assign out_rd_b_data = __arr[in_rd_b_index];
 	assign out_rd_c_data = __arr[in_rd_c_index];
@@ -874,10 +881,13 @@ module Snow64LarFile(input logic clk,
 		__lar_shareddata__dirty \
 			[`IN_LDST_CAPTURED_ALIASED_METADATA_TAG]
 
+	`define REAL_OUT_WR__VALID real_out_wr
+	`define REAL_IN_MEM_WRITE__VALID real_in_mem_write
+
 
 	task finish_ldst;
 		__wr_state <= PkgSnow64LarFile::WrStIdle;
-		real_out_wr.valid <= 1;
+		`REAL_OUT_WR__VALID <= 1;
 	endtask
 
 	task prep_mem_read;
@@ -960,7 +970,7 @@ module Snow64LarFile(input logic clk,
 					if (`BEFORE_LDST_IN_WR_METADATA_TAG
 						!= __UNALLOCATED_TAG)
 					begin
-						real_out_wr.valid <= 1;
+						`REAL_OUT_WR__VALID <= 1;
 						__lar_shareddata__dirty
 							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
@@ -975,7 +985,7 @@ module Snow64LarFile(input logic clk,
 					if (`BEFORE_LDST_IN_WR_METADATA_TAG
 						!= __UNALLOCATED_TAG)
 					begin
-						real_out_wr.valid <= 1;
+						`REAL_OUT_WR__VALID <= 1;
 						__lar_shareddata__dirty
 							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
@@ -993,7 +1003,7 @@ module Snow64LarFile(input logic clk,
 				// PkgSnow64LarFile::WriteTypSt
 				default:
 				begin
-					real_out_wr.valid <= 0;
+					`REAL_OUT_WR__VALID <= 0;
 					stop_shareddata_data_write();
 					__wr_state <= PkgSnow64LarFile::WrStLdStPart0;
 
@@ -1008,7 +1018,7 @@ module Snow64LarFile(input logic clk,
 			else // if (not writing into the LAR file this cycle)
 			begin
 				stop_shareddata_data_write();
-				real_out_wr.valid <= 0;
+				`REAL_OUT_WR__VALID <= 0;
 			end
 		end
 
@@ -1297,15 +1307,61 @@ module Snow64LarFile(input logic clk,
 
 		PkgSnow64LarFile::WrStWaitForJustMemRead:
 		begin
+			stop_mem_read();
+			stop_mem_write();
+
+			if (real_in_mem_read.valid)
+			begin
+				finish_ldst();
+
+				prep_shareddata_data_write
+					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
+					real_in_mem_read.data);
+			end
 		end
 
 		PkgSnow64LarFile::WrStWaitForJustMemWrite:
 		begin
+			stop_mem_read();
+			stop_mem_write();
 			stop_shareddata_data_write();
+
+			if (`REAL_IN_MEM_WRITE__VALID)
+			begin
+				finish_ldst();
+			end
 		end
 
 		PkgSnow64LarFile::WrStWaitForMemReadAndMemWrite:
 		begin
+			stop_mem_read();
+			stop_mem_write();
+
+			if (real_in_mem_read.valid)
+			begin
+				__captured_in_mem_read__valid <= 1;
+
+				prep_shareddata_data_write
+					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
+					real_in_mem_read.data);
+
+				if ((!`REAL_IN_MEM_WRITE__VALID)
+					&& __captured_in_mem_write__valid)
+				begin
+					finish_ldst();
+				end
+			end
+
+			if (`REAL_IN_MEM_WRITE__VALID)
+			begin
+				__captured_in_mem_write__valid <= 1;
+
+				if ((!real_in_mem_read.valid)
+					&& __captured_in_mem_read__valid)
+				begin
+					finish_ldst();
+				end
+			end
 		end
 		endcase
 	end
