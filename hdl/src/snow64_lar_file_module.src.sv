@@ -1171,8 +1171,10 @@ module Snow64LarFile(input logic clk,
 
 						// We were the only LAR that cared about our old
 						// shared data, which means our old shared data
-						// becomes free for use.
-
+						// becomes allocatable.
+						// For an element of shared data, not having any
+						// references is the same thing as being
+						// allocatable.
 						`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT <= 0;
 						`IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY <= 0;
 					end
@@ -1258,7 +1260,7 @@ module Snow64LarFile(input logic clk,
 				// We were the only reference, so don't perform any
 				// allocation or deallocation, and don't change the
 				// reference count.  Note however that this can still cause
-				// accessing memory
+				// accessing memory.
 				1:
 				begin
 					`IN_LDST_MODDABLE_CURR_SHAREDDATA_BASE_ADDR
@@ -1415,7 +1417,7 @@ module Snow64LarFile(input logic clk,
 				end
 			end
 
-			else
+			else // if (!real_in_mem_read.valid)
 			begin
 				stop_shareddata_data_write();
 			end
