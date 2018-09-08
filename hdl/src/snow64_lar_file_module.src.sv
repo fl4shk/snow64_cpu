@@ -588,10 +588,8 @@ module Snow64LarFile(input logic clk,
 	localparam __ENUM__WRITE_TYPE__ST = PkgSnow64LarFile::WriteTypSt;
 
 	localparam __ENUM__WRITE_STATE__IDLE = PkgSnow64LarFile::WrStIdle;
-	localparam __ENUM__WRITE_STATE__LD_ST_PART_0
-		= PkgSnow64LarFile::WrStLdStPart0;
-	localparam __ENUM__WRITE_STATE__LD_ST_PART_1
-		= PkgSnow64LarFile::WrStLdStPart1;
+	localparam __ENUM__WRITE_STATE__START_LD_ST
+		= PkgSnow64LarFile::WrStStartLdSt;
 	localparam __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_READ
 		= PkgSnow64LarFile::WrStWaitForJustMemRead;
 	localparam __ENUM__WRITE_STATE__WAIT_FOR_JUST_MEM_WRITE
@@ -1063,7 +1061,7 @@ module Snow64LarFile(input logic clk,
 				begin
 					stop_shareddata_data_write();
 					`REAL_OUT_WR__VALID <= 0;
-					__wr_state <= PkgSnow64LarFile::WrStLdStPart0;
+					__wr_state <= PkgSnow64LarFile::WrStStartLdSt;
 
 					__lar_metadata__data_type[real_in_wr.index]
 						<= real_in_wr.data_type;
@@ -1080,7 +1078,7 @@ module Snow64LarFile(input logic clk,
 			end
 		end
 
-		PkgSnow64LarFile::WrStLdStPart0:
+		PkgSnow64LarFile::WrStStartLdSt:
 		begin
 			// If we already had the address's data.
 			if (`IN_LDST_CAPTURED_ALIASED_METADATA_TAG != 0)
@@ -1147,7 +1145,11 @@ module Snow64LarFile(input logic clk,
 						case (`IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY)
 						1:
 						begin
-							__wr_state <= PkgSnow64LarFile::WrStLdStPart1;
+							// As we've been deallocated, write our old
+							// data back out to memory.
+							__wr_state <= PkgSnow64LarFile
+								::WrStWaitForJustMemWrite;
+							prep_mem_write();
 						end
 
 						0:
@@ -1350,17 +1352,6 @@ module Snow64LarFile(input logic clk,
 				end
 				endcase
 			end
-		end
-
-		PkgSnow64LarFile::WrStLdStPart1:
-		begin
-			__wr_state <= PkgSnow64LarFile::WrStWaitForJustMemWrite;
-			prep_mem_write();
-
-			// For good measure.
-			`IN_LDST_MODDABLE_CURR_SHAREDDATA_BASE_ADDR <= 0;
-			prep_shareddata_data_write(`IN_LDST_CAPTURED_CURR_METADATA_TAG,
-				0);
 		end
 
 		PkgSnow64LarFile::WrStWaitForJustMemRead:

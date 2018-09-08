@@ -42,14 +42,14 @@ typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 typedef enum logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_STATE:0]
 {
 	WrStIdle,
-	WrStLdStPart0,
-	WrStLdStPart1,
+	WrStStartLdSt,
 	WrStWaitForJustMemRead,
 	WrStWaitForJustMemWrite,
 
 	WrStWaitForMemReadAndMemWrite,
 	WrStBad0,
-	WrStBad1
+	WrStBad1,
+	WrStBad2
 } WriteState;
 
 typedef struct packed
