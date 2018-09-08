@@ -216,7 +216,7 @@ typedef struct packed
 typedef struct packed
 {
 	LarBaseAddr base_addr;
-	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] fill;
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] data_offset;
 } LarIncomingBaseAddr;
 
 

@@ -201,6 +201,14 @@ module __Snow64LarFileTagSearch
 
 		__tag_search_1_to_7, __tag_search_8_to_15;
 
+	// This is the real reason we can't implement the "ref_count" and
+	// "base_addr" fields of the LAR shareddata as block RAM.
+	// This is dependent upon LAR dzero always being zero, and upon tag 0
+	// meaning there's not an allocation.
+	// 
+	// An element of shared data is only ever allocated if its reference
+	// count is non-zero.  It would be a mistake to return the tag of an
+	// element of shared data if that element is not currently allocated!
 	`define DO_TAG_SEARCH(index) \
 		((in_lar_shareddata__ref_count_``index \
 		&& (in_lar_shareddata__base_addr_``index \
@@ -1067,6 +1075,8 @@ module Snow64LarFile(input logic clk,
 						<= real_in_wr.data_type;
 					__lar_metadata__int_type_size[real_in_wr.index]
 						<= real_in_wr.int_type_size;
+					__lar_metadata__data_offset[real_in_wr.index]
+						<= __in_wr__incoming_base_addr.data_offset;
 				end
 				endcase
 			end
@@ -1367,6 +1377,10 @@ module Snow64LarFile(input logic clk,
 					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
 					real_in_mem_read.data);
 			end
+			else
+			begin
+				stop_shareddata_data_write();
+			end
 		end
 
 		PkgSnow64LarFile::WrStWaitForJustMemWrite:
@@ -1399,6 +1413,11 @@ module Snow64LarFile(input logic clk,
 				begin
 					finish_ldst();
 				end
+			end
+
+			else
+			begin
+				stop_shareddata_data_write();
 			end
 
 			if (`REAL_IN_MEM_WRITE__VALID)
