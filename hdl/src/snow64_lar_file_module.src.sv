@@ -418,6 +418,9 @@ module Snow64LarFile(input logic clk,
 
 	logic __captured_in_mem_read__valid, __captured_in_mem_write__valid;
 
+	wire [__MSB_POS__LAR_FILE_METADATA_TAG:0] __in_wr__index
+		= real_in_wr.index;
+
 	// Metadata
 	logic [__MSB_POS__LAR_FILE_METADATA_TAG:0]
 		__lar_metadata__tag[__ARR_SIZE__NUM_LARS];
@@ -438,7 +441,7 @@ module Snow64LarFile(input logic clk,
 		__in_shareddata_data_rd_c_index,
 		__in_shareddata_data_rd_for_wr_index;
 	assign __in_shareddata_data_rd_for_wr_index
-		= __lar_metadata__tag[real_in_wr.index];
+		= __lar_metadata__tag[__in_wr__index];
 
 	logic [__MSB_POS__LAR_FILE_METADATA_TAG:0]
 		__in_shareddata_data_wr_index;
@@ -628,7 +631,7 @@ module Snow64LarFile(input logic clk,
 	wire [__MSB_POS__LAR_FILE_WRITE_TYPE:0] __formal__in_wr__write_type
 		= real_in_wr.write_type;
 	wire [__MSB_POS__LAR_FILE_METADATA_TAG:0] __formal__in_wr__index
-		= real_in_wr.index[__MSB_POS__LAR_FILE_METADATA_TAG:0];
+		= __in_wr__index[__MSB_POS__LAR_FILE_METADATA_TAG:0];
 	wire [__MSB_POS__LAR_FILE_DATA:0] __formal__in_wr__non_ldst_data
 		= real_in_wr.non_ldst_data;
 	//wire [__MSB_POS__LAR_FILE_METADATA_TAG:0] __formal__in_wr__non_ldst_tag
@@ -881,7 +884,7 @@ module Snow64LarFile(input logic clk,
 
 
 	`define BEFORE_LDST_IN_WR_METADATA_TAG \
-		__lar_metadata__tag[real_in_wr.index]
+		__lar_metadata__tag[__in_wr__index]
 
 	`define IN_LDST_CAPTURED_CURR_METADATA_TAG \
 		__captured_in_wr__tag_from_index
@@ -1015,7 +1018,7 @@ module Snow64LarFile(input logic clk,
 			__captured_in_mem_read__valid <= 0;
 			__captured_in_mem_write__valid <= 0;
 
-			if (real_in_wr.req && (real_in_wr.index != 0))
+			if (real_in_wr.req && (__in_wr__index != 0))
 			begin
 				case (real_in_wr.write_type)
 				// Mostly ALU/FPU instructions
@@ -1051,9 +1054,9 @@ module Snow64LarFile(input logic clk,
 							(`BEFORE_LDST_IN_WR_METADATA_TAG,
 							real_in_wr.non_ldst_data);
 
-						__lar_metadata__data_type[real_in_wr.index]
+						__lar_metadata__data_type[__in_wr__index]
 							<= real_in_wr.data_type;
-						__lar_metadata__int_type_size[real_in_wr.index]
+						__lar_metadata__int_type_size[__in_wr__index]
 							<= real_in_wr.int_type_size;
 					end
 					else
@@ -1071,11 +1074,11 @@ module Snow64LarFile(input logic clk,
 					`REAL_OUT_WR__VALID <= 0;
 					__wr_state <= PkgSnow64LarFile::WrStStartLdSt;
 
-					__lar_metadata__data_type[real_in_wr.index]
+					__lar_metadata__data_type[__in_wr__index]
 						<= real_in_wr.data_type;
-					__lar_metadata__int_type_size[real_in_wr.index]
+					__lar_metadata__int_type_size[__in_wr__index]
 						<= real_in_wr.int_type_size;
-					__lar_metadata__data_offset[real_in_wr.index]
+					__lar_metadata__data_offset[__in_wr__index]
 						<= __in_wr__incoming_base_addr.data_offset;
 				end
 				endcase
