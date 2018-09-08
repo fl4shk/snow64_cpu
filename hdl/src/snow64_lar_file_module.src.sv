@@ -1022,7 +1022,7 @@ module Snow64LarFile(input logic clk,
 						__lar_shareddata__dirty
 							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
-							(__lar_metadata__tag[real_in_wr.index],
+							(`BEFORE_LDST_IN_WR_METADATA_TAG,
 							real_in_wr.non_ldst_data);
 					end
 					else
