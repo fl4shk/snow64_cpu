@@ -38,18 +38,101 @@ module Snow64ScalarDataShifterForRead
 		case(__in_data_type)
 		PkgSnow64Cpu::DataTypBFloat16:
 		begin
-			//`ifdef GEN_VERILOG
-			out.data = `GET_BITS(__in_to_shift, (`WIDTH2MP(1 << 16)
-				<< (`EXTRACT_DATA_INDEX_TYPE_2__16
-				(__MSB_POS__DATA_OFFSET,
-				__in_data_offset) * 16)),
-				(`EXTRACT_DATA_INDEX_TYPE_2__16
-				(__MSB_POS__DATA_OFFSET,
-				__in_data_offset) * 16));
-			//`else // if (!defined(GEN_VERILOG))
-			//out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__16
-			//	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 16 +: 16];
-			//`endif		// GEN_VERILOG
+			////`ifdef GEN_VERILOG
+			//out.data = `GET_BITS(__in_to_shift, (`WIDTH2MP(1 << 16)
+			//	<< (`EXTRACT_DATA_INDEX_TYPE_2__16
+			//	(__MSB_POS__DATA_OFFSET,
+			//	__in_data_offset) * 16)),
+			//	(`EXTRACT_DATA_INDEX_TYPE_2__16
+			//	(__MSB_POS__DATA_OFFSET,
+			//	__in_data_offset) * 16));
+			////`else // if (!defined(GEN_VERILOG))
+			////out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__16
+			////	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 16 +: 16];
+			////`endif		// GEN_VERILOG
+
+			case (`EXTRACT_DATA_INDEX_TYPE_2__16
+				(__MSB_POS__DATA_OFFSET, __in_data_offset))
+			0:
+			begin
+				out.data = __in_to_shift[0 * 16 +: 16];
+			end
+
+			1:
+			begin
+				out.data = __in_to_shift[1 * 16 +: 16];
+			end
+
+			2:
+			begin
+				out.data = __in_to_shift[2 * 16 +: 16];
+			end
+
+			3:
+			begin
+				out.data = __in_to_shift[3 * 16 +: 16];
+			end
+
+			4:
+			begin
+				out.data = __in_to_shift[4 * 16 +: 16];
+			end
+
+			5:
+			begin
+				out.data = __in_to_shift[5 * 16 +: 16];
+			end
+
+			6:
+			begin
+				out.data = __in_to_shift[6 * 16 +: 16];
+			end
+
+			7:
+			begin
+				out.data = __in_to_shift[7 * 16 +: 16];
+			end
+
+			8:
+			begin
+				out.data = __in_to_shift[8 * 16 +: 16];
+			end
+
+			9:
+			begin
+				out.data = __in_to_shift[9 * 16 +: 16];
+			end
+
+			10:
+			begin
+				out.data = __in_to_shift[10 * 16 +: 16];
+			end
+
+			11:
+			begin
+				out.data = __in_to_shift[11 * 16 +: 16];
+			end
+
+			12:
+			begin
+				out.data = __in_to_shift[12 * 16 +: 16];
+			end
+
+			13:
+			begin
+				out.data = __in_to_shift[13 * 16 +: 16];
+			end
+
+			14:
+			begin
+				out.data = __in_to_shift[14 * 16 +: 16];
+			end
+
+			15:
+			begin
+				out.data = __in_to_shift[15 * 16 +: 16];
+			end
+			endcase
 		end
 
 		PkgSnow64Cpu::DataTypReserved:
@@ -63,70 +146,74 @@ module Snow64ScalarDataShifterForRead
 			case (__in_int_type_size)
 			PkgSnow64Cpu::IntTypSz8:
 			begin
-				//`ifdef GEN_VERILOG
-				out.data = `GET_BITS(__in_to_shift, 
-					(`WIDTH2MP(1 << 8)
-					<< (`EXTRACT_DATA_INDEX_TYPE_2__8
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 8)),
-					(`EXTRACT_DATA_INDEX_TYPE_2__8
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 8));
-				//`else // if (!defined(GEN_VERILOG))
-				//out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__8
-				//	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 8 +: 8];
-				//`endif		// GEN_VERILOG
+				////`ifdef GEN_VERILOG
+				//out.data = `GET_BITS(__in_to_shift, 
+				//	(`WIDTH2MP(1 << 8)
+				//	<< (`EXTRACT_DATA_INDEX_TYPE_2__8
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 8)),
+				//	(`EXTRACT_DATA_INDEX_TYPE_2__8
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 8));
+				////`else // if (!defined(GEN_VERILOG))
+				////out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__8
+				////	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 8 +: 8];
+				////`endif		// GEN_VERILOG
+				out.data = 0;
 			end
 
 			PkgSnow64Cpu::IntTypSz16:
 			begin
-				//`ifdef GEN_VERILOG
-				out.data = `GET_BITS(__in_to_shift, 
-					(`WIDTH2MP(1 << 16)
-					<< (`EXTRACT_DATA_INDEX_TYPE_2__16
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 16)),
-					(`EXTRACT_DATA_INDEX_TYPE_2__16
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 16));
-				//`else // if (!defined(GEN_VERILOG))
-				//out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__16
-				//	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 16 +: 16];
-				//`endif		// GEN_VERILOG
+				////`ifdef GEN_VERILOG
+				//out.data = `GET_BITS(__in_to_shift, 
+				//	(`WIDTH2MP(1 << 16)
+				//	<< (`EXTRACT_DATA_INDEX_TYPE_2__16
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 16)),
+				//	(`EXTRACT_DATA_INDEX_TYPE_2__16
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 16));
+				////`else // if (!defined(GEN_VERILOG))
+				////out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__16
+				////	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 16 +: 16];
+				////`endif		// GEN_VERILOG
+				out.data = 0;
 			end
 
 			PkgSnow64Cpu::IntTypSz32:
 			begin
-				//`ifdef GEN_VERILOG
-				out.data = `GET_BITS(__in_to_shift, 
-					(`WIDTH2MP(1 << 32)
-					<< (`EXTRACT_DATA_INDEX_TYPE_2__32
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 32)),
-					(`EXTRACT_DATA_INDEX_TYPE_2__32
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 32));
-				//`else // if (!defined(GEN_VERILOG))
-				//out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__32
-				//	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 32 +: 32];
-				//`endif		// GEN_VERILOG
+				////`ifdef GEN_VERILOG
+				//out.data = `GET_BITS(__in_to_shift, 
+				//	(`WIDTH2MP(1 << 32)
+				//	<< (`EXTRACT_DATA_INDEX_TYPE_2__32
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 32)),
+				//	(`EXTRACT_DATA_INDEX_TYPE_2__32
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 32));
+				////`else // if (!defined(GEN_VERILOG))
+				////out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__32
+				////	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 32 +: 32];
+				////`endif		// GEN_VERILOG
+				out.data = 0;
 			end
 
 			PkgSnow64Cpu::IntTypSz64:
 			begin
-				//`ifdef GEN_VERILOG
-				out.data = `GET_BITS(__in_to_shift, 
-					(`WIDTH2MP(1 << 64)
-					<< (`EXTRACT_DATA_INDEX_TYPE_2__64
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 64)),
-					(`EXTRACT_DATA_INDEX_TYPE_2__64
-					(__MSB_POS__DATA_OFFSET,
-					__in_data_offset) * 64));
-				//`else // if (!defined(GEN_VERILOG))
-				//out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__64
-				//	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 64 +: 64];
-				//`endif		// GEN_VERILOG
+				////`ifdef GEN_VERILOG
+				//out.data = `GET_BITS(__in_to_shift, 
+				//	(`WIDTH2MP(1 << 64)
+				//	<< (`EXTRACT_DATA_INDEX_TYPE_2__64
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 64)),
+				//	(`EXTRACT_DATA_INDEX_TYPE_2__64
+				//	(__MSB_POS__DATA_OFFSET,
+				//	__in_data_offset) * 64));
+				////`else // if (!defined(GEN_VERILOG))
+				////out.data = __in_to_shift[`EXTRACT_DATA_INDEX_TYPE_2__64
+				////	(__MSB_POS__DATA_OFFSET, __in_data_offset) * 64 +: 64];
+				////`endif		// GEN_VERILOG
+				out.data = 0;
 			end
 			endcase
 		end

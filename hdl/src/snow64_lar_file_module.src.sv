@@ -3,12 +3,10 @@
 // Use block RAM to implement the shareddata's "data" field.
 module __Snow64LarFileShareddataData(input logic clk,
 	input logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
-		in_rd_a_index, in_rd_b_index, in_rd_c_index, in_rd_for_wr_index,
-		in_wr_index,
+		in_rd_index, in_wr_index,
 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] in_wr_data,
 	input logic in_wr_req,
-	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		out_rd_a_data, out_rd_b_data, out_rd_c_data, out_rd_for_wr_data
+	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_rd_data
 		`ifdef FORMAL
 		,
 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
@@ -36,80 +34,8 @@ module __Snow64LarFileShareddataData(input logic clk,
 		end
 	end
 
-	//// Asynchronous reads
-	////always @(*)
-	//always_ff @(posedge clk)
-	//begin
-	//	//out_rd_a_data = __arr[in_rd_a_index];
-	//	out_rd_a_data <= __arr[in_rd_a_index];
-	//end
-	////always @(*)
-	//always_ff @(posedge clk)
-	//begin
-	//	//out_rd_b_data = __arr[in_rd_b_index];
-	//	out_rd_b_data <= __arr[in_rd_b_index];
-	//end
-	////always @(*)
-	//always_ff @(posedge clk)
-	//begin
-	//	//out_rd_c_data = __arr[in_rd_c_index];
-	//	out_rd_c_data <= __arr[in_rd_c_index];
-	//end
-	//always @(posedge clk)
-	//begin
-	//	out_rd_a_data <= __arr[in_rd_a_index];
-	//	out_rd_b_data <= __arr[in_rd_b_index];
-	//	out_rd_c_data <= __arr[in_rd_c_index];
-	//	out_rd_for_wr_data <= __arr[in_rd_for_wr_index];
-	//end
-	assign out_rd_a_data = __arr[in_rd_a_index];
-	assign out_rd_b_data = __arr[in_rd_b_index];
-	assign out_rd_c_data = __arr[in_rd_c_index];
-	assign out_rd_for_wr_data = __arr[in_rd_for_wr_index];
-	//always @(*)
-	//begin
-	//	if ((in_rd_a_index == in_wr_index) && in_wr_req)
-	//	begin
-	//		out_rd_a_data = in_wr_data;
-	//	end
-	//	else
-	//	begin
-	//		out_rd_a_data = __arr[in_rd_a_index];
-	//	end
-	//end
-	//always @(*)
-	//begin
-	//	if ((in_rd_b_index == in_wr_index) && in_wr_req)
-	//	begin
-	//		out_rd_b_data = in_wr_data;
-	//	end
-	//	else
-	//	begin
-	//		out_rd_b_data = __arr[in_rd_b_index];
-	//	end
-	//end
-	//always @(*)
-	//begin
-	//	if ((in_rd_c_index == in_wr_index) && in_wr_req)
-	//	begin
-	//		out_rd_c_data = in_wr_data;
-	//	end
-	//	else
-	//	begin
-	//		out_rd_c_data = __arr[in_rd_c_index];
-	//	end
-	//end
-	//always @(*)
-	//begin
-	//	if ((in_rd_for_wr_index == in_wr_index) && in_wr_req)
-	//	begin
-	//		out_rd_for_wr_data = in_wr_data;
-	//	end
-	//	else
-	//	begin
-	//		out_rd_for_wr_data = __arr[in_rd_for_wr_index];
-	//	end
-	//end
+	// Asynchronous reads
+	assign out_rd_data = __arr[in_rd_index];
 
 	`ifdef FORMAL
 	assign out_debug_data_0 = __arr[0];
@@ -453,6 +379,57 @@ module Snow64LarFile(input logic clk,
 
 	`ifdef FORMAL
 	wire [__MSB_POS__LAR_FILE_DATA:0]
+		__out_shareddata_data_rd_a_data_0,
+		__out_shareddata_data_rd_a_data_1,
+		__out_shareddata_data_rd_a_data_2,
+		__out_shareddata_data_rd_a_data_3,
+		__out_shareddata_data_rd_a_data_4,
+		__out_shareddata_data_rd_a_data_5,
+		__out_shareddata_data_rd_a_data_6,
+		__out_shareddata_data_rd_a_data_7,
+		__out_shareddata_data_rd_a_data_8,
+		__out_shareddata_data_rd_a_data_9,
+		__out_shareddata_data_rd_a_data_10,
+		__out_shareddata_data_rd_a_data_11,
+		__out_shareddata_data_rd_a_data_12,
+		__out_shareddata_data_rd_a_data_13,
+		__out_shareddata_data_rd_a_data_14,
+		__out_shareddata_data_rd_a_data_15;
+	wire [__MSB_POS__LAR_FILE_DATA:0]
+		__out_shareddata_data_rd_b_data_0,
+		__out_shareddata_data_rd_b_data_1,
+		__out_shareddata_data_rd_b_data_2,
+		__out_shareddata_data_rd_b_data_3,
+		__out_shareddata_data_rd_b_data_4,
+		__out_shareddata_data_rd_b_data_5,
+		__out_shareddata_data_rd_b_data_6,
+		__out_shareddata_data_rd_b_data_7,
+		__out_shareddata_data_rd_b_data_8,
+		__out_shareddata_data_rd_b_data_9,
+		__out_shareddata_data_rd_b_data_10,
+		__out_shareddata_data_rd_b_data_11,
+		__out_shareddata_data_rd_b_data_12,
+		__out_shareddata_data_rd_b_data_13,
+		__out_shareddata_data_rd_b_data_14,
+		__out_shareddata_data_rd_b_data_15;
+	wire [__MSB_POS__LAR_FILE_DATA:0]
+		__out_shareddata_data_rd_c_data_0,
+		__out_shareddata_data_rd_c_data_1,
+		__out_shareddata_data_rd_c_data_2,
+		__out_shareddata_data_rd_c_data_3,
+		__out_shareddata_data_rd_c_data_4,
+		__out_shareddata_data_rd_c_data_5,
+		__out_shareddata_data_rd_c_data_6,
+		__out_shareddata_data_rd_c_data_7,
+		__out_shareddata_data_rd_c_data_8,
+		__out_shareddata_data_rd_c_data_9,
+		__out_shareddata_data_rd_c_data_10,
+		__out_shareddata_data_rd_c_data_11,
+		__out_shareddata_data_rd_c_data_12,
+		__out_shareddata_data_rd_c_data_13,
+		__out_shareddata_data_rd_c_data_14,
+		__out_shareddata_data_rd_c_data_15;
+	wire [__MSB_POS__LAR_FILE_DATA:0]
 		__out_shareddata_data_debug_data_0,
 		__out_shareddata_data_debug_data_1,
 		__out_shareddata_data_debug_data_2,
@@ -470,18 +447,88 @@ module Snow64LarFile(input logic clk,
 		__out_shareddata_data_debug_data_14,
 		__out_shareddata_data_debug_data_15;
 	`endif		// FORMAL
-	__Snow64LarFileShareddataData __inst_shareddata_data(.clk(clk),
-		.in_rd_a_index(__in_shareddata_data_rd_a_index),
-		.in_rd_b_index(__in_shareddata_data_rd_b_index),
-		.in_rd_c_index(__in_shareddata_data_rd_c_index),
-		.in_rd_for_wr_index(__in_shareddata_data_rd_for_wr_index),
+	//__Snow64LarFileShareddataData __inst_shareddata_data(.clk(clk),
+	//	.in_rd_a_index(__in_shareddata_data_rd_a_index),
+	//	.in_rd_b_index(__in_shareddata_data_rd_b_index),
+	//	.in_rd_c_index(__in_shareddata_data_rd_c_index),
+	//	.in_rd_for_wr_index(__in_shareddata_data_rd_for_wr_index),
+	//	.in_wr_index(__in_shareddata_data_wr_index),
+	//	.in_wr_data(__in_shareddata_data_wr_data),
+	//	.in_wr_req(__in_shareddata_data_wr_req),
+	//	.out_rd_a_data(__out_shareddata_data_rd_a_data),
+	//	.out_rd_b_data(__out_shareddata_data_rd_b_data),
+	//	.out_rd_c_data(__out_shareddata_data_rd_c_data),
+	//	.out_rd_for_wr_data(__out_shareddata_data_rd_for_wr_data)
+	//	`ifdef FORMAL
+	//	,
+	//	.out_debug_data_0(__out_shareddata_data_debug_data_0),
+	//	.out_debug_data_1(__out_shareddata_data_debug_data_1),
+	//	.out_debug_data_2(__out_shareddata_data_debug_data_2),
+	//	.out_debug_data_3(__out_shareddata_data_debug_data_3),
+	//	.out_debug_data_4(__out_shareddata_data_debug_data_4),
+	//	.out_debug_data_5(__out_shareddata_data_debug_data_5),
+	//	.out_debug_data_6(__out_shareddata_data_debug_data_6),
+	//	.out_debug_data_7(__out_shareddata_data_debug_data_7),
+	//	.out_debug_data_8(__out_shareddata_data_debug_data_8),
+	//	.out_debug_data_9(__out_shareddata_data_debug_data_9),
+	//	.out_debug_data_10(__out_shareddata_data_debug_data_10),
+	//	.out_debug_data_11(__out_shareddata_data_debug_data_11),
+	//	.out_debug_data_12(__out_shareddata_data_debug_data_12),
+	//	.out_debug_data_13(__out_shareddata_data_debug_data_13),
+	//	.out_debug_data_14(__out_shareddata_data_debug_data_14),
+	//	.out_debug_data_15(__out_shareddata_data_debug_data_15)
+	//	`endif		// FORMAL
+	//	);
+
+	`ifdef FORMAL
+	`define GEN_EXT_RD_SHAREDDATA_DATA(which) \
+	__Snow64LarFileShareddataData __inst_shareddata_data_rd_``which \
+		(.clk(clk), \
+		.in_rd_index(__in_shareddata_data_rd_``which``_index), \
+		.in_wr_index(__in_shareddata_data_wr_index), \
+		.in_wr_data(__in_shareddata_data_wr_data), \
+		.in_wr_req(__in_shareddata_data_wr_req), \
+		.out_rd_data(__out_shareddata_data_rd_``which``_data), \
+		.out_debug_data_0(__out_shareddata_data_rd_``which``_data_0), \
+		.out_debug_data_1(__out_shareddata_data_rd_``which``_data_1), \
+		.out_debug_data_2(__out_shareddata_data_rd_``which``_data_2), \
+		.out_debug_data_3(__out_shareddata_data_rd_``which``_data_3), \
+		.out_debug_data_4(__out_shareddata_data_rd_``which``_data_4), \
+		.out_debug_data_5(__out_shareddata_data_rd_``which``_data_5), \
+		.out_debug_data_6(__out_shareddata_data_rd_``which``_data_6), \
+		.out_debug_data_7(__out_shareddata_data_rd_``which``_data_7), \
+		.out_debug_data_8(__out_shareddata_data_rd_``which``_data_8), \
+		.out_debug_data_9(__out_shareddata_data_rd_``which``_data_9), \
+		.out_debug_data_10(__out_shareddata_data_rd_``which``_data_10), \
+		.out_debug_data_11(__out_shareddata_data_rd_``which``_data_11), \
+		.out_debug_data_12(__out_shareddata_data_rd_``which``_data_12), \
+		.out_debug_data_13(__out_shareddata_data_rd_``which``_data_13), \
+		.out_debug_data_14(__out_shareddata_data_rd_``which``_data_14), \
+		.out_debug_data_15(__out_shareddata_data_rd_``which``_data_15));
+	`else // if (!defined(FORMAL))
+	`define GEN_EXT_RD_SHAREDDATA_DATA(which) \
+	__Snow64LarFileShareddataData __inst_shareddata_data_rd_``which \
+		(.clk(clk), \
+		.in_rd_index(__in_shareddata_data_rd_``which``_index), \
+		.in_wr_index(__in_shareddata_data_wr_index), \
+		.in_wr_data(__in_shareddata_data_wr_data), \
+		.in_wr_req(__in_shareddata_data_wr_req), \
+		.out_rd_data(__out_shareddata_data_rd_``which``_data));
+	`endif		// FORMAL
+
+	`GEN_EXT_RD_SHAREDDATA_DATA(a)
+	`GEN_EXT_RD_SHAREDDATA_DATA(b)
+	`GEN_EXT_RD_SHAREDDATA_DATA(c)
+
+	`undef GEN_EXT_RD_SHAREDDATA_DATA
+
+	__Snow64LarFileShareddataData __inst_shareddata_data_rd_for_wr
+		(.clk(clk),
+		.in_rd_index(__in_shareddata_data_rd_for_wr_index),
 		.in_wr_index(__in_shareddata_data_wr_index),
 		.in_wr_data(__in_shareddata_data_wr_data),
 		.in_wr_req(__in_shareddata_data_wr_req),
-		.out_rd_a_data(__out_shareddata_data_rd_a_data),
-		.out_rd_b_data(__out_shareddata_data_rd_b_data),
-		.out_rd_c_data(__out_shareddata_data_rd_c_data),
-		.out_rd_for_wr_data(__out_shareddata_data_rd_for_wr_data)
+		.out_rd_data(__out_shareddata_data_rd_for_wr_data)
 		`ifdef FORMAL
 		,
 		.out_debug_data_0(__out_shareddata_data_debug_data_0),
@@ -702,6 +749,13 @@ module Snow64LarFile(input logic clk,
 		= real_out_rd_shareddata_b.data,
 		__formal__out_rd_shareddata_c__data
 		= real_out_rd_shareddata_c.data;
+	wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
+		__formal__out_rd_shareddata_a__scalar_data
+		= real_out_rd_shareddata_a.scalar_data,
+		__formal__out_rd_shareddata_b__scalar_data
+		= real_out_rd_shareddata_b.scalar_data,
+		__formal__out_rd_shareddata_c__scalar_data
+		= real_out_rd_shareddata_c.scalar_data;
 	wire [__MSB_POS__LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__formal__out_rd_shareddata_a__base_addr
 		= real_out_rd_shareddata_a.base_addr,
@@ -851,6 +905,39 @@ module Snow64LarFile(input logic clk,
 	`define RD_INDEX(which) real_in_rd_``which``.index
 	`define RD_TAG(which) __lar_metadata__tag[`RD_INDEX(which)]
 
+	//`define GEN_RD(which) \
+	//assign __in_shareddata_data_rd_``which``_index = `RD_TAG(which); \
+	//PkgSnow64ScalarDataShifter::PortIn_ScalarDataShifterForRead \
+	//	__in_scalar_data_shifter_for_read_``which; \
+	//PkgSnow64ScalarDataShifter::PortOut_ScalarDataShifterForRead \
+	//	__out_scalar_data_shifter_for_read_``which; \
+	//Snow64ScalarDataShifterForRead \
+	//	__inst_scalar_data_shifter_for_read_``which \
+	//	(.in(__in_scalar_data_shifter_for_read_``which), \
+	//	.out(__out_scalar_data_shifter_for_read_``which)); \
+	//assign __in_scalar_data_shifter_for_read_``which \
+	//	= {__out_shareddata_data_rd_``which``_data, \
+	//	__lar_metadata__data_type[`RD_INDEX(which)], \
+	//	__lar_metadata__int_type_size[`RD_INDEX(which)], \
+	//	__lar_metadata__data_offset[`RD_INDEX(which)]}; \
+	//\ 
+	//always_ff @(posedge clk) \
+	//begin \
+	//	real_out_rd_metadata_``which.tag \
+	//		<= __lar_metadata__tag[`RD_INDEX(which)]; \
+	//	real_out_rd_metadata_``which.data_offset \
+	//		<= __lar_metadata__data_offset[`RD_INDEX(which)]; \
+	//	real_out_rd_metadata_``which.data_type \
+	//		<= __lar_metadata__data_type[`RD_INDEX(which)]; \
+	//	real_out_rd_metadata_``which.int_type_size \
+	//		<= __lar_metadata__int_type_size[`RD_INDEX(which)]; \
+	//	real_out_rd_shareddata_``which.data \
+	//		<= __out_shareddata_data_rd_``which``_data; \
+	//	real_out_rd_shareddata_``which.scalar_data \
+	//		<= __out_scalar_data_shifter_for_read_``which.data; \
+	//	real_out_rd_shareddata_``which.base_addr \
+	//		<= __lar_shareddata__base_addr[`RD_TAG(which)]; \
+	//end
 	`define GEN_RD(which) \
 	assign __in_shareddata_data_rd_``which``_index = `RD_TAG(which); \
 	always_ff @(posedge clk) \
@@ -859,6 +946,8 @@ module Snow64LarFile(input logic clk,
 			<= __lar_metadata__tag[`RD_INDEX(which)]; \
 		real_out_rd_metadata_``which.data_offset \
 			<= __lar_metadata__data_offset[`RD_INDEX(which)]; \
+		real_out_rd_metadata_``which.data_type \
+			<= __lar_metadata__data_type[`RD_INDEX(which)]; \
 		real_out_rd_metadata_``which.int_type_size \
 			<= __lar_metadata__int_type_size[`RD_INDEX(which)]; \
 		real_out_rd_shareddata_``which.data \
