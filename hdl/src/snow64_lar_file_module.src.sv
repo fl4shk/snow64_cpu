@@ -696,16 +696,12 @@ module Snow64LarFile(input logic clk,
 		= real_out_rd_metadata_c.int_type_size;
 
 	wire [__MSB_POS__LAR_FILE_DATA:0]
-		__formal__out_rd_shareddata_a__data = real_out_rd_shareddata_a.data,
-		__formal__out_rd_shareddata_b__data = real_out_rd_shareddata_b.data,
-		__formal__out_rd_shareddata_c__data = real_out_rd_shareddata_c.data;
-	wire [__MSB_POS__SCALAR_DATA:0]
-		__formal__out_rd_shareddata_a__scalar_data
-		= real_out_rd_shareddata_a.scalar_data,
-		__formal__out_rd_shareddata_b__scalar_data
-		= real_out_rd_shareddata_b.scalar_data,
-		__formal__out_rd_shareddata_c__scalar_data
-		= real_out_rd_shareddata_c.scalar_data;
+		__formal__out_rd_shareddata_a__data
+		= real_out_rd_shareddata_a.data,
+		__formal__out_rd_shareddata_b__data
+		= real_out_rd_shareddata_b.data,
+		__formal__out_rd_shareddata_c__data
+		= real_out_rd_shareddata_c.data;
 	wire [__MSB_POS__LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__formal__out_rd_shareddata_a__base_addr
 		= real_out_rd_shareddata_a.base_addr,
@@ -867,8 +863,6 @@ module Snow64LarFile(input logic clk,
 			<= __lar_metadata__int_type_size[`RD_INDEX(which)]; \
 		real_out_rd_shareddata_``which.data \
 			<= __out_shareddata_data_rd_``which``_data; \
-		/* Temporary! */ \
-		real_out_rd_shareddata_``which.scalar_data <= 0; \
 		real_out_rd_shareddata_``which.base_addr \
 			<= __lar_shareddata__base_addr[`RD_TAG(which)]; \
 	end
@@ -1272,6 +1266,9 @@ module Snow64LarFile(input logic clk,
 					case (`IN_LDST_CAPTURED_CURR_SHAREDDATA_DIRTY)
 					1:
 					begin
+						// When an address's data is no longer in the LAR
+						// file, it must be sent to memory iff the data has
+						// been changed.
 						prep_mem_write();
 						case (__captured_in_wr.write_type)
 						PkgSnow64LarFile::WriteTypLd:
@@ -1295,6 +1292,9 @@ module Snow64LarFile(input logic clk,
 
 					0:
 					begin
+						// Even though we were the only LAR that had data
+						// from our address, the data hasn't been changed,
+						// so we don't need to send it back to memory.
 						stop_mem_write();
 
 						case (__captured_in_wr.write_type)
@@ -1310,6 +1310,9 @@ module Snow64LarFile(input logic clk,
 							stop_mem_read();
 							finish_ldst();
 
+							// Stores to an address nobody has yet marks
+							// the data as dirty.  In this special case,
+							// all we're doing is changing our own address.
 							`IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY <= 1;
 						end
 						endcase
@@ -1323,11 +1326,6 @@ module Snow64LarFile(input logic clk,
 				begin
 					stop_mem_write();
 
-					// Decrement our old reference count
-					`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT
-						<= `IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT
-						- 1;
-
 					// Allocate a new element of shared data
 					`IN_LDST_MODDABLE_CURR_METADATA_TAG
 						<= `IN_LDST_CAPTURED_TOP_METADATA_TAG;
@@ -1335,11 +1333,26 @@ module Snow64LarFile(input logic clk,
 
 					`IN_LDST_MODDABLE_TOP_SHAREDDATA_BASE_ADDR
 						<= __captured_in_wr__base_addr.base_addr;
+
+					// As this is a new element of shared data being
+					// allocated, we will be the ONLY reference to it. 
 					`IN_LDST_MODDABLE_TOP_SHAREDDATA_REF_COUNT <= 1;
+
+					// Decrement our old reference count.
+					// The old reference count is guaranteed to be at
+					// least 1 after decrementing it, since it was at least
+					// 2 when we were a reference to it..
+					`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT
+						<= `IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT
+						- 1;
 
 					case (__captured_in_wr.write_type)
 					PkgSnow64LarFile::WriteTypLd:
 					begin
+						// Because at laest one other LAR has our previous
+						// data, we do not need to store it back to memory
+						// yet, but since nobody has our new address, we
+						// need to load that address's data from memory.
 						__wr_state <= PkgSnow64LarFile
 							::WrStWaitForJustMemRead;
 						prep_mem_read();
@@ -1359,8 +1372,8 @@ module Snow64LarFile(input logic clk,
 							(`IN_LDST_CAPTURED_TOP_METADATA_TAG,
 							`IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA);
 
-						// Also, since this is a store, mark the copy of
-						// our old data as dirty.
+						// Also, since this is a store, mark the **copy**
+						// of our old data as dirty.
 						`IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY <= 1;
 					end
 					endcase

@@ -137,7 +137,6 @@ typedef struct packed
 typedef struct packed
 {
 	LarData data;
-	ScalarData scalar_data;
 
 	//PkgSnow64Cpu::CpuAddr addr;
 	LarBaseAddr base_addr;
