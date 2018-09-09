@@ -749,13 +749,13 @@ module Snow64LarFile(input logic clk,
 		= real_out_rd_shareddata_b.data,
 		__formal__out_rd_shareddata_c__data
 		= real_out_rd_shareddata_c.data;
-	wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
-		__formal__out_rd_shareddata_a__scalar_data
-		= real_out_rd_shareddata_a.scalar_data,
-		__formal__out_rd_shareddata_b__scalar_data
-		= real_out_rd_shareddata_b.scalar_data,
-		__formal__out_rd_shareddata_c__scalar_data
-		= real_out_rd_shareddata_c.scalar_data;
+	//wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
+	//	__formal__out_rd_shareddata_a__scalar_data
+	//	= real_out_rd_shareddata_a.scalar_data,
+	//	__formal__out_rd_shareddata_b__scalar_data
+	//	= real_out_rd_shareddata_b.scalar_data,
+	//	__formal__out_rd_shareddata_c__scalar_data
+	//	= real_out_rd_shareddata_c.scalar_data;
 	wire [__MSB_POS__LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__formal__out_rd_shareddata_a__base_addr
 		= real_out_rd_shareddata_a.base_addr,
