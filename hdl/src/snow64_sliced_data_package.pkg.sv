@@ -94,7 +94,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic [`MSB_POS__SNOW64_SIZE_32:0]
+	logic [`MSB_POS__SNOW64_SIZE_64:0]
 		data_3, data_2, data_1, data_0;
 } SlicedLarData64;
 

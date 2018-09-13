@@ -405,7 +405,7 @@ module Snow64IntVectorCaster(input logic clk,
 					`define X(which) \
 						__real_out_data[which * 64 +: 64] \
 							<= `ZERO_EXTEND(64, 32, \
-							__sliced_32__in_to_cast.data_``which); \
+							__sliced_32__in_to_cast.data_``which);
 					`X(0) `X(1) `X(2) `X(3)
 					`undef X
 				end
@@ -415,7 +415,7 @@ module Snow64IntVectorCaster(input logic clk,
 					`define X(which) \
 						__real_out_data[which * 64 +: 64] \
 							<= `SIGN_EXTEND(64, 32, \
-							__sliced_32__in_to_cast.data_``which); \
+							__sliced_32__in_to_cast.data_``which);
 					`X(0) `X(1) `X(2) `X(3)
 					`undef X
 				end
