@@ -20,7 +20,7 @@ module Snow64BFloat16Div(input logic clk,
 	logic [__MSB_POS__BUFFER_BITS:0] __temp_b_significand;
 	logic [__MSB_POS__TEMP:0] __temp_ret_significand, __temp_ret_enc_exp;
 
-	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+	logic __temp_out_valid, __temp_out_can_accept_cmd;
 
 
 	PkgSnow64LongDiv::PortIn_LongDivU16ByU8 __in_long_div;
@@ -47,7 +47,7 @@ module Snow64BFloat16Div(input logic clk,
 	assign __in_long_div = {__in_long_div_start, __in_long_div_a,
 		__in_long_div_b};
 
-	assign out.data_valid = __temp_out_data_valid;
+	assign out.valid = __temp_out_valid;
 	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
 	assign out.data = __temp_out_data;
 
@@ -55,7 +55,7 @@ module Snow64BFloat16Div(input logic clk,
 	begin
 		__state = PkgSnow64BFloat16::StDivIdle;
 		//__prev_state = PkgSnow64BFloat16::StDivIdle;
-		__temp_out_data_valid = 0;
+		__temp_out_valid = 0;
 		__temp_out_can_accept_cmd = 1;
 		__temp_out_data = 0;
 
@@ -85,7 +85,7 @@ module Snow64BFloat16Div(input logic clk,
 					{__WIDTH__BUFFER_BITS{1'b0}}};
 				__temp_b_significand <= `SNOW64_BFLOAT16_FRAC(__curr_in_b);
 
-				__temp_out_data_valid <= 0;
+				__temp_out_valid <= 0;
 				__temp_out_can_accept_cmd <= 0;
 				__temp_out_data.sign <= (__curr_in_a.sign
 					^ __curr_in_b.sign);
@@ -99,12 +99,12 @@ module Snow64BFloat16Div(input logic clk,
 			//$display("StDivStartingLongDiv:  %h, %h",
 			//	__temp_a_significand, __temp_b_significand);
 
-			//if (__out_long_div.data_valid && __out_long_div.can_accept_cmd)
+			//if (__out_long_div.valid && __out_long_div.can_accept_cmd)
 			// This should not trigger other than when we've finished doing
 			// a long division, but....
 			//if ((__prev_state == PkgSnow64BFloat16::StDivStartingLongDiv)
-			//	&& __out_long_div.data_valid)
-			if (__out_long_div.data_valid)
+			//	&& __out_long_div.valid)
+			if (__out_long_div.valid)
 			begin
 				__state <= PkgSnow64BFloat16::StDivAfterLongDiv;
 
@@ -171,7 +171,7 @@ module Snow64BFloat16Div(input logic clk,
 		PkgSnow64BFloat16::StDivFinishing:
 		begin
 			__state <= PkgSnow64BFloat16::StDivIdle;
-			__temp_out_data_valid <= 1;
+			__temp_out_valid <= 1;
 			__temp_out_can_accept_cmd <= 1;
 
 

@@ -34,7 +34,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic data_valid, can_accept_cmd;
+	logic valid, can_accept_cmd;
 	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] data;
 } PortOut_Fpu;
 
@@ -85,7 +85,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic data_valid, can_accept_cmd;
+	logic valid, can_accept_cmd;
 	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] data;
 } PortOut_BinOp;
 
@@ -101,7 +101,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic data_valid, can_accept_cmd;
+	logic valid, can_accept_cmd;
 	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] data;
 } PortOut_CastFromInt;
 
@@ -117,7 +117,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic data_valid, can_accept_cmd;
+	logic valid, can_accept_cmd;
 	logic [`MSB_POS__SNOW64_SIZE_64:0] data;
 } PortOut_CastToInt;
 

@@ -177,7 +177,7 @@ module Snow64BFloat16Add(input logic clk,
 	initial
 	begin
 		__state = PkgSnow64BFloat16::StAddIdle;
-		out.data_valid = 0;
+		out.valid = 0;
 		out.can_accept_cmd = 1;
 		out.data = 0;
 	end
@@ -293,7 +293,7 @@ module Snow64BFloat16Add(input logic clk,
 			//$display("StAddEffAdd:  %h, %h, %h:  %h",
 			//	__temp_out_data.sign, __temp_out_data.enc_exp,
 			//	__temp_out_data.enc_mantissa, __temp_out_data);
-			{out.data_valid, out.can_accept_cmd, out.data}
+			{out.valid, out.can_accept_cmd, out.data}
 				= {1'b1, 1'b1, __temp_out_data};
 		end
 
@@ -347,7 +347,7 @@ module Snow64BFloat16Add(input logic clk,
 			//	__temp_out_data.sign, __temp_out_data.enc_exp,
 			//	__temp_out_data.enc_mantissa, __temp_out_data);
 
-			{out.data_valid, out.can_accept_cmd, out.data}
+			{out.valid, out.can_accept_cmd, out.data}
 				= {1'b1, 1'b1, __temp_out_data};
 		end
 
@@ -370,7 +370,7 @@ module Snow64BFloat16Add(input logic clk,
 		begin
 			if (in.start)
 			begin
-				//out.data_valid <= 0;
+				//out.valid <= 0;
 				//out.can_accept_cmd <= 0;
 
 				__captured_in_a <= in.a;
@@ -435,7 +435,7 @@ module Snow64BFloat16Add(input logic clk,
 		default:
 		begin
 			__state <= PkgSnow64BFloat16::StAddIdle;
-			//out.data_valid <= 1;
+			//out.valid <= 1;
 			//out.can_accept_cmd <= 1;
 
 			//__ret_significand <= __temp_ret_significand;

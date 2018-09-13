@@ -28,7 +28,7 @@ module Snow64BFloat16Slt(input logic clk,
 
 	initial
 	begin
-		out.data_valid = 0;
+		out.valid = 0;
 		out.can_accept_cmd = 1;
 		out.data = 0;
 	end
@@ -65,7 +65,7 @@ module Snow64BFloat16Slt(input logic clk,
 			end
 			endcase
 
-			out.data_valid <= 1;
+			out.valid <= 1;
 		end
 	end
 

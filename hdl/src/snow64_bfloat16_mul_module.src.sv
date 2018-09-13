@@ -22,7 +22,7 @@ module Snow64BFloat16Mul(input logic clk,
 	initial
 	begin
 		__state = PkgSnow64BFloat16::StMulIdle;
-		out.data_valid = 0;
+		out.valid = 0;
 		out.can_accept_cmd = 1;
 		out.data = 0;
 	end
@@ -120,7 +120,7 @@ module Snow64BFloat16Mul(input logic clk,
 					[`MSB_POS__SNOW64_BFLOAT16_ENC_EXP:0]};
 			end
 
-			{out.data_valid, out.can_accept_cmd, out.data}
+			{out.valid, out.can_accept_cmd, out.data}
 				= {1'b1, 1'b1, __temp_out_data};
 		end
 

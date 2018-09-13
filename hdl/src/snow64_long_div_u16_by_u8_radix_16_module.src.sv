@@ -63,7 +63,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 	logic [__MSB_POS__TEMP:0] __j;
 
 	logic [__MSB_POS__ALMOST_OUT_DATA:0] __almost_out_data;
-	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+	logic __temp_out_valid, __temp_out_can_accept_cmd;
 
 	//logic [__MSB_POS__ARR_INDEX:0] __search_result;
 	//logic [__MSB_POS__ARR_INDEX:0]
@@ -73,7 +73,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 		__search_result_0_to_7, __search_result_8_to_15;
 
 	assign out.data = __almost_out_data;
-	assign out.data_valid = __temp_out_data_valid;
+	assign out.valid = __temp_out_valid;
 	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
 
 	task iteration_end;
@@ -109,9 +109,9 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 	initial
 	begin
 		__state = StIdle;
-		//out.data_valid = 0;
+		//out.valid = 0;
 		//out.can_accept_cmd = 1;
-		__temp_out_data_valid = 0;
+		__temp_out_valid = 0;
 		__temp_out_can_accept_cmd = 1;
 	end
 
@@ -125,7 +125,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 
 				//if (in.start)
 				//begin
-				//	out.data_valid = 1;
+				//	out.valid = 1;
 				//	out.can_accept_cmd = 1;
 				//end
 				__almost_out_data = 0;
@@ -306,7 +306,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 
 				//if (__i == 0)
 				//begin
-				//	out.data_valid = 1;
+				//	out.valid = 1;
 				//	out.can_accept_cmd = 1;
 				//end
 			end
@@ -381,7 +381,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 					end
 
 					__i <= __STARTING_I_VALUE;
-					__temp_out_data_valid <= 0;
+					__temp_out_valid <= 0;
 					__temp_out_can_accept_cmd <= 0;
 				end
 			end
@@ -397,7 +397,7 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 				if (__i == 0)
 				begin
 					__state <= StIdle;
-					__temp_out_data_valid <= 1;
+					__temp_out_valid <= 1;
 					__temp_out_can_accept_cmd <= 1;
 				end
 			end

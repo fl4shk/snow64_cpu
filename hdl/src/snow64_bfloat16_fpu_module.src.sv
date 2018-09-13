@@ -4,7 +4,7 @@
 //	input logic in_start,
 //	input logic [`MSB_POS__SNOW64_BFLOAT16_FPU_OPER:0] in_oper,
 //	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_a, in_b,
-//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic out_valid, out_can_accept_cmd,
 //	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
 //
 //
@@ -16,7 +16,7 @@
 //	always @(*) __in_bfloat16_fpu.a = in_a;
 //	always @(*) __in_bfloat16_fpu.b = in_b;
 //
-//	assign out_data_valid = __out_bfloat16_fpu.data_valid;
+//	assign out_valid = __out_bfloat16_fpu.valid;
 //	assign out_can_accept_cmd = __out_bfloat16_fpu.can_accept_cmd;
 //	assign out_data = __out_bfloat16_fpu.data;
 //
@@ -92,34 +92,34 @@ module Snow64BFloat16Fpu(input logic clk,
 	Snow64BFloat16Div __inst_submodule_div(.clk(clk),
 		.in(__in_submodule_div), .out(__out_submodule_div));
 
-	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+	logic __temp_out_valid, __temp_out_can_accept_cmd;
 
 	initial
 	begin
 		__captured_in_oper = 0;
-		//__temp_out_data_valid = 0;
+		//__temp_out_valid = 0;
 		//__temp_out_can_accept_cmd = 1;
 		out.data = 0;
 	end
 
 	//always @(*)
-	always @(*) out.data_valid = __temp_out_data_valid;
+	always @(*) out.valid = __temp_out_valid;
 	always @(*) out.can_accept_cmd = __temp_out_can_accept_cmd;
 	
-	assign __temp_out_data_valid
+	assign __temp_out_valid
 		= ((!(in.start && __temp_out_can_accept_cmd))
-		&& ((__out_submodule_add.data_valid
+		&& ((__out_submodule_add.valid
 		&& ((__captured_in_oper == PkgSnow64BFloat16::OpAdd)
 		|| (__captured_in_oper == PkgSnow64BFloat16::OpSub)
 		|| (__captured_in_oper == PkgSnow64BFloat16::OpAddAgain)))
 
-		|| (__out_submodule_slt.data_valid
+		|| (__out_submodule_slt.valid
 		&& (__captured_in_oper == PkgSnow64BFloat16::OpSlt))
 
-		|| (__out_submodule_mul.data_valid
+		|| (__out_submodule_mul.valid
 		&& (__captured_in_oper == PkgSnow64BFloat16::OpMul))
 
-		|| (__out_submodule_div.data_valid
+		|| (__out_submodule_div.valid
 		&& (__captured_in_oper == PkgSnow64BFloat16::OpDiv))));
 
 	assign __temp_out_can_accept_cmd
@@ -131,14 +131,14 @@ module Snow64BFloat16Fpu(input logic clk,
 	//task switch_to_wait_for_submodule;
 	//	__captured_in_oper <= in.oper;
 	//	__state <= StWaitForSubmodule;
-	//	out.data_valid <= 0;
+	//	out.valid <= 0;
 	//	out.can_accept_cmd <= 0;
 	//endtask
 
 	//task switch_to_idle
 	//	(input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] n_out_data);
 	//	__state <= StIdle;
-	//	out.data_valid <= 1;
+	//	out.valid <= 1;
 	//	out.can_accept_cmd <= 1;
 	//	out.data <= n_out_data;
 	//endtask

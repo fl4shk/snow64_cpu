@@ -317,7 +317,7 @@
 //		#2
 //		__in_bfloat16_div_start = 0;
 //
-//		while (!__out_bfloat16_div.data_valid)
+//		while (!__out_bfloat16_div.valid)
 //		begin
 //			#2
 //			__dummy = !__dummy;

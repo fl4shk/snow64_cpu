@@ -18,7 +18,7 @@ typedef struct packed
 
 typedef struct packed
 {
-	logic data_valid, can_accept_cmd;
+	logic valid, can_accept_cmd;
 	logic [`MSB_POS__SNOW64_LONG_DIV_U16_BY_U8_OUT_DATA:0] data;
 } PortOut_LongDivU16ByU8;
 

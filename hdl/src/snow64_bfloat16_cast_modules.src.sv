@@ -11,11 +11,11 @@ module Snow64BFloat16CastFromInt(input logic clk,
 		StFinishing
 	} __state;
 
-	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+	logic __temp_out_valid, __temp_out_can_accept_cmd;
 	PkgSnow64BFloat16::BFloat16 __temp_out_data;
 	logic [`MSB_POS__SNOW64_SIZE_64:0] __temp_ret_enc_exp;
 
-	assign out.data_valid = __temp_out_data_valid;
+	assign out.valid = __temp_out_valid;
 	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
 	assign out.data = __temp_out_data;
 
@@ -31,7 +31,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 	initial
 	begin
 		__state = StIdle;
-		__temp_out_data_valid = 0;
+		__temp_out_valid = 0;
 		__temp_out_can_accept_cmd = 1;
 		__temp_out_data = 0;
 	end
@@ -181,7 +181,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 			if (in.start)
 			begin
 				__state <= StFinishing;
-				__temp_out_data_valid <= 0;
+				__temp_out_valid <= 0;
 				__temp_out_can_accept_cmd <= 0;
 				__captured_in_type_size <= in.int_type_size;
 			end
@@ -190,7 +190,7 @@ module Snow64BFloat16CastFromInt(input logic clk,
 		StFinishing:
 		begin
 			__state <= StIdle;
-			__temp_out_data_valid <= 1;
+			__temp_out_valid <= 1;
 			__temp_out_can_accept_cmd <= 1;
 		end
 		endcase
@@ -212,10 +212,10 @@ module Snow64BFloat16CastToInt(input logic clk,
 		StFinishing
 	} __state;
 
-	logic __temp_out_data_valid, __temp_out_can_accept_cmd;
+	logic __temp_out_valid, __temp_out_can_accept_cmd;
 	logic [`MSB_POS__SNOW64_SIZE_64:0] __temp_out_data, __temp_for_sticky;
 
-	assign out.data_valid = __temp_out_data_valid;
+	assign out.valid = __temp_out_valid;
 	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
 	assign out.data = __temp_out_data;
 
@@ -291,7 +291,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 	initial
 	begin
 		__state = StIdle;
-		__temp_out_data_valid = 0;
+		__temp_out_valid = 0;
 		__temp_out_can_accept_cmd = 1;
 		__temp_out_data = 0;
 	end
@@ -543,7 +543,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 			if (in.start)
 			begin
 				__state <= StInner;
-				__temp_out_data_valid <= 0;
+				__temp_out_valid <= 0;
 				__temp_out_can_accept_cmd <= 0;
 
 				__captured_in_to_cast <= in.to_cast;
@@ -560,7 +560,7 @@ module Snow64BFloat16CastToInt(input logic clk,
 		StFinishing:
 		begin
 			__state <= StIdle;
-			__temp_out_data_valid <= 1;
+			__temp_out_valid <= 1;
 			__temp_out_can_accept_cmd <= 1;
 		end
 		endcase
@@ -574,7 +574,7 @@ endmodule
 //	input logic [`MSB_POS__SNOW64_SIZE_64:0] in_to_cast,
 //	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
 //	input logic in_type_signedness,
-//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic out_valid, out_can_accept_cmd,
 //	output logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] out_data);
 //
 //	PkgSnow64BFloat16::PortIn_CastFromInt __in_cast_from_int;
@@ -589,7 +589,7 @@ endmodule
 //	always @(*) __in_cast_from_int.int_type_size = in_type_size;
 //	always @(*) __in_cast_from_int.type_signedness = in_type_signedness;
 //
-//	assign out_data_valid = __out_cast_from_int.data_valid;
+//	assign out_valid = __out_cast_from_int.valid;
 //	assign out_can_accept_cmd = __out_cast_from_int.can_accept_cmd;
 //	assign out_data = __out_cast_from_int.data;
 //
@@ -601,7 +601,7 @@ endmodule
 //	input logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] in_to_cast,
 //	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
 //	input logic in_type_signedness,
-//	output logic out_data_valid, out_can_accept_cmd,
+//	output logic out_valid, out_can_accept_cmd,
 //	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
 //
 //	PkgSnow64BFloat16::PortIn_CastToInt __in_cast_to_int;
@@ -616,7 +616,7 @@ endmodule
 //	always @(*) __in_cast_to_int.int_type_size = in_type_size;
 //	always @(*) __in_cast_to_int.type_signedness = in_type_signedness;
 //
-//	assign out_data_valid = __out_cast_to_int.data_valid;
+//	assign out_valid = __out_cast_to_int.valid;
 //	assign out_can_accept_cmd = __out_cast_to_int.can_accept_cmd;
 //	assign out_data = __out_cast_to_int.data;
 //
