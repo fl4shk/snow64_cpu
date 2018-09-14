@@ -617,29 +617,22 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 				begin
 					__state <= StWaitForCastFrom;
 
+					`define X(which) \
+						{`PORT_IN_CAST_FROM_INT(which).int_type_size, \
+							`PORT_IN_CAST_FROM_INT(which) \
+							.type_signedness} \
+							<= {__in_int_type_size, __in_type_signedness};
+					`OPERATE_ON_ALL_PORTS
+					`undef X
+
 					case (__in_int_type_size)
 					PkgSnow64Cpu::IntTypSz8:
 					begin
 						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).start <= 1'b1;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_8
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).int_type_size \
-								<= __in_int_type_size;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_8
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).type_signedness \
-								<= __in_type_signedness;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_8
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).to_cast \
-								<= __sliced_8__in_to_cast.data_``which;
+							{`PORT_IN_CAST_FROM_INT(which).start, \
+								`PORT_IN_CAST_FROM_INT(which).to_cast} \
+								<= {1'b1, `ZERO_EXTEND(64, 8, \
+								__sliced_8__in_to_cast.data_``which)};
 						`OPERATE_ON_CAST_FROM_INT_PORTS_8
 						`undef X
 					end
@@ -647,25 +640,10 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 					PkgSnow64Cpu::IntTypSz16:
 					begin
 						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).start <= 1'b1;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_16
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).int_type_size \
-								<= __in_int_type_size;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_16
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).type_signedness \
-								<= __in_type_signedness;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_16
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).to_cast \
-								<= __sliced_16__in_to_cast.data_``which;
+							{`PORT_IN_CAST_FROM_INT(which).start, \
+								`PORT_IN_CAST_FROM_INT(which).to_cast} \
+								<= {1'b1, `ZERO_EXTEND(64, 16, \
+								__sliced_16__in_to_cast.data_``which)};
 						`OPERATE_ON_CAST_FROM_INT_PORTS_16
 						`undef X
 					end
@@ -673,25 +651,10 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 					PkgSnow64Cpu::IntTypSz32:
 					begin
 						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).start <= 1'b1;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_32
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).int_type_size \
-								<= __in_int_type_size;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_32
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).type_signedness \
-								<= __in_type_signedness;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_32
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).to_cast \
-								<= __sliced_32__in_to_cast.data_``which;
+							{`PORT_IN_CAST_FROM_INT(which).start, \
+								`PORT_IN_CAST_FROM_INT(which).to_cast} \
+								<= {1'b1, `ZERO_EXTEND(64, 32, \
+								__sliced_32__in_to_cast.data_``which)};
 						`OPERATE_ON_CAST_FROM_INT_PORTS_32
 						`undef X
 					end
@@ -699,25 +662,10 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 					PkgSnow64Cpu::IntTypSz64:
 					begin
 						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).start <= 1'b1;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_64
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).int_type_size \
-								<= __in_int_type_size;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_64
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).type_signedness \
-								<= __in_type_signedness;
-						`OPERATE_ON_CAST_FROM_INT_PORTS_64
-						`undef X
-
-						`define X(which) \
-							`PORT_IN_CAST_FROM_INT(which).to_cast \
-								<= __sliced_64__in_to_cast.data_``which;
+							{`PORT_IN_CAST_FROM_INT(which).start, \
+								`PORT_IN_CAST_FROM_INT(which).to_cast} \
+								<= {1'b1, \
+								__sliced_64__in_to_cast.data_``which};
 						`OPERATE_ON_CAST_FROM_INT_PORTS_64
 						`undef X
 					end
@@ -730,25 +678,10 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 					__captured_in_int_type_size <= __in_int_type_size;
 
 					`define X(which) \
-						`PORT_IN_CAST_TO_INT(which).start <= 1'b1;
-					`OPERATE_ON_ALL_PORTS
-					`undef X
-
-					`define X(which) \
-						`PORT_IN_CAST_TO_INT(which).int_type_size \
-							<= __in_int_type_size;
-					`OPERATE_ON_ALL_PORTS
-					`undef X
-
-					`define X(which) \
-						`PORT_IN_CAST_TO_INT(which).type_signedness \
-							<= __in_type_signedness;
-					`OPERATE_ON_ALL_PORTS
-					`undef X
-
-					`define X(which) \
-						`PORT_IN_CAST_TO_INT(which).to_cast \
-							<= __sliced_16__in_to_cast.data_``which;
+						`PORT_IN_CAST_TO_INT(which) \
+							<= {1'b1, \
+							__sliced_16__in_to_cast.data_``which, \
+							__in_int_type_size, __in_type_signedness};
 					`OPERATE_ON_ALL_PORTS
 					`undef X
 				end
