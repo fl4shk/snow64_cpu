@@ -907,15 +907,15 @@ module Snow64LarFile(input logic clk,
 
 	//`define GEN_RD(which) \
 	//assign __in_shareddata_data_rd_``which``_index = `RD_TAG(which); \
-	//PkgSnow64ScalarDataShifter::PortIn_ScalarDataShifterForRead \
-	//	__in_scalar_data_shifter_for_read_``which; \
-	//PkgSnow64ScalarDataShifter::PortOut_ScalarDataShifterForRead \
-	//	__out_scalar_data_shifter_for_read_``which; \
-	//Snow64ScalarDataShifterForRead \
-	//	__inst_scalar_data_shifter_for_read_``which \
-	//	(.in(__in_scalar_data_shifter_for_read_``which), \
-	//	.out(__out_scalar_data_shifter_for_read_``which)); \
-	//assign __in_scalar_data_shifter_for_read_``which \
+	//PkgSnow64ScalarDataExtractorInjector::PortIn_ScalarDataExtractor \
+	//	__in_scalar_data_extractor_injector_for_read_``which; \
+	//PkgSnow64ScalarDataExtractorInjector::PortOut_ScalarDataExtractor \
+	//	__out_scalar_data_extractor_injector_for_read_``which; \
+	//Snow64ScalarDataExtractor \
+	//	__inst_scalar_data_extractor_injector_for_read_``which \
+	//	(.in(__in_scalar_data_extractor_injector_for_read_``which), \
+	//	.out(__out_scalar_data_extractor_injector_for_read_``which)); \
+	//assign __in_scalar_data_extractor_injector_for_read_``which \
 	//	= {__out_shareddata_data_rd_``which``_data, \
 	//	__lar_metadata__data_type[`RD_INDEX(which)], \
 	//	__lar_metadata__int_type_size[`RD_INDEX(which)], \
@@ -934,7 +934,7 @@ module Snow64LarFile(input logic clk,
 	//	real_out_rd_shareddata_``which.data \
 	//		<= __out_shareddata_data_rd_``which``_data; \
 	//	real_out_rd_shareddata_``which.scalar_data \
-	//		<= __out_scalar_data_shifter_for_read_``which.data; \
+	//		<= __out_scalar_data_extractor_injector_for_read_``which.data; \
 	//	real_out_rd_shareddata_``which.base_addr \
 	//		<= __lar_shareddata__base_addr[`RD_TAG(which)]; \
 	//end

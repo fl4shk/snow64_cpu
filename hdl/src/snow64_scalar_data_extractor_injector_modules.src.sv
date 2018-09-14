@@ -1,9 +1,10 @@
-`include "src/snow64_scalar_data_shifter_defines.header.sv"
+`include "src/snow64_scalar_data_extractor_injector_defines.header.sv"
 
 // Note:  this module does NOT perform casting!
-module Snow64ScalarDataShifterForRead
-	(input PkgSnow64ScalarDataShifter::PortIn_ScalarDataShifterForRead in,
-	output PkgSnow64ScalarDataShifter::PortOut_ScalarDataShifterForRead
+module Snow64ScalarDataExtractor
+	(input PkgSnow64ScalarDataExtractorInjector::PortIn_ScalarDataExtractor
+		in,
+	output PkgSnow64ScalarDataExtractorInjector::PortOut_ScalarDataExtractor
 		out);
 
 	localparam __MSB_POS__DATA_OFFSET
@@ -119,9 +120,10 @@ module Snow64ScalarDataShifterForRead
 
 endmodule
 
-module Snow64ScalarDataShifterForWrite
-	(input PkgSnow64ScalarDataShifter::PortIn_ScalarDataShifterForWrite in,
-	output PkgSnow64ScalarDataShifter::PortOut_ScalarDataShifterForWrite
+module Snow64ScalarDataInjector
+	(input PkgSnow64ScalarDataExtractorInjector::PortIn_ScalarDataInjector
+		in,
+	output PkgSnow64ScalarDataExtractorInjector::PortOut_ScalarDataInjector
 		out);
 
 	localparam __MSB_POS__DATA_OFFSET

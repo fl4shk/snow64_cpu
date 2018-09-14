@@ -1,6 +1,6 @@
-`include "src/snow64_scalar_data_shifter_defines.header.sv"
+`include "src/snow64_scalar_data_extractor_injector_defines.header.sv"
 
-package PkgSnow64ScalarDataShifter;
+package PkgSnow64ScalarDataExtractorInjector;
 
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] LarData;
 typedef logic [`MSB_POS__SNOW64_SCALAR_DATA:0] ScalarData;
@@ -13,7 +13,11 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	DataOffset data_offset;
-} PortIn_ScalarDataShifterForRead;
+} PortIn_ScalarDataExtractor;
+typedef struct packed
+{
+	ScalarData data;
+} PortOut_ScalarDataExtractor;
 
 typedef struct packed
 {
@@ -22,18 +26,14 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	DataOffset data_offset;
-} PortIn_ScalarDataShifterForWrite;
+} PortIn_ScalarDataInjector;
 
 
-typedef struct packed
-{
-	ScalarData data;
-} PortOut_ScalarDataShifterForRead;
 
 typedef struct packed
 {
 	LarData data;
-} PortOut_ScalarDataShifterForWrite;
+} PortOut_ScalarDataInjector;
 
 
-endpackage : PkgSnow64ScalarDataShifter
+endpackage : PkgSnow64ScalarDataExtractorInjector

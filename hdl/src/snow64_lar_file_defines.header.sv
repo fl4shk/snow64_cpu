@@ -5,7 +5,7 @@
 
 //`include "src/misc_defines.header.sv"
 `include "src/snow64_cpu_defines.header.sv"
-`include "src/snow64_scalar_data_shifter_defines.header.sv"
+`include "src/snow64_scalar_data_extractor_injector_defines.header.sv"
 
 `ifdef FORMAL
 `define SMALL_LAR_FILE
