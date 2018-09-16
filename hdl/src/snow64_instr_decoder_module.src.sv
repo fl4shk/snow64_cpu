@@ -21,27 +21,11 @@ module Snow64InstrDecoder
 	assign __iog3_instr = in;
 	assign __iog4_instr = in;
 
-	always @(*)
-	begin
-		out.group = __iog0_instr.group;
-	end
-
-	always @(*)
-	begin
-		out.op_type = __iog0_instr.op_type;
-	end
-	always @(*)
-	begin
-		out.ra_index = __iog0_instr.ra_index;
-	end
-	always @(*)
-	begin
-		out.rb_index = __iog0_instr.rb_index;
-	end
-	always @(*)
-	begin
-		out.rc_index = __iog0_instr.rc_index;
-	end
+	always @(*) out.group = __iog0_instr.group;
+	always @(*) out.op_type = __iog0_instr.op_type;
+	always @(*) out.ra_index = __iog0_instr.ra_index;
+	always @(*) out.rb_index = __iog0_instr.rb_index;
+	always @(*) out.rc_index = __iog0_instr.rc_index;
 
 
 	always @(*)
@@ -50,10 +34,6 @@ module Snow64InstrDecoder
 		0:
 		begin
 			out.oper = __iog0_instr.oper;
-			//out.stall = ((__iog0_instr.oper 
-			//	== PkgSnow64InstrDecoder::Mul_ThreeRegs)
-			//	|| (__iog0_instr.oper
-			//	== PkgSnow64InstrDecoder::Div_ThreeRegs));
 			out.nop = ((__iog0_instr.oper
 				== PkgSnow64InstrDecoder::Bad0_Iog0)
 				|| (__iog0_instr.oper
@@ -70,11 +50,9 @@ module Snow64InstrDecoder
 		1:
 		begin
 			out.oper = __iog1_instr.oper;
-			//out.stall = 0;
 
-			// out.nop 
-			// = (__iog1_instr.oper 
-			// 	<= PkgSnow64InstrDecoder::Bad0_Iog1);
+			// out.nop = (__iog1_instr.oper 
+			// 	>= PkgSnow64InstrDecoder::Bad0_Iog1);
 			out.nop = (__iog1_instr.oper[3] && __iog1_instr.oper[2]);
 
 			out.signext_imm 
@@ -86,7 +64,6 @@ module Snow64InstrDecoder
 		2:
 		begin
 			out.oper = __iog2_instr.oper;
-			//out.stall = __iog2_instr.oper;
 
 			// out.nop = (__iog2_instr.oper
 			// 	>= PkgSnow64InstrDecoder::Bad0_Iog2);
@@ -103,7 +80,6 @@ module Snow64InstrDecoder
 		3:
 		begin
 			out.oper = __iog3_instr.oper;
-			//out.stall = __iog3_instr.oper;
 
 			// out.nop = (__iog3_instr.oper
 			// 	>= PkgSnow64InstrDecoder::Bad0_Iog3);
@@ -120,7 +96,6 @@ module Snow64InstrDecoder
 		4:
 		begin
 			out.oper = __iog4_instr.oper;
-			//out.stall = __iog4_instr.oper;
 
 			// out.nop = (__iog4_instr.oper
 			// 	>= PkgSnow64InstrDecoder::Bad0_Iog4);
@@ -138,7 +113,6 @@ module Snow64InstrDecoder
 		default:
 		begin
 			out.oper = 0;
-			//out.stall = 0;
 			out.nop = 1;
 			out.signext_imm = 0;
 		end
