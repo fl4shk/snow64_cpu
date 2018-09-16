@@ -24,85 +24,90 @@ module Snow64Cpu(input logic clk,
 
 	// Instruction decoder
 	wire [`MSB_POS__SNOW64_INSTR:0] __in_instr_decoder;
-	PkgSnow64InstrDecoder::PortOut_InstrDecoder __out_instr_decoder;
+	PkgSnow64InstrDecoder::PortOut_InstrDecoder __out_inst_instr_decoder;
 	Snow64InstrDecoder __inst_instr_decoder(.in(__in_instr_decoder),
-		.out(__out_instr_decoder));
+		.out(__out_inst_instr_decoder));
 
 	// Interface for accessing memory
 	PkgSnow64MemoryAccessFifo::PartialPortIn_ReadFifo_ReqRead
-		__in_mem_acc_read_fifo__instr__req_read,
-		__in_mem_acc_read_fifo__data__req_read;
+		real_in_inst_mem_acc_read_fifo__instr__req_read,
+		real_in_inst_mem_acc_read_fifo__data__req_read;
 	PkgSnow64MemoryAccessFifo::PartialPortIn_WriteFifo_ReqWrite
-		__in_mem_acc_write_fifo__data__req_write;
+		real_in_inst_mem_acc_write_fifo__data__req_write;
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_MemAccess
-		__in_mem_bus_guard__mem_access;
+		real_in_inst_mem_bus_guard__mem_access;
 	PkgSnow64MemoryAccessFifo::PartialPortOut_ReadFifo_ReqRead
-		__out_mem_acc_read_fifo__instr__req_read,
-		__out_mem_acc_read_fifo__data__req_read;
+		real_out_inst_mem_acc_read_fifo__instr__req_read,
+		real_out_inst_mem_acc_read_fifo__data__req_read;
 	PkgSnow64MemoryAccessFifo::PartialPortOut_WriteFifo_ReqWrite
-		__out_mem_acc_write_fifo__data__req_write;
+		real_out_inst_mem_acc_write_fifo__data__req_write;
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_MemAccess
-		__out_mem_bus_guard__mem_access;
+		real_out_inst_mem_bus_guard__mem_access;
 	Snow64MemoryAccessViaFifos __inst_memory_access_via_fifos(.clk(clk),
 		.in_mem_acc_read_fifo__instr__req_read
-		(__in_mem_acc_read_fifo__instr__req_read),
+		(real_in_inst_mem_acc_read_fifo__instr__req_read),
 		.in_mem_acc_read_fifo__data__req_read
-		(__in_mem_acc_read_fifo__data__req_read),
+		(real_in_inst_mem_acc_read_fifo__data__req_read),
 		.in_mem_acc_write_fifo__data__req_write
-		(__in_mem_acc_write_fifo__data__req_write),
+		(real_in_inst_mem_acc_write_fifo__data__req_write),
 
-		.in_mem_bus_guard__mem_access(__in_mem_bus_guard__mem_access),
+		.in_mem_bus_guard__mem_access
+		(real_in_inst_mem_bus_guard__mem_access),
 		.out_mem_acc_read_fifo__instr__req_read
-		(__out_mem_acc_read_fifo__instr__req_read),
+		(real_out_inst_mem_acc_read_fifo__instr__req_read),
 		.out_mem_acc_read_fifo__data__req_read
-		(__out_mem_acc_read_fifo__data__req_read),
+		(real_out_inst_mem_acc_read_fifo__data__req_read),
 		.out_mem_acc_write_fifo__data__req_write
-		(__out_mem_acc_write_fifo__data__req_write),
+		(real_out_inst_mem_acc_write_fifo__data__req_write),
 		.out_mem_bus_guard__mem_access
-		(__out_mem_bus_guard__mem_access));
+		(real_out_inst_mem_bus_guard__mem_access));
 
 
 	// The LAR file
-	PkgSnow64LarFile::PortIn_LarFile __in_lar_file;
-	PkgSnow64LarFile::PortOut_LarFile __out_lar_file;
-	Snow64LarFile __inst_lar_file(.clk(clk), .in(__in_lar_file),
-		.out(__out_lar_file));
+	PkgSnow64LarFile::PortIn_LarFile __in_inst_lar_file;
+	PkgSnow64LarFile::PortOut_LarFile __out_inst_lar_file;
+	Snow64LarFile __inst_lar_file(.clk(clk), .in(__in_inst_lar_file),
+		.out(__out_inst_lar_file));
 
 	PkgSnow64LarFile::PartialPortIn_LarFile_Read
-		real_in_lar_file__rd_a, real_in_lar_file__rd_b,
-		real_in_lar_file__rd_c;
-	PkgSnow64LarFile::PartialPortIn_LarFile_Write real_in_lar_file__wr;
-	PkgSnow64LarFile::PartialPortIn_LarFile_MemRead real_in_lar_file__mem_read;
-	PkgSnow64LarFile::PartialPortIn_LarFile_MemWrite real_in_lar_file__mem_write;
+		real_in_inst_lar_file__rd_a, real_in_inst_lar_file__rd_b,
+		real_in_inst_lar_file__rd_c;
+	PkgSnow64LarFile::PartialPortIn_LarFile_Write real_in_inst_lar_file__wr;
+	PkgSnow64LarFile::PartialPortIn_LarFile_MemRead
+		real_in_inst_lar_file__mem_read;
+	PkgSnow64LarFile::PartialPortIn_LarFile_MemWrite
+		real_in_inst_lar_file__mem_write;
 
-	assign __in_lar_file
-		= {real_in_lar_file__rd_a, real_in_lar_file__rd_b,
-		real_in_lar_file__rd_c,
-		real_in_lar_file__wr,
-		real_in_lar_file__mem_read,
-		real_in_lar_file__mem_write};
+	assign __in_inst_lar_file
+		= {real_in_inst_lar_file__rd_a, real_in_inst_lar_file__rd_b,
+		real_in_inst_lar_file__rd_c,
+		real_in_inst_lar_file__wr,
+		real_in_inst_lar_file__mem_read,
+		real_in_inst_lar_file__mem_write};
 
 
 	PkgSnow64LarFile::PartialPortOut_LarFile_ReadMetadata
-		real_out_lar_file__rd_metadata_a, real_out_lar_file__rd_metadata_b,
-		real_out_lar_file__rd_metadata_c;
+		real_out_inst_lar_file__rd_metadata_a, real_out_inst_lar_file__rd_metadata_b,
+		real_out_inst_lar_file__rd_metadata_c;
 	PkgSnow64LarFile::PartialPortOut_LarFile_ReadShareddata
-		real_out_lar_file__rd_shareddata_a,
-		real_out_lar_file__rd_shareddata_b,
-		real_out_lar_file__rd_shareddata_c;
-	PkgSnow64LarFile::PartialPortOut_LarFile_Write real_out_lar_file__wr;
-	PkgSnow64LarFile::PartialPortOut_LarFile_MemRead real_out_lar_file__mem_read;
-	PkgSnow64LarFile::PartialPortOut_LarFile_MemWrite real_out_lar_file__mem_write;
+		real_out_inst_lar_file__rd_shareddata_a,
+		real_out_inst_lar_file__rd_shareddata_b,
+		real_out_inst_lar_file__rd_shareddata_c;
+	PkgSnow64LarFile::PartialPortOut_LarFile_Write real_out_inst_lar_file__wr;
+	PkgSnow64LarFile::PartialPortOut_LarFile_MemRead
+		real_out_inst_lar_file__mem_read;
+	PkgSnow64LarFile::PartialPortOut_LarFile_MemWrite
+		real_out_inst_lar_file__mem_write;
 
-	assign {real_out_lar_file__rd_metadata_a,
-		real_out_lar_file__rd_metadata_b,
-		real_out_lar_file__rd_metadata_c,
-		real_out_lar_file__rd_shareddata_a,
-		real_out_lar_file__rd_shareddata_b,
-		real_out_lar_file__rd_shareddata_c,
-		real_out_lar_file__wr,
-		real_out_lar_file__mem_read,
-		real_out_lar_file__mem_write} = __out_lar_file;
+	assign {real_out_inst_lar_file__rd_metadata_a,
+		real_out_inst_lar_file__rd_metadata_b,
+		real_out_inst_lar_file__rd_metadata_c,
+		real_out_inst_lar_file__rd_shareddata_a,
+		real_out_inst_lar_file__rd_shareddata_b,
+		real_out_inst_lar_file__rd_shareddata_c,
+		real_out_inst_lar_file__wr,
+		real_out_inst_lar_file__mem_read,
+		real_out_inst_lar_file__mem_write} = __out_inst_lar_file;
 
 
 
@@ -324,167 +329,173 @@ module Snow64Cpu(input logic clk,
 
 
 	// Ports of __inst_instr_decoder
-	wire [`MSB_POS__SNOW64_IENC_GROUP:0] __formal__out_instr_decoder__group
-		= __out_instr_decoder.group;
-	wire __formal__out_instr_decoder__op_type
-		= __out_instr_decoder.op_type;
+	wire [`MSB_POS__SNOW64_IENC_GROUP:0]
+		__formal__out_inst_instr_decoder__group
+		= __out_inst_instr_decoder.group;
+	wire __formal__out_inst_instr_decoder__op_type
+		= __out_inst_instr_decoder.op_type;
 	wire [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
-		__formal__out_instr_decoder__ra_index
-		= __out_instr_decoder.ra_index,
-		__formal__out_instr_decoder__rb_index
-		= __out_instr_decoder.rb_index,
-		__formal__out_instr_decoder__rc_index
-		= __out_instr_decoder.rc_index;
-	wire [`MSB_POS__SNOW64_IENC_OPCODE:0] __formal__out_instr_decoder__oper
-		= __out_instr_decoder.oper;
+		__formal__out_inst_instr_decoder__ra_index
+		= __out_inst_instr_decoder.ra_index,
+		__formal__out_inst_instr_decoder__rb_index
+		= __out_inst_instr_decoder.rb_index,
+		__formal__out_inst_instr_decoder__rc_index
+		= __out_inst_instr_decoder.rc_index;
+	wire [`MSB_POS__SNOW64_IENC_OPCODE:0]
+		__formal__out_inst_instr_decoder__oper
+		= __out_inst_instr_decoder.oper;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__out_instr_decoder__signext_imm
-		= __out_instr_decoder.signext_imm;
+		__formal__out_inst_instr_decoder__signext_imm
+		= __out_inst_instr_decoder.signext_imm;
 
-	wire __formal__out_instr_decoder__nop = __out_instr_decoder.nop;
+	wire __formal__out_inst_instr_decoder__nop
+		= __out_inst_instr_decoder.nop;
 
 
 	// Ports of __inst_memory_access_via_fifos
-	wire __formal__in_read_fifo__instr__req_read__req
-		= __in_mem_acc_read_fifo__instr__req_read.req;
+	wire __formal__in_inst_read_fifo__instr__req_read__req
+		= real_in_inst_mem_acc_read_fifo__instr__req_read.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__in_read_fifo__instr__req_read__addr
-		= __in_mem_acc_read_fifo__instr__req_read.addr;
+		__formal__in_inst_read_fifo__instr__req_read__addr
+		= real_in_inst_mem_acc_read_fifo__instr__req_read.addr;
 
-	wire __formal__in_read_fifo__data__req_read__req
-		= __in_mem_acc_read_fifo__data__req_read.req;
+	wire __formal__in_inst_read_fifo__data__req_read__req
+		= real_in_inst_mem_acc_read_fifo__data__req_read.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__in_read_fifo__data__req_read__addr
-		= __in_mem_acc_read_fifo__data__req_read.addr;
+		__formal__in_inst_read_fifo__data__req_read__addr
+		= real_in_inst_mem_acc_read_fifo__data__req_read.addr;
 
-	wire __formal__in_write_fifo__data__req_write__req
-		= __in_mem_acc_write_fifo__data__req_write.req;
+	wire __formal__in_inst_write_fifo__data__req_write__req
+		= real_in_inst_mem_acc_write_fifo__data__req_write.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__in_write_fifo__data__req_write__addr
-		= __in_mem_acc_write_fifo__data__req_write.addr;
+		__formal__in_inst_write_fifo__data__req_write__addr
+		= real_in_inst_mem_acc_write_fifo__data__req_write.addr;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__in_write_fifo__data__req_write__data
-		= __in_mem_acc_write_fifo__data__req_write.data;
+		__formal__in_inst_write_fifo__data__req_write__data
+		= real_in_inst_mem_acc_write_fifo__data__req_write.data;
 
-	wire __formal__in_mem_bus_guard__mem_access__valid
-		= __in_mem_bus_guard__mem_access.valid;
+	wire __formal__in_inst_mem_bus_guard__mem_access__valid
+		= real_in_inst_mem_bus_guard__mem_access.valid;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__in_mem_bus_guard__mem_access__data
-		= __in_mem_bus_guard__mem_access.data;
+		__formal__in_inst_mem_bus_guard__mem_access__data
+		= real_in_inst_mem_bus_guard__mem_access.data;
 
 
-	wire __formal__out_mem_bus_guard__mem_access__req
-		= __out_mem_bus_guard__mem_access.req;
+	wire __formal__out_inst_mem_bus_guard__mem_access__req
+		= real_out_inst_mem_bus_guard__mem_access.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__out_mem_bus_guard__mem_access__addr
-		= __out_mem_bus_guard__mem_access.addr;
+		__formal__out_inst_mem_bus_guard__mem_access__addr
+		= real_out_inst_mem_bus_guard__mem_access.addr;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__out_mem_bus_guard__mem_access__data
-		= __out_mem_bus_guard__mem_access.data;
-	wire __formal__out_mem_bus_guard__mem_access__mem_acc_type
-		= __out_mem_bus_guard__mem_access.mem_acc_type;
+		__formal__out_inst_mem_bus_guard__mem_access__data
+		= real_out_inst_mem_bus_guard__mem_access.data;
+	wire __formal__out_inst_mem_bus_guard__mem_access__mem_acc_type
+		= real_out_inst_mem_bus_guard__mem_access.mem_acc_type;
 
 	// Ports of __inst_lar_file
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
-		__formal__in_lar_file__rd_a__index
-		= real_in_lar_file__rd_a.index
+		__formal__in_inst_lar_file__rd_a__index
+		= real_in_inst_lar_file__rd_a.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0],
-		__formal__in_lar_file__rd_b__index
-		= real_in_lar_file__rd_b.index
+		__formal__in_inst_lar_file__rd_b__index
+		= real_in_inst_lar_file__rd_b.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0],
-		__formal__in_lar_file__rd_c__index
-		= real_in_lar_file__rd_c.index
+		__formal__in_inst_lar_file__rd_c__index
+		= real_in_inst_lar_file__rd_c.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0];
-	wire __formal__in_lar_file__wr__req = real_in_lar_file__wr.req;
+	wire __formal__in_inst_lar_file__wr__req
+		= real_in_inst_lar_file__wr.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
-		__formal__in_lar_file__wr__write_type
-		= real_in_lar_file__wr.write_type;
+		__formal__in_inst_lar_file__wr__write_type
+		= real_in_inst_lar_file__wr.write_type;
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
-		__formal__in_lar_file__wr__index
-		= real_in_lar_file__wr.index
+		__formal__in_inst_lar_file__wr__index
+		= real_in_inst_lar_file__wr.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0];
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__in_lar_file__wr__non_ldst_data
-		= real_in_lar_file__wr.non_ldst_data;
-	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __formal__in_lar_file__wr__ldst_addr
-		= real_in_lar_file__wr.ldst_addr;
+		__formal__in_inst_lar_file__wr__non_ldst_data
+		= real_in_inst_lar_file__wr.non_ldst_data;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
+		__formal__in_inst_lar_file__wr__ldst_addr
+		= real_in_inst_lar_file__wr.ldst_addr;
 	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
-		__formal__in_lar_file__wr__data_type
-		= real_in_lar_file__wr.data_type;
+		__formal__in_inst_lar_file__wr__data_type
+		= real_in_inst_lar_file__wr.data_type;
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-		__formal__in_lar_file__wr__int_type_size
-		= real_in_lar_file__wr.int_type_size;
+		__formal__in_inst_lar_file__wr__int_type_size
+		= real_in_inst_lar_file__wr.int_type_size;
 
 
-	wire __formal__in_lar_file__mem_read__valid
-		= real_in_lar_file__mem_read.valid;
+	wire __formal__in_inst_lar_file__mem_read__valid
+		= real_in_inst_lar_file__mem_read.valid;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__in_lar_file__mem_read__data
-		= real_in_lar_file__mem_read.data;
+		__formal__in_inst_lar_file__mem_read__data
+		= real_in_inst_lar_file__mem_read.data;
 
-	wire __formal__in_lar_file__mem_write__valid
-		= real_in_lar_file__mem_write.valid;
+	wire __formal__in_inst_lar_file__mem_write__valid
+		= real_in_inst_lar_file__mem_write.valid;
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
-		__formal__out_lar_file__rd_metadata_a__tag
-		= real_out_lar_file__rd_metadata_a.tag,
-		__formal__out_lar_file__rd_metadata_b__tag
-		= real_out_lar_file__rd_metadata_b.tag,
-		__formal__out_lar_file__rd_metadata_c__tag
-		= real_out_lar_file__rd_metadata_c.tag;
+		__formal__out_inst_lar_file__rd_metadata_a__tag
+		= real_out_inst_lar_file__rd_metadata_a.tag,
+		__formal__out_inst_lar_file__rd_metadata_b__tag
+		= real_out_inst_lar_file__rd_metadata_b.tag,
+		__formal__out_inst_lar_file__rd_metadata_c__tag
+		= real_out_inst_lar_file__rd_metadata_c.tag;
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
-		__formal__out_lar_file__rd_metadata_a__data_offset
-		= real_out_lar_file__rd_metadata_a.data_offset,
-		__formal__out_lar_file__rd_metadata_b__data_offset
-		= real_out_lar_file__rd_metadata_b.data_offset,
-		__formal__out_lar_file__rd_metadata_c__data_offset
-		= real_out_lar_file__rd_metadata_c.data_offset;
+		__formal__out_inst_lar_file__rd_metadata_a__data_offset
+		= real_out_inst_lar_file__rd_metadata_a.data_offset,
+		__formal__out_inst_lar_file__rd_metadata_b__data_offset
+		= real_out_inst_lar_file__rd_metadata_b.data_offset,
+		__formal__out_inst_lar_file__rd_metadata_c__data_offset
+		= real_out_inst_lar_file__rd_metadata_c.data_offset;
 	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
-		__formal__out_lar_file__rd_metadata_a__data_type
-		= real_out_lar_file__rd_metadata_a.data_type,
-		__formal__out_lar_file__rd_metadata_b__data_type
-		= real_out_lar_file__rd_metadata_b.data_type,
-		__formal__out_lar_file__rd_metadata_c__data_type
-		= real_out_lar_file__rd_metadata_c.data_type;
+		__formal__out_inst_lar_file__rd_metadata_a__data_type
+		= real_out_inst_lar_file__rd_metadata_a.data_type,
+		__formal__out_inst_lar_file__rd_metadata_b__data_type
+		= real_out_inst_lar_file__rd_metadata_b.data_type,
+		__formal__out_inst_lar_file__rd_metadata_c__data_type
+		= real_out_inst_lar_file__rd_metadata_c.data_type;
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-		__formal__out_lar_file__rd_metadata_a__int_type_size
-		= real_out_lar_file__rd_metadata_a.int_type_size,
-		__formal__out_lar_file__rd_metadata_b__int_type_size
-		= real_out_lar_file__rd_metadata_b.int_type_size,
-		__formal__out_lar_file__rd_metadata_c__int_type_size
-		= real_out_lar_file__rd_metadata_c.int_type_size;
+		__formal__out_inst_lar_file__rd_metadata_a__int_type_size
+		= real_out_inst_lar_file__rd_metadata_a.int_type_size,
+		__formal__out_inst_lar_file__rd_metadata_b__int_type_size
+		= real_out_inst_lar_file__rd_metadata_b.int_type_size,
+		__formal__out_inst_lar_file__rd_metadata_c__int_type_size
+		= real_out_inst_lar_file__rd_metadata_c.int_type_size;
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__out_lar_file__rd_shareddata_a__data
-		= real_out_lar_file__rd_shareddata_a.data,
-		__formal__out_lar_file__rd_shareddata_b__data
-		= real_out_lar_file__rd_shareddata_b.data,
-		__formal__out_lar_file__rd_shareddata_c__data
-		= real_out_lar_file__rd_shareddata_c.data;
+		__formal__out_inst_lar_file__rd_shareddata_a__data
+		= real_out_inst_lar_file__rd_shareddata_a.data,
+		__formal__out_inst_lar_file__rd_shareddata_b__data
+		= real_out_inst_lar_file__rd_shareddata_b.data,
+		__formal__out_inst_lar_file__rd_shareddata_c__data
+		= real_out_inst_lar_file__rd_shareddata_c.data;
 	wire [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
-		__formal__out_lar_file__rd_shareddata_a__base_addr
-		= real_out_lar_file__rd_shareddata_a.base_addr,
-		__formal__out_lar_file__rd_shareddata_b__base_addr
-		= real_out_lar_file__rd_shareddata_b.base_addr,
-		__formal__out_lar_file__rd_shareddata_c__base_addr
-		= real_out_lar_file__rd_shareddata_c.base_addr;
+		__formal__out_inst_lar_file__rd_shareddata_a__base_addr
+		= real_out_inst_lar_file__rd_shareddata_a.base_addr,
+		__formal__out_inst_lar_file__rd_shareddata_b__base_addr
+		= real_out_inst_lar_file__rd_shareddata_b.base_addr,
+		__formal__out_inst_lar_file__rd_shareddata_c__base_addr
+		= real_out_inst_lar_file__rd_shareddata_c.base_addr;
 
-	wire __formal__out_lar_file__wr__valid = real_out_lar_file__wr.valid;
+	wire __formal__out_inst_lar_file__wr__valid
+		= real_out_inst_lar_file__wr.valid;
 
-	wire __formal__out_lar_file__mem_read__req
-		= real_out_lar_file__mem_read.req;
+	wire __formal__out_inst_lar_file__mem_read__req
+		= real_out_inst_lar_file__mem_read.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
-		__formal__out_lar_file__mem_read__base_addr
-		= real_out_lar_file__mem_read.base_addr;
+		__formal__out_inst_lar_file__mem_read__base_addr
+		= real_out_inst_lar_file__mem_read.base_addr;
 
-	wire __formal__out_lar_file__mem_write__req
-		= real_out_lar_file__mem_write.req;
+	wire __formal__out_inst_lar_file__mem_write__req
+		= real_out_inst_lar_file__mem_write.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__out_lar_file__mem_write__data
-		= real_out_lar_file__mem_write.data;
+		__formal__out_inst_lar_file__mem_write__data
+		= real_out_inst_lar_file__mem_write.data;
 	wire [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
-		__formal__out_lar_file__mem_write__base_addr
-		= real_out_lar_file__mem_write.base_addr;
+		__formal__out_inst_lar_file__mem_write__base_addr
+		= real_out_inst_lar_file__mem_write.base_addr;
 	`endif		// FORMAL
 
 
