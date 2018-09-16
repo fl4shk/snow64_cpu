@@ -61,6 +61,11 @@ typedef struct packed
 } PartialPortIn_Cpu_Interrupt;
 
 
+typedef struct packed
+{
+	// Responding to an interrupt.
+	logic responding;
+} PartialPortOut_Cpu_Interrupt;
 
 typedef enum logic
 {
@@ -82,7 +87,7 @@ typedef struct packed
 	logic req;
 
 	// Are we requesting a read or a write?
-	ExtDataAccessType access_type;
+	logic access_type;
 
 	CpuAddr addr;
 	LarData data;
@@ -100,6 +105,7 @@ typedef struct packed
 
 typedef struct packed
 {
+	logic `STRUCTDIM(PartialPortOut_Cpu_Interrupt) interrupt;
 	logic `STRUCTDIM(PartialPortOut_Cpu_ExtDataAccess)
 		ext_dat_acc_mem, ext_dat_acc_io;
 } PortOut_Cpu;

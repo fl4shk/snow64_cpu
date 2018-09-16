@@ -166,7 +166,6 @@ typedef struct packed
 
 typedef struct packed
 {
-
 	logic `STRUCTDIM(PartialPortIn_LarFile_Read) rd_a, rd_b, rd_c;
 	logic `STRUCTDIM(PartialPortIn_LarFile_Write) wr;
 	logic `STRUCTDIM(PartialPortIn_LarFile_MemRead) mem_read;
