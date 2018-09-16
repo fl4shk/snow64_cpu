@@ -73,22 +73,18 @@ typedef enum logic
 // Just as an aside, "Ext" stands for "external".
 typedef struct packed
 {
-	logic busy;
+	logic valid;
 	LarData data;
 } PartialPortIn_Cpu_ExtDataAccess;
 
 typedef struct packed
 {
 	logic req;
+
+	// Are we requesting a read or a write?
 	ExtDataAccessType access_type;
 
-	// Both memory and port-mapped IO are assumed to use 64-bit addresses,
-	// at least from the CPU's perspective.
-	// 
-	// It's still technically possible to use smaller memory.
 	CpuAddr addr;
-
-	// Output data.
 	LarData data;
 } PartialPortOut_Cpu_ExtDataAccess;
 
@@ -98,14 +94,14 @@ typedef struct packed
 {
 	logic `STRUCTDIM(PartialPortIn_Cpu_Interrupt) interrupt;
 	logic `STRUCTDIM(PartialPortIn_Cpu_ExtDataAccess)
-		ext_dat_acc_mem, ext_dat_acc_port_mapped_io;
+		ext_dat_acc_mem, ext_dat_acc_io;
 } PortIn_Cpu;
 
 
 typedef struct packed
 {
 	logic `STRUCTDIM(PartialPortOut_Cpu_ExtDataAccess)
-		ext_dat_acc_mem, ext_dat_acc_port_mapped_io;
+		ext_dat_acc_mem, ext_dat_acc_io;
 } PortOut_Cpu;
 
 endpackage : PkgSnow64Cpu
