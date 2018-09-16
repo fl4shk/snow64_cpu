@@ -502,8 +502,8 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 	enum logic [__MSB_POS__STATE:0]
 	{
 		StIdle,
-		StWaitForCastFrom,
-		StWaitForCastTo,
+		StWaitForCastFromInt,
+		StWaitForCastToInt,
 		StBad
 	} __state;
 
@@ -533,8 +533,9 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 
 	`ifdef FORMAL
 	localparam __ENUM__STATE__IDLE = StIdle;
-	localparam __ENUM__STATE__WAIT_FOR_CAST_FROM = StWaitForCastFrom;
-	localparam __ENUM__STATE__WAIT_FOR_CAST_TO = StWaitForCastTo;
+	localparam __ENUM__STATE__WAIT_FOR_CAST_FROM_INT
+		= StWaitForCastFromInt;
+	localparam __ENUM__STATE__WAIT_FOR_CAST_TO_INT = StWaitForCastToInt;
 	localparam __ENUM__STATE__BAD = StBad;
 
 	localparam __ENUM__INT_TYPE_SIZE__8 = PkgSnow64Cpu::IntTypSz8;
@@ -615,7 +616,7 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 				case (__in_from_int_or_to_int)
 				0:
 				begin
-					__state <= StWaitForCastFrom;
+					__state <= StWaitForCastFromInt;
 
 					`define X(which) \
 						{`PORT_IN_CAST_FROM_INT(which).int_type_size, \
@@ -674,7 +675,7 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 
 				1:
 				begin
-					__state <= StWaitForCastTo;
+					__state <= StWaitForCastToInt;
 					__captured_in_int_type_size <= __in_int_type_size;
 
 					`define X(which) \
@@ -689,7 +690,7 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 			end
 		end
 
-		StWaitForCastFrom:
+		StWaitForCastFromInt:
 		begin
 			`define X(which) `PORT_IN_CAST_FROM_INT(which).start <= 1'b0;
 			`OPERATE_ON_ALL_PORTS
@@ -710,7 +711,7 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 			end
 		end
 
-		StWaitForCastTo:
+		StWaitForCastToInt:
 		begin
 			`define X(which) `PORT_IN_CAST_TO_INT(which).start <= 1'b0;
 			`OPERATE_ON_ALL_PORTS
@@ -726,24 +727,6 @@ module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 				case (__captured_in_int_type_size)
 				PkgSnow64Cpu::IntTypSz8:
 				begin
-					//`define X(which) \
-					//	__real_out_data[which * 8 +: 8] \
-					//		<= `PORT_OUT_CAST_TO_INT(which).data \
-					//		[`WIDTH2MP(8):0]; \
-					//`X(0) `X(1) `X(2) `X(3)
-					//`X(4) `X(5) `X(6) `X(7)
-					//`X(8) `X(9) `X(10) `X(11)
-					//`X(12) `X(13) `X(14) `X(15)
-					//`undef X
-
-					//`define X(which) \
-					//	__real_out_data[which * 8 +: 8] <= 8'h0;
-					//`X(16) `X(17) `X(18) `X(19)
-					//`X(20) `X(21) `X(22) `X(23)
-					//`X(24) `X(25) `X(26) `X(27)
-					//`X(28) `X(29) `X(30) `X(31)
-					//`undef X
-
 					`define X(which) \
 						__real_out_data[which * 8 +: 8] \
 							<= `PORT_OUT_CAST_TO_INT(which) \

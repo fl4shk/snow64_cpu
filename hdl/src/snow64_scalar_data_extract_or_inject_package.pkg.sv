@@ -1,6 +1,6 @@
-`include "src/snow64_scalar_data_extractor_injector_defines.header.sv"
+`include "src/snow64_scalar_data_extract_or_inject_defines.header.sv"
 
-package PkgSnow64ScalarDataExtractorInjector;
+package PkgSnow64ScalarDataExtractOrInject;
 
 typedef logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] LarData;
 typedef logic [`MSB_POS__SNOW64_SCALAR_DATA:0] ScalarData;
@@ -36,4 +36,4 @@ typedef struct packed
 } PortOut_ScalarDataInjector;
 
 
-endpackage : PkgSnow64ScalarDataExtractorInjector
+endpackage : PkgSnow64ScalarDataExtractOrInject

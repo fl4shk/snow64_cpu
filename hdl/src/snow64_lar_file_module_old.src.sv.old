@@ -559,74 +559,74 @@ module Snow64LarFile(input logic clk,
 	end
 
 
-	PkgSnow64ScalarDataExtractorInjector::PortIn_ScalarDataExtractor
-		__in_scalar_data_extractor_injector_for_read_a,
-		__in_scalar_data_extractor_injector_for_read_b,
-		__in_scalar_data_extractor_injector_for_read_c;
-	PkgSnow64ScalarDataExtractorInjector::PortOut_ScalarDataExtractor
-		__out_scalar_data_extractor_injector_for_read_a,
-		__out_scalar_data_extractor_injector_for_read_b,
-		__out_scalar_data_extractor_injector_for_read_c;
+	PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataExtractor
+		__in_scalar_data_extract_or_inject_for_read_a,
+		__in_scalar_data_extract_or_inject_for_read_b,
+		__in_scalar_data_extract_or_inject_for_read_c;
+	PkgSnow64ScalarDataExtractOrInject::PortOut_ScalarDataExtractor
+		__out_scalar_data_extract_or_inject_for_read_a,
+		__out_scalar_data_extract_or_inject_for_read_b,
+		__out_scalar_data_extract_or_inject_for_read_c;
 
-	Snow64ScalarDataExtractor __inst_scalar_data_extractor_injector_for_read_a
-		(.in(__in_scalar_data_extractor_injector_for_read_a),
-		.out(__out_scalar_data_extractor_injector_for_read_a));
-	Snow64ScalarDataExtractor __inst_scalar_data_extractor_injector_for_read_b
-		(.in(__in_scalar_data_extractor_injector_for_read_b),
-		.out(__out_scalar_data_extractor_injector_for_read_b));
-	Snow64ScalarDataExtractor __inst_scalar_data_extractor_injector_for_read_c
-		(.in(__in_scalar_data_extractor_injector_for_read_c),
-		.out(__out_scalar_data_extractor_injector_for_read_c));
+	Snow64ScalarDataExtractor __inst_scalar_data_extract_or_inject_for_read_a
+		(.in(__in_scalar_data_extract_or_inject_for_read_a),
+		.out(__out_scalar_data_extract_or_inject_for_read_a));
+	Snow64ScalarDataExtractor __inst_scalar_data_extract_or_inject_for_read_b
+		(.in(__in_scalar_data_extract_or_inject_for_read_b),
+		.out(__out_scalar_data_extract_or_inject_for_read_b));
+	Snow64ScalarDataExtractor __inst_scalar_data_extract_or_inject_for_read_c
+		(.in(__in_scalar_data_extract_or_inject_for_read_c),
+		.out(__out_scalar_data_extract_or_inject_for_read_c));
 
 
 	`ifdef FORMAL
 		wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-			__formal__in_scalar_data_extractor_injector_for_read_a__to_shift,
-			__formal__in_scalar_data_extractor_injector_for_read_b__to_shift,
-			__formal__in_scalar_data_extractor_injector_for_read_c__to_shift;
+			__formal__in_scalar_data_extract_or_inject_for_read_a__to_shift,
+			__formal__in_scalar_data_extract_or_inject_for_read_b__to_shift,
+			__formal__in_scalar_data_extract_or_inject_for_read_c__to_shift;
 
 		wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-			__formal__in_scalar_data_extractor_injector_for_read_a__int_type_size,
-			__formal__in_scalar_data_extractor_injector_for_read_b__int_type_size,
-			__formal__in_scalar_data_extractor_injector_for_read_c__int_type_size;
+			__formal__in_scalar_data_extract_or_inject_for_read_a__int_type_size,
+			__formal__in_scalar_data_extract_or_inject_for_read_b__int_type_size,
+			__formal__in_scalar_data_extract_or_inject_for_read_c__int_type_size;
 
 		wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
-			__formal__in_scalar_data_extractor_injector_for_read_a__data_offset,
-			__formal__in_scalar_data_extractor_injector_for_read_b__data_offset,
-			__formal__in_scalar_data_extractor_injector_for_read_c__data_offset;
+			__formal__in_scalar_data_extract_or_inject_for_read_a__data_offset,
+			__formal__in_scalar_data_extract_or_inject_for_read_b__data_offset,
+			__formal__in_scalar_data_extract_or_inject_for_read_c__data_offset;
 
-		assign {__formal__in_scalar_data_extractor_injector_for_read_a__to_shift,
-			__formal__in_scalar_data_extractor_injector_for_read_a__int_type_size,
-			__formal__in_scalar_data_extractor_injector_for_read_a__data_offset}
-			= __in_scalar_data_extractor_injector_for_read_a;
-		assign {__formal__in_scalar_data_extractor_injector_for_read_b__to_shift,
-			__formal__in_scalar_data_extractor_injector_for_read_b__int_type_size,
-			__formal__in_scalar_data_extractor_injector_for_read_b__data_offset}
-			= __in_scalar_data_extractor_injector_for_read_b;
-		assign {__formal__in_scalar_data_extractor_injector_for_read_c__to_shift,
-			__formal__in_scalar_data_extractor_injector_for_read_c__int_type_size,
-			__formal__in_scalar_data_extractor_injector_for_read_c__data_offset}
-			= __in_scalar_data_extractor_injector_for_read_c;
+		assign {__formal__in_scalar_data_extract_or_inject_for_read_a__to_shift,
+			__formal__in_scalar_data_extract_or_inject_for_read_a__int_type_size,
+			__formal__in_scalar_data_extract_or_inject_for_read_a__data_offset}
+			= __in_scalar_data_extract_or_inject_for_read_a;
+		assign {__formal__in_scalar_data_extract_or_inject_for_read_b__to_shift,
+			__formal__in_scalar_data_extract_or_inject_for_read_b__int_type_size,
+			__formal__in_scalar_data_extract_or_inject_for_read_b__data_offset}
+			= __in_scalar_data_extract_or_inject_for_read_b;
+		assign {__formal__in_scalar_data_extract_or_inject_for_read_c__to_shift,
+			__formal__in_scalar_data_extract_or_inject_for_read_c__int_type_size,
+			__formal__in_scalar_data_extract_or_inject_for_read_c__data_offset}
+			= __in_scalar_data_extract_or_inject_for_read_c;
 
 		wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
 			__formal__out_scalar_data_for_read_a__data
-			= __out_scalar_data_extractor_injector_for_read_a.data,
+			= __out_scalar_data_extract_or_inject_for_read_a.data,
 			__formal__out_scalar_data_for_read_b__data
-			= __out_scalar_data_extractor_injector_for_read_b.data,
+			= __out_scalar_data_extract_or_inject_for_read_b.data,
 			__formal__out_scalar_data_for_read_c__data
-			= __out_scalar_data_extractor_injector_for_read_c.data;
+			= __out_scalar_data_extract_or_inject_for_read_c.data;
 	`endif		// FORMAL
 
 	`define RD_INDEX(which) real_in_rd_``which``.index
 
 	`define GEN_RD(which) \
-	always @(*) __in_scalar_data_extractor_injector_for_read_``which``.to_shift \
+	always @(*) __in_scalar_data_extract_or_inject_for_read_``which``.to_shift \
 		= `shareddata_tagged_data(`RD_INDEX(which)); \
-	always @(*) __in_scalar_data_extractor_injector_for_read_``which``.data_type \
+	always @(*) __in_scalar_data_extract_or_inject_for_read_``which``.data_type \
 		= `metadata_data_type(`RD_INDEX(which)); \
-	always @(*) __in_scalar_data_extractor_injector_for_read_``which``.int_type_size \
+	always @(*) __in_scalar_data_extract_or_inject_for_read_``which``.int_type_size \
 		= `metadata_int_type_size(`RD_INDEX(which)); \
-	always @(*) __in_scalar_data_extractor_injector_for_read_``which``.data_offset \
+	always @(*) __in_scalar_data_extract_or_inject_for_read_``which``.data_offset \
 		= `metadata_data_index(`RD_INDEX(which)); \
 	\
 	always @(posedge clk) \
@@ -634,7 +634,7 @@ module Snow64LarFile(input logic clk,
 		real_out_rd_``which``.data \
 			<= `shareddata_tagged_data(`RD_INDEX(which)); \
 		real_out_rd_``which``.scalar_data \
-			<= __out_scalar_data_extractor_injector_for_read_``which.data; \
+			<= __out_scalar_data_extract_or_inject_for_read_``which.data; \
 		case (`metadata_data_type(`RD_INDEX(which))) \
 		PkgSnow64Cpu::DataTypBFloat16: \
 		begin \

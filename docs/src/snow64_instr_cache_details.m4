@@ -11,15 +11,15 @@ include(src/include/misc_defines.m4)dnl
 		* Therefore, the original address's low five bits are used as a
 		byte index into a cache line.
 		* Since this is an instruction cache for 32-bit fixed-width
-		instructions, we can ignore CODE(in\_addr[1:0]).
-		* This leaves us with CODE(in\_addr[4:2]) as the "true" index into
+		instructions, we can ignore _CODE(in\_addr[1:0]).
+		* This leaves us with _CODE(in\_addr[4:2]) as the "true" index into
 		the cache line.
 		* We can use SystemVerilog's multidimensional packed arrays as
 		follows:
-			* CODE(logic [31:0][7:0] lines\_arr[1 << 15];)
+			* _CODE(logic [31:0][7:0] lines\_arr[1 << 15];)
 	* Effective Address
-		* The tag of a cache entry is CODE(in\_addr[63:15])
-		* The index into the array of cache lines is CODE(in\_addr[14:5])
-		* The index into a single cache line is CODE(in\_addr[4:2])
-		* CODE(in\_addr[1:0]) is forcibly aligned to the size of an
-		instruction (set to CODE(2'b00)).
+		* The tag of a cache entry is _CODE(in\_addr[63:15])
+		* The index into the array of cache lines is _CODE(in\_addr[14:5])
+		* The index into a single cache line is _CODE(in\_addr[4:2])
+		* _CODE(in\_addr[1:0]) is forcibly aligned to the size of an
+		instruction (set to _CODE(2'b00)).

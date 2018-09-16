@@ -1,10 +1,10 @@
 include(src/include/misc_defines.m4)dnl
-define(`INTEGER_TYPES',`CODE(uint8\_t), CODE(int8\_t), CODE(uint16\_t),
-	CODE(int16\_t), CODE(uint32\_t), CODE(int32\_t), CODE(uint64\_t), and
-	CODE(int64\_t)')dnl
+define(`INTEGER_TYPES',`_CODE(uint8\_t), _CODE(int8\_t), _CODE(uint16\_t),
+	_CODE(int16\_t), _CODE(uint32\_t), _CODE(int32\_t), _CODE(uint64\_t),
+	and _CODE(int64\_t)')dnl
 # Snow64 BFloat16 Details
 * General Notes
-	* A ITALIC(BFloat16) is simply the high 16-bit half of an IEEE binary32
+	* A _ITALIC(BFloat16) is simply the high 16-bit half of an IEEE binary32
 	float.
 	* Note that this is different from the IEEE binary16 float format!
 	* For Snow64's BFloat16 implementation, there are no NaN or infinities,
@@ -23,9 +23,9 @@ define(`INTEGER_TYPES',`CODE(uint8\_t), CODE(int8\_t), CODE(uint16\_t),
 		mul, and div operations.  This is perhaps due to 
 	* Divide
 		* The division implementation is of particular interest because of
-		how the underlying UINT16_T() by UINT8_T() division was
+		how the underlying _UINT16_T() by _UINT8_T() division was
 		implemented.
-			* Note that this underlying UINT16_T() by UINT8_T() is
+			* Note that this underlying _UINT16_T() by _UINT8_T() is
 			used for dividing the fractions of the operands.
 			* To use an integer divider for the implementation, it is
 			necessary to understand that the significands are effectively
@@ -34,9 +34,9 @@ define(`INTEGER_TYPES',`CODE(uint8\_t), CODE(int8\_t), CODE(uint16\_t),
 			part.
 			* This means that a fixed-point divide must be performed
 			instead of an integer divide, which also means that we cannot
-			simply perform a UINT8_T() by UINT8_T() integer divide of the
+			simply perform a _UINT8_T() by _UINT8_T() integer divide of the
 			significands of the operands.  We instead need a larger integer
-			divider.  This is why a UINT16_T() by UINT8_T() divider is
+			divider.  This is why a _UINT16_T() by _UINT8_T() divider is
 			used.
 		* In a nutshell, hexadecimal (radix 16) long division was
 		implemented, permitting computing 4 bits of quotient per cycle.
@@ -70,20 +70,20 @@ define(`INTEGER_TYPES',`CODE(uint8\_t), CODE(int8\_t), CODE(uint16\_t),
 		* The software implementation was written in C++ and was almost
 		entirely exhaustively tested against my x86-64 laptop's IEEE
 		binary32 format.
-		* The one exception to this was (a) casting INT64_T() to
-		BFloat16 and (b) casting UINT64_T() to BFloat16.  These took
+		* The one exception to this was (a) casting _INT64_T() to
+		BFloat16 and (b) casting _UINT64_T() to BFloat16.  These took
 		too long to exhaustively test.  Given more time, I would have
 		instead attempted to formally verify the BFloat16 software
 		implementation, but because of C++'s modern template
 		metaprogramming (especially the standard library's
-		CODE(type\_traits)), I believe that
+		_CODE(type\_traits)), I believe that
 		exhaustively testing the smaller integer types works fine.
 	* The hardware implementation was compared to the software by using
 	Verilator to convert the hardware implementation to cycle-accurate C++
 	emulation.
 		* In most cases, this was done so as
-		* The one exception to this was (a) casting INT64_T() to
-		BFloat16 and (b) casting UINT64_T() to BFloat16.  These were
+		* The one exception to this was (a) casting _INT64_T() to
+		BFloat16 and (b) casting _UINT64_T() to BFloat16.  These were
 		instead tested via large amounts of random testing, and due to
 		relative simplicity of the hardware implementation, were deemed to
 		be working.

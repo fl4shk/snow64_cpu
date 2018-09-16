@@ -49,4 +49,5 @@
 `define WIDTH__SNOW64_MUL_DATA_OUT `WIDTH__SNOW64_SUB_MUL_MEDIUM_DATA
 `define MSB_POS__SNOW64_MUL_DATA_OUT `WIDTH2MP(`WIDTH__SNOW64_MUL_DATA_OUT)
 
+
 `endif		// src__slash__snow64_mul_div_defines_header_sv

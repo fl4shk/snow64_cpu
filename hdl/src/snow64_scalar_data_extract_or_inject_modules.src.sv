@@ -1,11 +1,11 @@
-`include "src/snow64_scalar_data_extractor_injector_defines.header.sv"
+`include "src/snow64_scalar_data_extract_or_inject_defines.header.sv"
 
 // Note:  this module does NOT perform casting!
 module Snow64ScalarDataExtractor
-	(input PkgSnow64ScalarDataExtractorInjector::PortIn_ScalarDataExtractor
+	(input PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataExtractor
 		in,
-	output PkgSnow64ScalarDataExtractorInjector::PortOut_ScalarDataExtractor
-		out);
+	output PkgSnow64ScalarDataExtractOrInject
+		::PortOut_ScalarDataExtractor out);
 
 	localparam __MSB_POS__DATA_OFFSET
 		= `MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET;
@@ -121,9 +121,9 @@ module Snow64ScalarDataExtractor
 endmodule
 
 module Snow64ScalarDataInjector
-	(input PkgSnow64ScalarDataExtractorInjector::PortIn_ScalarDataInjector
+	(input PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataInjector
 		in,
-	output PkgSnow64ScalarDataExtractorInjector::PortOut_ScalarDataInjector
+	output PkgSnow64ScalarDataExtractOrInject::PortOut_ScalarDataInjector
 		out);
 
 	localparam __MSB_POS__DATA_OFFSET

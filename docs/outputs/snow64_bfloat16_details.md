@@ -59,11 +59,11 @@
 		which is why in this case there are 4 of each.
 	* Compare less than (1 + 1 cycles)
 	* Cast Integer types (<code>uint8\_t</code>, <code>int8\_t</code>, <code>uint16\_t</code>,
-	<code>int16\_t</code>, <code>uint32\_t</code>, <code>int32\_t</code>, <code>uint64\_t</code>, and
-	<code>int64\_t</code>) to BFloat16.
+	<code>int16\_t</code>, <code>uint32\_t</code>, <code>int32\_t</code>, <code>uint64\_t</code>,
+	and <code>int64\_t</code>) to BFloat16.
 	* Cast BFloat16 to Integer types (<code>uint8\_t</code>, <code>int8\_t</code>, <code>uint16\_t</code>,
-	<code>int16\_t</code>, <code>uint32\_t</code>, <code>int32\_t</code>, <code>uint64\_t</code>, and
-	<code>int64\_t</code>).
+	<code>int16\_t</code>, <code>uint32\_t</code>, <code>int32\_t</code>, <code>uint64\_t</code>,
+	and <code>int64\_t</code>).
 * Method of Testing
 	* A software implementation of this form of BFloat16 was developed
 	first.
