@@ -716,38 +716,38 @@ module Snow64NonRestoringDivider #(parameter WIDTH__ARGS=64)
 
 endmodule
 
-`define MAKE_TEST_DIV_MODULE_CONTENTS(some_width) \
-	(input logic clk, in_enable, in_signedness, \
-	input logic [`WIDTH2MP(some_width):0] in_num, in_denom, \
-\
-	output logic [`WIDTH2MP(some_width):0] out_quot, out_rem, \
-\
-	output logic out_can_accept_cmd, out_data_ready); \
-\
-\
-	parameter WIDTH__ARGS = some_width; \
-	Snow64NonRestoringDivider #(.WIDTH__ARGS(WIDTH__ARGS)) \
-		__inst_non_restoring_divider(.clk(clk), .in_enable(in_enable), \
-			.in_signedness(in_signedness), \
-			.in_num(in_num), .in_denom(in_denom), \
-			.out_quot(out_quot), .out_rem(out_rem), \
-			.out_can_accept_cmd(out_can_accept_cmd), \
-			.out_data_ready(out_data_ready));
-
-module TestDiv8
-`MAKE_TEST_DIV_MODULE_CONTENTS(8)
-endmodule
-
-module TestDiv16
-`MAKE_TEST_DIV_MODULE_CONTENTS(16)
-endmodule
-
-module TestDiv32
-`MAKE_TEST_DIV_MODULE_CONTENTS(32)
-endmodule
-
-module TestDiv64
-`MAKE_TEST_DIV_MODULE_CONTENTS(64)
-endmodule
-
-`undef MAKE_TEST_DIV_MODULE_CONTENTS
+//`define MAKE_TEST_DIV_MODULE_CONTENTS(some_width) \
+//	(input logic clk, in_enable, in_signedness, \
+//	input logic [`WIDTH2MP(some_width):0] in_num, in_denom, \
+//\
+//	output logic [`WIDTH2MP(some_width):0] out_quot, out_rem, \
+//\
+//	output logic out_can_accept_cmd, out_data_ready); \
+//\
+//\
+//	parameter WIDTH__ARGS = some_width; \
+//	Snow64NonRestoringDivider #(.WIDTH__ARGS(WIDTH__ARGS)) \
+//		__inst_non_restoring_divider(.clk(clk), .in_enable(in_enable), \
+//			.in_signedness(in_signedness), \
+//			.in_num(in_num), .in_denom(in_denom), \
+//			.out_quot(out_quot), .out_rem(out_rem), \
+//			.out_can_accept_cmd(out_can_accept_cmd), \
+//			.out_data_ready(out_data_ready));
+//
+//module TestDiv8
+//`MAKE_TEST_DIV_MODULE_CONTENTS(8)
+//endmodule
+//
+//module TestDiv16
+//`MAKE_TEST_DIV_MODULE_CONTENTS(16)
+//endmodule
+//
+//module TestDiv32
+//`MAKE_TEST_DIV_MODULE_CONTENTS(32)
+//endmodule
+//
+//module TestDiv64
+//`MAKE_TEST_DIV_MODULE_CONTENTS(64)
+//endmodule
+//
+//`undef MAKE_TEST_DIV_MODULE_CONTENTS
