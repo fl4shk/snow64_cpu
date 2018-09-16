@@ -37,10 +37,10 @@ module Snow64Cpu(input logic clk,
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_MemAccess
 		real_in_inst_mem_bus_guard;
 	PkgSnow64MemoryAccessFifo::PartialPortOut_ReadFifo_ReqRead
-		real_out_inst_read_fifo__instr__req_read,
-		real_out_inst_read_fifo__data__req_read;
+		real_out_inst_read_fifo__instr,
+		real_out_inst_read_fifo__data;
 	PkgSnow64MemoryAccessFifo::PartialPortOut_WriteFifo_ReqWrite
-		real_out_inst_write_fifo__data__req_write;
+		real_out_inst_write_fifo__data;
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_MemAccess
 		real_out_inst_mem_bus_guard;
 	Snow64MemoryAccessViaFifos __inst_memory_access_via_fifos(.clk(clk),
@@ -55,11 +55,11 @@ module Snow64Cpu(input logic clk,
 		(real_in_inst_mem_bus_guard),
 
 		.out_mem_acc_read_fifo__instr__req_read
-		(real_out_inst_read_fifo__instr__req_read),
+		(real_out_inst_read_fifo__instr),
 		.out_mem_acc_read_fifo__data__req_read
-		(real_out_inst_read_fifo__data__req_read),
+		(real_out_inst_read_fifo__data),
 		.out_mem_acc_write_fifo__data__req_write
-		(real_out_inst_write_fifo__data__req_write),
+		(real_out_inst_write_fifo__data),
 
 		.out_mem_bus_guard__mem_access
 		(real_out_inst_mem_bus_guard));
@@ -367,13 +367,13 @@ module Snow64Cpu(input logic clk,
 		__formal__in_inst_read_fifo__data__addr
 		= real_in_inst_read_fifo__data.addr;
 
-	wire __formal__in_inst_write_fifo__data__req_write__req
+	wire __formal__in_inst_write_fifo__data__req
 		= real_in_inst_write_fifo__data.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
-		__formal__in_inst_write_fifo__data__req_write__addr
+		__formal__in_inst_write_fifo__data__addr
 		= real_in_inst_write_fifo__data.addr;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		__formal__in_inst_write_fifo__data__req_write__data
+		__formal__in_inst_write_fifo__data__data
 		= real_in_inst_write_fifo__data.data;
 
 	wire __formal__in_inst_mem_bus_guard__valid
@@ -384,22 +384,22 @@ module Snow64Cpu(input logic clk,
 
 
 	wire __formal__out_inst_read_fifo__instr__valid
-		= real_out_inst_read_fifo__instr__req_read.valid,
+		= real_out_inst_read_fifo__instr.valid,
 		__formal__out_inst_read_fifo__data__valid
-		= real_out_inst_read_fifo__data__req_read.valid,
-		__formal__out_inst_write_fifo__data__req_write__valid
-		= real_out_inst_write_fifo__data__req_write.valid;
+		= real_out_inst_read_fifo__data.valid,
+		__formal__out_inst_write_fifo__data__valid
+		= real_out_inst_write_fifo__data.valid;
 	wire __formal__out_inst_read_fifo__instr__busy
-		= real_out_inst_read_fifo__instr__req_read.busy,
+		= real_out_inst_read_fifo__instr.busy,
 		__formal__out_inst_read_fifo__data__busy
-		= real_out_inst_read_fifo__data__req_read.busy,
-		__formal__out_inst_write_fifo__data__req_write__busy
-		= real_out_inst_write_fifo__data__req_write.busy;
+		= real_out_inst_read_fifo__data.busy,
+		__formal__out_inst_write_fifo__data__busy
+		= real_out_inst_write_fifo__data.busy;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__out_inst_read_fifo__instr__data
-		= real_out_inst_read_fifo__instr__req_read.data,
+		= real_out_inst_read_fifo__instr.data,
 		__formal__out_inst_read_fifo__data__data
-		= real_out_inst_read_fifo__data__req_read.data;
+		= real_out_inst_read_fifo__data.data;
 
 	wire __formal__out_inst_mem_bus_guard__req
 		= real_out_inst_mem_bus_guard.req;
