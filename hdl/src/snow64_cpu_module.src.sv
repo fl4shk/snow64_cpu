@@ -141,67 +141,66 @@ module Snow64Cpu(input logic clk,
 
 	// Fake instruction cache (really just one line of data...)
 	PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
-		real_in_inst_fake_instr_cache_req_read;
+		__in_inst_fake_instr_cache_req_read;
 	PkgSnow64InstrCache::PartialPortIn_InstrCache_MemAccess
-		real_in_inst_fake_instr_cache_mem_access;
+		__in_inst_fake_instr_cache_mem_access;
 
 	PkgSnow64InstrCache::PartialPortOut_InstrCache_ReqRead
-		real_out_inst_fake_instr_cache_req_read;
+		__out_inst_fake_instr_cache_req_read;
 	PkgSnow64InstrCache::PartialPortOut_InstrCache_MemAccess
-		real_out_inst_fake_instr_cache_mem_access;
-
+		__out_inst_fake_instr_cache_mem_access;
 
 	Snow64FakeInstrCache __inst_fake_instr_cache(.clk(clk),
-		.in_req_read(real_in_inst_fake_instr_cache_req_read),
-		.in_mem_access(real_in_inst_fake_instr_cache_mem_access),
+		.in_req_read(__in_inst_fake_instr_cache_req_read),
+		.in_mem_access(__in_inst_fake_instr_cache_mem_access),
 
-		.out_req_read(real_out_inst_fake_instr_cache_req_read),
-		.out_mem_access(real_out_inst_fake_instr_cache_mem_access));
+		.out_req_read(__out_inst_fake_instr_cache_req_read),
+		.out_mem_access(__out_inst_fake_instr_cache_mem_access));
 
 
 	// Instruction decoder
-	wire [`MSB_POS__SNOW64_INSTR:0] real_in_inst_instr_decoder;
+	wire [`MSB_POS__SNOW64_INSTR:0] __in_inst_instr_decoder;
 	PkgSnow64InstrDecoder::PortOut_InstrDecoder
-		real_out_inst_instr_decoder;
+		__out_inst_instr_decoder;
 	Snow64InstrDecoder __inst_instr_decoder
-		(.in(real_in_inst_instr_decoder),
-		.out(real_out_inst_instr_decoder));
+		(.in(__in_inst_instr_decoder),
+		.out(__out_inst_instr_decoder));
 
 	// Interface for accessing memory
 	PkgSnow64MemoryAccessFifo::PartialPortIn_ReadFifo_ReqRead
-		real_in_inst_read_fifo__instr,
-		real_in_inst_read_fifo__data;
+		__in_inst_read_fifo__instr,
+		__in_inst_read_fifo__data;
 	PkgSnow64MemoryAccessFifo::PartialPortIn_WriteFifo_ReqWrite
-		real_in_inst_write_fifo__data;
+		__in_inst_write_fifo__data;
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_MemAccess
-		real_in_inst_mem_bus_guard;
+		__in_inst_mem_bus_guard;
 	PkgSnow64MemoryAccessFifo::PartialPortOut_ReadFifo_ReqRead
-		real_out_inst_read_fifo__instr,
-		real_out_inst_read_fifo__data;
+		__out_inst_read_fifo__instr,
+		__out_inst_read_fifo__data;
 	PkgSnow64MemoryAccessFifo::PartialPortOut_WriteFifo_ReqWrite
-		real_out_inst_write_fifo__data;
+		__out_inst_write_fifo__data;
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_MemAccess
-		real_out_inst_mem_bus_guard;
+		__out_inst_mem_bus_guard;
 	Snow64MemoryAccessViaFifos __inst_memory_access_via_fifos(.clk(clk),
 		.in_mem_acc_read_fifo__instr__req_read
-		(real_in_inst_read_fifo__instr),
+		(__in_inst_read_fifo__instr),
 		.in_mem_acc_read_fifo__data__req_read
-		(real_in_inst_read_fifo__data),
+		(__in_inst_read_fifo__data),
 		.in_mem_acc_write_fifo__data__req_write
-		(real_in_inst_write_fifo__data),
+		(__in_inst_write_fifo__data),
 
 		.in_mem_bus_guard__mem_access
-		(real_in_inst_mem_bus_guard),
+		(__in_inst_mem_bus_guard),
 
 		.out_mem_acc_read_fifo__instr__req_read
-		(real_out_inst_read_fifo__instr),
+		(__out_inst_read_fifo__instr),
 		.out_mem_acc_read_fifo__data__req_read
-		(real_out_inst_read_fifo__data),
+		(__out_inst_read_fifo__data),
 		.out_mem_acc_write_fifo__data__req_write
-		(real_out_inst_write_fifo__data),
+		(__out_inst_write_fifo__data),
 
 		.out_mem_bus_guard__mem_access
-		(real_out_inst_mem_bus_guard));
+		(__out_inst_mem_bus_guard));
 
 
 	// The LAR file
@@ -211,81 +210,81 @@ module Snow64Cpu(input logic clk,
 		.out(__out_inst_lar_file));
 
 	PkgSnow64LarFile::PartialPortIn_LarFile_Read
-		real_in_inst_lar_file__rd_a, real_in_inst_lar_file__rd_b,
-		real_in_inst_lar_file__rd_c;
-	PkgSnow64LarFile::PartialPortIn_LarFile_Write real_in_inst_lar_file__wr;
+		__in_inst_lar_file__rd_a, __in_inst_lar_file__rd_b,
+		__in_inst_lar_file__rd_c;
+	PkgSnow64LarFile::PartialPortIn_LarFile_Write __in_inst_lar_file__wr;
 	PkgSnow64LarFile::PartialPortIn_LarFile_MemRead
-		real_in_inst_lar_file__mem_read;
+		__in_inst_lar_file__mem_read;
 	PkgSnow64LarFile::PartialPortIn_LarFile_MemWrite
-		real_in_inst_lar_file__mem_write;
+		__in_inst_lar_file__mem_write;
 
 	assign __in_inst_lar_file
-		= {real_in_inst_lar_file__rd_a, real_in_inst_lar_file__rd_b,
-		real_in_inst_lar_file__rd_c,
-		real_in_inst_lar_file__wr,
-		real_in_inst_lar_file__mem_read,
-		real_in_inst_lar_file__mem_write};
+		= {__in_inst_lar_file__rd_a, __in_inst_lar_file__rd_b,
+		__in_inst_lar_file__rd_c,
+		__in_inst_lar_file__wr,
+		__in_inst_lar_file__mem_read,
+		__in_inst_lar_file__mem_write};
 
 
 	PkgSnow64LarFile::PartialPortOut_LarFile_ReadMetadata
-		real_out_inst_lar_file__rd_metadata_a,
-		real_out_inst_lar_file__rd_metadata_b,
-		real_out_inst_lar_file__rd_metadata_c;
+		__out_inst_lar_file__rd_metadata_a,
+		__out_inst_lar_file__rd_metadata_b,
+		__out_inst_lar_file__rd_metadata_c;
 	PkgSnow64LarFile::PartialPortOut_LarFile_ReadShareddata
-		real_out_inst_lar_file__rd_shareddata_a,
-		real_out_inst_lar_file__rd_shareddata_b,
-		real_out_inst_lar_file__rd_shareddata_c;
+		__out_inst_lar_file__rd_shareddata_a,
+		__out_inst_lar_file__rd_shareddata_b,
+		__out_inst_lar_file__rd_shareddata_c;
 	PkgSnow64LarFile::PartialPortOut_LarFile_Write
-		real_out_inst_lar_file__wr;
+		__out_inst_lar_file__wr;
 	PkgSnow64LarFile::PartialPortOut_LarFile_MemRead
-		real_out_inst_lar_file__mem_read;
+		__out_inst_lar_file__mem_read;
 	PkgSnow64LarFile::PartialPortOut_LarFile_MemWrite
-		real_out_inst_lar_file__mem_write;
+		__out_inst_lar_file__mem_write;
 
-	assign {real_out_inst_lar_file__rd_metadata_a,
-		real_out_inst_lar_file__rd_metadata_b,
-		real_out_inst_lar_file__rd_metadata_c,
-		real_out_inst_lar_file__rd_shareddata_a,
-		real_out_inst_lar_file__rd_shareddata_b,
-		real_out_inst_lar_file__rd_shareddata_c,
-		real_out_inst_lar_file__wr,
-		real_out_inst_lar_file__mem_read,
-		real_out_inst_lar_file__mem_write} = __out_inst_lar_file;
+	assign {__out_inst_lar_file__rd_metadata_a,
+		__out_inst_lar_file__rd_metadata_b,
+		__out_inst_lar_file__rd_metadata_c,
+		__out_inst_lar_file__rd_shareddata_a,
+		__out_inst_lar_file__rd_shareddata_b,
+		__out_inst_lar_file__rd_shareddata_c,
+		__out_inst_lar_file__wr,
+		__out_inst_lar_file__mem_read,
+		__out_inst_lar_file__mem_write} = __out_inst_lar_file;
 
 
 
 	// The ALUs
 	PkgSnow64Alu::PortIn_Alu
-		real_in_inst_alu_0, real_in_inst_alu_1,
-		real_in_inst_alu_2, real_in_inst_alu_3;
+		__in_inst_alu_0, __in_inst_alu_1,
+		__in_inst_alu_2, __in_inst_alu_3;
 	PkgSnow64Alu::PortOut_Alu
-		real_out_inst_alu_0, real_out_inst_alu_1,
-		real_out_inst_alu_2, real_out_inst_alu_3;
-	Snow64Alu __inst_alu_0(.in(real_in_inst_alu_0),
-		.out(real_out_inst_alu_0));
-	Snow64Alu __inst_alu_1(.in(real_in_inst_alu_1),
-		.out(real_out_inst_alu_1));
-	Snow64Alu __inst_alu_2(.in(real_in_inst_alu_2),
-		.out(real_out_inst_alu_2));
-	Snow64Alu __inst_alu_3(.in(real_in_inst_alu_3),
-		.out(real_out_inst_alu_3));
+		__out_inst_alu_0, __out_inst_alu_1,
+		__out_inst_alu_2, __out_inst_alu_3;
+	Snow64Alu __inst_alu_0(.in(__in_inst_alu_0),
+		.out(__out_inst_alu_0));
+	Snow64Alu __inst_alu_1(.in(__in_inst_alu_1),
+		.out(__out_inst_alu_1));
+	Snow64Alu __inst_alu_2(.in(__in_inst_alu_2),
+		.out(__out_inst_alu_2));
+	Snow64Alu __inst_alu_3(.in(__in_inst_alu_3),
+		.out(__out_inst_alu_3));
 
 
 	// The vector multipliers
 	PkgSnow64Alu::PortIn_VectorMul
-		real_in_inst_vec_mul_0, real_in_inst_vec_mul_1,
-		real_in_inst_vec_mul_2, real_in_inst_vec_mul_3;
+		__in_inst_vec_mul_0, __in_inst_vec_mul_1,
+		__in_inst_vec_mul_2, __in_inst_vec_mul_3;
 	PkgSnow64Alu::PortOut_Mul
-		real_out_inst_vec_mul_0, real_out_inst_vec_mul_1,
-		real_out_inst_vec_mul_2, real_out_inst_vec_mul_3;
+		__out_inst_vec_mul_0, __out_inst_vec_mul_1,
+		__out_inst_vec_mul_2, __out_inst_vec_mul_3;
 	Snow64VectorMul __inst_vec_mul_0(.clk(clk),
-		.in(real_in_inst_vec_mul_0), .out(real_out_inst_vec_mul_0));
+		.in(__in_inst_vec_mul_0), .out(__out_inst_vec_mul_0));
 	Snow64VectorMul __inst_vec_mul_1(.clk(clk),
-		.in(real_in_inst_vec_mul_1), .out(real_out_inst_vec_mul_1));
+		.in(__in_inst_vec_mul_1), .out(__out_inst_vec_mul_1));
 	Snow64VectorMul __inst_vec_mul_2(.clk(clk),
-		.in(real_in_inst_vec_mul_2), .out(real_out_inst_vec_mul_2));
+		.in(__in_inst_vec_mul_2), .out(__out_inst_vec_mul_2));
 	Snow64VectorMul __inst_vec_mul_3(.clk(clk),
-		.in(real_in_inst_vec_mul_3), .out(real_out_inst_vec_mul_3));
+		.in(__in_inst_vec_mul_3), .out(__out_inst_vec_mul_3));
 
 
 	// The dividers.  For simplicity purposes, four 64-bit dividers are
@@ -295,194 +294,233 @@ module Snow64Cpu(input logic clk,
 	{
 		logic enable, signedness;
 		logic [`MSB_POS__SNOW64_SIZE_64:0] num, denom;
-	} real_in_inst_div_0, real_in_inst_div_1,
-		real_in_inst_div_2, real_in_inst_div_3;
+	} __in_inst_div_0, __in_inst_div_1,
+		__in_inst_div_2, __in_inst_div_3;
 
 	//struct packed
 	//{
 	//	logic [`MSB_POS__SNOW64_SIZE_64:0] quot, rem;
 	//	logic can_accept_cmd, data_ready;
-	//} real_out_inst_div_0;
+	//} __out_inst_div_0;
 
 	wire [`MSB_POS__SNOW64_SIZE_64:0]
-		real_out_inst_div_0__quot, real_out_inst_div_0__rem;
-	wire real_out_inst_div_0__can_accept_cmd,
-		real_out_inst_div_0__data_ready;
+		__out_inst_div_0__quot, __out_inst_div_0__rem;
+	wire __out_inst_div_0__can_accept_cmd,
+		__out_inst_div_0__data_ready;
 
 	wire [`MSB_POS__SNOW64_SIZE_64:0]
-		real_out_inst_div_1__quot, real_out_inst_div_1__rem;
-	wire real_out_inst_div_1__can_accept_cmd,
-		real_out_inst_div_1__data_ready;
+		__out_inst_div_1__quot, __out_inst_div_1__rem;
+	wire __out_inst_div_1__can_accept_cmd,
+		__out_inst_div_1__data_ready;
 
 	wire [`MSB_POS__SNOW64_SIZE_64:0]
-		real_out_inst_div_2__quot, real_out_inst_div_2__rem;
-	wire real_out_inst_div_2__can_accept_cmd,
-		real_out_inst_div_2__data_ready;
+		__out_inst_div_2__quot, __out_inst_div_2__rem;
+	wire __out_inst_div_2__can_accept_cmd,
+		__out_inst_div_2__data_ready;
 
 	wire [`MSB_POS__SNOW64_SIZE_64:0]
-		real_out_inst_div_3__quot, real_out_inst_div_3__rem;
-	wire real_out_inst_div_3__can_accept_cmd,
-		real_out_inst_div_3__data_ready;
+		__out_inst_div_3__quot, __out_inst_div_3__rem;
+	wire __out_inst_div_3__can_accept_cmd,
+		__out_inst_div_3__data_ready;
 
 	Snow64NonRestoringDivider __inst_div_0(.clk(clk),
-		.in_enable(real_in_inst_div_0.enable),
-		.in_signedness(real_in_inst_div_0.signedness),
-		.in_num(real_in_inst_div_0.num),
-		.in_denom(real_in_inst_div_0.denom),
+		.in_enable(__in_inst_div_0.enable),
+		.in_signedness(__in_inst_div_0.signedness),
+		.in_num(__in_inst_div_0.num),
+		.in_denom(__in_inst_div_0.denom),
 
-		.out_quot(real_out_inst_div_0__quot),
-		.out_rem(real_out_inst_div_0__rem),
-		.out_can_accept_cmd(real_out_inst_div_0__can_accept_cmd),
-		.out_data_ready(real_out_inst_div_0__data_ready));
+		.out_quot(__out_inst_div_0__quot),
+		.out_rem(__out_inst_div_0__rem),
+		.out_can_accept_cmd(__out_inst_div_0__can_accept_cmd),
+		.out_data_ready(__out_inst_div_0__data_ready));
 
 	Snow64NonRestoringDivider __inst_div_1(.clk(clk),
-		.in_enable(real_in_inst_div_1.enable),
-		.in_signedness(real_in_inst_div_1.signedness),
-		.in_num(real_in_inst_div_1.num),
-		.in_denom(real_in_inst_div_1.denom),
+		.in_enable(__in_inst_div_1.enable),
+		.in_signedness(__in_inst_div_1.signedness),
+		.in_num(__in_inst_div_1.num),
+		.in_denom(__in_inst_div_1.denom),
 
-		.out_quot(real_out_inst_div_1__quot),
-		.out_rem(real_out_inst_div_1__rem),
-		.out_can_accept_cmd(real_out_inst_div_1__can_accept_cmd),
-		.out_data_ready(real_out_inst_div_1__data_ready));
+		.out_quot(__out_inst_div_1__quot),
+		.out_rem(__out_inst_div_1__rem),
+		.out_can_accept_cmd(__out_inst_div_1__can_accept_cmd),
+		.out_data_ready(__out_inst_div_1__data_ready));
 
 	Snow64NonRestoringDivider __inst_div_2(.clk(clk),
-		.in_enable(real_in_inst_div_2.enable),
-		.in_signedness(real_in_inst_div_2.signedness),
-		.in_num(real_in_inst_div_2.num),
-		.in_denom(real_in_inst_div_2.denom),
+		.in_enable(__in_inst_div_2.enable),
+		.in_signedness(__in_inst_div_2.signedness),
+		.in_num(__in_inst_div_2.num),
+		.in_denom(__in_inst_div_2.denom),
 
-		.out_quot(real_out_inst_div_2__quot),
-		.out_rem(real_out_inst_div_2__rem),
-		.out_can_accept_cmd(real_out_inst_div_2__can_accept_cmd),
-		.out_data_ready(real_out_inst_div_2__data_ready));
+		.out_quot(__out_inst_div_2__quot),
+		.out_rem(__out_inst_div_2__rem),
+		.out_can_accept_cmd(__out_inst_div_2__can_accept_cmd),
+		.out_data_ready(__out_inst_div_2__data_ready));
 
 	Snow64NonRestoringDivider __inst_div_3(.clk(clk),
-		.in_enable(real_in_inst_div_3.enable),
-		.in_signedness(real_in_inst_div_3.signedness),
-		.in_num(real_in_inst_div_3.num),
-		.in_denom(real_in_inst_div_3.denom),
+		.in_enable(__in_inst_div_3.enable),
+		.in_signedness(__in_inst_div_3.signedness),
+		.in_num(__in_inst_div_3.num),
+		.in_denom(__in_inst_div_3.denom),
 
-		.out_quot(real_out_inst_div_3__quot),
-		.out_rem(real_out_inst_div_3__rem),
-		.out_can_accept_cmd(real_out_inst_div_3__can_accept_cmd),
-		.out_data_ready(real_out_inst_div_3__data_ready));
+		.out_quot(__out_inst_div_3__quot),
+		.out_rem(__out_inst_div_3__rem),
+		.out_can_accept_cmd(__out_inst_div_3__can_accept_cmd),
+		.out_data_ready(__out_inst_div_3__data_ready));
 
 
 
 	// Scalar data extractors
 	PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataExtractor
-		real_in_inst_scalar_data_extractor_0,
-		real_in_inst_scalar_data_extractor_1;
+		__in_inst_scalar_data_extractor_a,
+		__in_inst_scalar_data_extractor_b,
+		__in_inst_scalar_data_extractor_c;
 	PkgSnow64ScalarDataExtractOrInject::PortOut_ScalarDataExtractor
-		real_out_inst_scalar_data_extractor_0,
-		real_out_inst_scalar_data_extractor_1;
-	Snow64ScalarDataExtractor __inst_scalar_data_extractor_0
-		(.in(real_in_inst_scalar_data_extractor_0),
-		.out(real_out_inst_scalar_data_extractor_0));
-	Snow64ScalarDataExtractor __inst_scalar_data_extractor_1
-		(.in(real_in_inst_scalar_data_extractor_1),
-		.out(real_out_inst_scalar_data_extractor_1));
+		__out_inst_scalar_data_extractor_a,
+		__out_inst_scalar_data_extractor_b,
+		__out_inst_scalar_data_extractor_c;
+	Snow64ScalarDataExtractor __inst_scalar_data_extractor_a
+		(.in(__in_inst_scalar_data_extractor_a),
+		.out(__out_inst_scalar_data_extractor_a));
+	Snow64ScalarDataExtractor __inst_scalar_data_extractor_b
+		(.in(__in_inst_scalar_data_extractor_b),
+		.out(__out_inst_scalar_data_extractor_b));
+	Snow64ScalarDataExtractor __inst_scalar_data_extractor_c
+		(.in(__in_inst_scalar_data_extractor_c),
+		.out(__out_inst_scalar_data_extractor_c));
 
 	// Scalar data injector
 	PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataInjector
-		real_in_inst_scalar_data_injector;
+		__in_inst_scalar_data_injector;
 	PkgSnow64ScalarDataExtractOrInject::PortOut_ScalarDataInjector
-		real_out_inst_scalar_data_injector;
+		__out_inst_scalar_data_injector;
 	Snow64ScalarDataInjector __inst_scalar_data_injector
-		(.in(real_in_inst_scalar_data_injector),
-		.out(real_out_inst_scalar_data_injector));
+		(.in(__in_inst_scalar_data_injector),
+		.out(__out_inst_scalar_data_injector));
 
 
 	// BFloat16 Floating Point Units
 	PkgSnow64BFloat16::PortIn_Fpu
-		real_in_inst_fpu_0, real_in_inst_fpu_1, real_in_inst_fpu_2,
-		real_in_inst_fpu_3;
+		__in_inst_fpu_0, __in_inst_fpu_1, __in_inst_fpu_2,
+		__in_inst_fpu_3;
 	PkgSnow64BFloat16::PortOut_Fpu
-		real_out_inst_fpu_0, real_out_inst_fpu_1, real_out_inst_fpu_2,
-		real_out_inst_fpu_3;
-	Snow64BFloat16Fpu __inst_fpu_0(.clk(clk), .in(real_in_inst_fpu_0),
-		.out(real_out_inst_fpu_0));
-	Snow64BFloat16Fpu __inst_fpu_1(.clk(clk), .in(real_in_inst_fpu_1),
-		.out(real_out_inst_fpu_1));
-	Snow64BFloat16Fpu __inst_fpu_2(.clk(clk), .in(real_in_inst_fpu_2),
-		.out(real_out_inst_fpu_2));
-	Snow64BFloat16Fpu __inst_fpu_3(.clk(clk), .in(real_in_inst_fpu_3),
-		.out(real_out_inst_fpu_3));
+		__out_inst_fpu_0, __out_inst_fpu_1, __out_inst_fpu_2,
+		__out_inst_fpu_3;
+	Snow64BFloat16Fpu __inst_fpu_0(.clk(clk), .in(__in_inst_fpu_0),
+		.out(__out_inst_fpu_0));
+	Snow64BFloat16Fpu __inst_fpu_1(.clk(clk), .in(__in_inst_fpu_1),
+		.out(__out_inst_fpu_1));
+	Snow64BFloat16Fpu __inst_fpu_2(.clk(clk), .in(__in_inst_fpu_2),
+		.out(__out_inst_fpu_2));
+	Snow64BFloat16Fpu __inst_fpu_3(.clk(clk), .in(__in_inst_fpu_3),
+		.out(__out_inst_fpu_3));
 
 	// Cast from scalar integer to scalar bfloat16
 	PkgSnow64BFloat16::PortIn_CastFromInt
-		real_in_inst_cast_from_int_to_bfloat16_0,
-		real_in_inst_cast_from_int_to_bfloat16_1;
+		__in_inst_cast_from_int_to_bfloat16_b,
+		__in_inst_cast_from_int_to_bfloat16_c;
 	PkgSnow64BFloat16::PortOut_CastFromInt
-		real_out_inst_cast_from_int_to_bfloat16_0,
-		real_out_inst_cast_from_int_to_bfloat16_1;
-	Snow64BFloat16CastFromInt __inst_cast_from_int_to_bfloat16_0
-		(.clk(clk), .in(real_in_inst_cast_from_int_to_bfloat16_0),
-		.out(real_out_inst_cast_from_int_to_bfloat16_0));
-	Snow64BFloat16CastFromInt __inst_cast_from_int_to_bfloat16_1
-		(.clk(clk), .in(real_in_inst_cast_from_int_to_bfloat16_1),
-		.out(real_out_inst_cast_from_int_to_bfloat16_1));
+		__out_inst_cast_from_int_to_bfloat16_b,
+		__out_inst_cast_from_int_to_bfloat16_c;
+	Snow64BFloat16CastFromInt __inst_cast_from_int_to_bfloat16_b
+		(.clk(clk), .in(__in_inst_cast_from_int_to_bfloat16_b),
+		.out(__out_inst_cast_from_int_to_bfloat16_b));
+	Snow64BFloat16CastFromInt __inst_cast_from_int_to_bfloat16_c
+		(.clk(clk), .in(__in_inst_cast_from_int_to_bfloat16_c),
+		.out(__out_inst_cast_from_int_to_bfloat16_c));
 
-	// Cast to scalar integer to scalar bfloat16
+	// Cast to scalar integer from scalar bfloat16
 	PkgSnow64BFloat16::PortIn_CastToInt
-		real_in_inst_cast_to_int_from_bfloat16_0,
-		real_in_inst_cast_to_int_from_bfloat16_1;
+		__in_inst_cast_to_int_from_bfloat16_b,
+		__in_inst_cast_to_int_from_bfloat16_c;
 	PkgSnow64BFloat16::PortOut_CastToInt
-		real_out_inst_cast_to_int_from_bfloat16_0,
-		real_out_inst_cast_to_int_from_bfloat16_1;
-	Snow64BFloat16CastToInt __inst_cast_to_int_from_bfloat16_0
-		(.clk(clk), .in(real_in_inst_cast_to_int_from_bfloat16_0),
-		.out(real_out_inst_cast_to_int_from_bfloat16_0));
-	Snow64BFloat16CastToInt __inst_cast_to_int_from_bfloat16_1
-		(.clk(clk), .in(real_in_inst_cast_to_int_from_bfloat16_1),
-		.out(real_out_inst_cast_to_int_from_bfloat16_1));
+		__out_inst_cast_to_int_from_bfloat16_b,
+		__out_inst_cast_to_int_from_bfloat16_c;
+	Snow64BFloat16CastToInt __inst_cast_to_int_from_bfloat16_b
+		(.clk(clk), .in(__in_inst_cast_to_int_from_bfloat16_b),
+		.out(__out_inst_cast_to_int_from_bfloat16_b));
+	Snow64BFloat16CastToInt __inst_cast_to_int_from_bfloat16_c
+		(.clk(clk), .in(__in_inst_cast_to_int_from_bfloat16_c),
+		.out(__out_inst_cast_to_int_from_bfloat16_c));
 
 	// Cast from one integer type to another integer type
 	PkgSnow64Caster::PortIn_IntScalarCaster
-		real_in_inst_int_scalar_caster_0, real_in_inst_int_scalar_caster_1;
+		__in_inst_int_scalar_caster_b, __in_inst_int_scalar_caster_c;
 	PkgSnow64Caster::PortOut_IntScalarCaster
-		real_out_inst_int_scalar_caster_0,
-		real_out_inst_int_scalar_caster_1;
-	Snow64IntScalarCaster __inst_int_scalar_caster_0(.clk(clk),
-		.in(real_in_inst_int_scalar_caster_0),
-		.out(real_out_inst_int_scalar_caster_0));
-	Snow64IntScalarCaster __inst_int_scalar_caster_1(.clk(clk),
-		.in(real_in_inst_int_scalar_caster_1),
-		.out(real_out_inst_int_scalar_caster_1));
+		__out_inst_int_scalar_caster_b,
+		__out_inst_int_scalar_caster_c;
+	Snow64IntScalarCaster __inst_int_scalar_caster_b(.clk(clk),
+		.in(__in_inst_int_scalar_caster_b),
+		.out(__out_inst_int_scalar_caster_b));
+	Snow64IntScalarCaster __inst_int_scalar_caster_c(.clk(clk),
+		.in(__in_inst_int_scalar_caster_c),
+		.out(__out_inst_int_scalar_caster_c));
 
 	PkgSnow64Caster::PortIn_IntVectorCaster
-		real_in_inst_int_vector_caster_0, real_in_inst_int_vector_caster_1;
+		__in_inst_int_vector_caster_b, __in_inst_int_vector_caster_c;
 	PkgSnow64Caster::PortOut_IntVectorCaster
-		real_out_inst_int_vector_caster_0,
-		real_out_inst_int_vector_caster_1;
-	Snow64IntVectorCaster __inst_int_vector_caster_0(.clk(clk),
-		.in(real_in_inst_int_vector_caster_0),
-		.out(real_out_inst_int_vector_caster_0));
-	Snow64IntVectorCaster __inst_int_vector_caster_1(.clk(clk),
-		.in(real_in_inst_int_vector_caster_1),
-		.out(real_out_inst_int_vector_caster_1));
+		__out_inst_int_vector_caster_b,
+		__out_inst_int_vector_caster_c;
+	Snow64IntVectorCaster __inst_int_vector_caster_b(.clk(clk),
+		.in(__in_inst_int_vector_caster_b),
+		.out(__out_inst_int_vector_caster_b));
+	Snow64IntVectorCaster __inst_int_vector_caster_c(.clk(clk),
+		.in(__in_inst_int_vector_caster_c),
+		.out(__out_inst_int_vector_caster_c));
 
 	PkgSnow64Caster::PortIn_ToOrFromBFloat16VectorCaster
-		real_in_inst_to_or_from_bfloat16_vector_caster_0,
-		real_in_inst_to_or_from_bfloat16_vector_caster_1;
+		__in_inst_to_or_from_bfloat16_vector_caster_b,
+		__in_inst_to_or_from_bfloat16_vector_caster_c;
 	PkgSnow64Caster::PortOut_ToOrFromBFloat16VectorCaster
-		real_out_inst_to_or_from_bfloat16_vector_caster_0,
-		real_out_inst_to_or_from_bfloat16_vector_caster_1;
+		__out_inst_to_or_from_bfloat16_vector_caster_b,
+		__out_inst_to_or_from_bfloat16_vector_caster_c;
 	Snow64ToOrFromBFloat16VectorCaster
-		__inst_to_or_from_bfloat16_vector_caster_0(.clk(clk),
-		.in(real_in_inst_to_or_from_bfloat16_vector_caster_0),
-		.out(real_out_inst_to_or_from_bfloat16_vector_caster_0));
+		__inst_to_or_from_bfloat16_vector_caster_b(.clk(clk),
+		.in(__in_inst_to_or_from_bfloat16_vector_caster_b),
+		.out(__out_inst_to_or_from_bfloat16_vector_caster_b));
 	Snow64ToOrFromBFloat16VectorCaster
-		__inst_to_or_from_bfloat16_vector_caster_1(.clk(clk),
-		.in(real_in_inst_to_or_from_bfloat16_vector_caster_1),
-		.out(real_out_inst_to_or_from_bfloat16_vector_caster_1));
+		__inst_to_or_from_bfloat16_vector_caster_c(.clk(clk),
+		.in(__in_inst_to_or_from_bfloat16_vector_caster_c),
+		.out(__out_inst_to_or_from_bfloat16_vector_caster_c));
 
 
 
 	// Locals
-	logic __spec_reg_ie;
-	logic [`MSB_POS__SNOW64_CPU_ADDR:0] __spec_reg_ireta, __spec_reg_pc;
+	PkgSnow64InstrDecoder::PortOut_InstrDecoder
+		__stage_execute__decoded_instr, __stage_write_back__decoded_instr;
+
+	struct packed
+	{
+		logic ie;
+		logic [`MSB_POS__SNOW64_CPU_ADDR:0] ireta, idsta, pc;
+	} __stage_instr_fetch__spec_regs, __stage_instr_decode__spec_regs,
+		__stage_execute__spec_regs, __stage_write_back__spec_regs;
+
+	PkgSnow64LarFile::PartialPortOut_LarFile_ReadMetadata
+		__stage_execute__lar_file__rd_metadata_a,
+		__stage_execute__lar_file__rd_metadata_b,
+		__stage_execute__lar_file__rd_metadata_c,
+
+		__stage_write_back__lar_file__rd_metadata_a,
+		__stage_write_back__lar_file__rd_metadata_b,
+		__stage_write_back__lar_file__rd_metadata_c;
+
+	PkgSnow64LarFile::PartialPortOut_LarFile_ReadShareddata
+		__stage_execute__lar_file__curr_rd_shareddata_a,
+		__stage_execute__lar_file__curr_rd_shareddata_b,
+		__stage_execute__lar_file__curr_rd_shareddata_c,
+
+	// Stuff for operand forwarding.
+		__stage_execute__lar_file__past_rd_shareddata_a,
+		__stage_execute__lar_file__past_rd_shareddata_b,
+		__stage_execute__lar_file__past_rd_shareddata_c,
+
+		__stage_write_back__lar_file__past_rd_shareddata_a,
+		__stage_write_back__lar_file__past_rd_shareddata_b,
+		__stage_write_back__lar_file__past_rd_shareddata_c,
+
+		__stage_write_back_past__lar_file__past_rd_shareddata_a,
+		__stage_write_back_past__lar_file__past_rd_shareddata_b,
+		__stage_write_back_past__lar_file__past_rd_shareddata_c;
 
 
 	`ifdef FORMAL
@@ -700,189 +738,189 @@ module Snow64Cpu(input logic clk,
 	// Ports of __inst_instr_decoder
 	wire [`MSB_POS__SNOW64_IENC_GROUP:0]
 		__formal__out_inst_instr_decoder__group
-		= real_out_inst_instr_decoder.group;
+		= __out_inst_instr_decoder.group;
 	wire __formal__out_inst_instr_decoder__op_type
-		= real_out_inst_instr_decoder.op_type;
+		= __out_inst_instr_decoder.op_type;
 	wire [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
 		__formal__out_inst_instr_decoder__ra_index
-		= real_out_inst_instr_decoder.ra_index,
+		= __out_inst_instr_decoder.ra_index,
 		__formal__out_inst_instr_decoder__rb_index
-		= real_out_inst_instr_decoder.rb_index,
+		= __out_inst_instr_decoder.rb_index,
 		__formal__out_inst_instr_decoder__rc_index
-		= real_out_inst_instr_decoder.rc_index;
+		= __out_inst_instr_decoder.rc_index;
 	wire [`MSB_POS__SNOW64_IENC_OPCODE:0]
 		__formal__out_inst_instr_decoder__oper
-		= real_out_inst_instr_decoder.oper;
+		= __out_inst_instr_decoder.oper;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__formal__out_inst_instr_decoder__signext_imm
-		= real_out_inst_instr_decoder.signext_imm;
+		= __out_inst_instr_decoder.signext_imm;
 
 	wire __formal__out_inst_instr_decoder__nop
-		= real_out_inst_instr_decoder.nop;
+		= __out_inst_instr_decoder.nop;
 
 
 	// Ports of __inst_memory_access_via_fifos
 	wire __formal__in_inst_read_fifo__instr__req
-		= real_in_inst_read_fifo__instr.req;
+		= __in_inst_read_fifo__instr.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__formal__in_inst_read_fifo__instr__addr
-		= real_in_inst_read_fifo__instr.addr;
+		= __in_inst_read_fifo__instr.addr;
 
 	wire __formal__in_inst_read_fifo__data__req
-		= real_in_inst_read_fifo__data.req;
+		= __in_inst_read_fifo__data.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__formal__in_inst_read_fifo__data__addr
-		= real_in_inst_read_fifo__data.addr;
+		= __in_inst_read_fifo__data.addr;
 
 	wire __formal__in_inst_write_fifo__data__req
-		= real_in_inst_write_fifo__data.req;
+		= __in_inst_write_fifo__data.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__formal__in_inst_write_fifo__data__addr
-		= real_in_inst_write_fifo__data.addr;
+		= __in_inst_write_fifo__data.addr;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__in_inst_write_fifo__data__data
-		= real_in_inst_write_fifo__data.data;
+		= __in_inst_write_fifo__data.data;
 
 	wire __formal__in_inst_mem_bus_guard__valid
-		= real_in_inst_mem_bus_guard.valid;
+		= __in_inst_mem_bus_guard.valid;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__in_inst_mem_bus_guard__data
-		= real_in_inst_mem_bus_guard.data;
+		= __in_inst_mem_bus_guard.data;
 
 
 	wire __formal__out_inst_read_fifo__instr__valid
-		= real_out_inst_read_fifo__instr.valid,
+		= __out_inst_read_fifo__instr.valid,
 		__formal__out_inst_read_fifo__data__valid
-		= real_out_inst_read_fifo__data.valid,
+		= __out_inst_read_fifo__data.valid,
 		__formal__out_inst_write_fifo__data__valid
-		= real_out_inst_write_fifo__data.valid;
+		= __out_inst_write_fifo__data.valid;
 	wire __formal__out_inst_read_fifo__instr__busy
-		= real_out_inst_read_fifo__instr.busy,
+		= __out_inst_read_fifo__instr.busy,
 		__formal__out_inst_read_fifo__data__busy
-		= real_out_inst_read_fifo__data.busy,
+		= __out_inst_read_fifo__data.busy,
 		__formal__out_inst_write_fifo__data__busy
-		= real_out_inst_write_fifo__data.busy;
+		= __out_inst_write_fifo__data.busy;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__out_inst_read_fifo__instr__data
-		= real_out_inst_read_fifo__instr.data,
+		= __out_inst_read_fifo__instr.data,
 		__formal__out_inst_read_fifo__data__data
-		= real_out_inst_read_fifo__data.data;
+		= __out_inst_read_fifo__data.data;
 
 	wire __formal__out_inst_mem_bus_guard__req
-		= real_out_inst_mem_bus_guard.req;
+		= __out_inst_mem_bus_guard.req;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__formal__out_inst_mem_bus_guard__addr
-		= real_out_inst_mem_bus_guard.addr;
+		= __out_inst_mem_bus_guard.addr;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__out_inst_mem_bus_guard__data
-		= real_out_inst_mem_bus_guard.data;
+		= __out_inst_mem_bus_guard.data;
 	wire __formal__out_inst_mem_bus_guard__mem_acc_type
-		= real_out_inst_mem_bus_guard.mem_acc_type;
+		= __out_inst_mem_bus_guard.mem_acc_type;
 
 	// Ports of __inst_lar_file
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
 		__formal__in_inst_lar_file__rd_a__index
-		= real_in_inst_lar_file__rd_a.index
+		= __in_inst_lar_file__rd_a.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0],
 		__formal__in_inst_lar_file__rd_b__index
-		= real_in_inst_lar_file__rd_b.index
+		= __in_inst_lar_file__rd_b.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0],
 		__formal__in_inst_lar_file__rd_c__index
-		= real_in_inst_lar_file__rd_c.index
+		= __in_inst_lar_file__rd_c.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0];
 	wire __formal__in_inst_lar_file__wr__req
-		= real_in_inst_lar_file__wr.req;
+		= __in_inst_lar_file__wr.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 		__formal__in_inst_lar_file__wr__write_type
-		= real_in_inst_lar_file__wr.write_type;
+		= __in_inst_lar_file__wr.write_type;
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
 		__formal__in_inst_lar_file__wr__index
-		= real_in_inst_lar_file__wr.index
+		= __in_inst_lar_file__wr.index
 		[`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0];
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__in_inst_lar_file__wr__non_ldst_data
-		= real_in_inst_lar_file__wr.non_ldst_data;
+		= __in_inst_lar_file__wr.non_ldst_data;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__formal__in_inst_lar_file__wr__ldst_addr
-		= real_in_inst_lar_file__wr.ldst_addr;
+		= __in_inst_lar_file__wr.ldst_addr;
 	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
 		__formal__in_inst_lar_file__wr__data_type
-		= real_in_inst_lar_file__wr.data_type;
+		= __in_inst_lar_file__wr.data_type;
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
 		__formal__in_inst_lar_file__wr__int_type_size
-		= real_in_inst_lar_file__wr.int_type_size;
+		= __in_inst_lar_file__wr.int_type_size;
 
 
 	wire __formal__in_inst_lar_file__mem_read__valid
-		= real_in_inst_lar_file__mem_read.valid;
+		= __in_inst_lar_file__mem_read.valid;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__in_inst_lar_file__mem_read__data
-		= real_in_inst_lar_file__mem_read.data;
+		= __in_inst_lar_file__mem_read.data;
 
 	wire __formal__in_inst_lar_file__mem_write__valid
-		= real_in_inst_lar_file__mem_write.valid;
+		= __in_inst_lar_file__mem_write.valid;
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0]
 		__formal__out_inst_lar_file__rd_metadata_a__tag
-		= real_out_inst_lar_file__rd_metadata_a.tag,
+		= __out_inst_lar_file__rd_metadata_a.tag,
 		__formal__out_inst_lar_file__rd_metadata_b__tag
-		= real_out_inst_lar_file__rd_metadata_b.tag,
+		= __out_inst_lar_file__rd_metadata_b.tag,
 		__formal__out_inst_lar_file__rd_metadata_c__tag
-		= real_out_inst_lar_file__rd_metadata_c.tag;
+		= __out_inst_lar_file__rd_metadata_c.tag;
 	wire [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
 		__formal__out_inst_lar_file__rd_metadata_a__data_offset
-		= real_out_inst_lar_file__rd_metadata_a.data_offset,
+		= __out_inst_lar_file__rd_metadata_a.data_offset,
 		__formal__out_inst_lar_file__rd_metadata_b__data_offset
-		= real_out_inst_lar_file__rd_metadata_b.data_offset,
+		= __out_inst_lar_file__rd_metadata_b.data_offset,
 		__formal__out_inst_lar_file__rd_metadata_c__data_offset
-		= real_out_inst_lar_file__rd_metadata_c.data_offset;
+		= __out_inst_lar_file__rd_metadata_c.data_offset;
 	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
 		__formal__out_inst_lar_file__rd_metadata_a__data_type
-		= real_out_inst_lar_file__rd_metadata_a.data_type,
+		= __out_inst_lar_file__rd_metadata_a.data_type,
 		__formal__out_inst_lar_file__rd_metadata_b__data_type
-		= real_out_inst_lar_file__rd_metadata_b.data_type,
+		= __out_inst_lar_file__rd_metadata_b.data_type,
 		__formal__out_inst_lar_file__rd_metadata_c__data_type
-		= real_out_inst_lar_file__rd_metadata_c.data_type;
+		= __out_inst_lar_file__rd_metadata_c.data_type;
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
 		__formal__out_inst_lar_file__rd_metadata_a__int_type_size
-		= real_out_inst_lar_file__rd_metadata_a.int_type_size,
+		= __out_inst_lar_file__rd_metadata_a.int_type_size,
 		__formal__out_inst_lar_file__rd_metadata_b__int_type_size
-		= real_out_inst_lar_file__rd_metadata_b.int_type_size,
+		= __out_inst_lar_file__rd_metadata_b.int_type_size,
 		__formal__out_inst_lar_file__rd_metadata_c__int_type_size
-		= real_out_inst_lar_file__rd_metadata_c.int_type_size;
+		= __out_inst_lar_file__rd_metadata_c.int_type_size;
 
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__out_inst_lar_file__rd_shareddata_a__data
-		= real_out_inst_lar_file__rd_shareddata_a.data,
+		= __out_inst_lar_file__rd_shareddata_a.data,
 		__formal__out_inst_lar_file__rd_shareddata_b__data
-		= real_out_inst_lar_file__rd_shareddata_b.data,
+		= __out_inst_lar_file__rd_shareddata_b.data,
 		__formal__out_inst_lar_file__rd_shareddata_c__data
-		= real_out_inst_lar_file__rd_shareddata_c.data;
+		= __out_inst_lar_file__rd_shareddata_c.data;
 	wire [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__formal__out_inst_lar_file__rd_shareddata_a__base_addr
-		= real_out_inst_lar_file__rd_shareddata_a.base_addr,
+		= __out_inst_lar_file__rd_shareddata_a.base_addr,
 		__formal__out_inst_lar_file__rd_shareddata_b__base_addr
-		= real_out_inst_lar_file__rd_shareddata_b.base_addr,
+		= __out_inst_lar_file__rd_shareddata_b.base_addr,
 		__formal__out_inst_lar_file__rd_shareddata_c__base_addr
-		= real_out_inst_lar_file__rd_shareddata_c.base_addr;
+		= __out_inst_lar_file__rd_shareddata_c.base_addr;
 
 	wire __formal__out_inst_lar_file__wr__valid
-		= real_out_inst_lar_file__wr.valid;
+		= __out_inst_lar_file__wr.valid;
 
 	wire __formal__out_inst_lar_file__mem_read__req
-		= real_out_inst_lar_file__mem_read.req;
+		= __out_inst_lar_file__mem_read.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__formal__out_inst_lar_file__mem_read__base_addr
-		= real_out_inst_lar_file__mem_read.base_addr;
+		= __out_inst_lar_file__mem_read.base_addr;
 
 	wire __formal__out_inst_lar_file__mem_write__req
-		= real_out_inst_lar_file__mem_write.req;
+		= __out_inst_lar_file__mem_write.req;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__formal__out_inst_lar_file__mem_write__data
-		= real_out_inst_lar_file__mem_write.data;
+		= __out_inst_lar_file__mem_write.data;
 	wire [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0]
 		__formal__out_inst_lar_file__mem_write__base_addr
-		= real_out_inst_lar_file__mem_write.base_addr;
+		= __out_inst_lar_file__mem_write.base_addr;
 	`endif		// FORMAL
 
 
@@ -893,48 +931,82 @@ module Snow64Cpu(input logic clk,
 		real_out_ext_dat_acc_mem = 0;
 		real_out_ext_dat_acc_io = 0;
 
-		{real_in_inst_read_fifo__instr,
-			real_in_inst_read_fifo__data,
-			real_in_inst_write_fifo__data,
-			real_in_inst_mem_bus_guard} = 0;
+		{__in_inst_fake_instr_cache_req_read,
+			__in_inst_fake_instr_cache_mem_access} = 0;
 
-		{real_in_inst_lar_file__rd_a, real_in_inst_lar_file__rd_b,
-			real_in_inst_lar_file__rd_c,
-			real_in_inst_lar_file__wr,
-			real_in_inst_lar_file__mem_read,
-			real_in_inst_lar_file__mem_write} = 0;
+		{__in_inst_read_fifo__instr,
+			__in_inst_read_fifo__data,
+			__in_inst_write_fifo__data,
+			__in_inst_mem_bus_guard} = 0;
 
-		{real_in_inst_alu_0, real_in_inst_alu_1,
-		real_in_inst_alu_2, real_in_inst_alu_3} = 0;
+		{__in_inst_lar_file__rd_a, __in_inst_lar_file__rd_b,
+			__in_inst_lar_file__rd_c,
+			__in_inst_lar_file__wr,
+			__in_inst_lar_file__mem_read,
+			__in_inst_lar_file__mem_write} = 0;
 
-		{real_in_inst_vec_mul_0, real_in_inst_vec_mul_1,
-		real_in_inst_vec_mul_2, real_in_inst_vec_mul_3} = 0;
+		{__in_inst_alu_0, __in_inst_alu_1,
+		__in_inst_alu_2, __in_inst_alu_3} = 0;
 
-		{real_in_inst_div_0, real_in_inst_div_1,
-			real_in_inst_div_2, real_in_inst_div_3} = 0;
+		{__in_inst_vec_mul_0, __in_inst_vec_mul_1,
+		__in_inst_vec_mul_2, __in_inst_vec_mul_3} = 0;
 
-		{real_in_inst_scalar_data_extractor_0,
-			real_in_inst_scalar_data_extractor_1} = 0;
-		real_in_inst_scalar_data_injector = 0;
+		{__in_inst_div_0, __in_inst_div_1,
+			__in_inst_div_2, __in_inst_div_3} = 0;
 
-		{real_in_inst_fpu_0, real_in_inst_fpu_1, real_in_inst_fpu_2,
-			real_in_inst_fpu_3} = 0;
+		{__in_inst_scalar_data_extractor_a,
+			__in_inst_scalar_data_extractor_b,
+			__in_inst_scalar_data_extractor_c} = 0;
+		__in_inst_scalar_data_injector = 0;
 
-		{real_in_inst_cast_from_int_to_bfloat16_0,
-			real_in_inst_cast_from_int_to_bfloat16_1} = 0;
+		{__in_inst_fpu_0, __in_inst_fpu_1, __in_inst_fpu_2,
+			__in_inst_fpu_3} = 0;
 
-		{real_in_inst_cast_to_int_from_bfloat16_0,
-			real_in_inst_cast_to_int_from_bfloat16_1} = 0;
+		{__in_inst_cast_from_int_to_bfloat16_b,
+			__in_inst_cast_from_int_to_bfloat16_c} = 0;
 
-		{real_in_inst_int_scalar_caster_0,
-			real_in_inst_int_scalar_caster_1} = 0;
+		{__in_inst_cast_to_int_from_bfloat16_b,
+			__in_inst_cast_to_int_from_bfloat16_c} = 0;
 
-		{real_in_inst_int_vector_caster_0,
-			real_in_inst_int_vector_caster_1} = 0;
-		{real_in_inst_to_or_from_bfloat16_vector_caster_0,
-			real_in_inst_to_or_from_bfloat16_vector_caster_1} = 0;
+		{__in_inst_int_scalar_caster_b,
+			__in_inst_int_scalar_caster_c} = 0;
 
-		{__spec_reg_ie, __spec_reg_ireta, __spec_reg_pc} = 0;
+		{__in_inst_int_vector_caster_b,
+			__in_inst_int_vector_caster_c} = 0;
+		{__in_inst_to_or_from_bfloat16_vector_caster_b,
+			__in_inst_to_or_from_bfloat16_vector_caster_c} = 0;
+
+		{__stage_execute__decoded_instr, __stage_write_back__decoded_instr}
+			= 0;
+
+		{__stage_instr_fetch__spec_regs, __stage_instr_decode__spec_regs,
+			__stage_execute__spec_regs, __stage_write_back__spec_regs}
+			= 0;
+
+		{__stage_execute__lar_file__rd_metadata_a,
+			__stage_execute__lar_file__rd_metadata_b,
+			__stage_execute__lar_file__rd_metadata_c,
+
+			__stage_write_back__lar_file__rd_metadata_a,
+			__stage_write_back__lar_file__rd_metadata_b,
+			__stage_write_back__lar_file__rd_metadata_c} = 0;
+
+		{__stage_execute__lar_file__curr_rd_shareddata_a,
+			__stage_execute__lar_file__curr_rd_shareddata_b,
+			__stage_execute__lar_file__curr_rd_shareddata_c,
+
+		// Stuff for operand forwarding.
+			__stage_execute__lar_file__past_rd_shareddata_a,
+			__stage_execute__lar_file__past_rd_shareddata_b,
+			__stage_execute__lar_file__past_rd_shareddata_c,
+
+			__stage_write_back__lar_file__past_rd_shareddata_a,
+			__stage_write_back__lar_file__past_rd_shareddata_b,
+			__stage_write_back__lar_file__past_rd_shareddata_c,
+
+			__stage_write_back_past__lar_file__past_rd_shareddata_a,
+			__stage_write_back_past__lar_file__past_rd_shareddata_b,
+			__stage_write_back_past__lar_file__past_rd_shareddata_c} = 0;
 	end
 
 	//always @(*)
