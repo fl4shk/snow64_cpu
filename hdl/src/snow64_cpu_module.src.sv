@@ -534,14 +534,13 @@ module Snow64Cpu(input logic clk,
 		__stage_write_back_past__lar_file__past_computed_data;
 
 
-	`define ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(sel, which) \
+	`define ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(sel, which) \
 		sel: __stage_execute__lar_file__curr_data_``which \
 			= __stage_execute__lar_file__past_computed_data;
-	`define ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(sel, which) \
+	`define ASSIGN_FROM_STAGE_WRITE_BACK__PAST_DATA(sel, which) \
 		sel: __stage_execute__lar_file__curr_data_``which \
 			= __stage_write_back__lar_file__past_computed_data;
-	`define ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA(sel, 
-		which) \
+	`define ASSIGN_FROM_STAGE_WRITE_BACK_PAST__PAST_DATA(sel, which) \
 		sel: __stage_execute__lar_file__curr_data_``which \
 			= __stage_write_back_past__lar_file__past_computed_data;
 
@@ -553,22 +552,20 @@ module Snow64Cpu(input logic clk,
 			__stage_write_back__lar_file__past_computed_data.valid, \
 			__stage_write_back_past__lar_file__past_computed_data.valid,\
 			(__stage_execute__lar_file__rd_metadata_``which.tag != 0)}) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1111, which) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1110, which) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1101, which) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1100, which) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1011, which) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1010, which) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1001, which) \
-		`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(4'b1000, which) \
-		`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(4'b0111, which) \
-		`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(4'b0110, which) \
-		`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(4'b0101, which) \
-		`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(4'b0100, which) \
-		`ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA(4'b0011, \
-			which) \
-		`ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA(4'b0010, \
-			which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1111, which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1110, which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1101, which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1100, which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1011, which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1010, which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1001, which) \
+		`ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA(4'b1000, which) \
+		`ASSIGN_FROM_STAGE_WRITE_BACK__PAST_DATA(4'b0111, which) \
+		`ASSIGN_FROM_STAGE_WRITE_BACK__PAST_DATA(4'b0110, which) \
+		`ASSIGN_FROM_STAGE_WRITE_BACK__PAST_DATA(4'b0101, which) \
+		`ASSIGN_FROM_STAGE_WRITE_BACK__PAST_DATA(4'b0100, which) \
+		`ASSIGN_FROM_STAGE_WRITE_BACK_PAST__PAST_DATA(4'b0011, which) \
+		`ASSIGN_FROM_STAGE_WRITE_BACK_PAST__PAST_DATA(4'b0010, which) \
 		4'b0001: __stage_execute__lar_file__curr_data_``which \
 			= {1'b1, __out_inst_lar_file__rd_shareddata_``which}; \
 		4'b0000: __stage_execute__lar_file__curr_data_``which = 0; \
@@ -579,9 +576,9 @@ module Snow64Cpu(input logic clk,
 	`ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA(b)
 	`ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA(c)
 	`undef ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA
-	`undef ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA
-	`undef ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA
-	`undef ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA
+	`undef ASSIGN_FROM_STAGE_EXECUTE__PAST_DATA
+	`undef ASSIGN_FROM_STAGE_WRITE_BACK__PAST_DATA
+	`undef ASSIGN_FROM_STAGE_WRITE_BACK_PAST__PAST_DATA
 
 	`define ASSIGN_TO_SCALAR_DATA_EXTRACTOR_INPUTS(which) \
 	assign __in_inst_scalar_data_extractor_``which \
