@@ -495,6 +495,7 @@ module Snow64Cpu(input logic clk,
 	} __stage_instr_fetch__spec_regs, __stage_instr_decode__spec_regs,
 		__stage_execute__spec_regs, __stage_write_back__spec_regs;
 
+
 	PkgSnow64LarFile::PartialPortOut_LarFile_ReadMetadata
 		__stage_execute__lar_file__rd_metadata_a,
 		__stage_execute__lar_file__rd_metadata_b,
@@ -504,24 +505,87 @@ module Snow64Cpu(input logic clk,
 		__stage_write_back__lar_file__rd_metadata_b,
 		__stage_write_back__lar_file__rd_metadata_c;
 
-	PkgSnow64LarFile::PartialPortOut_LarFile_ReadShareddata
-		__stage_execute__lar_file__curr_rd_shareddata_a,
-		__stage_execute__lar_file__curr_rd_shareddata_b,
-		__stage_execute__lar_file__curr_rd_shareddata_c,
+	struct packed
+	{
+		logic valid;
+		logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
+		logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
+	} __stage_execute__lar_file__curr_data_a,
+		__stage_execute__lar_file__curr_data_b,
+		__stage_execute__lar_file__curr_data_c,
 
 	// Stuff for operand forwarding.
-		__stage_execute__lar_file__past_rd_shareddata_a,
-		__stage_execute__lar_file__past_rd_shareddata_b,
-		__stage_execute__lar_file__past_rd_shareddata_c,
+		__stage_execute__lar_file__past_data_a,
+		__stage_execute__lar_file__past_data_b,
+		__stage_execute__lar_file__past_data_c,
 
-		__stage_write_back__lar_file__past_rd_shareddata_a,
-		__stage_write_back__lar_file__past_rd_shareddata_b,
-		__stage_write_back__lar_file__past_rd_shareddata_c,
+		__stage_write_back__lar_file__past_data_a,
+		__stage_write_back__lar_file__past_data_b,
+		__stage_write_back__lar_file__past_data_c,
 
-		__stage_write_back_past__lar_file__past_rd_shareddata_a,
-		__stage_write_back_past__lar_file__past_rd_shareddata_b,
-		__stage_write_back_past__lar_file__past_rd_shareddata_c;
+		__stage_write_back_past__lar_file__past_data_a,
+		__stage_write_back_past__lar_file__past_data_b,
+		__stage_write_back_past__lar_file__past_data_c;
 
+
+	`define ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		__stage_execute__lar_file__curr_data_``which \
+			= __stage_execute__lar_file__past_data_``which;
+	`define ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(which) \
+		__stage_execute__lar_file__curr_data_``which \
+			= __stage_write_back__lar_file__past_data_``which;
+	`define ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA(which) \
+		__stage_execute__lar_file__curr_data_``which \
+			= __stage_write_back_past__lar_file__past_data_``which;
+
+	// Operand forwarding
+	`define ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA(which) \
+	always @(*) \
+	begin \
+		case ({__stage_execute__lar_file__past_data_``which.valid, \
+			__stage_write_back__lar_file__past_data_``which.valid, \
+			__stage_write_back_past__lar_file__past_data_``which.valid,\
+			(__stage_execute__lar_file__rd_metadata_``which.tag != 0)}) \
+		{1'b1, 3'b111}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{1'b1, 3'b110}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{1'b1, 3'b101}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{1'b1, 3'b100}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{1'b1, 3'b011}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{1'b1, 3'b010}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{1'b1, 3'b001}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{1'b1, 3'b000}: \
+			`ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA(which) \
+		{2'b01, 2'b11}: \
+			`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(which) \
+		{2'b01, 2'b10}: \
+			`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(which) \
+		{2'b01, 2'b01}: \
+			`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(which) \
+		{2'b01, 2'b00}: \
+			`ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA(which) \
+		{3'b001, 1'b1}: \
+			`ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA(which) \
+		{3'b001, 1'b0}: \
+			`ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA(which) \
+		4'b0001: __stage_execute__lar_file__curr_data_``which \
+			= {1'b1, __out_inst_lar_file__rd_shareddata_``which}; \
+		4'b0000: __stage_execute__lar_file__curr_data_``which = 0; \
+		endcase \
+	end
+	`ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA(a)
+	`ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA(b)
+	`ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA(c)
+	`undef ASSIGN_TO_STAGE_EXECUTE__LAR_FILE__CURR_DATA
+	`undef ASSIGN_FROM_STAGE_EXECUTE_LAR_FILE_PAST_DATA
+	`undef ASSIGN_FROM_STAGE_WRITE_BACK_LAR_FILE_PAST_DATA
+	`undef ASSIGN_FROM_STAGE_WRITE_BACK_PAST_LAR_FILE_PAST_DATA
 
 	`ifdef FORMAL
 	localparam __ENUM__IG0OPER__ADD_THREEREGS
@@ -991,22 +1055,22 @@ module Snow64Cpu(input logic clk,
 			__stage_write_back__lar_file__rd_metadata_b,
 			__stage_write_back__lar_file__rd_metadata_c} = 0;
 
-		{__stage_execute__lar_file__curr_rd_shareddata_a,
-			__stage_execute__lar_file__curr_rd_shareddata_b,
-			__stage_execute__lar_file__curr_rd_shareddata_c,
+		{__stage_execute__lar_file__curr_data_a,
+			__stage_execute__lar_file__curr_data_b,
+			__stage_execute__lar_file__curr_data_c,
 
 		// Stuff for operand forwarding.
-			__stage_execute__lar_file__past_rd_shareddata_a,
-			__stage_execute__lar_file__past_rd_shareddata_b,
-			__stage_execute__lar_file__past_rd_shareddata_c,
+			__stage_execute__lar_file__past_data_a,
+			__stage_execute__lar_file__past_data_b,
+			__stage_execute__lar_file__past_data_c,
 
-			__stage_write_back__lar_file__past_rd_shareddata_a,
-			__stage_write_back__lar_file__past_rd_shareddata_b,
-			__stage_write_back__lar_file__past_rd_shareddata_c,
+			__stage_write_back__lar_file__past_data_a,
+			__stage_write_back__lar_file__past_data_b,
+			__stage_write_back__lar_file__past_data_c,
 
-			__stage_write_back_past__lar_file__past_rd_shareddata_a,
-			__stage_write_back_past__lar_file__past_rd_shareddata_b,
-			__stage_write_back_past__lar_file__past_rd_shareddata_c} = 0;
+			__stage_write_back_past__lar_file__past_data_a,
+			__stage_write_back_past__lar_file__past_data_b,
+			__stage_write_back_past__lar_file__past_data_c} = 0;
 	end
 
 	//always @(*)
