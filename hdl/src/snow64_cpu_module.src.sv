@@ -2,6 +2,123 @@
 `include "src/snow64_lar_file_defines.header.sv"
 
 
+// One line of instruction cache...
+module Snow64FakeInstrCache(input logic clk,
+	input PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
+		in_req_read,
+	input PkgSnow64InstrCache::PartialPortIn_InstrCache_MemAccess
+		in_mem_access,
+
+	output PkgSnow64InstrCache::PartialPortOut_InstrCache_ReqRead
+		out_req_read,
+	output PkgSnow64InstrCache::PartialPortOut_InstrCache_MemAccess
+		out_mem_access);
+
+	PkgSnow64InstrCache::State __state;
+	
+	logic __did_init;
+
+	localparam __WIDTH__DATA_OFFSET
+		= $clog2(`WIDTH__SNOW64_ICACHE_LINE_DATA / `WIDTH__SNOW64_INSTR);
+	localparam __MSB_POS__DATA_OFFSET = `WIDTH2MP(__WIDTH__DATA_OFFSET);
+
+	localparam __WIDTH__BASE_ADDR
+		= `WIDTH__SNOW64_CPU_ADDR - __WIDTH__DATA_OFFSET;
+	localparam __MSB_POS__BASE_ADDR
+		= `WIDTH2MP(__WIDTH__BASE_ADDR);
+
+	logic [__MSB_POS__DATA_OFFSET:0] __captured_req_data_offset,
+		__curr_req_data_offset;
+	logic [__MSB_POS__BASE_ADDR:0] __base_addr, __curr_req_base_addr;
+
+	assign {__curr_req_base_addr, __curr_req_data_offset}
+		= in_req_read.addr;
+
+	logic [`MSB_POS__SNOW64_ICACHE_LINE_DATA:0] __line;
+
+	initial
+	begin
+		__state = PkgSnow64InstrCache::StIdle;
+		__did_init = 0;
+		__captured_req_data_offset = 0;
+		__base_addr = 0;
+		__line = 0;
+	end
+
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+		PkgSnow64InstrCache::StIdle:
+		begin
+			if (in_req_read.req)
+			begin
+				if (__did_init && (__base_addr == __curr_req_base_addr))
+				begin
+					out_mem_access.req <= 0;
+					out_req_read.valid <= 1;
+
+					case (__curr_req_data_offset)
+					0: out_req_read.instr <= __line[0 * 32 +: 32];
+					1: out_req_read.instr <= __line[1 * 32 +: 32];
+					2: out_req_read.instr <= __line[2 * 32 +: 32];
+					3: out_req_read.instr <= __line[3 * 32 +: 32];
+					4: out_req_read.instr <= __line[4 * 32 +: 32];
+					5: out_req_read.instr <= __line[5 * 32 +: 32];
+					6: out_req_read.instr <= __line[6 * 32 +: 32];
+					7: out_req_read.instr <= __line[7 * 32 +: 32];
+					endcase
+				end
+
+				else
+				begin
+					out_mem_access.req <= 0;
+					out_mem_access.addr <= in_req_read.addr;
+
+					out_req_read.valid <= 0;
+
+					__state <= PkgSnow64InstrCache::StWaitForMem;
+
+					__did_init <= 1;
+					__base_addr <= __curr_req_base_addr;
+					__captured_req_data_offset <= __curr_req_data_offset;
+				end
+			end
+
+			else
+			begin
+				out_mem_access.req <= 0;
+				out_req_read.valid <= 0;
+			end
+		end
+
+		PkgSnow64InstrCache::StWaitForMem:
+		begin
+			out_mem_access.req <= 0;
+
+			if (in_mem_access.valid)
+			begin
+				out_req_read.valid <= 1;
+				__state <= PkgSnow64InstrCache::StIdle;
+				__line <= in_mem_access.data;
+
+				case (__captured_req_data_offset)
+				0: out_req_read.instr <= in_mem_access.data[0 * 32 +: 32];
+				1: out_req_read.instr <= in_mem_access.data[1 * 32 +: 32];
+				2: out_req_read.instr <= in_mem_access.data[2 * 32 +: 32];
+				3: out_req_read.instr <= in_mem_access.data[3 * 32 +: 32];
+				4: out_req_read.instr <= in_mem_access.data[4 * 32 +: 32];
+				5: out_req_read.instr <= in_mem_access.data[5 * 32 +: 32];
+				6: out_req_read.instr <= in_mem_access.data[6 * 32 +: 32];
+				7: out_req_read.instr <= in_mem_access.data[7 * 32 +: 32];
+				endcase
+			end
+		end
+		endcase
+	end
+
+endmodule
+
 module Snow64Cpu(input logic clk,
 	input PkgSnow64Cpu::PortIn_Cpu in,
 	output PkgSnow64Cpu::PortOut_Cpu out);
@@ -22,11 +139,33 @@ module Snow64Cpu(input logic clk,
 		real_out_ext_dat_acc_io};
 
 
+	// Fake instruction cache (really just one line of data...)
+	PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
+		real_in_inst_fake_instr_cache_req_read;
+	PkgSnow64InstrCache::PartialPortIn_InstrCache_MemAccess
+		real_in_inst_fake_instr_cache_mem_access;
+
+	PkgSnow64InstrCache::PartialPortOut_InstrCache_ReqRead
+		real_out_inst_fake_instr_cache_req_read;
+	PkgSnow64InstrCache::PartialPortOut_InstrCache_MemAccess
+		real_out_inst_fake_instr_cache_mem_access;
+
+
+	Snow64FakeInstrCache __inst_fake_instr_cache(.clk(clk),
+		.in_req_read(real_in_inst_fake_instr_cache_req_read),
+		.in_mem_access(real_in_inst_fake_instr_cache_mem_access),
+
+		.out_req_read(real_out_inst_fake_instr_cache_req_read),
+		.out_mem_access(real_out_inst_fake_instr_cache_mem_access));
+
+
 	// Instruction decoder
-	wire [`MSB_POS__SNOW64_INSTR:0] __in_instr_decoder;
-	PkgSnow64InstrDecoder::PortOut_InstrDecoder __out_inst_instr_decoder;
-	Snow64InstrDecoder __inst_instr_decoder(.in(__in_instr_decoder),
-		.out(__out_inst_instr_decoder));
+	wire [`MSB_POS__SNOW64_INSTR:0] real_in_inst_instr_decoder;
+	PkgSnow64InstrDecoder::PortOut_InstrDecoder
+		real_out_inst_instr_decoder;
+	Snow64InstrDecoder __inst_instr_decoder
+		(.in(real_in_inst_instr_decoder),
+		.out(real_out_inst_instr_decoder));
 
 	// Interface for accessing memory
 	PkgSnow64MemoryAccessFifo::PartialPortIn_ReadFifo_ReqRead
@@ -561,25 +700,25 @@ module Snow64Cpu(input logic clk,
 	// Ports of __inst_instr_decoder
 	wire [`MSB_POS__SNOW64_IENC_GROUP:0]
 		__formal__out_inst_instr_decoder__group
-		= __out_inst_instr_decoder.group;
+		= real_out_inst_instr_decoder.group;
 	wire __formal__out_inst_instr_decoder__op_type
-		= __out_inst_instr_decoder.op_type;
+		= real_out_inst_instr_decoder.op_type;
 	wire [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
 		__formal__out_inst_instr_decoder__ra_index
-		= __out_inst_instr_decoder.ra_index,
+		= real_out_inst_instr_decoder.ra_index,
 		__formal__out_inst_instr_decoder__rb_index
-		= __out_inst_instr_decoder.rb_index,
+		= real_out_inst_instr_decoder.rb_index,
 		__formal__out_inst_instr_decoder__rc_index
-		= __out_inst_instr_decoder.rc_index;
+		= real_out_inst_instr_decoder.rc_index;
 	wire [`MSB_POS__SNOW64_IENC_OPCODE:0]
 		__formal__out_inst_instr_decoder__oper
-		= __out_inst_instr_decoder.oper;
+		= real_out_inst_instr_decoder.oper;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0]
 		__formal__out_inst_instr_decoder__signext_imm
-		= __out_inst_instr_decoder.signext_imm;
+		= real_out_inst_instr_decoder.signext_imm;
 
 	wire __formal__out_inst_instr_decoder__nop
-		= __out_inst_instr_decoder.nop;
+		= real_out_inst_instr_decoder.nop;
 
 
 	// Ports of __inst_memory_access_via_fifos
@@ -798,10 +937,10 @@ module Snow64Cpu(input logic clk,
 		{__spec_reg_ie, __spec_reg_ireta, __spec_reg_pc} = 0;
 	end
 
-	always @(*)
-	begin
-		
-	end
+	//always @(*)
+	//begin
+	//	
+	//end
 
 	//always @(posedge clk)
 	//begin

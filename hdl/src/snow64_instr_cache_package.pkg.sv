@@ -77,17 +77,17 @@ typedef struct packed
 	CpuAddr addr;
 } PartialPortOut_InstrCache_MemAccess;
 
-typedef struct packed
-{
-	logic `STRUCTDIM(PartialPortIn_InstrCache_ReqRead) req_read;
-	logic `STRUCTDIM(PartialPortIn_InstrCache_MemAccess) mem_access;
-} PortIn_InstrCache;
-
-typedef struct packed
-{
-	logic `STRUCTDIM(PartialPortOut_InstrCache_ReqRead) req_read;
-	logic `STRUCTDIM(PartialPortOut_InstrCache_MemAccess) mem_access;
-} PortOut_InstrCache;
+//typedef struct packed
+//{
+//	logic `STRUCTDIM(PartialPortIn_InstrCache_ReqRead) req_read;
+//	logic `STRUCTDIM(PartialPortIn_InstrCache_MemAccess) mem_access;
+//} PortIn_InstrCache;
+//
+//typedef struct packed
+//{
+//	logic `STRUCTDIM(PartialPortOut_InstrCache_ReqRead) req_read;
+//	logic `STRUCTDIM(PartialPortOut_InstrCache_MemAccess) mem_access;
+//} PortOut_InstrCache;
 
 
 endpackage : PkgSnow64InstrCache
