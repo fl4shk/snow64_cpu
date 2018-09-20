@@ -172,7 +172,7 @@
 //		.in_oper(__in_alu_oper), .in_type_size(__in_alu_type_size),
 //		.in_signedness(__in_alu_signedness), .out_data(__out_alu_data));
 //
-//	assign __in_alu_oper = PkgSnow64Alu::OpShr;
+//	assign __in_alu_oper = PkgSnow64ArithLog::OpShr;
 //	assign __in_alu_type_size = PkgSnow64Cpu::IntTypSz8;
 //	assign __in_alu_signedness = 1;
 //

@@ -26,8 +26,7 @@
 `define SIGN_EXTEND(some_full_width, some_width_of_arg, some_arg) \
 	{{(some_full_width - some_width_of_arg) \
 	{some_arg[`WIDTH2MP(some_width_of_arg)]}},some_arg}
-`define SIGN_EXTEND_TYPE_2(some_full_width, some_width_of_arg,
-	some_bit_to_extend, some_arg) \
+`define SIGN_EXTEND_TYPE_2(some_full_width, some_width_of_arg, some_bit_to_extend, some_arg) \
 	{{(some_full_width - some_width_of_arg) \
 	{some_bit_to_extend}},some_arg}
 //`define SIGN_EXTEND_SLICED(some_full_width, some_width_of_arg, 

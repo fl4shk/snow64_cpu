@@ -37,3 +37,8 @@ LARs that can be used in an instruction')dnl
 	ONE_MODULE_FOR_TWO_REGS()
 	* _BOLD(Two) _CODE(Snow64ToOrFromBFloat16VectorCaster) instances,
 	ONE_MODULE_FOR_TWO_REGS()
+* Operand Forwarding
+	* Operand forwarding is very similar to operand forwarding in a
+	conventional architecture, but it differs slightly.
+		* In a nutshell, it checks if the data being compared have the same 
+		_CODE(base\_addr) value.

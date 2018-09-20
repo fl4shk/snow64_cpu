@@ -403,12 +403,12 @@ endmodule
 //`define MAKE_ASR_AND_PORTS(some_width) \
 //	struct packed \
 //	{ \
-//		logic [PkgSnow64Alu::MSB_POS__OF_``some_width:0] \
+//		logic [PkgSnow64ArithLog::MSB_POS__OF_``some_width:0] \
 //			to_shift, amount; \
 //	} __in_asr``some_width; \
 //	struct packed \
 //	{ \
-//		logic [PkgSnow64Alu::MSB_POS__OF_``some_width:0] data; \
+//		logic [PkgSnow64ArithLog::MSB_POS__OF_``some_width:0] data; \
 //	} __out_asr``some_width; \
 //	assign __in_asr``some_width.to_shift = in_to_shift; \
 //	assign __in_asr``some_width.amount = in_amount; \
@@ -424,7 +424,7 @@ endmodule
 //	(input logic [__MSB_POS__DATA_INOUT:0] in_to_shift, in_amount,
 //	output logic [__MSB_POS__DATA_INOUT:0] out_data);
 //
-//	//import PkgSnow64Alu::*;
+//	//import PkgSnow64ArithLog::*;
 //
 //	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
 //

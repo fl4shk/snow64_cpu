@@ -4,8 +4,8 @@
 // 8-bit ALU with carry in, carry out, the size of the operands of the
 // overall operation, and an index indicating which sub ALU we are (used to
 // determine whether or not to use 'in.carry")
-module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
-	output PkgSnow64Alu::PortOut_SubAlu out);
+module __Snow64SubAlu(input PkgSnow64ArithLog::PortIn_SubAlu in,
+	output PkgSnow64ArithLog::PortOut_SubAlu out);
 
 	localparam __MSB_POS__DATA_INOUT
 		= `MSB_POS__SNOW64_SUB_ALU_DATA_INOUT;
@@ -27,8 +27,8 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 
 	// Performing a subtract means that we need __in_actual_carry to
 	// be set to 1'b1 **if we're ignoring in.carry**.
-	assign __performing_subtract = ((in.oper == PkgSnow64Alu::OpSub)
-		|| (in.oper == PkgSnow64Alu::OpSlt));
+	assign __performing_subtract = ((in.oper == PkgSnow64ArithLog::OpSub)
+		|| (in.oper == PkgSnow64ArithLog::OpSlt));
 
 
 	// Determine if we need to use "in.carry"
@@ -101,14 +101,14 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 	always @(*)
 	begin
 		case (in.oper)
-		PkgSnow64Alu::OpAdd:
+		PkgSnow64ArithLog::OpAdd:
 		begin
 			{out.carry, out.data} = in.a + in.b
 				+ {{`WIDTH__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
 				__in_actual_carry};
 		end
 
-		PkgSnow64Alu::OpSub:
+		PkgSnow64ArithLog::OpSub:
 		begin
 			{out.carry, out.data} = {1'b0, in.a} + {1'b0, (~in.b)}
 				+ {{`WIDTH__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
@@ -116,36 +116,36 @@ module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
 		end
 
 		// Just repeat the "OpSub" stuff here.
-		PkgSnow64Alu::OpSlt:
+		PkgSnow64ArithLog::OpSlt:
 		begin
 			{out.carry, out.data} = {1'b0, in.a} + {1'b0, (~in.b)}
 				+ {{`WIDTH__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
 				__in_actual_carry};
 		end
-		PkgSnow64Alu::OpAnd:
+		PkgSnow64ArithLog::OpAnd:
 		begin
 			{out.carry, out.data} = in.a & in.b;
 		end
-		PkgSnow64Alu::OpOrr:
+		PkgSnow64ArithLog::OpOrr:
 		begin
 			{out.carry, out.data} = in.a | in.b;
 		end
-		PkgSnow64Alu::OpXor:
+		PkgSnow64ArithLog::OpXor:
 		begin
 			{out.carry, out.data} = in.a ^ in.b;
 		end
-		PkgSnow64Alu::OpInv:
+		PkgSnow64ArithLog::OpInv:
 		begin
 			{out.carry, out.data} = ~in.a;
 		end
-		//PkgSnow64Alu::OpNot:
+		//PkgSnow64ArithLog::OpNot:
 		//begin
 		//	// This is only used for 8-bit stuff
 		//	{out.carry, out.data} = !in.a;
 		//end
 
 		// Just repeat the "OpAdd" stuff here.
-		PkgSnow64Alu::OpAddAgain:
+		PkgSnow64ArithLog::OpAddAgain:
 		begin
 			{out.carry, out.data} = in.a + in.b
 				+ {{`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
@@ -183,37 +183,37 @@ endmodule
 //
 
 `define MAKE_INNER_SHIFT_FOR_ALU_PORTS(in_prefix, out_prefix) \
-PkgSnow64Alu::`INST_8__7(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__7(PortIn_InnerShiftForAlu) \
 	`INST_8__7(in_prefix); \
-PkgSnow64Alu::`INST_8__7(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__7(PortOut_InnerShiftForAlu) \
 	`INST_8__7(out_prefix); \
-PkgSnow64Alu::`INST_8__6(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__6(PortIn_InnerShiftForAlu) \
 	`INST_8__6(in_prefix); \
-PkgSnow64Alu::`INST_8__6(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__6(PortOut_InnerShiftForAlu) \
 	`INST_8__6(out_prefix); \
-PkgSnow64Alu::`INST_8__5(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__5(PortIn_InnerShiftForAlu) \
 	`INST_8__5(in_prefix); \
-PkgSnow64Alu::`INST_8__5(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__5(PortOut_InnerShiftForAlu) \
 	`INST_8__5(out_prefix); \
-PkgSnow64Alu::`INST_8__4(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__4(PortIn_InnerShiftForAlu) \
 	`INST_8__4(in_prefix); \
-PkgSnow64Alu::`INST_8__4(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__4(PortOut_InnerShiftForAlu) \
 	`INST_8__4(out_prefix); \
-PkgSnow64Alu::`INST_8__3(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__3(PortIn_InnerShiftForAlu) \
 	`INST_8__3(in_prefix); \
-PkgSnow64Alu::`INST_8__3(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__3(PortOut_InnerShiftForAlu) \
 	`INST_8__3(out_prefix); \
-PkgSnow64Alu::`INST_8__2(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__2(PortIn_InnerShiftForAlu) \
 	`INST_8__2(in_prefix); \
-PkgSnow64Alu::`INST_8__2(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__2(PortOut_InnerShiftForAlu) \
 	`INST_8__2(out_prefix); \
-PkgSnow64Alu::`INST_8__1(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__1(PortIn_InnerShiftForAlu) \
 	`INST_8__1(in_prefix); \
-PkgSnow64Alu::`INST_8__1(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__1(PortOut_InnerShiftForAlu) \
 	`INST_8__1(out_prefix); \
-PkgSnow64Alu::`INST_8__0(PortIn_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__0(PortIn_InnerShiftForAlu) \
 	`INST_8__0(in_prefix); \
-PkgSnow64Alu::`INST_8__0(PortOut_InnerShiftForAlu) \
+PkgSnow64ArithLog::`INST_8__0(PortOut_InnerShiftForAlu) \
 	`INST_8__0(out_prefix);
 
 `define MAKE_ONE_BIT_SHIFTER(some_module_prefix, some_width, 
@@ -224,8 +224,8 @@ some_module_prefix``some_width \
 
 
 module __Snow64SliceAndSignExtend 
-	(input PkgSnow64Alu::PortIn_SliceAndExtend in,
-	output PkgSnow64Alu::PortOut_SliceAndExtend out);
+	(input PkgSnow64ArithLog::PortIn_SliceAndExtend in,
+	output PkgSnow64ArithLog::PortOut_SliceAndExtend out);
 
 	localparam __WIDTH__DATA_INOUT = 64;
 	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(__WIDTH__DATA_INOUT);
@@ -244,9 +244,9 @@ module __Snow64SliceAndSignExtend
 	localparam __LAST_INDEX__LOCAL_DATA_32
 		= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__LOCAL_DATA_32);
 
-	PkgSnow64Alu::SlicedAlu8DataInout __in_to_slice_8;
-	PkgSnow64Alu::SlicedAlu16DataInout __in_to_slice_16;
-	PkgSnow64Alu::SlicedAlu32DataInout __in_to_slice_32;
+	PkgSnow64ArithLog::SlicedAlu8DataInout __in_to_slice_8;
+	PkgSnow64ArithLog::SlicedAlu16DataInout __in_to_slice_16;
+	PkgSnow64ArithLog::SlicedAlu32DataInout __in_to_slice_32;
 
 
 
@@ -328,8 +328,8 @@ module __Snow64SliceAndSignExtend
 endmodule
 
 module __Snow64SliceAndZeroExtend 
-	(input PkgSnow64Alu::PortIn_SliceAndExtend in,
-	output PkgSnow64Alu::PortOut_SliceAndExtend out);
+	(input PkgSnow64ArithLog::PortIn_SliceAndExtend in,
+	output PkgSnow64ArithLog::PortOut_SliceAndExtend out);
 
 	localparam __WIDTH__DATA_INOUT = 64;
 	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(__WIDTH__DATA_INOUT);
@@ -348,9 +348,9 @@ module __Snow64SliceAndZeroExtend
 	localparam __LAST_INDEX__LOCAL_DATA_32
 		= `ARR_SIZE_TO_LAST_INDEX(__ARR_SIZE__LOCAL_DATA_32);
 
-	PkgSnow64Alu::SlicedAlu8DataInout __in_to_slice_8;
-	PkgSnow64Alu::SlicedAlu16DataInout __in_to_slice_16;
-	PkgSnow64Alu::SlicedAlu32DataInout __in_to_slice_32;
+	PkgSnow64ArithLog::SlicedAlu8DataInout __in_to_slice_8;
+	PkgSnow64ArithLog::SlicedAlu16DataInout __in_to_slice_16;
+	PkgSnow64ArithLog::SlicedAlu32DataInout __in_to_slice_32;
 
 
 
@@ -461,8 +461,8 @@ endmodule
 
 
 //// Module that performs arithmetic right shifts for the Snow64Alu's
-//module __Snow64AsrForAlu(input PkgSnow64Alu::PortIn_ShiftForAlu in,
-//	output PkgSnow64Alu::PortOut_ShiftForAlu out);
+//module __Snow64AsrForAlu(input PkgSnow64ArithLog::PortIn_ShiftForAlu in,
+//	output PkgSnow64ArithLog::PortOut_ShiftForAlu out);
 //
 //	`MAKE_INNER_SHIFT_FOR_ALU_PORTS(__in_asr, __out_asr)
 //	`MAKE_INNER_BIT_SHIFTERS_FOR_ALU(ArithmeticShiftRight,
@@ -624,8 +624,8 @@ endmodule
 //
 // I do have a use case in mind for "-tvlog95" option... that's for later,
 // though.
-module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
-	output PkgSnow64Alu::PortOut_Alu out);
+module Snow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
+	output PkgSnow64ArithLog::PortOut_Alu out);
 
 
 	logic __sub_alu_in_carry_0, __sub_alu_in_carry_1, 
@@ -701,20 +701,20 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 		__out_get_sub_alu_results_data, 
 		__out_get_sub_alu_results_ltu, __out_get_sub_alu_results_lts;
 
-	PkgSnow64Alu::SlicedAlu8DataInout __in_a_sliced_8, __in_b_sliced_8;
+	PkgSnow64ArithLog::SlicedAlu8DataInout __in_a_sliced_8, __in_b_sliced_8;
 
-	PkgSnow64Alu::SlicedAlu16DataInout __in_a_sliced_16;
-	PkgSnow64Alu::SlicedAlu32DataInout __in_a_sliced_32;
+	PkgSnow64ArithLog::SlicedAlu16DataInout __in_a_sliced_16;
+	PkgSnow64ArithLog::SlicedAlu32DataInout __in_a_sliced_32;
 
 
 	// Figure out the inputs to the barrel shifters.
 	// These should *not* be used for anything outside the ALU, though the
 	// "SliceAndXExtend" modules themselves certainly are fine to use
 	// outside the ALU.
-	PkgSnow64Alu::PortIn_SliceAndExtend 
+	PkgSnow64ArithLog::PortIn_SliceAndExtend 
 		__in_slice_and_sign_extend, 
 		__in_slice_and_zero_extend_a, __in_slice_and_zero_extend_b;
-	PkgSnow64Alu::PortOut_SliceAndExtend 
+	PkgSnow64ArithLog::PortOut_SliceAndExtend 
 		__out_slice_and_sign_extend,
 		__out_slice_and_zero_extend_a, __out_slice_and_zero_extend_b;
 
@@ -729,10 +729,10 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 		.out(__out_slice_and_zero_extend_b));
 
 
-	PkgSnow64Alu::PortIn_SubAlu 
+	PkgSnow64ArithLog::PortIn_SubAlu 
 		__in_sub_alu_0, __in_sub_alu_1, __in_sub_alu_2, __in_sub_alu_3,
 		__in_sub_alu_4, __in_sub_alu_5, __in_sub_alu_6, __in_sub_alu_7;
-	PkgSnow64Alu::PortOut_SubAlu 
+	PkgSnow64ArithLog::PortOut_SubAlu 
 		__out_sub_alu_0, __out_sub_alu_1, __out_sub_alu_2, __out_sub_alu_3,
 		__out_sub_alu_4, __out_sub_alu_5, __out_sub_alu_6, __out_sub_alu_7;
 
@@ -874,8 +874,8 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 
 
 	//assign __sub_alu_in_carry_0 
-	//	= ((in.oper == PkgSnow64Alu::OpSub)
-	//	|| (in.oper == PkgSnow64Alu::OpSlt));
+	//	= ((in.oper == PkgSnow64ArithLog::OpSub)
+	//	|| (in.oper == PkgSnow64ArithLog::OpSlt));
 	assign __sub_alu_in_carry_0 = 0;
 	assign __sub_alu_in_carry_1 = __out_sub_alu_0.carry;
 	assign __sub_alu_in_carry_2 = __out_sub_alu_1.carry;
@@ -897,15 +897,15 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	always @(*)
 	begin
 		case (in.oper)
-			PkgSnow64Alu::OpAdd:
+			PkgSnow64ArithLog::OpAdd:
 			begin
 				out.data = __out_get_sub_alu_results_data;
 			end
-			PkgSnow64Alu::OpSub:
+			PkgSnow64ArithLog::OpSub:
 			begin
 				out.data = __out_get_sub_alu_results_data;
 			end
-			PkgSnow64Alu::OpSlt:
+			PkgSnow64ArithLog::OpSlt:
 			begin
 				case (in.type_signedness)
 				0:
@@ -919,27 +919,27 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				end
 				endcase
 			end
-			//PkgSnow64Alu::OpDummy0:
+			//PkgSnow64ArithLog::OpDummy0:
 			//begin
 			//end
 
-			//PkgSnow64Alu::OpDummy1:
+			//PkgSnow64ArithLog::OpDummy1:
 			//begin
 			//end
-			PkgSnow64Alu::OpAnd:
+			PkgSnow64ArithLog::OpAnd:
 			begin
 				out.data = __out_get_sub_alu_results_data;
 			end
-			PkgSnow64Alu::OpOrr:
+			PkgSnow64ArithLog::OpOrr:
 			begin
 				out.data = __out_get_sub_alu_results_data;
 			end
-			PkgSnow64Alu::OpXor:
+			PkgSnow64ArithLog::OpXor:
 			begin
 				out.data = __out_get_sub_alu_results_data;
 			end
 
-			PkgSnow64Alu::OpShl:
+			PkgSnow64ArithLog::OpShl:
 			begin
 				case (in.int_type_size)
 				PkgSnow64Cpu::IntTypSz8:
@@ -974,7 +974,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				end
 				endcase
 			end
-			PkgSnow64Alu::OpShr:
+			PkgSnow64ArithLog::OpShr:
 			begin
 				case (in.type_signedness)
 				0:
@@ -1050,11 +1050,11 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				end
 				endcase
 			end
-			PkgSnow64Alu::OpInv:
+			PkgSnow64ArithLog::OpInv:
 			begin
 				out.data = __out_get_sub_alu_results_data;
 			end
-			PkgSnow64Alu::OpNot:
+			PkgSnow64ArithLog::OpNot:
 			begin
 				case (in.int_type_size)
 				PkgSnow64Cpu::IntTypSz8:
@@ -1109,17 +1109,17 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				endcase
 			end
 
-			PkgSnow64Alu::OpAddAgain:
+			PkgSnow64ArithLog::OpAddAgain:
 			begin
 				out.data = __out_get_sub_alu_results_data;
 			end
-			//PkgSnow64Alu::OpDummy2:
+			//PkgSnow64ArithLog::OpDummy2:
 			//begin
 			//end
-			//PkgSnow64Alu::OpDummy3:
+			//PkgSnow64ArithLog::OpDummy3:
 			//begin
 			//end
-			//PkgSnow64Alu::OpDummy:
+			//PkgSnow64ArithLog::OpDummy:
 			//begin
 			//end
 			default:
@@ -1141,8 +1141,8 @@ module DebugSnow64Alu
 
 	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
 
-	PkgSnow64Alu::PortIn_Alu __in_alu;
-	PkgSnow64Alu::PortOut_Alu __out_alu;
+	PkgSnow64ArithLog::PortIn_Alu __in_alu;
+	PkgSnow64ArithLog::PortOut_Alu __out_alu;
 
 	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
 

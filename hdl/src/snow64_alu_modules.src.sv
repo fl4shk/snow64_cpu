@@ -1,31 +1,31 @@
 `include "src/snow64_alu_defines.header.sv"
 `include "src/snow64_cpu_defines.header.sv"
 
-//module DebugSnow64Alu
-//	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
-//	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
-//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
-//	input logic in_signedness,
-//
-//	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
-//
-//	PkgSnow64Alu::PortIn_Alu __in_alu;
-//	PkgSnow64Alu::PortOut_Alu __out_alu;
-//
-//	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
-//
-//	always @(*) __in_alu.a = in_a;
-//	always @(*) __in_alu.b = in_b;
-//	always @(*) __in_alu.oper = in_oper;
-//	always @(*) __in_alu.int_type_size = in_type_size;
-//	always @(*) __in_alu.type_signedness = in_signedness;
-//
-//	always @(*) out_data = __out_alu.data;
-//endmodule
+module DebugSnow64Alu
+	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
+	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
+	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_int_type_size,
+	input logic in_signedness,
+
+	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
+
+	PkgSnow64ArithLog::PortIn_Alu __in_alu;
+	PkgSnow64ArithLog::PortOut_Alu __out_alu;
+
+	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
+
+	always @(*) __in_alu.a = in_a;
+	always @(*) __in_alu.b = in_b;
+	always @(*) __in_alu.oper = in_oper;
+	always @(*) __in_alu.int_type_size = in_int_type_size;
+	always @(*) __in_alu.type_signedness = in_signedness;
+
+	always @(*) out_data = __out_alu.data;
+endmodule
 
 
-//module __Snow64SubAlu(input PkgSnow64Alu::PortIn_SubAlu in,
-//	output PkgSnow64Alu::PortOut_SubAlu out);
+//module __Snow64SubAlu(input PkgSnow64ArithLog::PortIn_SubAlu in,
+//	output PkgSnow64ArithLog::PortOut_SubAlu out);
 //
 //	localparam __MSB_POS__DATA_INOUT
 //		= `MSB_POS__SNOW64_SUB_ALU_DATA_INOUT;
@@ -42,8 +42,8 @@
 //
 //	// Performing a subtract means that we need __in_actual_carry to
 //	// be set to 1'b1 **if we're ignoring in.carry**.
-//	assign __performing_subtract = ((in.oper == PkgSnow64Alu::OpSub)
-//		|| (in.oper == PkgSnow64Alu::OpSlt));
+//	assign __performing_subtract = ((in.oper == PkgSnow64ArithLog::OpSub)
+//		|| (in.oper == PkgSnow64ArithLog::OpSlt));
 //
 //	always @(*)
 //	begin
@@ -81,14 +81,14 @@
 //	always @(*)
 //	begin
 //		case (in.oper)
-//		PkgSnow64Alu::OpAdd:
+//		PkgSnow64ArithLog::OpAdd:
 //		begin
 //			{out.carry, out.data} = in.a + in.b
 //				+ {{`WIDTH__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
 //				__in_actual_carry};
 //		end
 //
-//		PkgSnow64Alu::OpSub:
+//		PkgSnow64ArithLog::OpSub:
 //		begin
 //			{out.carry, out.data} = {1'b0, in.a} + {1'b0, (~in.b)}
 //				+ {{`WIDTH__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
@@ -96,36 +96,36 @@
 //		end
 //
 //		// Just repeat the "OpSub" stuff here.
-//		PkgSnow64Alu::OpSlt:
+//		PkgSnow64ArithLog::OpSlt:
 //		begin
 //			{out.carry, out.data} = {1'b0, in.a} + {1'b0, (~in.b)}
 //				+ {{`WIDTH__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
 //				__in_actual_carry};
 //		end
-//		PkgSnow64Alu::OpAnd:
+//		PkgSnow64ArithLog::OpAnd:
 //		begin
 //			{out.carry, out.data} = in.a & in.b;
 //		end
-//		PkgSnow64Alu::OpOrr:
+//		PkgSnow64ArithLog::OpOrr:
 //		begin
 //			{out.carry, out.data} = in.a | in.b;
 //		end
-//		PkgSnow64Alu::OpXor:
+//		PkgSnow64ArithLog::OpXor:
 //		begin
 //			{out.carry, out.data} = in.a ^ in.b;
 //		end
-//		PkgSnow64Alu::OpInv:
+//		PkgSnow64ArithLog::OpInv:
 //		begin
 //			{out.carry, out.data} = ~in.a;
 //		end
-//		//PkgSnow64Alu::OpNot:
+//		//PkgSnow64ArithLog::OpNot:
 //		//begin
 //		//	// This is only used for 8-bit stuff
 //		//	{out.carry, out.data} = !in.a;
 //		//end
 //
 //		// Just repeat the "OpAdd" stuff here.
-//		PkgSnow64Alu::OpAddAgain:
+//		PkgSnow64ArithLog::OpAddAgain:
 //		begin
 //			{out.carry, out.data} = in.a + in.b
 //				+ {{`MSB_POS__SNOW64_SUB_ALU_DATA_INOUT{1'b0}},
@@ -142,8 +142,8 @@
 //
 //endmodule
 //
-//module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
-//	output PkgSnow64Alu::PortOut_Alu out);
+//module Snow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
+//	output PkgSnow64ArithLog::PortOut_Alu out);
 //
 //	// Local variables, module instantiations, and assignments
 //	PkgSnow64SlicedData::SlicedData8 __in_a_sliced_8, __in_b_sliced_8,
@@ -158,7 +158,7 @@
 //	PkgSnow64SlicedData::SlicedData64 __in_a_sliced_64, __in_b_sliced_64,
 //		__temp_data_sliced_64;
 //
-//	logic [PkgSnow64Alu::MSB_POS__OF_8:0]
+//	logic [PkgSnow64ArithLog::MSB_POS__OF_8:0]
 //		__out_lsl_data_sliced_8_7, __out_lsl_data_sliced_8_6,
 //		__out_lsl_data_sliced_8_5, __out_lsl_data_sliced_8_4,
 //		__out_lsl_data_sliced_8_3, __out_lsl_data_sliced_8_2,
@@ -174,7 +174,7 @@
 //		__out_asr_data_sliced_8_3, __out_asr_data_sliced_8_2,
 //		__out_asr_data_sliced_8_1, __out_asr_data_sliced_8_0;
 //
-//	logic [PkgSnow64Alu::MSB_POS__OF_16:0]
+//	logic [PkgSnow64ArithLog::MSB_POS__OF_16:0]
 //		__out_lsl_data_sliced_16_3, __out_lsl_data_sliced_16_2,
 //		__out_lsl_data_sliced_16_1, __out_lsl_data_sliced_16_0,
 //
@@ -184,7 +184,7 @@
 //		__out_asr_data_sliced_16_3, __out_asr_data_sliced_16_2,
 //		__out_asr_data_sliced_16_1, __out_asr_data_sliced_16_0;
 //
-//	logic [PkgSnow64Alu::MSB_POS__OF_32:0]
+//	logic [PkgSnow64ArithLog::MSB_POS__OF_32:0]
 //
 //		__out_lsl_data_sliced_32_1, __out_lsl_data_sliced_32_0,
 //		__out_lsr_data_sliced_32_1, __out_lsr_data_sliced_32_0,
@@ -192,7 +192,7 @@
 //
 //	logic __out_slts_data_sliced_32_1, __out_slts_data_sliced_32_0;
 //
-//	logic [PkgSnow64Alu::MSB_POS__OF_64:0]
+//	logic [PkgSnow64ArithLog::MSB_POS__OF_64:0]
 //		__out_lsl_data_sliced_64_0,
 //		__out_lsr_data_sliced_64_0,
 //		__out_asr_data_sliced_64_0;
@@ -279,10 +279,10 @@
 //
 //
 //
-//	PkgSnow64Alu::PortIn_SubAlu 
+//	PkgSnow64ArithLog::PortIn_SubAlu 
 //		__in_sub_alu_0, __in_sub_alu_1, __in_sub_alu_2, __in_sub_alu_3,
 //		__in_sub_alu_4, __in_sub_alu_5, __in_sub_alu_6, __in_sub_alu_7;
-//	PkgSnow64Alu::PortOut_SubAlu 
+//	PkgSnow64ArithLog::PortOut_SubAlu 
 //		__out_sub_alu_0, __out_sub_alu_1, __out_sub_alu_2, __out_sub_alu_3,
 //		__out_sub_alu_4, __out_sub_alu_5, __out_sub_alu_6, __out_sub_alu_7;
 //
@@ -367,7 +367,7 @@
 //
 //		PkgSnow64Cpu::IntTypSz32:
 //		begin
-//			if ((in.oper == PkgSnow64Alu::OpSlt) && in.type_signedness)
+//			if ((in.oper == PkgSnow64ArithLog::OpSlt) && in.type_signedness)
 //			begin
 //				out.data 
 //					= {`ZERO_EXTEND(32, 1, __out_slts_data_sliced_32_1),
@@ -382,7 +382,7 @@
 //
 //		PkgSnow64Cpu::IntTypSz64:
 //		begin
-//			if ((in.oper == PkgSnow64Alu::OpSlt) && in.type_signedness)
+//			if ((in.oper == PkgSnow64ArithLog::OpSlt) && in.type_signedness)
 //			begin
 //				out.data = __out_slts_data_sliced_64_0;
 //			end
@@ -399,7 +399,7 @@
 //	always @(*)
 //	begin
 //		case (in.oper)
-//		PkgSnow64Alu::OpSlt:
+//		PkgSnow64ArithLog::OpSlt:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -430,7 +430,7 @@
 //			endcase
 //		end
 //
-//		PkgSnow64Alu::OpShl:
+//		PkgSnow64ArithLog::OpShl:
 //		begin
 //			__temp_data_sliced_8
 //				= {__out_lsl_data_sliced_8_7,
@@ -443,7 +443,7 @@
 //				__out_lsl_data_sliced_8_0};
 //		end
 //
-//		PkgSnow64Alu::OpShr:
+//		PkgSnow64ArithLog::OpShr:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -474,7 +474,7 @@
 //			endcase
 //		end
 //
-//		PkgSnow64Alu::OpNot:
+//		PkgSnow64ArithLog::OpNot:
 //		begin
 //			__temp_data_sliced_8
 //				= {`ZERO_EXTEND(8, 1, !__in_a_sliced_8.data_7),
@@ -502,7 +502,7 @@
 //	always @(*)
 //	begin
 //		case (in.oper)
-//		PkgSnow64Alu::OpSlt:
+//		PkgSnow64ArithLog::OpSlt:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -525,7 +525,7 @@
 //			endcase
 //		end
 //
-//		PkgSnow64Alu::OpShl:
+//		PkgSnow64ArithLog::OpShl:
 //		begin
 //			__temp_data_sliced_16
 //				= {__out_lsl_data_sliced_16_3,
@@ -534,7 +534,7 @@
 //				__out_lsl_data_sliced_16_0};
 //		end
 //
-//		PkgSnow64Alu::OpShr:
+//		PkgSnow64ArithLog::OpShr:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -557,7 +557,7 @@
 //			endcase
 //		end
 //
-//		PkgSnow64Alu::OpNot:
+//		PkgSnow64ArithLog::OpNot:
 //		begin
 //			__temp_data_sliced_16
 //				= {`ZERO_EXTEND(16, 1, !__in_a_sliced_16.data_3),
@@ -581,21 +581,21 @@
 //	always @(*)
 //	begin
 //		case (in.oper)
-//		PkgSnow64Alu::OpAdd:
+//		PkgSnow64ArithLog::OpAdd:
 //		begin
 //			__temp_data_sliced_32
 //				= {(__in_a_sliced_32.data_1 + __in_b_sliced_32.data_1),
 //				(__in_a_sliced_32.data_0 + __in_b_sliced_32.data_0)};
 //		end
 //
-//		PkgSnow64Alu::OpSub:
+//		PkgSnow64ArithLog::OpSub:
 //		begin
 //			__temp_data_sliced_32
 //				= {(__in_a_sliced_32.data_1 - __in_b_sliced_32.data_1),
 //				(__in_a_sliced_32.data_0 - __in_b_sliced_32.data_0)};
 //		end
 //
-//		PkgSnow64Alu::OpSlt:
+//		PkgSnow64ArithLog::OpSlt:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -616,12 +616,12 @@
 //			endcase
 //		end
 //
-//		PkgSnow64Alu::OpShl:
+//		PkgSnow64ArithLog::OpShl:
 //		begin
 //			__temp_data_sliced_32
 //				= {__out_lsl_data_sliced_32_1, __out_lsl_data_sliced_32_0};
 //		end
-//		PkgSnow64Alu::OpShr:
+//		PkgSnow64ArithLog::OpShr:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -639,14 +639,14 @@
 //			end
 //			endcase
 //		end
-//		PkgSnow64Alu::OpNot:
+//		PkgSnow64ArithLog::OpNot:
 //		begin
 //			__temp_data_sliced_32
 //				= {`ZERO_EXTEND(32, 1, !__in_a_sliced_32.data_1),
 //				`ZERO_EXTEND(32, 1, !__in_a_sliced_32.data_0)};
 //		end
 //
-//		PkgSnow64Alu::OpAddAgain:
+//		PkgSnow64ArithLog::OpAddAgain:
 //		begin
 //			__temp_data_sliced_32
 //				= {(__in_a_sliced_32.data_1 + __in_b_sliced_32.data_1),
@@ -670,19 +670,19 @@
 //	always @(*)
 //	begin
 //		case (in.oper)
-//		PkgSnow64Alu::OpAdd:
+//		PkgSnow64ArithLog::OpAdd:
 //		begin
 //			__temp_data_sliced_64.data_0
 //				= __in_a_sliced_64.data_0 + __in_b_sliced_64.data_0;
 //		end
 //
-//		PkgSnow64Alu::OpSub:
+//		PkgSnow64ArithLog::OpSub:
 //		begin
 //			__temp_data_sliced_64.data_0
 //				= __in_a_sliced_64.data_0 - __in_b_sliced_64.data_0;
 //		end
 //
-//		PkgSnow64Alu::OpSlt:
+//		PkgSnow64ArithLog::OpSlt:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -699,12 +699,12 @@
 //			endcase
 //		end
 //
-//		PkgSnow64Alu::OpShl:
+//		PkgSnow64ArithLog::OpShl:
 //		begin
 //			__temp_data_sliced_64.data_0 = __out_lsl_data_sliced_64_0;
 //		end
 //
-//		PkgSnow64Alu::OpShr:
+//		PkgSnow64ArithLog::OpShr:
 //		begin
 //			case (in.type_signedness)
 //			0:
@@ -719,12 +719,12 @@
 //			endcase
 //		end
 //
-//		PkgSnow64Alu::OpNot:
+//		PkgSnow64ArithLog::OpNot:
 //		begin
 //			__temp_data_sliced_64.data_0 = !__in_a_sliced_64.data_0;
 //		end
 //
-//		PkgSnow64Alu::OpAddAgain:
+//		PkgSnow64ArithLog::OpAddAgain:
 //		begin
 //			__temp_data_sliced_64.data_0
 //				= __in_a_sliced_64.data_0 + __in_b_sliced_64.data_0;
@@ -747,8 +747,8 @@
 //endmodule
 
 
-module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
-	output PkgSnow64Alu::PortOut_Alu out);
+module Snow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
+	output PkgSnow64ArithLog::PortOut_Alu out);
 
 	// Local variables, module instantiations, and assignments
 
@@ -990,7 +990,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 		.out_data(__out_slts_data_sliced_``some_width``_``some_num));
 
 
-	logic [PkgSnow64Alu::MSB_POS__OF_8:0]
+	logic [PkgSnow64ArithLog::MSB_POS__OF_8:0]
 		__out_slts_data_sliced_8_7,
 		__out_slts_data_sliced_8_6,
 		__out_slts_data_sliced_8_5,
@@ -1009,7 +1009,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 		__out_asr_data_sliced_8_1,
 		__out_asr_data_sliced_8_0;
 
-	logic [PkgSnow64Alu::MSB_POS__OF_16:0]
+	logic [PkgSnow64ArithLog::MSB_POS__OF_16:0]
 		__out_slts_data_sliced_16_3,
 		__out_slts_data_sliced_16_2,
 		__out_slts_data_sliced_16_1,
@@ -1020,14 +1020,14 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 		__out_asr_data_sliced_16_1,
 		__out_asr_data_sliced_16_0;
 
-	logic [PkgSnow64Alu::MSB_POS__OF_32:0]
+	logic [PkgSnow64ArithLog::MSB_POS__OF_32:0]
 		__out_slts_data_sliced_32_1,
 		__out_slts_data_sliced_32_0,
 
 		__out_asr_data_sliced_32_1,
 		__out_asr_data_sliced_32_0;
 
-	logic [PkgSnow64Alu::MSB_POS__OF_64:0]
+	logic [PkgSnow64ArithLog::MSB_POS__OF_64:0]
 		__out_slts_data_sliced_64_0,
 
 		__out_asr_data_sliced_64_0;
@@ -1287,27 +1287,27 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	// just 64-bit bit vectors, and so every "in.int_type_size" value will
 	// cause the same result to occur.  This allows me to slightly shrink
 	// the ALU.
-	logic [PkgSnow64Alu::MSB_POS__OF_64:0] __out_non_shift_bitwise_data;
+	logic [PkgSnow64ArithLog::MSB_POS__OF_64:0] __out_non_shift_bitwise_data;
 
 	always @(*)
 	begin
 		case (in.oper)
-		PkgSnow64Alu::OpAnd:
+		PkgSnow64ArithLog::OpAnd:
 		begin
 			__out_non_shift_bitwise_data = in.a & in.b;
 		end
 
-		PkgSnow64Alu::OpOrr:
+		PkgSnow64ArithLog::OpOrr:
 		begin
 			__out_non_shift_bitwise_data = in.a | in.b;
 		end
 
-		PkgSnow64Alu::OpXor:
+		PkgSnow64ArithLog::OpXor:
 		begin
 			__out_non_shift_bitwise_data = in.a ^ in.b;
 		end
 
-		PkgSnow64Alu::OpInv:
+		PkgSnow64ArithLog::OpInv:
 		begin
 			__out_non_shift_bitwise_data = ~in.a;
 		end
@@ -1322,7 +1322,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	always @(*)
 	begin
 		case (in.oper)
-		PkgSnow64Alu::OpAdd:
+		PkgSnow64ArithLog::OpAdd:
 		begin
 			__out_data_sliced_8
 				= {(__in_a_sliced_8.data_7 + __in_b_sliced_8.data_7),
@@ -1335,7 +1335,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				(__in_a_sliced_8.data_0 + __in_b_sliced_8.data_0)};
 		end
 
-		PkgSnow64Alu::OpSub:
+		PkgSnow64ArithLog::OpSub:
 		begin
 			__out_data_sliced_8
 				= {(__in_a_sliced_8.data_7 - __in_b_sliced_8.data_7),
@@ -1348,7 +1348,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				(__in_a_sliced_8.data_0 - __in_b_sliced_8.data_0)};
 		end
 
-		PkgSnow64Alu::OpSlt:
+		PkgSnow64ArithLog::OpSlt:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1396,22 +1396,22 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpAnd:
+		PkgSnow64ArithLog::OpAnd:
 		begin
 			__out_data_sliced_8 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpOrr:
+		PkgSnow64ArithLog::OpOrr:
 		begin
 			__out_data_sliced_8 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpXor:
+		PkgSnow64ArithLog::OpXor:
 		begin
 			__out_data_sliced_8 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpShl:
+		PkgSnow64ArithLog::OpShl:
 		begin
 			//__out_data_sliced_8
 			//	= {`INST_8__7_S(__out_lsl, _data)[7:0],
@@ -1433,7 +1433,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				(__in_a_sliced_8.data_0 << __in_b_sliced_8.data_0)};
 		end
 
-		PkgSnow64Alu::OpShr:
+		PkgSnow64ArithLog::OpShr:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1482,12 +1482,12 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpInv:
+		PkgSnow64ArithLog::OpInv:
 		begin
 			__out_data_sliced_8 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpNot:
+		PkgSnow64ArithLog::OpNot:
 		begin
 			__out_data_sliced_8
 				= {`ZERO_EXTEND(8, 1, !__in_a_sliced_8.data_7),
@@ -1500,7 +1500,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				`ZERO_EXTEND(8, 1, !__in_a_sliced_8.data_0)};
 		end
 
-		PkgSnow64Alu::OpAddAgain:
+		PkgSnow64ArithLog::OpAddAgain:
 		begin
 			__out_data_sliced_8
 				= {(__in_a_sliced_8.data_7 + __in_b_sliced_8.data_7),
@@ -1524,7 +1524,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	always @(*)
 	begin
 		case (in.oper)
-		PkgSnow64Alu::OpAdd:
+		PkgSnow64ArithLog::OpAdd:
 		begin
 			__out_data_sliced_16
 				= {(__in_a_sliced_16.data_3 + __in_b_sliced_16.data_3),
@@ -1533,7 +1533,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				(__in_a_sliced_16.data_0 + __in_b_sliced_16.data_0)};
 		end
 
-		PkgSnow64Alu::OpSub:
+		PkgSnow64ArithLog::OpSub:
 		begin
 			__out_data_sliced_16
 				= {(__in_a_sliced_16.data_3 - __in_b_sliced_16.data_3),
@@ -1542,7 +1542,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				(__in_a_sliced_16.data_0 - __in_b_sliced_16.data_0)};
 		end
 
-		PkgSnow64Alu::OpSlt:
+		PkgSnow64ArithLog::OpSlt:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1574,22 +1574,22 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpAnd:
+		PkgSnow64ArithLog::OpAnd:
 		begin
 			__out_data_sliced_16 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpOrr:
+		PkgSnow64ArithLog::OpOrr:
 		begin
 			__out_data_sliced_16 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpXor:
+		PkgSnow64ArithLog::OpXor:
 		begin
 			__out_data_sliced_16 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpShl:
+		PkgSnow64ArithLog::OpShl:
 		begin
 			//__out_data_sliced_16
 			//	= {`INST_16__3_S(__out_lsl, _data)[15:0],
@@ -1603,7 +1603,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				(__in_a_sliced_16.data_0 << __in_b_sliced_16.data_0)};
 		end
 
-		PkgSnow64Alu::OpShr:
+		PkgSnow64ArithLog::OpShr:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1649,12 +1649,12 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpInv:
+		PkgSnow64ArithLog::OpInv:
 		begin
 			__out_data_sliced_16 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpNot:
+		PkgSnow64ArithLog::OpNot:
 		begin
 			__out_data_sliced_16
 				= {`ZERO_EXTEND(16, 1, !__in_a_sliced_16.data_3),
@@ -1663,7 +1663,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				`ZERO_EXTEND(16, 1, !__in_a_sliced_16.data_0)};
 		end
 
-		PkgSnow64Alu::OpAddAgain:
+		PkgSnow64ArithLog::OpAddAgain:
 		begin
 			__out_data_sliced_16
 				= {(__in_a_sliced_16.data_3 + __in_b_sliced_16.data_3),
@@ -1683,21 +1683,21 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	always @(*)
 	begin
 		case (in.oper)
-		PkgSnow64Alu::OpAdd:
+		PkgSnow64ArithLog::OpAdd:
 		begin
 			__out_data_sliced_32
 				= {(__in_a_sliced_32.data_1 + __in_b_sliced_32.data_1),
 				(__in_a_sliced_32.data_0 + __in_b_sliced_32.data_0)};
 		end
 
-		PkgSnow64Alu::OpSub:
+		PkgSnow64ArithLog::OpSub:
 		begin
 			__out_data_sliced_32
 				= {(__in_a_sliced_32.data_1 - __in_b_sliced_32.data_1),
 				(__in_a_sliced_32.data_0 - __in_b_sliced_32.data_0)};
 		end
 
-		PkgSnow64Alu::OpSlt:
+		PkgSnow64ArithLog::OpSlt:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1721,22 +1721,22 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpAnd:
+		PkgSnow64ArithLog::OpAnd:
 		begin
 			__out_data_sliced_32 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpOrr:
+		PkgSnow64ArithLog::OpOrr:
 		begin
 			__out_data_sliced_32 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpXor:
+		PkgSnow64ArithLog::OpXor:
 		begin
 			__out_data_sliced_32 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpShl:
+		PkgSnow64ArithLog::OpShl:
 		begin
 			//__out_data_sliced_32
 			//	= {`INST_32__1_S(__out_lsl, _data)[31:0],
@@ -1746,7 +1746,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				(__in_a_sliced_32.data_0 << __in_b_sliced_32.data_0)};
 		end
 
-		PkgSnow64Alu::OpShr:
+		PkgSnow64ArithLog::OpShr:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1778,19 +1778,19 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpInv:
+		PkgSnow64ArithLog::OpInv:
 		begin
 			__out_data_sliced_32 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpNot:
+		PkgSnow64ArithLog::OpNot:
 		begin
 			__out_data_sliced_32
 				= {`ZERO_EXTEND(32, 1, !__in_a_sliced_32.data_1),
 				`ZERO_EXTEND(32, 1, !__in_a_sliced_32.data_0)};
 		end
 
-		PkgSnow64Alu::OpAddAgain:
+		PkgSnow64ArithLog::OpAddAgain:
 		begin
 			__out_data_sliced_32
 				= {(__in_a_sliced_32.data_1 + __in_b_sliced_32.data_1),
@@ -1808,19 +1808,19 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 	always @(*)
 	begin
 		case (in.oper)
-		PkgSnow64Alu::OpAdd:
+		PkgSnow64ArithLog::OpAdd:
 		begin
 			__out_data_sliced_64
 				= {(__in_a_sliced_64.data_0 + __in_b_sliced_64.data_0)};
 		end
 
-		PkgSnow64Alu::OpSub:
+		PkgSnow64ArithLog::OpSub:
 		begin
 			__out_data_sliced_64
 				= {(__in_a_sliced_64.data_0 - __in_b_sliced_64.data_0)};
 		end
 
-		PkgSnow64Alu::OpSlt:
+		PkgSnow64ArithLog::OpSlt:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1840,22 +1840,22 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpAnd:
+		PkgSnow64ArithLog::OpAnd:
 		begin
 			__out_data_sliced_64 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpOrr:
+		PkgSnow64ArithLog::OpOrr:
 		begin
 			__out_data_sliced_64 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpXor:
+		PkgSnow64ArithLog::OpXor:
 		begin
 			__out_data_sliced_64 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpShl:
+		PkgSnow64ArithLog::OpShl:
 		begin
 			//__out_data_sliced_64
 			//	= {`INST_64__0_S(__out_lsl, _data)[63:0]};
@@ -1863,7 +1863,7 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 				= __in_a_sliced_64.data_0 << __in_b_sliced_64.data_0;
 		end
 
-		PkgSnow64Alu::OpShr:
+		PkgSnow64ArithLog::OpShr:
 		begin
 			case (in.type_signedness)
 			0:
@@ -1887,18 +1887,18 @@ module Snow64Alu(input PkgSnow64Alu::PortIn_Alu in,
 			endcase
 		end
 
-		PkgSnow64Alu::OpInv:
+		PkgSnow64ArithLog::OpInv:
 		begin
 			__out_data_sliced_64 = __out_non_shift_bitwise_data;
 		end
 
-		PkgSnow64Alu::OpNot:
+		PkgSnow64ArithLog::OpNot:
 		begin
 			__out_data_sliced_64
 				= {`ZERO_EXTEND(64, 1, !__in_a_sliced_64.data_0)};
 		end
 
-		PkgSnow64Alu::OpAddAgain:
+		PkgSnow64ArithLog::OpAddAgain:
 		begin
 			__out_data_sliced_64
 				= {(__in_a_sliced_64.data_0 + __in_b_sliced_64.data_0)};

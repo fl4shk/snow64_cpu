@@ -38,3 +38,8 @@ LARs that can be used in an instruction
 	* <b>Two</b> <code>Snow64ToOrFromBFloat16VectorCaster</code> instances,
 	one for each of the two "source" data
 LARs that can be used in an instruction
+* Operand Forwarding
+	* Operand forwarding is very similar to operand forwarding in a
+	conventional architecture, but it differs slightly.
+		* In a nutshell, it checks if the data being compared have the same 
+		<code>base\_addr</code> value.

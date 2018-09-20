@@ -2,7 +2,7 @@
 `include "src/snow64_cpu_defines.header.sv"
 `include "src/snow64_mul_div_defines.header.sv"
 
-package PkgSnow64Alu;
+package PkgSnow64ArithLog;
 
 typedef enum logic [`MSB_POS__SNOW64_ALU_OPER:0]
 {
@@ -63,6 +63,20 @@ typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_SIZE_64:0] data;
 } PortOut_Alu;
+
+
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
+	logic [`MSB_POS__SNOW64_ALU_OPER:0] oper;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	logic type_signedness;
+} PortIn_VectorAlu;
+
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
+} PortOut_VectorAlu;
 
 
 
@@ -131,7 +145,7 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 
 	logic [`MSB_POS__SNOW64_MUL_DATA_IN:0] a, b;
-} PortIn_VectorMul;
+} PortIn_Mul;
 
 typedef struct packed
 {
@@ -142,4 +156,35 @@ typedef struct packed
 } PortOut_Mul;
 
 
-endpackage : PkgSnow64Alu
+typedef struct packed
+{
+	logic enable;
+
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
+} PortIn_VectorMul;
+
+typedef struct packed
+{
+	logic valid;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
+} PortOut_VectorMul;
+
+
+typedef struct packed
+{
+	logic enable;
+
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	logic type_signedness;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
+} PortIn_VectorDiv;
+
+//typedef PortOut_VectorMul PortOut_VectorDiv;
+typedef PortOut_VectorMul PortOut_VectorDiv;
+
+
+endpackage : PkgSnow64ArithLog
