@@ -200,3 +200,55 @@ module Snow64BFloat16Fpu(input logic clk,
 		end
 	end
 endmodule
+
+
+module Snow64BFloat16VectorFpu(input logic clk,
+	input PkgSnow64BFloat16::PortIn_VectorFpu in,
+	output PkgSnow64BFloat16::PortOut_VectorFpu out);
+
+	`define OPERATE_ON_SUB_FPU \
+		`X(0) `X(1) `X(2) `X(3) \
+		`X(4) `X(5) `X(6) `X(7) \
+		`X(8) `X(9) `X(10) `X(11) \
+		`X(12) `X(13) `X(14) `X(15)
+
+
+	`define IN_INST_SUB_FPU(inst_num) __in_inst_sub_fpu_``inst_num
+	`define OUT_INST_SUB_FPU(inst_num) __out_inst_sub_fpu_``inst_num
+
+	`define X(inst_num) \
+		PkgSnow64BFloat16::PortIn_Fpu `IN_INST_SUB_FPU(inst_num); \
+		PkgSnow64BFloat16::PortOut_Fpu `OUT_INST_SUB_FPU(inst_num); \
+		Snow64BFloat16Fpu __inst_sub_fpu_``inst_num(.clk(clk), \
+			.in(`IN_INST_SUB_FPU(inst_num)), \
+			.out(`OUT_INST_SUB_FPU(inst_num))); \
+		assign `IN_INST_SUB_FPU(inst_num) \
+			= {in.start, in.oper, \
+			in.a[inst_num * `WIDTH__SNOW64_BFLOAT16_ITSELF \
+			+: `WIDTH__SNOW64_BFLOAT16_ITSELF], \
+			in.b[inst_num * `WIDTH__SNOW64_BFLOAT16_ITSELF \
+			+: `WIDTH__SNOW64_BFLOAT16_ITSELF]};
+	`OPERATE_ON_SUB_FPU
+	`undef X
+
+	//assign out = {`OUT_INST_SUB_FPU(0).valid,
+	//	{`OUT_INST_SUB_FPU(15).data, `OUT_INST_SUB_FPU(14).data,
+	//	`OUT_INST_SUB_FPU(13).data, `OUT_INST_SUB_FPU(12).data,
+	//	`OUT_INST_SUB_FPU(11).data, `OUT_INST_SUB_FPU(10).data,
+	//	`OUT_INST_SUB_FPU(9).data, `OUT_INST_SUB_FPU(8).data,
+	//	`OUT_INST_SUB_FPU(7).data, `OUT_INST_SUB_FPU(6).data,
+	//	`OUT_INST_SUB_FPU(5).data, `OUT_INST_SUB_FPU(4).data,
+	//	`OUT_INST_SUB_FPU(3).data, `OUT_INST_SUB_FPU(2).data,
+	//	`OUT_INST_SUB_FPU(1).data, `OUT_INST_SUB_FPU(0).data}};
+
+	assign out.valid = `OUT_INST_SUB_FPU(0).valid;
+	`define X(inst_num) \
+		assign out[inst_num * 16 +: 16] = `OUT_INST_SUB_FPU(inst_num).data;
+	`OPERATE_ON_SUB_FPU
+	`undef X
+
+
+	`undef IN_INST_SUB_FPU
+	`undef OUT_INST_SUB_FPU
+	`undef OPERATE_ON_SUB_FPU
+endmodule

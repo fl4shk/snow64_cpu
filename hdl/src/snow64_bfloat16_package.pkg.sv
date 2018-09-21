@@ -1,4 +1,5 @@
 `include "src/snow64_bfloat16_defines.header.sv"
+`include "src/snow64_lar_file_defines.header.sv"
 
 package PkgSnow64BFloat16;
 
@@ -37,6 +38,19 @@ typedef struct packed
 	logic valid, can_accept_cmd;
 	logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] data;
 } PortOut_Fpu;
+
+typedef struct packed
+{
+	logic start;
+	logic [`MSB_POS__SNOW64_BFLOAT16_FPU_OPER:0] oper;
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
+} PortIn_VectorFpu;
+
+typedef struct packed
+{
+	logic valid;
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
+} PortOut_VectorFpu;
 
 typedef enum logic [`MSB_POS__SNOW64_BFLOAT16_ADD_STATE:0]
 {
