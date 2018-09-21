@@ -1939,3 +1939,30 @@ module Snow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
 
 
 endmodule
+
+module Snow64VectorAlu(input PkgSnow64ArithLog::PortIn_VectorAlu in,
+	output PkgSnow64ArithLog::PortOut_VectorAlu out);
+
+	PkgSnow64ArithLog::PortIn_Alu __in_inst_alu_0, __in_inst_alu_1,
+		__in_inst_alu_2, __in_inst_alu_3;
+	PkgSnow64ArithLog::PortOut_Alu __out_inst_alu_0, __out_inst_alu_1,
+		__out_inst_alu_2, __out_inst_alu_3;
+	Snow64Alu __inst_alu_0(.in(__in_inst_alu_0), .out(__out_inst_alu_0));
+	Snow64Alu __inst_alu_1(.in(__in_inst_alu_1), .out(__out_inst_alu_1));
+	Snow64Alu __inst_alu_2(.in(__in_inst_alu_2), .out(__out_inst_alu_2));
+	Snow64Alu __inst_alu_3(.in(__in_inst_alu_3), .out(__out_inst_alu_3));
+
+	assign __in_inst_alu_0 = {in.a[0 * 64 +: 64], in.b[0 * 64 +: 64],
+		in.oper, in.int_type_size, in.type_signedness};
+	assign __in_inst_alu_1 = {in.a[1 * 64 +: 64], in.b[1 * 64 +: 64],
+		in.oper, in.int_type_size, in.type_signedness};
+	assign __in_inst_alu_2 = {in.a[2 * 64 +: 64], in.b[2 * 64 +: 64],
+		in.oper, in.int_type_size, in.type_signedness};
+	assign __in_inst_alu_3 = {in.a[3 * 64 +: 64], in.b[3 * 64 +: 64],
+		in.oper, in.int_type_size, in.type_signedness};
+
+
+	assign out.data = {__out_inst_alu_3.data, __out_inst_alu_2.data,
+		__out_inst_alu_1.data, __out_inst_alu_0.data};
+
+endmodule
