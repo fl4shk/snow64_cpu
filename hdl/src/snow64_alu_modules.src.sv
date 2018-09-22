@@ -1,27 +1,27 @@
 `include "src/snow64_alu_defines.header.sv"
 `include "src/snow64_cpu_defines.header.sv"
 
-module DebugSnow64Alu
-	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
-	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
-	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_int_type_size,
-	input logic in_signedness,
-
-	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
-
-	PkgSnow64ArithLog::PortIn_Alu __in_alu;
-	PkgSnow64ArithLog::PortOut_Alu __out_alu;
-
-	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
-
-	always @(*) __in_alu.a = in_a;
-	always @(*) __in_alu.b = in_b;
-	always @(*) __in_alu.oper = in_oper;
-	always @(*) __in_alu.int_type_size = in_int_type_size;
-	always @(*) __in_alu.type_signedness = in_signedness;
-
-	always @(*) out_data = __out_alu.data;
-endmodule
+//module DebugSnow64Alu
+//	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
+//	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
+//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_int_type_size,
+//	input logic in_signedness,
+//
+//	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
+//
+//	PkgSnow64ArithLog::PortIn_Alu __in_alu;
+//	PkgSnow64ArithLog::PortOut_Alu __out_alu;
+//
+//	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
+//
+//	always @(*) __in_alu.a = in_a;
+//	always @(*) __in_alu.b = in_b;
+//	always @(*) __in_alu.oper = in_oper;
+//	always @(*) __in_alu.int_type_size = in_int_type_size;
+//	always @(*) __in_alu.type_signedness = in_signedness;
+//
+//	always @(*) out_data = __out_alu.data;
+//endmodule
 
 
 //module __Snow64SubAlu(input PkgSnow64ArithLog::PortIn_SubAlu in,
@@ -2196,41 +2196,60 @@ endmodule
 
 `define IN_A_PORTION(inst_num) \
 	__in_a_portion__``inst_num
-
 `define IN_B_PORTION(inst_num) \
 	__in_b_portion__``inst_num
-
 `define OUT_DATA_PORTION(inst_num) \
 	__out_data_portion__``inst_num
-
 `define OUT_INST_SUB_W_CMP__SUB_RESULT(inst_num) \
 	__out_inst_sub_w_cmp_``inst_num``__sub_result
-
 `define OUT_INST_SUB_W_CMP__SLTU(inst_num) \
 	__out_inst_sub_w_cmp_``inst_num``__sltu
-
 `define OUT_INST_SUB_W_CMP__SLTS(inst_num) \
 	__out_inst_sub_w_cmp_``inst_num``__slts
+`define OUT_INST_LSL__DATA(inst_num) \
+	__out_inst_lsl_``inst_num``__data
+`define OUT_INST_LSR__DATA(inst_num) \
+	__out_inst_lsr_``inst_num``__data
+`define OUT_INST_ASR__DATA(inst_num) \
+	__out_inst_asr_``inst_num``__data
 
-`define MAKE_SUB_ALU_CONTENTS(inst_num) \
-	wire [__MSB_POS__DATA_INOUT:0] \
-		`IN_A_PORTION(inst_num) \
-		= in.a[inst_num * __WIDTH__DATA_INOUT \
-		+: __WIDTH__DATA_INOUT], \
-		`IN_B_PORTION(inst_num) \
-		= in.b[inst_num * __WIDTH__DATA_INOUT \
-		+: __WIDTH__DATA_INOUT]; \
-	logic [__MSB_POS__DATA_INOUT:0] `OUT_DATA_PORTION(inst_num);\
-	wire [__MSB_POS__DATA_INOUT:0] \
+`define MAKE_SUB_ALU_CONTENTS(width, inst_num) \
+	wire [`WIDTH2MP(width):0] \
+		`IN_A_PORTION(inst_num) = in.a[inst_num * width +: width], \
+		`IN_B_PORTION(inst_num) = in.b[inst_num * width +: width]; \
+	logic [`WIDTH2MP(width):0] `OUT_DATA_PORTION(inst_num);\
+	wire [`WIDTH2MP(width):0] \
 		`OUT_INST_SUB_W_CMP__SUB_RESULT(inst_num), \
 		`OUT_INST_SUB_W_CMP__SLTU(inst_num), \
 		`OUT_INST_SUB_W_CMP__SLTS(inst_num); \
-	SubtractWithCompare #(.WIDTH__DATA_INOUT(__WIDTH__DATA_INOUT)) \
+	SubtractWithCompare #(.WIDTH__DATA_INOUT(width)) \
 		__inst_sub_w_cmp_``inst_num(.in_a(`IN_A_PORTION(inst_num)), \
 		.in_b(`IN_B_PORTION(inst_num)), \
 		.out_sub_result(`OUT_INST_SUB_W_CMP__SUB_RESULT(inst_num)), \
 		.out_sltu(`OUT_INST_SUB_W_CMP__SLTU(inst_num)), \
 		.out_slts(`OUT_INST_SUB_W_CMP__SLTS(inst_num))); \
+	\
+	/* wire [`WIDTH2MP(width):0] */ \
+	/* 	`OUT_INST_LSL__DATA(inst_num), */ \
+	/* 	`OUT_INST_LSR__DATA(inst_num), */ \
+	/* 	`OUT_INST_ASR__DATA(inst_num); */ \
+	/* LogicalShiftLeft``width __inst_lsl_``inst_num */ \
+	/* 	(.in_to_shift(`IN_A_PORTION(inst_num)), */ \
+	/* 	.in_amount(`IN_B_PORTION(inst_num)), */ \
+	/* 	.out_data(`OUT_INST_LSL__DATA(inst_num))); */ \
+	/* LogicalShiftRight``width __inst_lsr_``inst_num */ \
+	/* 	(.in_to_shift(`IN_A_PORTION(inst_num)), */ \
+	/* 	.in_amount(`IN_B_PORTION(inst_num)), */ \
+	/* 	.out_data(`OUT_INST_LSR__DATA(inst_num))); */ \
+	/* ArithmeticShiftRight``width __inst_asr_``inst_num */ \
+	/* 	(.in_to_shift(`IN_A_PORTION(inst_num)), */ \
+	/* 	.in_amount(`IN_B_PORTION(inst_num)), */ \
+	/* 	.out_data(`OUT_INST_ASR__DATA(inst_num))); */ \
+	/* assign `OUT_INST_LSL__DATA(inst_num) */ \
+	/* 	= `IN_A_PORTION(inst_num) << `IN_B_PORTION(inst_num); */ \
+	/* assign `OUT_INST_LSR__DATA(inst_num) */ \
+	/* 	= `IN_A_PORTION(inst_num) >> `IN_B_PORTION(inst_num); */ \
+	/* assign `OUT_INST_ASR__DATA(inst_num) = 0; */ \
 	\
 	always @(*) \
 	begin \
@@ -2302,10 +2321,10 @@ module __Snow64SubAlu8(input PkgSnow64ArithLog::PortIn_SubAlu in,
 	localparam __WIDTH__DATA_INOUT = `WIDTH__SNOW64_SIZE_8;
 	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(__WIDTH__DATA_INOUT);
 
-	`MAKE_SUB_ALU_CONTENTS(0) `MAKE_SUB_ALU_CONTENTS(1)
-	`MAKE_SUB_ALU_CONTENTS(2) `MAKE_SUB_ALU_CONTENTS(3)
-	`MAKE_SUB_ALU_CONTENTS(4) `MAKE_SUB_ALU_CONTENTS(5)
-	`MAKE_SUB_ALU_CONTENTS(6) `MAKE_SUB_ALU_CONTENTS(7)
+	`MAKE_SUB_ALU_CONTENTS(8, 0) `MAKE_SUB_ALU_CONTENTS(8, 1)
+	`MAKE_SUB_ALU_CONTENTS(8, 2) `MAKE_SUB_ALU_CONTENTS(8, 3)
+	`MAKE_SUB_ALU_CONTENTS(8, 4) `MAKE_SUB_ALU_CONTENTS(8, 5)
+	`MAKE_SUB_ALU_CONTENTS(8, 6) `MAKE_SUB_ALU_CONTENTS(8, 7)
 
 	assign out.data = {`OUT_DATA_PORTION(7), `OUT_DATA_PORTION(6),
 		`OUT_DATA_PORTION(5), `OUT_DATA_PORTION(4),
@@ -2320,8 +2339,8 @@ module __Snow64SubAlu16(input PkgSnow64ArithLog::PortIn_SubAlu in,
 	localparam __WIDTH__DATA_INOUT = `WIDTH__SNOW64_SIZE_16;
 	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(__WIDTH__DATA_INOUT);
 
-	`MAKE_SUB_ALU_CONTENTS(0) `MAKE_SUB_ALU_CONTENTS(1)
-	`MAKE_SUB_ALU_CONTENTS(2) `MAKE_SUB_ALU_CONTENTS(3)
+	`MAKE_SUB_ALU_CONTENTS(16, 0) `MAKE_SUB_ALU_CONTENTS(16, 1)
+	`MAKE_SUB_ALU_CONTENTS(16, 2) `MAKE_SUB_ALU_CONTENTS(16, 3)
 
 	assign out.data = {`OUT_DATA_PORTION(3), `OUT_DATA_PORTION(2),
 		`OUT_DATA_PORTION(1), `OUT_DATA_PORTION(0)};
@@ -2333,9 +2352,21 @@ module __Snow64SubAlu32(input PkgSnow64ArithLog::PortIn_SubAlu in,
 	localparam __WIDTH__DATA_INOUT = `WIDTH__SNOW64_SIZE_32;
 	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(__WIDTH__DATA_INOUT);
 
-	`MAKE_SUB_ALU_CONTENTS(0) `MAKE_SUB_ALU_CONTENTS(1)
+	`MAKE_SUB_ALU_CONTENTS(32, 0) `MAKE_SUB_ALU_CONTENTS(32, 1)
 
 	assign out.data = {`OUT_DATA_PORTION(1), `OUT_DATA_PORTION(0)};
+
+endmodule
+
+
+module __Snow64SubAlu64(input PkgSnow64ArithLog::PortIn_SubAlu in,
+	output PkgSnow64ArithLog::PortOut_Alu out);
+
+	localparam __WIDTH__DATA_INOUT = `WIDTH__SNOW64_SIZE_64;
+	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(__WIDTH__DATA_INOUT);
+
+	`MAKE_SUB_ALU_CONTENTS(64, 0)
+	assign out.data = `OUT_DATA_PORTION(0);
 
 endmodule
 
@@ -2345,82 +2376,10 @@ endmodule
 `undef OUT_INST_SUB_W_CMP__SUB_RESULT
 `undef OUT_INST_SUB_W_CMP__SLTU
 `undef OUT_INST_SUB_W_CMP__SLTS
+`undef OUT_INST_LSL__DATA
+`undef OUT_INST_LSR__DATA
+`undef OUT_INST_ASR__DATA
 `undef MAKE_SUB_ALU_CONTENTS
-
-module __Snow64SubAlu64(input PkgSnow64ArithLog::PortIn_SubAlu in,
-	output PkgSnow64ArithLog::PortOut_Alu out);
-
-	localparam __WIDTH__DATA_INOUT = `WIDTH__SNOW64_SIZE_64;
-	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(__WIDTH__DATA_INOUT);
-
-
-	wire [__MSB_POS__DATA_INOUT:0]
-		__out_inst_sub_w_cmp__sub_result, __out_inst_sub_w_cmp__sltu,
-		__out_inst_sub_w_cmp__slts;
-	SubtractWithCompare #(.WIDTH__DATA_INOUT(__WIDTH__DATA_INOUT))
-		__inst_sub_w_cmp(.in_a(in.a), .in_b(in.b),
-		.out_sub_result(__out_inst_sub_w_cmp__sub_result),
-		.out_sltu(__out_inst_sub_w_cmp__sltu),
-		.out_slts(__out_inst_sub_w_cmp__slts));
-
-	always @(*)
-	begin
-		case (in.oper)
-		PkgSnow64ArithLog::OpAdd:
-		begin
-			out.data = in.a + in.b;
-		end
-
-		PkgSnow64ArithLog::OpSub:
-		begin
-			out.data = __out_inst_sub_w_cmp__sub_result;
-		end
-
-		PkgSnow64ArithLog::OpSlt:
-		begin
-			out.data = in.type_signedness ? __out_inst_sub_w_cmp__slts
-				: __out_inst_sub_w_cmp__sltu;
-		end
-
-		PkgSnow64ArithLog::OpAnd:
-		begin
-			out.data = in.a & in.b;
-		end
-
-		PkgSnow64ArithLog::OpOrr:
-		begin
-			out.data = in.a | in.b;
-		end
-
-		PkgSnow64ArithLog::OpXor:
-		begin
-			out.data = in.a ^ in.b;
-		end
-
-		PkgSnow64ArithLog::OpInv:
-		begin
-			out.data = ~in.a;
-		end
-
-		PkgSnow64ArithLog::OpNot:
-		begin
-			out.data = !in.a;
-		end
-
-		PkgSnow64ArithLog::OpAddAgain:
-		begin
-			out.data = in.a + in.b;
-		end
-
-		default:
-		begin
-			out.data = 0;
-		end
-		endcase
-	end
-
-endmodule
-
 
 module Snow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
 	output PkgSnow64ArithLog::PortOut_Alu out);
@@ -2441,27 +2400,416 @@ module Snow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
 	__Snow64SubAlu64 __inst_sub_alu_64(.in(__in_inst_sub_alu),
 		.out(__out_inst_sub_alu_64));
 
+	wire [`WIDTH2MP(8):0]
+		__in_inst_shift8_0__to_shift = in.a[0 * 8 +: 8],
+		__in_inst_shift8_1__to_shift = in.a[1 * 8 +: 8],
+		__in_inst_shift8_2__to_shift = in.a[2 * 8 +: 8],
+		__in_inst_shift8_3__to_shift = in.a[3 * 8 +: 8],
+		__in_inst_shift8_4__to_shift = in.a[4 * 8 +: 8],
+		__in_inst_shift8_5__to_shift = in.a[5 * 8 +: 8],
+		__in_inst_shift8_6__to_shift = in.a[6 * 8 +: 8],
+		__in_inst_shift8_7__to_shift = in.a[7 * 8 +: 8],
+
+		__in_inst_shift8_0__amount = in.b[0 * 8 +: 8],
+		__in_inst_shift8_1__amount = in.b[1 * 8 +: 8],
+		__in_inst_shift8_2__amount = in.b[2 * 8 +: 8],
+		__in_inst_shift8_3__amount = in.b[3 * 8 +: 8],
+		__in_inst_shift8_4__amount = in.b[4 * 8 +: 8],
+		__in_inst_shift8_5__amount = in.b[5 * 8 +: 8],
+		__in_inst_shift8_6__amount = in.b[6 * 8 +: 8],
+		__in_inst_shift8_7__amount = in.b[7 * 8 +: 8];
+
+	wire [`WIDTH2MP(16):0]
+		__in_inst_shift16_0__to_shift = in.a[0 * 16 +: 16],
+		__in_inst_shift16_1__to_shift = in.a[1 * 16 +: 16],
+		__in_inst_shift16_2__to_shift = in.a[2 * 16 +: 16],
+		__in_inst_shift16_3__to_shift = in.a[3 * 16 +: 16],
+
+		__in_inst_shift16_0__amount = in.b[0 * 16 +: 16],
+		__in_inst_shift16_1__amount = in.b[1 * 16 +: 16],
+		__in_inst_shift16_2__amount = in.b[2 * 16 +: 16],
+		__in_inst_shift16_3__amount = in.b[3 * 16 +: 16];
+
+	wire [`WIDTH2MP(32):0]
+		__in_inst_shift32_0__to_shift = in.a[0 * 32 +: 32],
+		__in_inst_shift32_1__to_shift = in.a[1 * 32 +: 32],
+
+		__in_inst_shift32_0__amount = in.b[0 * 32 +: 32],
+		__in_inst_shift32_1__amount = in.b[1 * 32 +: 32];
+
+	wire [`WIDTH2MP(8):0]
+		__out_inst_lsl8_0, __out_inst_lsl8_1,
+		__out_inst_lsl8_2, __out_inst_lsl8_3,
+		__out_inst_lsl8_4, __out_inst_lsl8_5,
+		__out_inst_lsl8_6, __out_inst_lsl8_7,
+
+		__out_inst_lsr8_0, __out_inst_lsr8_1,
+		__out_inst_lsr8_2, __out_inst_lsr8_3,
+		__out_inst_lsr8_4, __out_inst_lsr8_5,
+		__out_inst_lsr8_6, __out_inst_lsr8_7,
+
+		__out_inst_asr8_0, __out_inst_asr8_1,
+		__out_inst_asr8_2, __out_inst_asr8_3,
+		__out_inst_asr8_4, __out_inst_asr8_5,
+		__out_inst_asr8_6, __out_inst_asr8_7;
+	wire [`WIDTH2MP(16):0]
+		__out_inst_lsl16_0, __out_inst_lsl16_1,
+		__out_inst_lsl16_2, __out_inst_lsl16_3,
+
+		__out_inst_lsr16_0, __out_inst_lsr16_1,
+		__out_inst_lsr16_2, __out_inst_lsr16_3,
+
+		__out_inst_asr16_0, __out_inst_asr16_1,
+		__out_inst_asr16_2, __out_inst_asr16_3;
+	wire [`WIDTH2MP(32):0]
+		__out_inst_lsl32_0, __out_inst_lsl32_1,
+
+		__out_inst_lsr32_0, __out_inst_lsr32_1,
+
+		__out_inst_asr32_0, __out_inst_asr32_1;
+
+	wire [`WIDTH2MP(64):0]
+		__out_inst_lsl64_0,
+
+		__out_inst_lsr64_0,
+
+		__out_inst_asr64_0;
+
+
+	LogicalShiftLeft8 __inst_lsl8_0
+		(.in_to_shift(__in_inst_shift8_0__to_shift),
+		.in_amount(__in_inst_shift8_0__amount),
+		.out_data(__out_inst_lsl8_0));
+	LogicalShiftLeft8 __inst_lsl8_1
+		(.in_to_shift(__in_inst_shift8_1__to_shift),
+		.in_amount(__in_inst_shift8_1__amount),
+		.out_data(__out_inst_lsl8_1));
+	LogicalShiftLeft8 __inst_lsl8_2
+		(.in_to_shift(__in_inst_shift8_2__to_shift),
+		.in_amount(__in_inst_shift8_2__amount),
+		.out_data(__out_inst_lsl8_2));
+	LogicalShiftLeft8 __inst_lsl8_3
+		(.in_to_shift(__in_inst_shift8_3__to_shift),
+		.in_amount(__in_inst_shift8_3__amount),
+		.out_data(__out_inst_lsl8_3));
+	LogicalShiftLeft8 __inst_lsl8_4
+		(.in_to_shift(__in_inst_shift8_4__to_shift),
+		.in_amount(__in_inst_shift8_4__amount),
+		.out_data(__out_inst_lsl8_4));
+	LogicalShiftLeft8 __inst_lsl8_5
+		(.in_to_shift(__in_inst_shift8_5__to_shift),
+		.in_amount(__in_inst_shift8_5__amount),
+		.out_data(__out_inst_lsl8_5));
+	LogicalShiftLeft8 __inst_lsl8_6
+		(.in_to_shift(__in_inst_shift8_6__to_shift),
+		.in_amount(__in_inst_shift8_6__amount),
+		.out_data(__out_inst_lsl8_6));
+	LogicalShiftLeft8 __inst_lsl8_7
+		(.in_to_shift(__in_inst_shift8_7__to_shift),
+		.in_amount(__in_inst_shift8_7__amount),
+		.out_data(__out_inst_lsl8_7));
+
+	LogicalShiftRight8 __inst_lsr8_0
+		(.in_to_shift(__in_inst_shift8_0__to_shift),
+		.in_amount(__in_inst_shift8_0__amount),
+		.out_data(__out_inst_lsr8_0));
+	LogicalShiftRight8 __inst_lsr8_1
+		(.in_to_shift(__in_inst_shift8_1__to_shift),
+		.in_amount(__in_inst_shift8_1__amount),
+		.out_data(__out_inst_lsr8_1));
+	LogicalShiftRight8 __inst_lsr8_2
+		(.in_to_shift(__in_inst_shift8_2__to_shift),
+		.in_amount(__in_inst_shift8_2__amount),
+		.out_data(__out_inst_lsr8_2));
+	LogicalShiftRight8 __inst_lsr8_3
+		(.in_to_shift(__in_inst_shift8_3__to_shift),
+		.in_amount(__in_inst_shift8_3__amount),
+		.out_data(__out_inst_lsr8_3));
+	LogicalShiftRight8 __inst_lsr8_4
+		(.in_to_shift(__in_inst_shift8_4__to_shift),
+		.in_amount(__in_inst_shift8_4__amount),
+		.out_data(__out_inst_lsr8_4));
+	LogicalShiftRight8 __inst_lsr8_5
+		(.in_to_shift(__in_inst_shift8_5__to_shift),
+		.in_amount(__in_inst_shift8_5__amount),
+		.out_data(__out_inst_lsr8_5));
+	LogicalShiftRight8 __inst_lsr8_6
+		(.in_to_shift(__in_inst_shift8_6__to_shift),
+		.in_amount(__in_inst_shift8_6__amount),
+		.out_data(__out_inst_lsr8_6));
+	LogicalShiftRight8 __inst_lsr8_7
+		(.in_to_shift(__in_inst_shift8_7__to_shift),
+		.in_amount(__in_inst_shift8_7__amount),
+		.out_data(__out_inst_lsr8_7));
+
+	ArithmeticShiftRight8 __inst_asr8_0
+		(.in_to_shift(__in_inst_shift8_0__to_shift),
+		.in_amount(__in_inst_shift8_0__amount),
+		.out_data(__out_inst_asr8_0));
+	ArithmeticShiftRight8 __inst_asr8_1
+		(.in_to_shift(__in_inst_shift8_1__to_shift),
+		.in_amount(__in_inst_shift8_1__amount),
+		.out_data(__out_inst_asr8_1));
+	ArithmeticShiftRight8 __inst_asr8_2
+		(.in_to_shift(__in_inst_shift8_2__to_shift),
+		.in_amount(__in_inst_shift8_2__amount),
+		.out_data(__out_inst_asr8_2));
+	ArithmeticShiftRight8 __inst_asr8_3
+		(.in_to_shift(__in_inst_shift8_3__to_shift),
+		.in_amount(__in_inst_shift8_3__amount),
+		.out_data(__out_inst_asr8_3));
+	ArithmeticShiftRight8 __inst_asr8_4
+		(.in_to_shift(__in_inst_shift8_4__to_shift),
+		.in_amount(__in_inst_shift8_4__amount),
+		.out_data(__out_inst_asr8_4));
+	ArithmeticShiftRight8 __inst_asr8_5
+		(.in_to_shift(__in_inst_shift8_5__to_shift),
+		.in_amount(__in_inst_shift8_5__amount),
+		.out_data(__out_inst_asr8_5));
+	ArithmeticShiftRight8 __inst_asr8_6
+		(.in_to_shift(__in_inst_shift8_6__to_shift),
+		.in_amount(__in_inst_shift8_6__amount),
+		.out_data(__out_inst_asr8_6));
+	ArithmeticShiftRight8 __inst_asr8_7
+		(.in_to_shift(__in_inst_shift8_7__to_shift),
+		.in_amount(__in_inst_shift8_7__amount),
+		.out_data(__out_inst_asr8_7));
+
+	LogicalShiftLeft16 __inst_lsl16_0
+		(.in_to_shift(__in_inst_shift16_0__to_shift),
+		.in_amount(__in_inst_shift16_0__amount),
+		.out_data(__out_inst_lsl16_0));
+	LogicalShiftLeft16 __inst_lsl16_1
+		(.in_to_shift(__in_inst_shift16_1__to_shift),
+		.in_amount(__in_inst_shift16_1__amount),
+		.out_data(__out_inst_lsl16_1));
+	LogicalShiftLeft16 __inst_lsl16_2
+		(.in_to_shift(__in_inst_shift16_2__to_shift),
+		.in_amount(__in_inst_shift16_2__amount),
+		.out_data(__out_inst_lsl16_2));
+	LogicalShiftLeft16 __inst_lsl16_3
+		(.in_to_shift(__in_inst_shift16_3__to_shift),
+		.in_amount(__in_inst_shift16_3__amount),
+		.out_data(__out_inst_lsl16_3));
+
+	LogicalShiftRight16 __inst_lsr16_0
+		(.in_to_shift(__in_inst_shift16_0__to_shift),
+		.in_amount(__in_inst_shift16_0__amount),
+		.out_data(__out_inst_lsr16_0));
+	LogicalShiftRight16 __inst_lsr16_1
+		(.in_to_shift(__in_inst_shift16_1__to_shift),
+		.in_amount(__in_inst_shift16_1__amount),
+		.out_data(__out_inst_lsr16_1));
+	LogicalShiftRight16 __inst_lsr16_2
+		(.in_to_shift(__in_inst_shift16_2__to_shift),
+		.in_amount(__in_inst_shift16_2__amount),
+		.out_data(__out_inst_lsr16_2));
+	LogicalShiftRight16 __inst_lsr16_3
+		(.in_to_shift(__in_inst_shift16_3__to_shift),
+		.in_amount(__in_inst_shift16_3__amount),
+		.out_data(__out_inst_lsr16_3));
+
+	ArithmeticShiftRight16 __inst_asr16_0
+		(.in_to_shift(__in_inst_shift16_0__to_shift),
+		.in_amount(__in_inst_shift16_0__amount),
+		.out_data(__out_inst_asr16_0));
+	ArithmeticShiftRight16 __inst_asr16_1
+		(.in_to_shift(__in_inst_shift16_1__to_shift),
+		.in_amount(__in_inst_shift16_1__amount),
+		.out_data(__out_inst_asr16_1));
+	ArithmeticShiftRight16 __inst_asr16_2
+		(.in_to_shift(__in_inst_shift16_2__to_shift),
+		.in_amount(__in_inst_shift16_2__amount),
+		.out_data(__out_inst_asr16_2));
+	ArithmeticShiftRight16 __inst_asr16_3
+		(.in_to_shift(__in_inst_shift16_3__to_shift),
+		.in_amount(__in_inst_shift16_3__amount),
+		.out_data(__out_inst_asr16_3));
+
+	LogicalShiftLeft32 __inst_lsl32_0
+		(.in_to_shift(__in_inst_shift32_0__to_shift),
+		.in_amount(__in_inst_shift32_0__amount),
+		.out_data(__out_inst_lsl32_0));
+	LogicalShiftLeft32 __inst_lsl32_1
+		(.in_to_shift(__in_inst_shift32_1__to_shift),
+		.in_amount(__in_inst_shift32_1__amount),
+		.out_data(__out_inst_lsl32_1));
+
+	LogicalShiftRight32 __inst_lsr32_0
+		(.in_to_shift(__in_inst_shift32_0__to_shift),
+		.in_amount(__in_inst_shift32_0__amount),
+		.out_data(__out_inst_lsr32_0));
+	LogicalShiftRight32 __inst_lsr32_1
+		(.in_to_shift(__in_inst_shift32_1__to_shift),
+		.in_amount(__in_inst_shift32_1__amount),
+		.out_data(__out_inst_lsr32_1));
+
+	ArithmeticShiftRight32 __inst_asr32_0
+		(.in_to_shift(__in_inst_shift32_0__to_shift),
+		.in_amount(__in_inst_shift32_0__amount),
+		.out_data(__out_inst_asr32_0));
+	ArithmeticShiftRight32 __inst_asr32_1
+		(.in_to_shift(__in_inst_shift32_1__to_shift),
+		.in_amount(__in_inst_shift32_1__amount),
+		.out_data(__out_inst_asr32_1));
+
+	LogicalShiftLeft64 __inst_lsl64_0
+		(.in_to_shift(in.a), .in_amount(in.b),
+		.out_data(__out_inst_lsl64_0));
+	LogicalShiftRight64 __inst_lsr64_0
+		(.in_to_shift(in.a), .in_amount(in.b),
+		.out_data(__out_inst_lsr64_0));
+	ArithmeticShiftRight64 __inst_asr64_0
+		(.in_to_shift(in.a), .in_amount(in.b),
+		.out_data(__out_inst_asr64_0));
+
+	logic [`MSB_POS__SNOW64_SIZE_64:0]
+		__real_out_data_8, __real_out_data_16,
+		__real_out_data_32, __real_out_data_64;
+
+	always @(*)
+	begin
+		case (in.oper)
+		PkgSnow64ArithLog::OpShl:
+		begin
+			__real_out_data_8 = {__out_inst_lsl8_7,
+				__out_inst_lsl8_6,
+				__out_inst_lsl8_5,
+				__out_inst_lsl8_4,
+				__out_inst_lsl8_3,
+				__out_inst_lsl8_2,
+				__out_inst_lsl8_1,
+				__out_inst_lsl8_0};
+		end
+
+		PkgSnow64ArithLog::OpShr:
+		begin
+			__real_out_data_8 = in.type_signedness 
+				? {__out_inst_asr8_7,
+				__out_inst_asr8_6,
+				__out_inst_asr8_5,
+				__out_inst_asr8_4,
+				__out_inst_asr8_3,
+				__out_inst_asr8_2,
+				__out_inst_asr8_1,
+				__out_inst_asr8_0}
+				: {__out_inst_lsr8_7,
+				__out_inst_lsr8_6,
+				__out_inst_lsr8_5,
+				__out_inst_lsr8_4,
+				__out_inst_lsr8_3,
+				__out_inst_lsr8_2,
+				__out_inst_lsr8_1,
+				__out_inst_lsr8_0};
+		end
+
+		default:
+		begin
+			__real_out_data_8 = __out_inst_sub_alu_8;
+		end
+		endcase
+	end
+
+	always @(*)
+	begin
+		case (in.oper)
+		PkgSnow64ArithLog::OpShl:
+		begin
+			__real_out_data_16 = {__out_inst_lsl16_3,
+				__out_inst_lsl16_2,
+				__out_inst_lsl16_1,
+				__out_inst_lsl16_0};
+		end
+
+		PkgSnow64ArithLog::OpShr:
+		begin
+			__real_out_data_16 = in.type_signedness 
+				? {__out_inst_asr16_3,
+				__out_inst_asr16_2,
+				__out_inst_asr16_1,
+				__out_inst_asr16_0}
+				: {__out_inst_lsr16_3,
+				__out_inst_lsr16_2,
+				__out_inst_lsr16_1,
+				__out_inst_lsr16_0};
+		end
+
+		default:
+		begin
+			__real_out_data_16 = __out_inst_sub_alu_16;
+		end
+		endcase
+	end
+
+	always @(*)
+	begin
+		case (in.oper)
+		PkgSnow64ArithLog::OpShl:
+		begin
+			__real_out_data_32 = {__out_inst_lsl32_1,
+				__out_inst_lsl32_0};
+		end
+
+		PkgSnow64ArithLog::OpShr:
+		begin
+			__real_out_data_32 = in.type_signedness 
+				? {__out_inst_asr32_1,
+				__out_inst_asr32_0}
+				: {__out_inst_lsr32_1,
+				__out_inst_lsr32_0};
+		end
+
+		default:
+		begin
+			__real_out_data_32 = __out_inst_sub_alu_32;
+		end
+		endcase
+	end
+
+	always @(*)
+	begin
+		case (in.oper)
+		PkgSnow64ArithLog::OpShl:
+		begin
+			__real_out_data_64 = __out_inst_lsl64_0;
+		end
+
+		PkgSnow64ArithLog::OpShr:
+		begin
+			__real_out_data_64 = in.type_signedness
+				? __out_inst_asr64_0
+				: __out_inst_lsr64_0;
+		end
+
+		default:
+		begin
+			__real_out_data_64 = __out_inst_sub_alu_64;
+		end
+		endcase
+	end
+
+
 	always @(*)
 	begin
 		case (in.int_type_size)
 		PkgSnow64Cpu::IntTypSz8:
 		begin
-			out = __out_inst_sub_alu_8;
+			out = __real_out_data_8;
 		end
 
 		PkgSnow64Cpu::IntTypSz16:
 		begin
-			out = __out_inst_sub_alu_16;
+			out = __real_out_data_16;
 		end
 
 		PkgSnow64Cpu::IntTypSz32:
 		begin
-			out = __out_inst_sub_alu_32;
+			out = __real_out_data_32;
 		end
 
 		PkgSnow64Cpu::IntTypSz64:
 		begin
-		  out = __out_inst_sub_alu_64;
+			out = __real_out_data_64;
 		end
 		endcase
 	end
