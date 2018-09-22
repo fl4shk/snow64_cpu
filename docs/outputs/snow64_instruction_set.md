@@ -1,4 +1,5 @@
- # Snow64 Instruction Set
+ 
+# Snow64 Instruction Set
 * Notes
 	* There are no Instruction LARs (the typical instruction fetch of most
 	computer processors is used instead).

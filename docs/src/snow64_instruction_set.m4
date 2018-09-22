@@ -36,6 +36,7 @@ define(`NOTE_U64',`Note:  unsigned 64-bit integer(s)')dnl
 define(`NOTE_S64',`Note:  signed 64-bit integer(s)')dnl
 define(`NOTE_BFLOAT16',`Note:  BFloat16 format floating point number.')dnl
 define(`CAST_TO_TYPE_OF',`cast\_to\_type\_of\_$1($2)')dnl
+
 # Snow64 Instruction Set
 * Notes
 	* There are no Instruction LARs (the typical instruction fetch of most

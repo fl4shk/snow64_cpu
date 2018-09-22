@@ -35,7 +35,7 @@ module Snow64ScalarDataExtractor
 
 	always @(*)
 	begin
-		case(__in_data_type)
+		case (__in_data_type)
 		PkgSnow64Cpu::DataTypBFloat16:
 		begin
 			case (`EXTRACT_DATA_INDEX_TYPE_2__16

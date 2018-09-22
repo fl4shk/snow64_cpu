@@ -43,31 +43,57 @@ module __RawSetLessThanSigned
 endmodule
 
 module SetLessThanSigned #(parameter WIDTH__DATA_INOUT=64)
-	(input logic [__MSB_POS__DATA_INOUT:0] in_a, in_b,
-	output logic [__MSB_POS__DATA_INOUT:0] out_data);
+	(input logic [`WIDTH2MP(WIDTH__DATA_INOUT):0] in_a, in_b,
+	output logic [`WIDTH2MP(WIDTH__DATA_INOUT):0] out_data);
 
 	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
 
 	logic [__MSB_POS__DATA_INOUT:0] __sub_result;
 	assign __sub_result = in_a - in_b;
 
-	logic __out_raw_slts_data;
+	wire __out_inst_raw_slts__data;
 
 	__RawSetLessThanSigned __inst_raw_slts
 		(.in_a_msb_pos(in_a[__MSB_POS__DATA_INOUT]),
 		.in_b_msb_pos(in_b[__MSB_POS__DATA_INOUT]),
 		.in_sub_result_msb_pos(__sub_result[__MSB_POS__DATA_INOUT]),
-		.out_data(__out_raw_slts_data));
+		.out_data(__out_inst_raw_slts__data));
 
 	assign out_data = `ZERO_EXTEND(WIDTH__DATA_INOUT, 1, 
-		__out_raw_slts_data);
+		__out_inst_raw_slts__data);
+
+endmodule
+
+module SubtractWithCompare #(parameter WIDTH__DATA_INOUT=64)
+	(input logic [`WIDTH2MP(WIDTH__DATA_INOUT):0] in_a, in_b,
+	output logic [`WIDTH2MP(WIDTH__DATA_INOUT):0]
+		out_sub_result, out_sltu, out_slts);
+
+	localparam __MSB_POS__DATA_INOUT = `WIDTH2MP(WIDTH__DATA_INOUT);
+
+	wire __out_inst_raw_slts__data;
+	wire [WIDTH__DATA_INOUT:0] __real_out_sub_result;
+
+	assign __real_out_sub_result = {1'b0, in_a}
+		+ {1'b0, (~in_b)} + {{WIDTH__DATA_INOUT{1'b0}}, 1'b1};
+
+	assign out_sub_result = __real_out_sub_result[__MSB_POS__DATA_INOUT:0];
+	assign out_sltu = !__real_out_sub_result[WIDTH__DATA_INOUT];
+	assign out_slts = `ZERO_EXTEND(WIDTH__DATA_INOUT, 1,
+		__out_inst_raw_slts__data);
+
+	__RawSetLessThanSigned __inst_raw_slts
+		(.in_a_msb_pos(in_a[__MSB_POS__DATA_INOUT]),
+		.in_b_msb_pos(in_b[__MSB_POS__DATA_INOUT]),
+		.in_sub_result_msb_pos(out_sub_result[__MSB_POS__DATA_INOUT]),
+		.out_data(__out_inst_raw_slts__data));
 
 endmodule
 
 // Barrel shifters to compute arithmetic shift right.
 // This is used instead of the ">>>" Verilog operator to prevent the need
 // for "$signed" and ">>>", which allow me to use Icarus Verilog's
-// "-tvlog95" option).
+// "-tvlog95" option.
 
 `define GET_MODDED_I(i) (1 << (i - 1))
 
