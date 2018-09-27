@@ -87,6 +87,17 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
 } PortOut_VectorAlu;
 
+//typedef struct packed
+//{
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] a, b;
+//	logic [`MSB_POS__SLICE_64_TO_8:0] msbs_of_a, msbs_of_b;
+//} PortIn_SubAlu;
+//
+//typedef struct packed
+//{
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] data;
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] slt_8, slt_16, slt_32, slt_64;
+//} PortOut_SubAlu;
 
 
 //typedef struct packed
@@ -108,17 +119,6 @@ typedef struct packed
 //	logic carry, lts;
 //} PortOut_SubAlu;
 
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_SIZE_64:0] a, b;
-	logic carry;
-} PortIn_SubAlu;
-
-typedef struct packed
-{
-	logic [`MSB_POS__SNOW64_SIZE_64:0] data;
-	logic [`MSB_POS__SNOW64_SUB_ALU_OUT_SLT:0] slt;
-} PortOut_SubAlu;
 
 
 localparam WIDTH__OF_64 = 64;
