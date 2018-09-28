@@ -53,7 +53,9 @@ EncodingStuff::EncodingStuff()
 	insert_map_entry(__iog0_two_regs_scalar_map, "invs", temp);
 	insert_map_entry(__iog0_two_regs_scalar_map, "nots", temp);
 
-	insert_map_entry(__iog0_one_reg_one_pc_one_simm12_scalar_map, "adds",
+	insert_map_entry(__iog0_one_reg_one_pc_one_simm12_scalar_map, "addis",
+		temp);
+	insert_map_entry(__iog0_two_regs_one_simm12_scalar_map, "addis",
 		temp);
 
 	// Group 0 (vector operations)
@@ -74,7 +76,9 @@ EncodingStuff::EncodingStuff()
 	insert_map_entry(__iog0_two_regs_vector_map, "invv", temp);
 	insert_map_entry(__iog0_two_regs_vector_map, "notv", temp);
 
-	insert_map_entry(__iog0_one_reg_one_pc_one_simm12_vector_map, "addv",
+	insert_map_entry(__iog0_one_reg_one_pc_one_simm12_vector_map, "addiv",
+		temp);
+	insert_map_entry(__iog0_two_regs_one_simm12_vector_map, "addiv",
 		temp);
 
 	// Group 1 (control flow and interrupts stuff)
@@ -83,18 +87,6 @@ EncodingStuff::EncodingStuff()
 	insert_map_entry(__iog1_rel_branch_map, "bfal", temp);
 
 	insert_map_entry(__iog1_jump_map, "jmp", temp);
-
-	insert_map_entry(__iog1_no_args_map, "ei", temp);
-	insert_map_entry(__iog1_no_args_map, "di", temp);
-	insert_map_entry(__iog1_no_args_map, "reti", temp);
-
-	insert_map_entry(__iog1_one_reg_one_ie_map, "cpy", temp);
-	insert_map_entry(__iog1_one_reg_one_ireta_map, "cpy", temp);
-	insert_map_entry(__iog1_one_reg_one_idsta_map, "cpy", temp);
-
-	insert_map_entry(__iog1_one_ie_one_reg_map, "cpy", temp);
-	insert_map_entry(__iog1_one_ireta_one_reg_map, "cpy", temp);
-	insert_map_entry(__iog1_one_idsta_one_reg_map, "cpy", temp);
 
 	// Group 2 (loads)
 	temp = 0;
@@ -119,27 +111,6 @@ EncodingStuff::EncodingStuff()
 	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "stu64", temp);
 	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "sts64", temp);
 	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "stf16", temp);
-
-	// Group 4 (input and output stuff)
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "inu8", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "ins8", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "inu16", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "ins16", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "inu32", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "ins32", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "inu64", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "ins64", temp);
-	insert_map_entry(__iog4_input_two_regs_one_simm16_map, "inf16", temp);
-
-	insert_map_entry_keep_some_val
-		(__iog4_output_two_regs_one_simm16_scalar_map, "outs", temp);
-	insert_map_entry_keep_some_val
-		(__iog4_output_two_regs_one_simm16_vector_map, "outv", temp);
-	temp++;
-
-	//temp = 0;
-	// Group 5 ()
-
 }
 
 
@@ -172,6 +143,8 @@ void EncodingStuff::decode_iog0_instr_name_and_args_type(u32 sv_bit,
 			ArgsType::TwoRegsScalar);
 		DECODE_ITERATION(iog0_one_reg_one_pc_one_simm12_scalar_map,
 			ArgsType::OneRegOnePcOneSimm12Scalar);
+		DECODE_ITERATION(iog0_two_regs_one_simm12_scalar_map,
+			ArgsType::TwoRegsOneSimm12Scalar);
 	}
 	else // if (sv_bit)
 	{
@@ -181,6 +154,8 @@ void EncodingStuff::decode_iog0_instr_name_and_args_type(u32 sv_bit,
 			ArgsType::TwoRegsVector);
 		DECODE_ITERATION(iog0_one_reg_one_pc_one_simm12_vector_map,
 			ArgsType::OneRegOnePcOneSimm12Vector);
+		DECODE_ITERATION(iog0_two_regs_one_simm12_vector_map,
+			ArgsType::TwoRegsOneSimm12Vector);
 	}
 
 	instr_name = cstm_strdup("unknown_instruction");
@@ -192,13 +167,6 @@ void EncodingStuff::decode_iog1_instr_name_and_args_type(u32 sv_bit,
 {
 	DECODE_ITERATION(iog1_rel_branch_map, ArgsType::RelBranch);
 	DECODE_ITERATION(iog1_jump_map, ArgsType::Jump);
-	DECODE_ITERATION(iog1_no_args_map, ArgsType::NoArgs);
-	DECODE_ITERATION(iog1_one_reg_one_ie_map, ArgsType::OneRegOneIe);
-	DECODE_ITERATION(iog1_one_reg_one_ireta_map, ArgsType::OneRegOneIreta);
-	DECODE_ITERATION(iog1_one_reg_one_idsta_map, ArgsType::OneRegOneIdsta);
-	DECODE_ITERATION(iog1_one_ie_one_reg_map, ArgsType::OneRegOneIe);
-	DECODE_ITERATION(iog1_one_ireta_one_reg_map, ArgsType::OneRegOneIreta);
-	DECODE_ITERATION(iog1_one_idsta_one_reg_map, ArgsType::OneRegOneIdsta);
 
 	instr_name = cstm_strdup("unknown_instruction");
 	args_type = ArgsType::Unknown;
@@ -217,27 +185,6 @@ void EncodingStuff::decode_iog3_instr_name_and_args_type(u32 sv_bit,
 {
 	DECODE_ITERATION(iog3_st_three_regs_one_simm12_map,
 		ArgsType::StThreeRegsOneSimm12);
-
-	instr_name = cstm_strdup("unknown_instruction");
-	args_type = ArgsType::Unknown;
-}
-
-void EncodingStuff::decode_iog4_instr_name_and_args_type(u32 sv_bit, 
-	u32 opcode, std::string*& instr_name, ArgsType& args_type) const
-{
-	DECODE_ITERATION(iog4_input_two_regs_one_simm16_map,
-		ArgsType::InputTwoRegsOneSimm16);
-
-	if (!sv_bit)
-	{
-		DECODE_ITERATION(iog4_output_two_regs_one_simm16_scalar_map,
-			ArgsType::OutputTwoRegsOneSimm16Scalar);
-	}
-	else // if (sv_bit)
-	{
-		DECODE_ITERATION(iog4_output_two_regs_one_simm16_vector_map,
-			ArgsType::OutputTwoRegsOneSimm16Vector);
-	}
 
 	instr_name = cstm_strdup("unknown_instruction");
 	args_type = ArgsType::Unknown;

@@ -15,28 +15,30 @@ public:		// enums
 		ThreeRegsScalar,
 		TwoRegsScalar,
 		OneRegOnePcOneSimm12Scalar,
+		TwoRegsOneSimm12Scalar,
 
 		ThreeRegsVector,
 		TwoRegsVector,
 		OneRegOnePcOneSimm12Vector,
+		TwoRegsOneSimm12Vector,
 
 		RelBranch,
 		Jump,
 
-		OneRegOneIe,
-		OneRegOneIreta,
-		OneRegOneIdsta,
-		OneIeOneReg,
-		OneIretaOneReg,
-		OneIdstaOneReg,
-		NoArgs,
+		//OneRegOneIe,
+		//OneRegOneIreta,
+		//OneRegOneIdsta,
+		//OneIeOneReg,
+		//OneIretaOneReg,
+		//OneIdstaOneReg,
+		//NoArgs,
 
 		LdThreeRegsOneSimm12,
 		StThreeRegsOneSimm12,
 
-		InputTwoRegsOneSimm16,
-		OutputTwoRegsOneSimm16Scalar,
-		OutputTwoRegsOneSimm16Vector,
+		//InputTwoRegsOneSimm16,
+		//OutputTwoRegsOneSimm16Scalar,
+		//OutputTwoRegsOneSimm16Vector,
 
 		Unknown,
 	};
@@ -52,25 +54,17 @@ private:		// variables
 	MapType __iog0_three_regs_scalar_map;
 	MapType __iog0_two_regs_scalar_map;
 	MapType __iog0_one_reg_one_pc_one_simm12_scalar_map;
+	MapType __iog0_two_regs_one_simm12_scalar_map;
 
 	// Vector operations
 	MapType __iog0_three_regs_vector_map;
 	MapType __iog0_two_regs_vector_map;
 	MapType __iog0_one_reg_one_pc_one_simm12_vector_map;
+	MapType __iog0_two_regs_one_simm12_vector_map;
 
-	// Group 1 (control flow and interrupts stuff)
+	// Group 1 (control flow stuff)
 	MapType __iog1_rel_branch_map;
 	MapType __iog1_jump_map;
-
-	MapType __iog1_no_args_map;
-
-	MapType __iog1_one_reg_one_ie_map;
-	MapType __iog1_one_reg_one_ireta_map;
-	MapType __iog1_one_reg_one_idsta_map;
-
-	MapType __iog1_one_ie_one_reg_map;
-	MapType __iog1_one_ireta_one_reg_map;
-	MapType __iog1_one_idsta_one_reg_map;
 
 
 	// Group 2 (loads)
@@ -79,10 +73,6 @@ private:		// variables
 	// Group 3 (stores)
 	MapType __iog3_st_three_regs_one_simm12_map;
 
-	// Group 4 (input and output stuff)
-	MapType __iog4_input_two_regs_one_simm16_map;
-	MapType __iog4_output_two_regs_one_simm16_scalar_map;
-	MapType __iog4_output_two_regs_one_simm16_vector_map;
 
 private:		// functions
 	inline void insert_map_entry(MapType& some_map, 
@@ -106,24 +96,16 @@ public:		// functions
 	gen_getter_by_con_ref(iog0_three_regs_scalar_map);
 	gen_getter_by_con_ref(iog0_two_regs_scalar_map);
 	gen_getter_by_con_ref(iog0_one_reg_one_pc_one_simm12_scalar_map);
+	gen_getter_by_con_ref(iog0_two_regs_one_simm12_scalar_map);
 
 	gen_getter_by_con_ref(iog0_three_regs_vector_map);
 	gen_getter_by_con_ref(iog0_two_regs_vector_map);
 	gen_getter_by_con_ref(iog0_one_reg_one_pc_one_simm12_vector_map);
+	gen_getter_by_con_ref(iog0_two_regs_one_simm12_vector_map);
 
-	// Group 1 (control flow and interrupts stuff)
+	// Group 1 (control flow stuff)
 	gen_getter_by_con_ref(iog1_rel_branch_map);
 	gen_getter_by_con_ref(iog1_jump_map);
-
-	gen_getter_by_con_ref(iog1_no_args_map);
-
-	gen_getter_by_con_ref(iog1_one_reg_one_ie_map);
-	gen_getter_by_con_ref(iog1_one_reg_one_ireta_map);
-	gen_getter_by_con_ref(iog1_one_reg_one_idsta_map);
-
-	gen_getter_by_con_ref(iog1_one_ie_one_reg_map);
-	gen_getter_by_con_ref(iog1_one_ireta_one_reg_map);
-	gen_getter_by_con_ref(iog1_one_idsta_one_reg_map);
 
 	// Group 2 (loads)
 	gen_getter_by_con_ref(iog2_ld_three_regs_one_simm12_map);
@@ -131,10 +113,6 @@ public:		// functions
 	// Group 3 (stores)
 	gen_getter_by_con_ref(iog3_st_three_regs_one_simm12_map);
 
-	// Group 4 (input and output stuff)
-	gen_getter_by_con_ref(iog4_input_two_regs_one_simm16_map);
-	gen_getter_by_con_ref(iog4_output_two_regs_one_simm16_scalar_map);
-	gen_getter_by_con_ref(iog4_output_two_regs_one_simm16_vector_map);
 
 
 	std::string* decode_reg_name(u32 reg_index) const;
@@ -145,8 +123,6 @@ public:		// functions
 	void decode_iog2_instr_name_and_args_type(u32 sv_bit, u32 opcode,
 		std::string*& instr_name, ArgsType& args_type) const;
 	void decode_iog3_instr_name_and_args_type(u32 sv_bit, u32 opcode,
-		std::string*& instr_name, ArgsType& args_type) const;
-	void decode_iog4_instr_name_and_args_type(u32 sv_bit, u32 opcode,
 		std::string*& instr_name, ArgsType& args_type) const;
 };
 

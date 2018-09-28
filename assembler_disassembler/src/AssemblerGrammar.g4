@@ -28,22 +28,18 @@ instruction:
 	instrOpGrp0ThreeRegsScalar
 	| instrOpGrp0TwoRegsScalar
 	| instrOpGrp0OneRegOnePcOneSimm12Scalar
+	| instrOpGrp0TwoRegsOneSimm12Scalar
 
 	| instrOpGrp0ThreeRegsVector
 	| instrOpGrp0TwoRegsVector
 	| instrOpGrp0OneRegOnePcOneSimm12Vector
+	| instrOpGrp0TwoRegsOneSimm12Vector
 
 	| instrOpGrp1RelBranch
 	| instrOpGrp1Jump
 
-	| instrOpGrp1OneRegOneInterruptsReg
-	| instrOpGrp1OneInterruptsRegOneReg
-	| instrOpGrp1NoArgs
-
 	| instrOpGrp2LdThreeRegsOneSimm12
 	| instrOpGrp3StThreeRegsOneSimm12
-
-	| instrOpGrp4IoTwoRegsOneSimm16
 	;
 
 
@@ -62,9 +58,15 @@ instrOpGrp0TwoRegsScalar:
 	TokReg TokComma TokReg
 	;
 instrOpGrp0OneRegOnePcOneSimm12Scalar:
-	TokInstrNameAdds
+	//TokInstrNameAdds
+	TokInstrNameAddis
 	TokReg TokComma TokPcReg TokComma expr
 	;
+instrOpGrp0TwoRegsOneSimm12Scalar:
+	TokInstrNameAddis
+	TokReg TokComma TokReg TokComma expr
+	;
+
 instrOpGrp0ThreeRegsVector:
 	(TokInstrNameAddv | TokInstrNameSubv
 	| TokInstrNameSltv | TokInstrNameMulv
@@ -80,8 +82,13 @@ instrOpGrp0TwoRegsVector:
 	TokReg TokComma TokReg
 	;
 instrOpGrp0OneRegOnePcOneSimm12Vector:
-	TokInstrNameAddv
+	//TokInstrNameAddv
+	TokInstrNameAddiv
 	TokReg TokComma TokPcReg TokComma expr
+	;
+instrOpGrp0TwoRegsOneSimm12Vector:
+	TokInstrNameAddiv
+	TokReg TokComma TokReg TokComma expr
 	;
 
 instrOpGrp1RelBranch:
@@ -90,18 +97,6 @@ instrOpGrp1RelBranch:
 	;
 instrOpGrp1Jump:
 	TokInstrNameJmp TokReg
-	;
-
-instrOpGrp1OneRegOneInterruptsReg:
-	TokInstrNameCpy
-	TokReg TokComma (TokIeReg | TokIretaReg | TokIdstaReg)
-	;
-instrOpGrp1OneInterruptsRegOneReg:
-	TokInstrNameCpy
-	(TokIeReg | TokIretaReg | TokIdstaReg) TokComma TokReg
-	;
-instrOpGrp1NoArgs:
-	(TokInstrNameEi | TokInstrNameDi | TokInstrNameReti)
 	;
 
 instrOpGrp2LdThreeRegsOneSimm12:
@@ -121,15 +116,6 @@ instrOpGrp3StThreeRegsOneSimm12:
 	TokReg TokComma TokReg TokComma TokReg TokComma expr
 	;
 
-instrOpGrp4IoTwoRegsOneSimm16:
-	(TokInstrNameInU8 | TokInstrNameInS8
-	| TokInstrNameInU16 | TokInstrNameInS16
-	| TokInstrNameInU32 | TokInstrNameInS32
-	| TokInstrNameInU64 | TokInstrNameInS64
-	| TokInstrNameInF16
-	| TokInstrNameOuts | TokInstrNameOutv)
-	TokReg TokComma TokReg TokComma expr
-	;
 
 
 
@@ -229,10 +215,7 @@ exprLogNot: TokExclamPoint expr ;
 // TokRegPc are all valid identifiers, but they will **NOT** be caught by
 // the TokIdent token in the lexer.  Thus, these things must be special
 // cased to allow them to be used as identifiers.
-//identName: TokIdent | instrName | pseudoInstrName | TokReg 
-//	| TokPcReg | TokIeReg | TokIretaReg | TokIdstaReg ;
-identName: TokIdent | instrName | TokReg 
-	| TokPcReg | TokIeReg | TokIretaReg | TokIdstaReg ;
+identName: TokIdent | instrName | TokReg | TokPcReg ;
 
 instrName:
 	// Group 0 Instructions
@@ -253,6 +236,9 @@ instrName:
 	| TokInstrNameInvs
 	| TokInstrNameNots
 
+	| TokInstrNameAddis
+
+
 	| TokInstrNameAddv
 	| TokInstrNameSubv
 	| TokInstrNameSltv
@@ -268,21 +254,13 @@ instrName:
 	| TokInstrNameInvv
 	| TokInstrNameNotv
 
+	| TokInstrNameAddiv
+
+
 	// Group 1 Instructions
 	| TokInstrNameBtru
 	| TokInstrNameBfal
 	| TokInstrNameJmp
-
-	// cpy dA, ie
-	// cpy ie, dA
-	// cpy dA, ireta
-	// cpy ireta, dA
-	// cpy dA, idsta
-	// cpy idsta, dA
-	| TokInstrNameCpy
-	| TokInstrNameEi
-	| TokInstrNameDi
-	| TokInstrNameReti
 
 	// Group 2 Instructions
 	| TokInstrNameLdU8
@@ -306,18 +284,6 @@ instrName:
 	| TokInstrNameStS64
 	| TokInstrNameStF16
 
-	// Group 4 Instructions
-	| TokInstrNameInU8
-	| TokInstrNameInS8
-	| TokInstrNameInU16
-	| TokInstrNameInS16
-	| TokInstrNameInU32
-	| TokInstrNameInS32
-	| TokInstrNameInU64
-	| TokInstrNameInS64
-	| TokInstrNameInF16
-	| TokInstrNameOuts
-	| TokInstrNameOutv
 	;
 
 //pseudoInstrName:
@@ -383,21 +349,14 @@ TokInstrNameShrv: 'shrv' ;
 TokInstrNameInvv: 'invv' ;
 TokInstrNameNotv: 'notv' ;
 
+TokInstrNameAddis: 'addis' ;
+TokInstrNameAddiv: 'addiv' ;
+
 // Group 1 Instructions
 TokInstrNameBtru: 'btru' ;
 TokInstrNameBfal: 'bfal' ;
 TokInstrNameJmp: 'jmp' ;
 
-// cpy dA, ie
-// cpy dA, ireta
-// cpy dA, idsta
-// cpy ie, dA
-// cpy ireta, dA
-// cpy idsta, dA
-TokInstrNameCpy: 'cpy' ;
-TokInstrNameEi: 'ei' ;
-TokInstrNameDi: 'di' ;
-TokInstrNameReti: 'reti' ;
 
 // Group 2 Instructions
 TokInstrNameLdU8: 'ldu8' ;
@@ -421,18 +380,6 @@ TokInstrNameStU64: 'stu64' ;
 TokInstrNameStS64: 'sts64' ;
 TokInstrNameStF16: 'stf16' ;
 
-// Group 4 Instructions
-TokInstrNameInU8: 'inu8' ;
-TokInstrNameInS8: 'ins8' ;
-TokInstrNameInU16: 'inu16' ;
-TokInstrNameInS16: 'ins16' ;
-TokInstrNameInU32: 'inu32' ;
-TokInstrNameInS32: 'ins32' ;
-TokInstrNameInU64: 'inu64' ;
-TokInstrNameInS64: 'ins64' ;
-TokInstrNameInF16: 'inf16' ;
-TokInstrNameOuts: 'outs' ;
-TokInstrNameOutv: 'outv' ;
 
 
 // Directives
@@ -464,10 +411,8 @@ TokReg:
 	| 'du11' | 'dlr' | 'dfp' | 'dsp')
 	;
 
+
 TokPcReg: 'pc' ;
-TokIeReg: 'ie' ;
-TokIretaReg: 'ireta' ;
-TokIdstaReg: 'idsta' ;
 
 
 TokIdent: [A-Za-z_] (([A-Za-z_] | [0-9])*) ;

@@ -186,22 +186,6 @@ private:		// functions
 		gen_32(to_gen);
 	}
 
-	inline void encode_group_4_instr(u32 sv_bit, u32 reg_a_index, 
-		u32 reg_b_index, u32 opcode, s32 simm16)
-	{
-		u64 to_gen = 0;
-
-		// Instruction group (0b100)
-		clear_and_set_bits(to_gen, 0b100, 31, 29);
-		clear_and_set_bits(to_gen, sv_bit, 28, 28);
-		clear_and_set_bits(to_gen, reg_a_index, 27, 24);
-		clear_and_set_bits(to_gen, reg_b_index, 23, 20);
-		clear_and_set_bits(to_gen, opcode, 19, 16);
-		clear_and_set_bits(to_gen, simm16, 15, 0);
-
-		gen_32(to_gen);
-	}
-
 
 	// Generate data
 	void gen_words(u16 data);
@@ -235,6 +219,9 @@ private:		// visitor functions
 	antlrcpp::Any visitInstrOpGrp0OneRegOnePcOneSimm12Scalar
 		(AssemblerGrammarParser
 		::InstrOpGrp0OneRegOnePcOneSimm12ScalarContext *ctx);
+	antlrcpp::Any visitInstrOpGrp0TwoRegsOneSimm12Scalar
+		(AssemblerGrammarParser
+		::InstrOpGrp0TwoRegsOneSimm12ScalarContext *ctx);
 
 	antlrcpp::Any visitInstrOpGrp0ThreeRegsVector
 		(AssemblerGrammarParser::InstrOpGrp0ThreeRegsVectorContext *ctx);
@@ -243,20 +230,15 @@ private:		// visitor functions
 	antlrcpp::Any visitInstrOpGrp0OneRegOnePcOneSimm12Vector
 		(AssemblerGrammarParser
 		::InstrOpGrp0OneRegOnePcOneSimm12VectorContext *ctx);
+	antlrcpp::Any visitInstrOpGrp0TwoRegsOneSimm12Vector
+		(AssemblerGrammarParser
+		::InstrOpGrp0TwoRegsOneSimm12VectorContext *ctx);
 
 	antlrcpp::Any visitInstrOpGrp1RelBranch
 		(AssemblerGrammarParser::InstrOpGrp1RelBranchContext *ctx);
 	antlrcpp::Any visitInstrOpGrp1Jump
 		(AssemblerGrammarParser::InstrOpGrp1JumpContext *ctx);
 
-	antlrcpp::Any visitInstrOpGrp1OneRegOneInterruptsReg
-		(AssemblerGrammarParser::InstrOpGrp1OneRegOneInterruptsRegContext
-		*ctx);
-	antlrcpp::Any visitInstrOpGrp1OneInterruptsRegOneReg
-		(AssemblerGrammarParser::InstrOpGrp1OneInterruptsRegOneRegContext
-		*ctx);
-	antlrcpp::Any visitInstrOpGrp1NoArgs
-		(AssemblerGrammarParser::InstrOpGrp1NoArgsContext *ctx);
 
 	antlrcpp::Any visitInstrOpGrp2LdThreeRegsOneSimm12
 		(AssemblerGrammarParser::InstrOpGrp2LdThreeRegsOneSimm12Context
@@ -265,9 +247,6 @@ private:		// visitor functions
 		(AssemblerGrammarParser::InstrOpGrp3StThreeRegsOneSimm12Context
 		*ctx);
 
-	antlrcpp::Any visitInstrOpGrp4IoTwoRegsOneSimm16
-		(AssemblerGrammarParser::InstrOpGrp4IoTwoRegsOneSimm16Context
-		*ctx);
 
 
 

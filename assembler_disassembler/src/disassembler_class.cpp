@@ -74,7 +74,7 @@ antlrcpp::Any Disassembler::visitLine
 			const u32 iog = decode_iog(instruction);
 			u32 sv_bit = 0;
 			u32 reg_a_index = 0, reg_b_index = 0, reg_c_index = 0, 
-				opcode= 0, immediate = 0;
+				opcode= 0;
 			s32 simm12 = 0, simm20 = 0, simm16 = 0;
 			std::string * reg_a_name = nullptr, * reg_b_name = nullptr, 
 				* reg_c_name = nullptr;
@@ -110,11 +110,6 @@ antlrcpp::Any Disassembler::visitLine
 					__encoding_stuff.decode_iog3_instr_name_and_args_type
 						(sv_bit, opcode, instr_name, args_type);
 					break;
-				case 0x4:
-					decode_group_4_instr(instruction, sv_bit, reg_a_index,
-						reg_b_index, opcode, simm16);
-					__encoding_stuff.decode_iog4_instr_name_and_args_type
-						(sv_bit, opcode, instr_name, args_type);
 				default:
 					show_unknown_instruction_as_dot_db();
 					printout("\n");
@@ -143,6 +138,10 @@ antlrcpp::Any Disassembler::visitLine
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						"pc", simm12));
 					break;
+				case EncodingStuff::ArgsType::TwoRegsOneSimm12Scalar:
+					printout(*instr_name, " ", strappcom2(*reg_a_name,
+						*reg_b_name, simm12));
+					break;
 
 				case EncodingStuff::ArgsType::ThreeRegsVector:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
@@ -156,6 +155,11 @@ antlrcpp::Any Disassembler::visitLine
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
 						"pc", simm12));
 					break;
+				case EncodingStuff::ArgsType::TwoRegsOneSimm12Vector:
+					printout(*instr_name, " ", strappcom2(*reg_a_name,
+						*reg_b_name, simm12));
+					break;
+
 
 				case EncodingStuff::ArgsType::RelBranch:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
@@ -165,33 +169,6 @@ antlrcpp::Any Disassembler::visitLine
 					printout(*instr_name, " ", *reg_a_name);
 					break;
 
-				case EncodingStuff::ArgsType::OneRegOneIe:
-					printout(*instr_name, " ", strappcom2(*reg_a_name,
-						"ie"));
-					break;
-				case EncodingStuff::ArgsType::OneRegOneIreta:
-					printout(*instr_name, " ", strappcom2(*reg_a_name,
-						"ireta"));
-					break;
-				case EncodingStuff::ArgsType::OneRegOneIdsta:
-					printout(*instr_name, " ", strappcom2(*reg_a_name,
-						"idsta"));
-					break;
-				case EncodingStuff::ArgsType::OneIeOneReg:
-					printout(*instr_name, " ", strappcom2("ie",
-						*reg_a_name));
-					break;
-				case EncodingStuff::ArgsType::OneIretaOneReg:
-					printout(*instr_name, " ", strappcom2("ireta",
-						*reg_a_name));
-					break;
-				case EncodingStuff::ArgsType::OneIdstaOneReg:
-					printout(*instr_name, " ", strappcom2("idsta",
-						*reg_a_name));
-					break;
-				case EncodingStuff::ArgsType::NoArgs:
-					printout(*instr_name);
-					break;
 
 				case EncodingStuff::ArgsType::LdThreeRegsOneSimm12:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,
@@ -202,18 +179,6 @@ antlrcpp::Any Disassembler::visitLine
 						*reg_b_name, *reg_c_name, simm12));
 					break;
 
-				case EncodingStuff::ArgsType::InputTwoRegsOneSimm16:
-					printout(*instr_name, " ", strappcom2(*reg_a_name,
-						*reg_b_name, simm16));
-					break;
-				case EncodingStuff::ArgsType::OutputTwoRegsOneSimm16Scalar:
-					printout(*instr_name, " ", strappcom2(*reg_a_name,
-						*reg_b_name, simm16));
-					break;
-				case EncodingStuff::ArgsType::OutputTwoRegsOneSimm16Vector:
-					printout(*instr_name, " ", strappcom2(*reg_a_name,
-						*reg_b_name, simm16));
-					break;
 				case EncodingStuff::ArgsType::Unknown:
 					show_unknown_instruction_as_dot_db();
 					printout("\n");
