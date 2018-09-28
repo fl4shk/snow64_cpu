@@ -175,6 +175,7 @@ module __Snow64LarFileTagSearch
 
 	`undef DO_TAG_SEARCH
 
+	// tree of OR's
 	assign __tag_search_2_to_3 = __tag_search_2 | __tag_search_3;
 
 	assign __tag_search_4_to_5 = __tag_search_4 | __tag_search_5;
@@ -979,7 +980,7 @@ module Snow64LarFile(input logic clk,
 	`define IN_LDST_CAPTURED_CURR_SHAREDDATA_DATA \
 		__captured_out_shareddata_data_rd_for_wr_data
 
-	`define IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR \
+	`define __IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR \
 		__captured_in_wr__shareddata_base_addr_from_tag
 	`define __IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT \
 		__captured_in_wr__shareddata_ref_count_from_tag
@@ -1047,7 +1048,7 @@ module Snow64LarFile(input logic clk,
 		// The base_addr of the data is ALWAYS the old data's address for a
 		// memory write by the LAR file.
 		real_out_mem_write.base_addr
-			<= `IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR;
+			<= `__IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR;
 	endtask : prep_mem_write
 
 	task stop_mem_write;
@@ -1086,7 +1087,10 @@ module Snow64LarFile(input logic clk,
 			`__IN_LDST_CAPTURED_CURR_SHAREDDATA_REF_COUNT
 				<= __lar_shareddata__ref_count
 				[`BEFORE_LDST_IN_WR_METADATA_TAG];
-			`IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR
+
+			// Our old shareddata base address is the ONLY address that can
+			// be used for writing back to memory.
+			`__IN_LDST_CAPTURED_CURR_SHAREDDATA_BASE_ADDR
 				<= __lar_shareddata__base_addr
 				[`BEFORE_LDST_IN_WR_METADATA_TAG];
 
@@ -1191,6 +1195,8 @@ module Snow64LarFile(input logic clk,
 					!= `__IN_LDST_CAPTURED_CURR_METADATA_TAG)
 				begin
 					// The aliased reference count always increments here.
+					// This is because we are becoming a new reference of
+					// the found element of shared data.
 					`IN_LDST_MODDABLE_ALIASED_SHAREDDATA_REF_COUNT
 						<= `IN_LDST_MODDABLE_ALIASED_SHAREDDATA_REF_COUNT
 						+ 1;
@@ -1217,6 +1223,9 @@ module Snow64LarFile(input logic clk,
 					// We haven't been allocated yet.
 					// Since we haven't been allocated yet, we don't need
 					// to do a write back to memory.
+					// Since we do not have a reference to ANY element of
+					// shared data, we do not need to change any reference
+					// count either, nor touch the tag stack.
 					0:
 					begin
 						stop_mem_write();
@@ -1226,6 +1235,8 @@ module Snow64LarFile(input logic clk,
 					// There were no other references to us, so deallocate
 					// the old tag (pushing it onto the stack), and (if we
 					// were dirty) send our old data out to memory.
+					// We become a new reference of the found element of
+					// shareddata.
 					1:
 					begin
 						// Deallocate our old tag.  Note that this is
@@ -1270,8 +1281,9 @@ module Snow64LarFile(input logic clk,
 					// reference count (we increment our new reference
 					// count as well).
 					// In this situation, all that happens is that our tag
-					// changes and our shared data loses a reference, but
-					// our new shared data gains a reference
+					// changes and our old element of shared data loses a
+					// reference, but our new shared data gains a
+					// reference.
 					default:
 					begin
 						stop_mem_write();
@@ -1335,7 +1347,7 @@ module Snow64LarFile(input logic clk,
 					begin
 						finish_ldst();
 						// If you do a store before there was any data in a
-						// LAR, the resulting data WILL be zero.
+						// specific LAR, the resulting data WILL be zero.
 
 						// Stores mark the data as dirty.
 						`IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY <= 1;

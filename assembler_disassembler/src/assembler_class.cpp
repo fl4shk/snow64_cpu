@@ -225,7 +225,7 @@ antlrcpp::Any Assembler::visitLine
 	ANY_ACCEPT_IF_BASIC(ctx->scopedLines())
 	else ANY_ACCEPT_IF_BASIC(ctx->label())
 	else ANY_ACCEPT_IF_BASIC(ctx->instruction())
-	//else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstruction())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstruction())
 	else ANY_ACCEPT_IF_BASIC(ctx->directive())
 	else
 	{
@@ -327,6 +327,18 @@ antlrcpp::Any Assembler::visitInstruction
 	else
 	{
 		err(ctx, "visitInstruction():  Eek!");
+	}
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitPseudoInstruction
+	(AssemblerGrammarParser::PseudoInstructionContext *ctx)
+{
+	ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrBraOneSimm20())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrPcrelOneRegOneSimm12Scalar())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrPcrelOneRegOneSimm12Vector())
+	else
+	{
+		err(ctx, "visitPseudoInstruction():  Eek!");
 	}
 	return nullptr;
 }
@@ -448,9 +460,11 @@ antlrcpp::Any Assembler::visitInstrOpGrp0OneRegOnePcOneSimm12Scalar
 	auto one_reg_encoding = get_one_reg_encoding(ctx);
 
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto simm12 = pop_num();
 
-	encode_group_0_instr(0, one_reg_encoding, 0, 0, opcode, pop_num());
+	__warn_if_simm12_out_of_range(ctx, simm12);
 
+	encode_group_0_instr(0, one_reg_encoding, 0, 0, opcode, simm12);
 
 	return nullptr;
 }
@@ -470,9 +484,12 @@ antlrcpp::Any Assembler::visitInstrOpGrp0TwoRegsOneSimm12Scalar
 	auto&& reg_encodings = get_reg_encodings(ctx);
 
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto simm12 = pop_num();
+
+	__warn_if_simm12_out_of_range(ctx, simm12);
 
 	encode_group_0_instr(0, reg_encodings.at(0), reg_encodings.at(1), 0,
-		opcode, pop_num());
+		opcode, simm12);
 
 	return nullptr;
 }
@@ -543,8 +560,11 @@ antlrcpp::Any Assembler::visitInstrOpGrp0OneRegOnePcOneSimm12Vector
 	auto one_reg_encoding = get_one_reg_encoding(ctx);
 
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto simm12 = pop_num();
 
-	encode_group_0_instr(1, one_reg_encoding, 0, 0, opcode, pop_num());
+	__warn_if_simm12_out_of_range(ctx, simm12);
+
+	encode_group_0_instr(1, one_reg_encoding, 0, 0, opcode, simm12);
 
 
 	return nullptr;
@@ -564,9 +584,12 @@ antlrcpp::Any Assembler::visitInstrOpGrp0TwoRegsOneSimm12Vector
 	auto&& reg_encodings = get_reg_encodings(ctx);
 
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto simm12 = pop_num();
+
+	__warn_if_simm12_out_of_range(ctx, simm12);
 
 	encode_group_0_instr(1, reg_encodings.at(0), reg_encodings.at(1), 0,
-		opcode, pop_num());
+		opcode, simm12);
 
 	return nullptr;
 }
@@ -588,7 +611,7 @@ antlrcpp::Any Assembler::visitInstrOpGrp1RelBranch
 
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
 
-	const auto branch_offset = get_branch_offset(pop_num());
+	const auto branch_offset = get_pc_relative_offset(pop_num());
 
 	__warn_if_simm20_out_of_range(ctx, branch_offset, true);
 
@@ -681,6 +704,73 @@ antlrcpp::Any Assembler::visitInstrOpGrp3StThreeRegsOneSimm12
 	return nullptr;
 }
 
+// pseudoInstruction:
+antlrcpp::Any Assembler::visitPseudoInstrBraOneSimm20
+	(AssemblerGrammarParser::PseudoInstrBraOneSimm20Context *ctx)
+{
+	//ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrBraOneSimm20())
+	//else
+	//{
+	//	err(ctx, "visitPseudoInstrBraOneSimm20():  Eek!");
+	//}
+
+
+	const auto opcode = __encoding_stuff.iog1_rel_branch_map()
+		.at(cstm_strdup("bfal"));
+
+	const auto one_reg_encoding = 0;
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+
+	const auto branch_offset = get_pc_relative_offset(pop_num());
+
+	__warn_if_simm20_out_of_range(ctx, branch_offset, true);
+
+	encode_group_1_instr(one_reg_encoding, opcode, branch_offset);
+
+	return nullptr;
+}
+
+antlrcpp::Any Assembler::visitPseudoInstrPcrelOneRegOneSimm12Scalar
+	(AssemblerGrammarParser::PseudoInstrPcrelOneRegOneSimm12ScalarContext
+	*ctx)
+{
+	const auto opcode = __encoding_stuff
+		.iog0_one_reg_one_pc_one_simm12_scalar_map()
+		.at(cstm_strdup("addis"));
+
+	auto one_reg_encoding = get_one_reg_encoding(ctx);
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto pc_relative_offset = get_pc_relative_offset(pop_num());
+
+	__warn_if_simm12_out_of_range(ctx, pc_relative_offset, true);
+
+	encode_group_0_instr(0, one_reg_encoding, 0, 0, opcode,
+		pc_relative_offset);
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitPseudoInstrPcrelOneRegOneSimm12Vector
+	(AssemblerGrammarParser::PseudoInstrPcrelOneRegOneSimm12VectorContext
+	*ctx)
+{
+	const auto opcode = __encoding_stuff
+		.iog0_one_reg_one_pc_one_simm12_vector_map()
+		.at(cstm_strdup("addiv"));
+
+	auto one_reg_encoding = get_one_reg_encoding(ctx);
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto pc_relative_offset = get_pc_relative_offset(pop_num());
+
+	__warn_if_simm12_out_of_range(ctx, pc_relative_offset, true);
+
+	encode_group_0_instr(1, one_reg_encoding, 0, 0, opcode,
+		pc_relative_offset);
+
+	return nullptr;
+}
 
 // directive:
 antlrcpp::Any Assembler::visitDotOrgDirective
@@ -1122,7 +1212,7 @@ antlrcpp::Any Assembler::visitIdentName
 {
 	ANY_PUSH_TOK_IF(ctx->TokIdent())
 	else ANY_ACCEPT_IF_BASIC(ctx->instrName())
-	//else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrName())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrName())
 	else ANY_PUSH_TOK_IF(ctx->TokReg())
 	else ANY_PUSH_TOK_IF(ctx->TokPcReg())
 	else
@@ -1204,31 +1294,34 @@ antlrcpp::Any Assembler::visitInstrName
 
 	return nullptr;
 }
-//antlrcpp::Any Assembler::visitPseudoInstrName
-//	(AssemblerGrammarParser::PseudoInstrNameContext *ctx)
-//{
-//	ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameInv())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameInvi())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCpyi())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCpya())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameBra())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmp())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCall())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmpa())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCalla())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmpane())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmpaeq())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCallane())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCallaeq())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameInc())
-//	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameDec())
-//	else
-//	{
-//		err(ctx, "visitPseudoInstrName():  Eek!");
-//	}
-//
-//	return nullptr;
-//}
+antlrcpp::Any Assembler::visitPseudoInstrName
+	(AssemblerGrammarParser::PseudoInstrNameContext *ctx)
+{
+	//ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameInv())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameInvi())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCpyi())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCpya())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameBra())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmp())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCall())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmpa())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCalla())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmpane())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJmpaeq())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCallane())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCallaeq())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameInc())
+	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameDec())
+	ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameBra())
+	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNamePcrels())
+	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNamePcrelv())
+	else
+	{
+		err(ctx, "visitPseudoInstrName():  Eek!");
+	}
+
+	return nullptr;
+}
 antlrcpp::Any Assembler::visitNumExpr
 	(AssemblerGrammarParser::NumExprContext *ctx)
 {

@@ -208,6 +208,8 @@ private:		// visitor functions
 		(AssemblerGrammarParser::LabelContext *ctx);
 	antlrcpp::Any visitInstruction
 		(AssemblerGrammarParser::InstructionContext *ctx);
+	antlrcpp::Any visitPseudoInstruction
+		(AssemblerGrammarParser::PseudoInstructionContext *ctx);
 	antlrcpp::Any visitDirective
 		(AssemblerGrammarParser::DirectiveContext *ctx);
 
@@ -247,6 +249,15 @@ private:		// visitor functions
 		(AssemblerGrammarParser::InstrOpGrp3StThreeRegsOneSimm12Context
 		*ctx);
 
+	// pseudoInstruction:
+	antlrcpp::Any visitPseudoInstrBraOneSimm20
+		(AssemblerGrammarParser::PseudoInstrBraOneSimm20Context *ctx);
+	antlrcpp::Any visitPseudoInstrPcrelOneRegOneSimm12Scalar
+		(AssemblerGrammarParser
+		::PseudoInstrPcrelOneRegOneSimm12ScalarContext *ctx);
+	antlrcpp::Any visitPseudoInstrPcrelOneRegOneSimm12Vector
+		(AssemblerGrammarParser
+		::PseudoInstrPcrelOneRegOneSimm12VectorContext *ctx);
 
 
 
@@ -295,8 +306,8 @@ private:		// visitor functions
 		(AssemblerGrammarParser::IdentNameContext *ctx);
 	antlrcpp::Any visitInstrName
 		(AssemblerGrammarParser::InstrNameContext *ctx);
-	//antlrcpp::Any visitPseudoInstrName
-	//	(AssemblerGrammarParser::PseudoInstrNameContext *ctx);
+	antlrcpp::Any visitPseudoInstrName
+		(AssemblerGrammarParser::PseudoInstrNameContext *ctx);
 	antlrcpp::Any visitNumExpr
 		(AssemblerGrammarParser::NumExprContext *ctx);
 	antlrcpp::Any visitCurrPc
@@ -388,7 +399,7 @@ private:		// functions
 	//u32 __get_reg_temp_index() const;
 
 	inline void __warn_if_simm20_out_of_range(ParserRuleContext* ctx,
-		s64 immediate, bool is_for_branch=false)
+		s64 immediate, bool is_for_pc_relative=false)
 	{
 		if (__pass)
 		{
@@ -405,22 +416,17 @@ private:		// functions
 
 			if (immediate != temp.simm20)
 			{
-				//warn(ctx, sconcat("immediate value 0x", std::hex, immediate,
-				//	std::dec, " out of range for for 20-bit signed ",
-				//	"immediate."));
-				if (!is_for_branch)
+				if (!is_for_pc_relative)
 				{
-					warn(ctx, sconcat("immediate value 0x", std::hex, 
-						immediate, std::dec, 
-						" out of range for for 20-bit signed ",
-						"immediate."));
+					warn(ctx, sconcat("immediate value 0x", std::hex,
+						immediate, std::dec, " out of range for ",
+						"20-bit signed immediate."));
 				}
-				else // if (is_for_branch)
+				else // if (is_for_pc_relative)
 				{
-					warn(ctx, sconcat("branch offset 0x", std::hex,
-						immediate, std::dec, " out of range ",
-						"because it doesn't fit in a 20-bit signed ",
-						"immediate."));
+					warn(ctx, sconcat("pc-relative offset 0x", std::hex,
+						immediate, std::dec, " out of range for ",
+						"20-bit signed immediate."));
 				}
 			}
 		}
@@ -447,7 +453,7 @@ private:		// functions
 
 
 	inline void __warn_if_simm16_out_of_range(ParserRuleContext* ctx, 
-		s64 immediate, bool is_for_branch=false)
+		s64 immediate, bool is_for_pc_relative=false)
 	{
 		if (__pass)
 		{
@@ -457,16 +463,16 @@ private:		// functions
 
 			if (immediate != simm16)
 			{
-				if (!is_for_branch)
+				if (!is_for_pc_relative)
 				{
 					warn(ctx, sconcat("immediate value 0x", std::hex, 
 						immediate, std::dec, 
 						" out of range for for 16-bit signed ",
 						"immediate."));
 				}
-				else // if (is_for_branch)
+				else // if (is_for_pc_relative)
 				{
-					warn(ctx, sconcat("branch offset 0x", std::hex,
+					warn(ctx, sconcat("pc-relative offset 0x", std::hex,
 						immediate, std::dec, " out of range ",
 						"because it doesn't fit in a 16-bit signed ",
 						"immediate."));
@@ -476,7 +482,7 @@ private:		// functions
 	}
 
 	inline void __warn_if_simm12_out_of_range(ParserRuleContext* ctx, 
-		s64 immediate)
+		s64 immediate, bool is_for_pc_relative=false)
 	{
 		if (__pass)
 		{
@@ -493,14 +499,23 @@ private:		// functions
 
 			if (immediate != temp.simm12)
 			{
-				warn(ctx, sconcat("immediate value 0x", std::hex, immediate,
-					std::dec, " out of range for for 12-bit signed ",
-					"immediate."));
+				if (!is_for_pc_relative)
+				{
+					warn(ctx, sconcat("immediate value 0x", std::hex,
+						immediate, std::dec, " out of range for ",
+						"12-bit signed immediate."));
+				}
+				else // if (is_for_pc_relative)
+				{
+					warn(ctx, sconcat("pc-relative offset 0x", std::hex,
+						immediate, std::dec, " out of range for ",
+						"12-bit signed immediate."));
+				}
 			}
 		}
 	}
 
-	inline s64 get_branch_offset(s64 raw_immediate) const
+	inline s64 get_pc_relative_offset(s64 raw_immediate) const
 	{
 		// sizeof(s32) is used because an instruction is encoded as 32-bit
 		return raw_immediate - __pc.curr - sizeof(s32);

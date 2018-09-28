@@ -9,7 +9,7 @@ line:
 	scopedLines
 	| label TokNewline
 	| instruction TokNewline
-	//| pseudoInstruction TokNewline
+	| pseudoInstruction TokNewline
 	| directive TokNewline
 	| TokNewline // Allow blank lines and lines with only a comment
 	;
@@ -119,8 +119,22 @@ instrOpGrp3StThreeRegsOneSimm12:
 
 
 
-//pseudoInstruction:
-//	;
+pseudoInstruction:
+	pseudoInstrBraOneSimm20
+	| pseudoInstrPcrelOneRegOneSimm12Scalar
+	| pseudoInstrPcrelOneRegOneSimm12Vector
+	;
+
+pseudoInstrBraOneSimm20:
+	TokPseudoInstrNameBra expr
+	;
+
+pseudoInstrPcrelOneRegOneSimm12Scalar:
+	TokPseudoInstrNamePcrels TokReg TokComma expr
+	;
+pseudoInstrPcrelOneRegOneSimm12Vector:
+	TokPseudoInstrNamePcrelv TokReg TokComma expr
+	;
 
 
 // Assembler directives 
@@ -220,7 +234,7 @@ exprLogNot: TokExclamPoint expr ;
 // TokRegPc are all valid identifiers, but they will **NOT** be caught by
 // the TokIdent token in the lexer.  Thus, these things must be special
 // cased to allow them to be used as identifiers.
-identName: TokIdent | instrName | TokReg | TokPcReg ;
+identName: TokIdent | instrName | pseudoInstrName | TokReg | TokPcReg ;
 
 instrName:
 	// Group 0 Instructions
@@ -291,8 +305,12 @@ instrName:
 
 	;
 
-//pseudoInstrName:
-//	;
+pseudoInstrName:
+	TokPseudoInstrNameBra
+
+	| TokPseudoInstrNamePcrels
+	| TokPseudoInstrNamePcrelv
+	;
 
 numExpr: TokDecNum | TokHexNum | TokBinNum;
 
@@ -386,6 +404,10 @@ TokInstrNameStS64: 'sts64' ;
 TokInstrNameStF16: 'stf16' ;
 
 
+// Pseudo Instructions
+TokPseudoInstrNameBra: 'bra' ;
+TokPseudoInstrNamePcrels: 'pcrels' ;
+TokPseudoInstrNamePcrelv: 'pcrelv' ;
 
 // Directives
 TokDotOrg: '.org' ;
