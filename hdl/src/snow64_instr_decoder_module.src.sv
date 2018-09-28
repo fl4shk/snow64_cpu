@@ -13,13 +13,13 @@ module Snow64InstrDecoder
 	PkgSnow64InstrDecoder::Iog1Instr __iog1_instr;
 	PkgSnow64InstrDecoder::Iog2Instr __iog2_instr;
 	PkgSnow64InstrDecoder::Iog3Instr __iog3_instr;
-	PkgSnow64InstrDecoder::Iog4Instr __iog4_instr;
+	//PkgSnow64InstrDecoder::Iog4Instr __iog4_instr;
 
 	assign __iog0_instr = in;
 	assign __iog1_instr = in;
 	assign __iog2_instr = in;
 	assign __iog3_instr = in;
-	assign __iog4_instr = in;
+	//assign __iog4_instr = in;
 
 	always @(*) out.group = __iog0_instr.group;
 	always @(*) out.op_type = __iog0_instr.op_type;
@@ -37,9 +37,7 @@ module Snow64InstrDecoder
 			out.nop = ((__iog0_instr.oper
 				== PkgSnow64InstrDecoder::Bad0_Iog0)
 				|| (__iog0_instr.oper
-				== PkgSnow64InstrDecoder::Bad1_Iog0)
-				|| (__iog0_instr.oper
-				== PkgSnow64InstrDecoder::Bad2_Iog0));
+				== PkgSnow64InstrDecoder::Bad1_Iog0));
 
 			out.signext_imm 
 				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
@@ -51,9 +49,12 @@ module Snow64InstrDecoder
 		begin
 			out.oper = __iog1_instr.oper;
 
-			// out.nop = (__iog1_instr.oper 
-			// 	>= PkgSnow64InstrDecoder::Bad0_Iog1);
-			out.nop = (__iog1_instr.oper[3] && __iog1_instr.oper[2]);
+			out.nop = !((__iog1_instr.oper
+				== PkgSnow64InstrDecoder::Btru_OneRegOneSimm20)
+				|| (__iog1_instr.oper
+				== PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20)
+				|| (__iog1_instr.oper
+				== PkgSnow64InstrDecoder::Jmp_OneReg));
 
 			out.signext_imm 
 				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
@@ -93,21 +94,21 @@ module Snow64InstrDecoder
 				__iog3_instr.simm12);
 		end
 
-		4:
-		begin
-			out.oper = __iog4_instr.oper;
+		//4:
+		//begin
+		//	out.oper = __iog4_instr.oper;
 
-			// out.nop = (__iog4_instr.oper
-			// 	>= PkgSnow64InstrDecoder::Bad0_Iog4);
-			out.nop = ((__iog4_instr.oper 
-				!= PkgSnow64InstrDecoder::Out_TwoRegsOneSimm16)
-				&& (__iog4_instr.oper[3]));
+		//	// out.nop = (__iog4_instr.oper
+		//	// 	>= PkgSnow64InstrDecoder::Bad0_Iog4);
+		//	out.nop = ((__iog4_instr.oper 
+		//		!= PkgSnow64InstrDecoder::Out_TwoRegsOneSimm16)
+		//		&& (__iog4_instr.oper[3]));
 
-			out.signext_imm 
-				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
-				PkgSnow64InstrDecoder::WIDTH__IOG4_SIMM16,
-				__iog4_instr.simm16);
-		end
+		//	out.signext_imm 
+		//		= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
+		//		PkgSnow64InstrDecoder::WIDTH__IOG4_SIMM16,
+		//		__iog4_instr.simm16);
+		//end
 
 		// Eek!
 		default:

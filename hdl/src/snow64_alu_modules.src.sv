@@ -1,33 +1,139 @@
 `include "src/snow64_alu_defines.header.sv"
 `include "src/snow64_cpu_defines.header.sv"
 
-//module DebugSnow64Alu
-//	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
-//	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
-//	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_int_type_size,
-//	input logic in_signedness,
-//
-//	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
-//
-//	PkgSnow64ArithLog::PortIn_Alu __in_alu;
-//	PkgSnow64ArithLog::PortOut_Alu __out_alu;
-//
-//	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
-//
-//	always @(*) __in_alu.a = in_a;
-//	always @(*) __in_alu.b = in_b;
-//	always @(*) __in_alu.oper = in_oper;
-//	always @(*) __in_alu.int_type_size = in_int_type_size;
-//	always @(*) __in_alu.type_signedness = in_signedness;
-//
-//	always @(*) out_data = __out_alu.data;
-//endmodule
+module DebugSnow64Alu
+	(input logic [`MSB_POS__SNOW64_SIZE_64:0] in_a, in_b,
+	input logic [`MSB_POS__SNOW64_ALU_OPER:0] in_oper,
+	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_int_type_size,
+	input logic in_signedness,
 
-module DebugSnow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
-	output PkgSnow64ArithLog::PortOut_Alu out);
+	output logic [`MSB_POS__SNOW64_SIZE_64:0] out_data);
 
-	Snow64Alu __inst_alu(.in(in), .out(out));
+	PkgSnow64ArithLog::PortIn_Alu __in_alu;
+	PkgSnow64ArithLog::PortOut_Alu __out_alu;
+
+	Snow64Alu __inst_alu(.in(__in_alu), .out(__out_alu));
+
+	always @(*) __in_alu.a = in_a;
+	always @(*) __in_alu.b = in_b;
+	always @(*) __in_alu.oper = in_oper;
+	always @(*) __in_alu.int_type_size = in_int_type_size;
+	always @(*) __in_alu.type_signedness = in_signedness;
+
+	always @(*) out_data = __out_alu.data;
+
+	`ifdef FORMAL
+	localparam __ENUM__INT_TYPE_SIZE__8 = PkgSnow64Cpu::IntTypSz8;
+	localparam __ENUM__INT_TYPE_SIZE__16 = PkgSnow64Cpu::IntTypSz16;
+	localparam __ENUM__INT_TYPE_SIZE__32 = PkgSnow64Cpu::IntTypSz32;
+	localparam __ENUM__INT_TYPE_SIZE__64 = PkgSnow64Cpu::IntTypSz64;
+
+
+	localparam __ENUM__OP_ADD = PkgSnow64ArithLog::OpAdd;
+	localparam __ENUM__OP_SUB = PkgSnow64ArithLog::OpSub;
+	localparam __ENUM__OP_SLT = PkgSnow64ArithLog::OpSlt;
+	localparam __ENUM__OP_DUMMY_0 = PkgSnow64ArithLog::OpDummy0;
+
+	localparam __ENUM__OP_DUMMY_1 = PkgSnow64ArithLog::OpDummy1;
+	localparam __ENUM__OP_AND = PkgSnow64ArithLog::OpAnd;
+	localparam __ENUM__OP_ORR = PkgSnow64ArithLog::OpOrr;
+	localparam __ENUM__OP_XOR = PkgSnow64ArithLog::OpXor;
+
+	localparam __ENUM__OP_SHL = PkgSnow64ArithLog::OpShl;
+	localparam __ENUM__OP_SHR = PkgSnow64ArithLog::OpShr;
+	localparam __ENUM__OP_INV = PkgSnow64ArithLog::OpInv;
+	localparam __ENUM__OP_NOT = PkgSnow64ArithLog::OpNot;
+
+	localparam __ENUM__OP_ADD_AGAIN = PkgSnow64ArithLog::OpAddAgain;
+	localparam __ENUM__OP_DUMMY_2 = PkgSnow64ArithLog::OpDummy2;
+	localparam __ENUM__OP_DUMMY_3 = PkgSnow64ArithLog::OpDummy3;
+	localparam __ENUM__OP_DUMMY_4 = PkgSnow64ArithLog::OpDummy4;
+
+	wire [`MSB_POS__SLICE_64_TO_8:0][`MSB_POS__SNOW64_SIZE_8:0]
+		__in_a_sliced_8 = in_a,
+		__in_b_sliced_8 = in_b,
+		__out_data_sliced_8 = out_data;
+	wire [`MSB_POS__SLICE_64_TO_16:0][`MSB_POS__SNOW64_SIZE_16:0]
+		__in_a_sliced_16 = in_a,
+		__in_b_sliced_16 = in_b,
+		__out_data_sliced_16 = out_data;
+	wire [`MSB_POS__SLICE_64_TO_32:0][`MSB_POS__SNOW64_SIZE_32:0]
+		__in_a_sliced_32 = in_a,
+		__in_b_sliced_32 = in_b,
+		__out_data_sliced_32 = out_data;
+	wire [`MSB_POS__SLICE_64_TO_64:0][`MSB_POS__SNOW64_SIZE_64:0]
+		__in_a_sliced_64 = in_a,
+		__in_b_sliced_64 = in_b,
+		__out_data_sliced_64 = out_data;
+
+	wire [`MSB_POS__SNOW64_SIZE_8:0] 
+		__formal__in_a_sliced_8__7 = __in_a_sliced_8[7],
+		__formal__in_a_sliced_8__6 = __in_a_sliced_8[6],
+		__formal__in_a_sliced_8__5 = __in_a_sliced_8[5],
+		__formal__in_a_sliced_8__4 = __in_a_sliced_8[4],
+		__formal__in_a_sliced_8__3 = __in_a_sliced_8[3],
+		__formal__in_a_sliced_8__2 = __in_a_sliced_8[2],
+		__formal__in_a_sliced_8__1 = __in_a_sliced_8[1],
+		__formal__in_a_sliced_8__0 = __in_a_sliced_8[0],
+
+		__formal__in_b_sliced_8__7 = __in_b_sliced_8[7],
+		__formal__in_b_sliced_8__6 = __in_b_sliced_8[6],
+		__formal__in_b_sliced_8__5 = __in_b_sliced_8[5],
+		__formal__in_b_sliced_8__4 = __in_b_sliced_8[4],
+		__formal__in_b_sliced_8__3 = __in_b_sliced_8[3],
+		__formal__in_b_sliced_8__2 = __in_b_sliced_8[2],
+		__formal__in_b_sliced_8__1 = __in_b_sliced_8[1],
+		__formal__in_b_sliced_8__0 = __in_b_sliced_8[0],
+
+		__formal__out_data_sliced_8__7 = __out_data_sliced_8[7],
+		__formal__out_data_sliced_8__6 = __out_data_sliced_8[6],
+		__formal__out_data_sliced_8__5 = __out_data_sliced_8[5],
+		__formal__out_data_sliced_8__4 = __out_data_sliced_8[4],
+		__formal__out_data_sliced_8__3 = __out_data_sliced_8[3],
+		__formal__out_data_sliced_8__2 = __out_data_sliced_8[2],
+		__formal__out_data_sliced_8__1 = __out_data_sliced_8[1],
+		__formal__out_data_sliced_8__0 = __out_data_sliced_8[0];
+
+	wire [`MSB_POS__SNOW64_SIZE_16:0]
+		__formal__in_a_sliced_16__3 = __in_a_sliced_16[3],
+		__formal__in_a_sliced_16__2 = __in_a_sliced_16[2],
+		__formal__in_a_sliced_16__1 = __in_a_sliced_16[1],
+		__formal__in_a_sliced_16__0 = __in_a_sliced_16[0],
+
+		__formal__in_b_sliced_16__3 = __in_b_sliced_16[3],
+		__formal__in_b_sliced_16__2 = __in_b_sliced_16[2],
+		__formal__in_b_sliced_16__1 = __in_b_sliced_16[1],
+		__formal__in_b_sliced_16__0 = __in_b_sliced_16[0],
+
+		__formal__out_data_sliced_16__3 = __out_data_sliced_16[3],
+		__formal__out_data_sliced_16__2 = __out_data_sliced_16[2],
+		__formal__out_data_sliced_16__1 = __out_data_sliced_16[1],
+		__formal__out_data_sliced_16__0 = __out_data_sliced_16[0];
+
+	wire [`MSB_POS__SNOW64_SIZE_32:0]
+		__formal__in_a_sliced_32__1 = __in_a_sliced_32[1],
+		__formal__in_a_sliced_32__0 = __in_a_sliced_32[0],
+
+		__formal__in_b_sliced_32__1 = __in_b_sliced_32[1],
+		__formal__in_b_sliced_32__0 = __in_b_sliced_32[0],
+
+		__formal__out_data_sliced_32__1 = __out_data_sliced_32[1],
+		__formal__out_data_sliced_32__0 = __out_data_sliced_32[0];
+
+	wire [`MSB_POS__SNOW64_SIZE_64:0]
+		__formal__in_a_sliced_64__0 = __in_a_sliced_64[0],
+		__formal__in_b_sliced_64__0 = __in_b_sliced_64[0],
+		__formal__out_data_sliced_64__0 = __out_data_sliced_64[0];
+
+	`endif		// FORMAL
+
 endmodule
+
+//module DebugSnow64Alu(input PkgSnow64ArithLog::PortIn_Alu in,
+//	output PkgSnow64ArithLog::PortOut_Alu out);
+//
+//	Snow64Alu __inst_alu(.in(in), .out(out));
+//endmodule
 
 
 //module __Snow64SubAlu(input PkgSnow64ArithLog::PortIn_SubAlu in,

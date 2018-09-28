@@ -25,7 +25,6 @@
 			casted, and others do not need either register B or C to be
 			casted (mostly those that depend only on register A, such as
 			the control flow instructions).
-		* If casting registers B and C, an ove 
 		* The LAR file's read ports (including all metadata, such as the
 		data type and scalar data offset)
 		* The EX stage's past output (and whether or not it's valid)
@@ -35,29 +34,7 @@
 		* Whether or not the EX stage should stall on the current cycle.
 * Functionality
 	* Operand forwarding.
-		* "Pure" scalar result to scalar instruction operand forwarding:
-			* For "pure" scalar result to scalar instruction operand
-			forwarding, the `base_addr`, `data_offset`, and
-			the data type of the scalar are used to determine how to
-			perform operand forwarding.
-			* "Pure" scalar result to scalar instruction operand forwarding
-			only happens if these conditions are met:
-				* Same `base_addr`
-				* Same `data_offset`
-				* One of the following must be the case:
-					* Both the data to forwarded and the register the
-					forwarding will happen for are integers, and they have
-					the same `int_type_size`
-					* Both the data to be forwarded and the register the
-					forwarding will happen for are of the BFloat16 type.
-			* If these conditions are met, then operand forwarding will
-			look very similiar to the operand forwarding of typical scalar
-			architectures.
-		* All other forwarding:
-			* For every 
-		* What happens regardless of the type of forwarding:
-			* Inject previously computed scalar results into captured
-			vectors of data.
-			* This is done to speed up any operand forwarding besides
-			the ideal case of "pure" scalar result to scalar instruction
-			operand forwarding.
+		* Operand forwarding is simply performed on whole vectors of data.
+		* This is accomplished in part by simply injecting scalar results
+		into a vector after performing a scalar operation, which has to be
+		done during or before the write-back pipeline stage anyway.
