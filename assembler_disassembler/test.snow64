@@ -1,0 +1,44 @@
+start:
+{
+	// Set the initial stack pointer
+	ldu32 du0, dzero, dzero, top_of_stack
+	ldu8 dsp, dzero, du0, 0
+
+	bfal dzero, main
+}
+
+
+global_constants:
+top_of_stack:
+	.db32 0x7ff0
+
+
+
+main:
+{
+//	// Allocate 32 bytes of stack
+//	ldu8 dsp, dsp, dzero, -32
+//
+//
+//	ldu32 du0, dsp, dzero, 32
+
+the_addis_du0_pc:
+	addis du0, pc, 3 * 3 * -4
+
+
+//infin:
+//	bfal dzero, infin
+
+
+main_constants:
+addr__sort:
+	.db16 sort
+
+	.db16 addr__sort
+	.db16 the_addis_du0_pc
+}
+
+
+sort:
+{
+}

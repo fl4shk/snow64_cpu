@@ -274,10 +274,10 @@ private:		// visitor functions
 		(AssemblerGrammarParser::ExprCompareContext *ctx);
 	antlrcpp::Any visitExprAddSub
 		(AssemblerGrammarParser::ExprAddSubContext *ctx);
-	antlrcpp::Any visitExprJustAdd
-		(AssemblerGrammarParser::ExprJustAddContext *ctx);
-	antlrcpp::Any visitExprJustSub
-		(AssemblerGrammarParser::ExprJustSubContext *ctx);
+	//antlrcpp::Any visitExprJustAdd
+	//	(AssemblerGrammarParser::ExprJustAddContext *ctx);
+	//antlrcpp::Any visitExprJustSub
+	//	(AssemblerGrammarParser::ExprJustSubContext *ctx);
 	antlrcpp::Any visitExprMulDivModEtc
 		(AssemblerGrammarParser::ExprMulDivModEtcContext *ctx);
 

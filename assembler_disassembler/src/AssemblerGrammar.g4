@@ -177,15 +177,20 @@ exprLogical:
 	| exprLogical TokOpCompare exprCompare
 	;
 
+//exprCompare:
+//	exprAddSub
+//	//| exprCompare TokOpAddSub exprAddSub
+//	| exprJustAdd
+//	| exprJustSub
+//	;
+//
+//exprJustAdd: exprCompare TokPlus exprAddSub  ;
+//exprJustSub: exprCompare TokMinus exprAddSub ;
 exprCompare:
 	exprAddSub
-	//| exprCompare TokOpAddSub exprAddSub
-	| exprJustAdd
-	| exprJustSub
+	| exprCompare TokPlus exprAddSub
+	| exprCompare TokMinus exprAddSub
 	;
-
-exprJustAdd: exprAddSub TokPlus exprCompare ;
-exprJustSub: exprAddSub TokMinus exprCompare ;
 
 exprAddSub:
 	exprMulDivModEtc

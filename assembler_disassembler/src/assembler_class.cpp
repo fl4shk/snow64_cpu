@@ -851,47 +851,87 @@ antlrcpp::Any Assembler::visitExprLogical
 antlrcpp::Any Assembler::visitExprCompare
 	(AssemblerGrammarParser::ExprCompareContext *ctx)
 {
-	ANY_ACCEPT_IF_BASIC(ctx->exprAddSub())
-	else ANY_ACCEPT_IF_BASIC(ctx->exprJustAdd())
-	else ANY_ACCEPT_IF_BASIC(ctx->exprJustSub())
+	//ANY_ACCEPT_IF_BASIC(ctx->exprAddSub())
+	//else ANY_ACCEPT_IF_BASIC(ctx->exprJustAdd())
+	//else ANY_ACCEPT_IF_BASIC(ctx->exprJustSub())
+	//else
+	//{
+	//	//printerr("visitExprCompare():  Eek!\n");
+	//	//exit(1);
+	//	err(ctx, "visitExprCompare():  Eek!");
+	//}
+	if (ctx->exprCompare())
+	{
+		ANY_JUST_ACCEPT_BASIC(ctx->exprCompare());
+		const auto left = pop_num();
+
+		ANY_JUST_ACCEPT_BASIC(ctx->exprAddSub());
+		const auto right = pop_num();
+
+		std::string op;
+
+		if (ctx->TokPlus())
+		{
+			op = ctx->TokPlus()->toString();
+		}
+		else if (ctx->TokMinus())
+		{
+			op = ctx->TokMinus()->toString();
+		}
+		else
+		{
+			err(ctx, "visitExprCompare():  no op thing eek!");
+		}
+
+		if (op == "+")
+		{
+			push_num(left + right);
+		}
+		else if (op == "-")
+		{
+			push_num(left - right);
+		}
+		else
+		{
+			err(ctx, "visitExprCompare():  Eek!");
+		}
+	}
 	else
 	{
-		//printerr("visitExprCompare():  Eek!\n");
-		//exit(1);
-		err(ctx, "visitExprCompare():  Eek!");
+		ANY_JUST_ACCEPT_BASIC(ctx->exprAddSub());
 	}
 	return nullptr;
 }
-antlrcpp::Any Assembler::visitExprJustAdd
-	(AssemblerGrammarParser::ExprJustAddContext *ctx)
-{
-	//ctx->exprAddSub()->accept(this);
-	ANY_JUST_ACCEPT_BASIC(ctx->exprAddSub());
-	const auto left = pop_num();
-
-	//ctx->exprCompare()->accept(this);
-	ANY_JUST_ACCEPT_BASIC(ctx->exprCompare());
-	const auto right = pop_num();
-
-	push_num(left + right);
-
-	return nullptr;
-}
-antlrcpp::Any Assembler::visitExprJustSub
-	(AssemblerGrammarParser::ExprJustSubContext *ctx)
-{
-	//ctx->exprAddSub()->accept(this);
-	ANY_JUST_ACCEPT_BASIC(ctx->exprAddSub());
-	const auto left = pop_num();
-
-	//ctx->exprCompare()->accept(this);
-	ANY_JUST_ACCEPT_BASIC(ctx->exprCompare());
-	const auto right = pop_num();
-
-	push_num(left - right);
-
-	return nullptr;
-}
+//antlrcpp::Any Assembler::visitExprJustAdd
+//	(AssemblerGrammarParser::ExprJustAddContext *ctx)
+//{
+//	//ctx->exprAddSub()->accept(this);
+//	ANY_JUST_ACCEPT_BASIC(ctx->exprAddSub());
+//	const auto left = pop_num();
+//
+//	//ctx->exprCompare()->accept(this);
+//	ANY_JUST_ACCEPT_BASIC(ctx->exprCompare());
+//	const auto right = pop_num();
+//
+//	push_num(left + right);
+//
+//	return nullptr;
+//}
+//antlrcpp::Any Assembler::visitExprJustSub
+//	(AssemblerGrammarParser::ExprJustSubContext *ctx)
+//{
+//	//ctx->exprAddSub()->accept(this);
+//	ANY_JUST_ACCEPT_BASIC(ctx->exprAddSub());
+//	const auto left = pop_num();
+//
+//	//ctx->exprCompare()->accept(this);
+//	ANY_JUST_ACCEPT_BASIC(ctx->exprCompare());
+//	const auto right = pop_num();
+//
+//	push_num(left - right);
+//
+//	return nullptr;
+//}
 antlrcpp::Any Assembler::visitExprAddSub
 	(AssemblerGrammarParser::ExprAddSubContext *ctx)
 {

@@ -15,6 +15,7 @@ int main(int argc, char** argv)
 		usage();
 	}
 
+	// Assemble
 	if (std::string(argv[1]) == "-a")
 	{
 		std::string from_stdin(get_stdin_as_str());
@@ -33,6 +34,8 @@ int main(int argc, char** argv)
 		Assembler visitor(parser, false);
 		return visitor.run();
 	}
+
+	// bytes
 	if (std::string(argv[1]) == "-b")
 	{
 		std::string from_stdin(get_stdin_as_str());
@@ -51,6 +54,8 @@ int main(int argc, char** argv)
 		Assembler visitor(parser, true);
 		return visitor.run();
 	}
+
+	// Disassemble
 	else if (std::string(argv[1]) == "-d")
 	{
 		std::string from_stdin(get_stdin_as_str());
