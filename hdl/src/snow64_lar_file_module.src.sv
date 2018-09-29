@@ -1246,6 +1246,15 @@ module Snow64LarFile(input logic clk,
 						__curr_tag_stack_index
 							<= __above_curr_tag_stack_index;
 
+						// We were the only LAR that cared about our old
+						// shared data, which means our old shared data
+						// becomes allocatable.
+						// For an element of shared data, not having any
+						// references is the same thing as being
+						// allocatable.
+						`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT <= 0;
+						`IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY <= 0;
+
 						// Since we're deallocating stuff, we need to write
 						// our old data back to memory if it's not already
 						// up to date.
@@ -1265,15 +1274,6 @@ module Snow64LarFile(input logic clk,
 							finish_ldst();
 						end
 						endcase
-
-						// We were the only LAR that cared about our old
-						// shared data, which means our old shared data
-						// becomes allocatable.
-						// For an element of shared data, not having any
-						// references is the same thing as being
-						// allocatable.
-						`IN_LDST_MODDABLE_CURR_SHAREDDATA_REF_COUNT <= 0;
-						`IN_LDST_MODDABLE_CURR_SHAREDDATA_DIRTY <= 0;
 					end
 
 					// There was at least one other reference to us, so
@@ -1348,6 +1348,7 @@ module Snow64LarFile(input logic clk,
 						finish_ldst();
 						// If you do a store before there was any data in a
 						// specific LAR, the resulting data WILL be zero.
+						stop_mem_read();
 
 						// Stores mark the data as dirty.
 						`IN_LDST_MODDABLE_TOP_SHAREDDATA_DIRTY <= 1;
@@ -1361,6 +1362,7 @@ module Snow64LarFile(input logic clk,
 				// accessing memory.
 				1:
 				begin
+					// Our element of shared data changes its base address.
 					`IN_LDST_MODDABLE_CURR_SHAREDDATA_BASE_ADDR
 						<= __captured_in_wr__base_addr.base_addr;
 

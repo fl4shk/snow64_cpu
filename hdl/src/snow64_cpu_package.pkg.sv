@@ -52,62 +52,39 @@ typedef enum logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
 
 
 
-
-
-typedef struct packed
-{
-	// Request an interrrupt.
-	logic req;
-} PartialPortIn_Cpu_Interrupt;
-
-
-typedef struct packed
-{
-	// Responding to an interrupt.
-	logic responding;
-} PartialPortOut_Cpu_Interrupt;
-
 typedef enum logic
 {
-	ExtDataAccTypRead,
-	ExtDataAccTypWrite
-} ExtDataAccessType;
+	MemAccTypRead,
+	MemAccTypWrite
+} MemAccessType;
 
 
-// Used for both memory access and port-mapped IO.
-// Just as an aside, "Ext" stands for "external".
+// Used for memory access 
 typedef struct packed
 {
 	logic valid;
 	LarData data;
-} PartialPortIn_Cpu_ExtDataAccess;
+} PortIn_Cpu;
+
+//typedef struct packed
+//{
+//	logic req;
+//
+//	logic access_type;
+//
+//	CpuAddr addr;
+//	LarData data;
+//} PortOut_Cpu;
 
 typedef struct packed
 {
 	logic req;
-
-	// Are we requesting a read or a write?
-	logic access_type;
-
 	CpuAddr addr;
 	LarData data;
-} PartialPortOut_Cpu_ExtDataAccess;
-
-
-
-typedef struct packed
-{
-	logic `STRUCTDIM(PartialPortIn_Cpu_Interrupt) interrupt;
-	logic `STRUCTDIM(PartialPortIn_Cpu_ExtDataAccess)
-		ext_dat_acc_mem, ext_dat_acc_io;
-} PortIn_Cpu;
-
-
-typedef struct packed
-{
-	logic `STRUCTDIM(PartialPortOut_Cpu_Interrupt) interrupt;
-	logic `STRUCTDIM(PartialPortOut_Cpu_ExtDataAccess)
-		ext_dat_acc_mem, ext_dat_acc_io;
+	// Are we requesting a read or a write?
+	logic mem_acc_type;
 } PortOut_Cpu;
+
+
 
 endpackage : PkgSnow64Cpu

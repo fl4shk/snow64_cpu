@@ -51,20 +51,20 @@ instrOpGrp0ThreeRegsScalar:
 	| TokInstrNameOrrs | TokInstrNameXors
 
 	| TokInstrNameShls | TokInstrNameShrs)
-	TokReg TokComma TokReg TokComma TokReg
+	regOrIdentName TokComma regOrIdentName TokComma regOrIdentName
 	;
 instrOpGrp0TwoRegsScalar:
 	(TokInstrNameInvs | TokInstrNameNots)
-	TokReg TokComma TokReg
+	regOrIdentName TokComma regOrIdentName
 	;
 instrOpGrp0OneRegOnePcOneSimm12Scalar:
 	//TokInstrNameAdds
 	TokInstrNameAddis
-	TokReg TokComma TokPcReg TokComma expr
+	regOrIdentName TokComma TokPcReg TokComma expr
 	;
 instrOpGrp0TwoRegsOneSimm12Scalar:
 	TokInstrNameAddis
-	TokReg TokComma TokReg TokComma expr
+	regOrIdentName TokComma regOrIdentName TokComma expr
 	;
 
 instrOpGrp0ThreeRegsVector:
@@ -75,28 +75,28 @@ instrOpGrp0ThreeRegsVector:
 	| TokInstrNameOrrv | TokInstrNameXorv
 
 	| TokInstrNameShlv | TokInstrNameShrv)
-	TokReg TokComma TokReg TokComma TokReg
+	regOrIdentName TokComma regOrIdentName TokComma regOrIdentName
 	;
 instrOpGrp0TwoRegsVector:
 	(TokInstrNameInvv | TokInstrNameNotv)
-	TokReg TokComma TokReg
+	regOrIdentName TokComma regOrIdentName
 	;
 instrOpGrp0OneRegOnePcOneSimm12Vector:
 	//TokInstrNameAddv
 	TokInstrNameAddiv
-	TokReg TokComma TokPcReg TokComma expr
+	regOrIdentName TokComma TokPcReg TokComma expr
 	;
 instrOpGrp0TwoRegsOneSimm12Vector:
 	TokInstrNameAddiv
-	TokReg TokComma TokReg TokComma expr
+	regOrIdentName TokComma regOrIdentName TokComma expr
 	;
 
 instrOpGrp1RelBranch:
 	(TokInstrNameBtru | TokInstrNameBfal)
-	TokReg TokComma expr
+	regOrIdentName TokComma expr
 	;
 instrOpGrp1Jump:
-	TokInstrNameJmp TokReg
+	TokInstrNameJmp regOrIdentName
 	;
 
 instrOpGrp2LdThreeRegsOneSimm12:
@@ -105,7 +105,8 @@ instrOpGrp2LdThreeRegsOneSimm12:
 	| TokInstrNameLdU32 | TokInstrNameLdS32
 	| TokInstrNameLdU64 | TokInstrNameLdS64
 	| TokInstrNameLdF16)
-	TokReg TokComma TokReg TokComma TokReg TokComma expr
+	regOrIdentName TokComma regOrIdentName TokComma regOrIdentName TokComma
+	expr
 	;
 instrOpGrp3StThreeRegsOneSimm12:
 	(TokInstrNameStU8 | TokInstrNameStS8
@@ -113,7 +114,8 @@ instrOpGrp3StThreeRegsOneSimm12:
 	| TokInstrNameStU32 | TokInstrNameStS32
 	| TokInstrNameStU64 | TokInstrNameStS64
 	| TokInstrNameStF16)
-	TokReg TokComma TokReg TokComma TokReg TokComma expr
+	regOrIdentName TokComma regOrIdentName TokComma regOrIdentName TokComma
+	expr
 	;
 
 
@@ -130,11 +132,12 @@ pseudoInstrBraOneSimm20:
 	;
 
 pseudoInstrPcrelOneRegOneSimm12Scalar:
-	TokPseudoInstrNamePcrels TokReg TokComma expr
+	TokPseudoInstrNamePcrels regOrIdentName TokComma expr
 	;
 pseudoInstrPcrelOneRegOneSimm12Vector:
-	TokPseudoInstrNamePcrelv TokReg TokComma expr
+	TokPseudoInstrNamePcrelv regOrIdentName TokComma expr
 	;
+
 
 
 // Assembler directives 
@@ -234,6 +237,11 @@ exprUnary:
 exprBitInvert: TokBitInvert expr ;
 exprNegate: TokMinus expr ;
 exprLogNot: TokExclamPoint expr ;
+
+regOrIdentName:
+	TokReg
+	| identName
+	;
 
 // Instruction names, pseudo instruction names, register names, and
 // TokRegPc are all valid identifiers, but they will **NOT** be caught by

@@ -102,11 +102,11 @@ private:		// functions
 	//}
 
 	template<typename CtxType>
-	auto get_reg_encodings(CtxType *ctx) const;
+	std::vector<u16> get_reg_encodings(CtxType *ctx);
 
 	template<typename CtxType>
-	inline auto get_one_reg_encoding(CtxType *ctx) const;
-	inline auto get_one_reg_encoding(const std::string& reg_name) const;
+	inline auto get_one_reg_encoding(CtxType *ctx);
+	inline auto get_one_reg_encoding(const std::string& reg_name);
 
 	//inline void encode_instr_opcode_group_0(u32 reg_a_index, 
 	//	u32 reg_b_index, u32 reg_c_index, u32 opcode)
@@ -304,6 +304,8 @@ private:		// visitor functions
 		(AssemblerGrammarParser::ExprLogNotContext *ctx);
 
 	// Last set of token stuff
+	antlrcpp::Any visitRegOrIdentName
+		(AssemblerGrammarParser::RegOrIdentNameContext *ctx);
 	antlrcpp::Any visitIdentName
 		(AssemblerGrammarParser::IdentNameContext *ctx);
 	antlrcpp::Any visitInstrName
@@ -528,6 +530,29 @@ private:		// functions
 		(const EncodingStuff::MapType& some_opcode_map)
 	{
 		return some_opcode_map.at(pop_str());
+	}
+
+	template<typename CtxType>
+	inline void get_sym_address(CtxType* ctx)
+	{
+		if (!__pass)
+		{
+			pop_str();
+			push_num(0);
+		}
+		else // if (__pass)
+		{
+			auto name = pop_str();
+			auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
+
+			// Only allow known symbols to be used.
+			if (!sym->found_as_label())
+			{
+				err(ctx, sconcat("Error:  Unknown symbol called \"",
+					*name, "\"."));
+			}
+			push_num(sym->addr());
+		}
 	}
 
 };

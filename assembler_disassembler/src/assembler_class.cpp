@@ -48,33 +48,42 @@ int Assembler::run()
 }
 
 template<typename CtxType>
-auto Assembler::get_reg_encodings(CtxType *ctx) const
+std::vector<u16> Assembler::get_reg_encodings(CtxType *ctx)
 {
 	std::vector<u16> ret;
 
-	auto&& regs = ctx->TokReg();
+	//auto&& regs = ctx->TokReg();
 
-	// If only I could check here whether or not CtxType can be iterated
-	// through!
-	// Perhaps there actually is a way in the C++ standard library....
+	//// If only I could check here whether or not CtxType can be iterated
+	//// through!
+	//// Perhaps there actually is a way in the C++ standard library....
+	//for (auto reg : regs)
+	//{
+	//	ret.push_back(__encoding_stuff.reg_names_map()
+	//		.at(cstm_strdup(reg->toString())));
+	//}
+
+	auto&& regs = ctx->regOrIdentName();
+
 	for (auto reg : regs)
 	{
-		ret.push_back(__encoding_stuff.reg_names_map()
-			.at(cstm_strdup(reg->toString())));
+		ANY_JUST_ACCEPT_BASIC(reg);
+		ret.push_back(pop_num());
 	}
 
 	return ret;
 }
 
-template<typename CtxType>
-inline auto Assembler::get_one_reg_encoding(CtxType *ctx) const
-{
-	return get_one_reg_encoding(ctx->TokReg()->toString());
-}
 inline auto Assembler::get_one_reg_encoding(const std::string& reg_name) 
-	const
 {
 	return __encoding_stuff.reg_names_map().at(cstm_strdup(reg_name));
+}
+template<typename CtxType>
+inline auto Assembler::get_one_reg_encoding(CtxType *ctx)
+{
+	//return get_one_reg_encoding(ctx->TokReg()->toString());
+	ANY_JUST_ACCEPT_BASIC(ctx->regOrIdentName());
+	return pop_num();
 }
 
 void Assembler::gen_words(u16 data)
@@ -1164,24 +1173,25 @@ antlrcpp::Any Assembler::visitExprMulDivModEtc
 		//ctx->identName()->accept(this);
 		ANY_JUST_ACCEPT_BASIC(ctx->identName());
 
-		if (!__pass)
-		{
-			pop_str();
-			push_num(0);
-		}
-		else // if (__pass)
-		{
-			auto name = pop_str();
-			auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
+		//if (!__pass)
+		//{
+		//	pop_str();
+		//	push_num(0);
+		//}
+		//else // if (__pass)
+		//{
+		//	auto name = pop_str();
+		//	auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
 
-			// Only allow known symbols to be used.
-			if (!sym->found_as_label())
-			{
-				err(ctx, sconcat("Error:  Unknown symbol called \"",
-					*name, "\"."));
-			}
-			push_num(sym->addr());
-		}
+		//	// Only allow known symbols to be used.
+		//	if (!sym->found_as_label())
+		//	{
+		//		err(ctx, sconcat("Error:  Unknown symbol called \"",
+		//			*name, "\"."));
+		//	}
+		//	push_num(sym->addr());
+		//}
+		get_sym_address(ctx);
 	}
 	else ANY_ACCEPT_IF_BASIC(ctx->currPc())
 	else
@@ -1233,6 +1243,34 @@ antlrcpp::Any Assembler::visitExprLogNot
 
 
 // Last set of token stuff
+antlrcpp::Any Assembler::visitRegOrIdentName
+	(AssemblerGrammarParser::RegOrIdentNameContext *ctx)
+{
+	if (ctx->TokReg())
+	{
+		if (__pass)
+		{
+			auto name = cstm_strdup(ctx->TokReg()->toString());
+			auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
+
+			if (sym->found_as_label())
+			{
+				warn(ctx, sconcat("The register encoding, ",
+					"**NOT** the symbol value, will be used for token ",
+					*name, "!"));
+			}
+		}
+		push_num(get_one_reg_encoding(ctx->TokReg()->toString()));
+	}
+	else if (ctx->identName())
+	{
+		ANY_JUST_ACCEPT_BASIC(ctx->identName());
+
+		get_sym_address(ctx);
+	}
+
+	return nullptr;
+}
 antlrcpp::Any Assembler::visitIdentName
 	(AssemblerGrammarParser::IdentNameContext *ctx)
 {
