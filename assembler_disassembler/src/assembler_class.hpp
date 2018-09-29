@@ -274,6 +274,8 @@ private:		// visitor functions
 		(AssemblerGrammarParser::DotDb16DirectiveContext *ctx);
 	antlrcpp::Any visitDotDb8Directive
 		(AssemblerGrammarParser::DotDb8DirectiveContext *ctx);
+	antlrcpp::Any visitDotEquDirective
+		(AssemblerGrammarParser::DotEquDirectiveContext *ctx);
 
 	// Expression parsing
 	antlrcpp::Any visitExpr

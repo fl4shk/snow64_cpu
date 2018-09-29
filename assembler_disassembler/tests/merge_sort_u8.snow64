@@ -1,0 +1,134 @@
+start:
+{
+	ldu32 dsp, dzero, dzero, const__above_top_of_stack
+	ldu8 dsp, dzero, dsp, 0
+
+	bra main
+}
+
+global_vars:
+var__start__sorted_data:
+	.space 8
+var__end__sorted_data:
+
+
+global_constants:
+const__above_top_of_stack:
+	.db32 0x10000
+
+const__start__data_to_sort:
+	.db8 3, 2, 6, 1, 9, 9, 4
+const__end__data_to_sort:
+const__align__data_to_sort:
+	.db8 0
+
+
+
+.org 0x1000
+main:
+{
+	// Space for du0 and dlr
+	.equ __stack_space (2 + 8)
+	.equ __const_offset__bottom_up_merge_sort_u8 \
+		(__const__addr__bottom_up_merge_sort_u8 - __constants)
+	.equ __const_offset__addresses__data_to_sort \
+		(__const__addresses__data_to_sort - __constants)
+	.equ __const_offset__addresses__sorted_data \
+		(__const__addresses__sorted_data - __constants)
+
+
+	ldu8 dfp, dsp, dzero, 0
+
+	ldu8 dsp, dsp, dzero, -__stack_space
+
+
+
+__constants:
+__const__addr__bottom_up_merge_sort_u8:
+	.db16 bottom_up_merge_sort_u8, 0
+
+__const__addresses__data_to_sort:
+	.db16 const__start__data_to_sort, const__end__data_to_sort
+
+__const__addresses__sorted_data:
+	.db16 var__start__sorted_data, var__end__sorted_data
+
+}
+
+.org 0x4000
+bottom_up_merge_sort_u8:
+{
+
+__constants:
+__const__addr__bottom_up_merge_u8:
+	.db16 bottom_up_merge_u8
+__const__addr__copy_array_u8:
+	.db16 copy_array_u8
+}
+
+
+bottom_up_merge_u8:
+{
+	jmp dlr
+}
+
+copy_array_u8:
+{
+	.equ __stack_space (8 * 2)
+
+	.equ __fp_offset__B (-(8 * 2))
+	.equ __fp_offset__A (-(8 * 1))
+	.equ __fp_offset__n (-(8 * 0))
+
+	.equ __sp_offset__i (8 * 0)
+	.equ __sp_offset__temp (8 * 1)
+
+
+	ldu8 dfp, dsp, dzero, 0
+
+	ldu8 dsp, dsp, dzero, -__stack_space
+
+
+
+	// "&B" in du0
+	ldu64 du0, dfp, dzero, __fp_offset__B
+
+	// "&A" in du1
+	ldu64 du1, dfp, dzero, __fp_offset__A
+
+	// "n" in du2
+	ldu64 du2, dfp, dzero, __fp_offset__n
+
+	// "i" in du3
+	ldu64 du3, dsp, dzero, __sp_offset__i
+	// "temp" in du4
+	ldu64 du4, dsp, dzero, __sp_offset__temp
+
+
+	// for (i=0; i<n; ++i)
+	addis du3, du3, 0
+__loop_start:
+	// temp = (i < n);
+	slts du4, du3, du2
+	bfal du4, __after_loop
+
+	// du5 is "A[i]" 
+	ldu64 du5, dzero, du1, 0
+	ldu8 du5, du5, du3, 0
+
+	// du6 is "B[i]"
+	ldu64 du6, dzero, du1, 0
+	ldu8 du6, du6, du3, 0
+
+	// A[i] = B[i];
+	adds du5, du5, du6
+
+	// ++i
+	addis du3, du3, 1
+	bra __loop_start
+__after_loop:
+
+
+	ldu8 dsp, dsp, dzero, __stack_space
+	jmp dlr
+}

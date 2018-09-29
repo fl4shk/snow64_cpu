@@ -145,6 +145,7 @@ directive:
 	| dotDb32Directive
 	| dotDb16Directive
 	| dotDb8Directive
+	| dotEquDirective
 	;
 
 
@@ -177,6 +178,10 @@ dotDb16Directive:
 // Raw 8-bit constants
 dotDb8Directive:
 	TokDotDb8 expr ((TokComma expr)*)
+	;
+
+dotEquDirective:
+	TokDotEqu identName expr
 	;
 
 // Expression parsing.  This part of the grammar is borrowed from a
@@ -321,7 +326,7 @@ currPc: TokPeriod ;
 // catch more (all?) syntax errors.
 // So that means no raw '...' stuff in the parser rules.
 
-LexWhitespace: (' ' | '\t') -> skip ;
+LexWhitespace: (' ' | '\t' | '\\\n' ) -> skip ;
 LexLineComment: ('//' | ';') (~ '\n')* -> skip ;
 
 TokOpLogical: ('&&' | '||') ;
@@ -416,6 +421,7 @@ TokDotDb64: '.db64' ;
 TokDotDb32: '.db32' ;
 TokDotDb16: '.db16' ;
 TokDotDb8: '.db8' ;
+TokDotEqu: '.equ' ;
 
 // Punctuation, etc.
 TokPeriod: '.' ;

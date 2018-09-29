@@ -351,6 +351,7 @@ antlrcpp::Any Assembler::visitDirective
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb32Directive())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb16Directive())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb8Directive())
+	else ANY_ACCEPT_IF_BASIC(ctx->dotEquDirective())
 	else
 	{
 		err(ctx, "visitDirective():  Eek!");
@@ -843,6 +844,31 @@ antlrcpp::Any Assembler::visitDotDb8Directive
 		expr->accept(this);
 		gen_8(pop_num());
 	}
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitDotEquDirective
+	(AssemblerGrammarParser::DotEquDirectiveContext *ctx)
+{
+	ANY_JUST_ACCEPT_BASIC(ctx->identName());
+	auto name = pop_str();
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto expr = pop_num();
+
+	{
+	auto sym = sym_tbl().find_in_this_blklev(__curr_scope_node, name);
+	if ((sym != nullptr) && !__pass && sym->found_as_label())
+	{
+		err(ctx, sconcat("Error:  Cannot have two identical identifers!  ",
+			"The offending identifier is \"", *name, "\"\n"));
+	}
+	}
+	auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
+
+	sym->set_found_as_label(true);
+	sym->set_addr(expr);
+
 
 	return nullptr;
 }
