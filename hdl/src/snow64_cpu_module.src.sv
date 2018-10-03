@@ -8,7 +8,6 @@
 module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 	output PkgSnow64Cpu::PortOut_Cpu out);
 
-	localparam __NUM_BYTES__INSTR = `WIDTH__SNOW64_INSTR / 8;
 
 	PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
 		__in_inst_fake_instr_cache__req_read;

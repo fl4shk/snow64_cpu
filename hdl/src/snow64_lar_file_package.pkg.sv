@@ -73,18 +73,6 @@ typedef struct packed
 	// WriteTypSt)
 	LarData non_ldst_data;
 
-
-	//// Which shared data are we writing to (used for WriteTypOnlyData and
-	//// WriteTypDataAndType)
-	//// This is used so that writing to the array of shared data can be done
-	//// without actually looking at the stored tag of the metadata.
-	//// 
-	//// This may cause loads and stores to slow down?  I'll try to find a
-	//// way to prevent that, but I'll take slower loads and stores over not
-	//// being able to fit my LAR file into a real FPGA.
-	//LarTag non_ldst_tag;
-
-
 	// Address to write into the LAR file (used for WriteTypLd and
 	// WriteTypSt)
 	PkgSnow64Cpu::CpuAddr ldst_addr;

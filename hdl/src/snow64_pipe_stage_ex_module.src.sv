@@ -7,7 +7,7 @@
 
 
 module Snow64PipeStageEx(input logic clk,
-	input PortIn_Snow64PipeStageEx_FromControlUnit in_from_ctrl_unit,
+	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
 	input PortIn_Snow64PipeStageEx_FromPipeStageIfId
 		in_from_pipe_stage_if_id,
 	output PortOut_Snow64PipeStageEx_ToPipeStageIfId
