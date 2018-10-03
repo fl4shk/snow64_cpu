@@ -2,6 +2,7 @@ include(src/include/misc_defines.m4)dnl
 define(`INTEGER_TYPES',`_CODE(uint8\_t), _CODE(int8\_t), _CODE(uint16\_t),
 	_CODE(int16\_t), _CODE(uint32\_t), _CODE(int32\_t), _CODE(uint64\_t),
 	and _CODE(int64\_t)')dnl
+
 # Snow64 BFloat16 Details
 * General Notes
 	* A _ITALIC(BFloat16) is simply the high 16-bit half of an IEEE binary32

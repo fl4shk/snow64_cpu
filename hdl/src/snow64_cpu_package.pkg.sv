@@ -86,5 +86,23 @@ typedef struct packed
 } PortOut_Cpu;
 
 
+// Used for operand forwarding
+typedef struct packed
+{
+	logic valid;
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
+	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
+} ComputedData;
+
+typedef struct packed
+{
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] data_offset;
+	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
+	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] data;
+	logic [`MSB_POS__SNOW64_LAR_FILE_SHAREDDATA_BASE_ADDR:0] base_addr;
+} TrueLarData;
+
 
 endpackage : PkgSnow64Cpu

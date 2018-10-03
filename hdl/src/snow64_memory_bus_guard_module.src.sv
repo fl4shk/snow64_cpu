@@ -175,9 +175,9 @@ module Snow64MemoryBusGuard(input logic clk,
 	endtask : prep_mem_write
 
 
-	// Stage 0:  Accept a request, drive memory bus.
 	always @(posedge clk)
 	begin
+		// Stage 0:  Accept a request, drive memory bus.
 		// If we're stalling, that means we can't drive the memory bus, and
 		// therefore we have nothing to send down the pipe to later stages.
 		if (!__stall)
@@ -238,22 +238,17 @@ module Snow64MemoryBusGuard(input logic clk,
 			real_out_req_read_data.cmd_accepted <= 0;
 			real_out_req_write_data.cmd_accepted <= 0;
 		end
-	end
 
-	// Stage 1:  Idle while the memory (or memory controller, as the case
-	// may be) sees our request and synchronously drives its own outputs.
-	always_ff @(posedge clk)
-	begin
+		// Stage 1:  Idle while the memory (or memory controller, as the
+		// case may be) sees our request and synchronously drives its own
+		// outputs.
 		if (!__stall)
 		begin
 			__stage_1_to_2__req_type <= __stage_0_to_1__req_type;
 		end
-	end
 
-	// Stage 2:  Let requester know that stuff is done.
-	// Here, it's possible
-	always_ff @(posedge clk)
-	begin
+		// Stage 2:  Let requester know that stuff is done.
+		// Here, it's possible
 		if (!__stall)
 		begin
 			case (__stage_1_to_2__req_type)

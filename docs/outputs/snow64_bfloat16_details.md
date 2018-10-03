@@ -1,4 +1,5 @@
- # Snow64 BFloat16 Details
+ 
+# Snow64 BFloat16 Details
 * General Notes
 	* A <i>BFloat16</i> is simply the high 16-bit half of an IEEE binary32
 	float.

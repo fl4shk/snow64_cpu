@@ -1,10 +1,14 @@
 `include "src/snow64_cpu_defines.header.sv"
 `include "src/snow64_lar_file_defines.header.sv"
+`include "src/snow64_pipe_stage_structs.header.sv"
+
+
 
 
 module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 	output PkgSnow64Cpu::PortOut_Cpu out);
 
+	localparam __NUM_BYTES__INSTR = `WIDTH__SNOW64_INSTR / 8;
 
 	PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
 		__in_inst_fake_instr_cache__req_read;
@@ -14,8 +18,10 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 		__in_inst_lar_file__rd_c;
 	PkgSnow64LarFile::PartialPortIn_LarFile_Write __in_inst_lar_file__wr;
 
+
 	PkgSnow64MemoryBusGuard::PartialPortIn_MemoryBusGuard_MemAccess
 		__in_inst_mem_bus_guard;
+	assign __in_inst_mem_bus_guard = in;
 
 	PkgSnow64InstrCache::PartialPortOut_InstrCache_ReqRead
 		__out_inst_fake_instr_cache__req_read;
@@ -30,8 +36,11 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 		__out_inst_lar_file__rd_shareddata_c;
 	PkgSnow64LarFile::PartialPortOut_LarFile_Write __out_inst_lar_file__wr;
 
+
 	PkgSnow64MemoryBusGuard::PartialPortOut_MemoryBusGuard_MemAccess
 		__out_inst_mem_bus_guard;
+	assign out = __out_inst_mem_bus_guard;
+
 
 	Snow64MemoryAccessors __inst_mem_accessors(.clk(clk),
 		.in_fake_instr_cache__req_read
@@ -56,8 +65,29 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 		.out_mem_bus_guard(__out_inst_mem_bus_guard));
 
 
-	assign __in_inst_mem_bus_guard = in;
-	assign out = __out_inst_mem_bus_guard;
 
+	//always @(*) __in_inst_lar_file__rd_a
+	//	= ;
+
+
+	//always @(*) __in_inst_lar_file__rd_a
+	//	= __out_inst_instr_decoder.ra_index;
+	//always @(*) __in_inst_lar_file__rd_b
+	//	= __out_inst_instr_decoder.rb_index;
+	//always @(*) __in_inst_lar_file__rd_c
+	//	= __out_inst_instr_decoder.rc_index;
+
+
+
+	//initial
+	//begin
+	//	__in_inst_fake_instr_cache__req_read = 0;
+
+	//	__in_inst_lar_file__rd_a = 0;
+	//	__in_inst_lar_file__rd_b = 0;
+	//	__in_inst_lar_file__rd_c = 0;
+	//	__in_inst_lar_file__wr = 0;
+
+	//end
 
 endmodule

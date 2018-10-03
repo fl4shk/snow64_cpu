@@ -1,4 +1,5 @@
 include(src/include/misc_defines.m4)dnl
+
 # Snow64 Instruction Cache Details
 * General Notes
 	* The instruction cache is 32 kiB.

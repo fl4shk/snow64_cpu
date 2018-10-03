@@ -27,6 +27,12 @@ module Snow64InstrDecoder
 	always @(*) out.rb_index = __iog0_instr.rb_index;
 	always @(*) out.rc_index = __iog0_instr.rc_index;
 
+	always @(*) out.forced_64_bit_integers
+		= ((__iog0_instr.group == 0)
+		&& ((__iog0_instr.oper == PkgSnow64InstrDecoder::Shl_ThreeRegs)
+		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Shr_ThreeRegs)
+		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Not_ThreeRegs)));
+
 
 	always @(*)
 	begin
@@ -43,6 +49,7 @@ module Snow64InstrDecoder
 				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
 				PkgSnow64InstrDecoder::WIDTH__IOG0_SIMM12,
 				__iog0_instr.simm12);
+			out.decoded_stall_type = PkgSnow64InstrDecoder::DecStalTypNone;
 		end
 
 		1:
@@ -60,6 +67,8 @@ module Snow64InstrDecoder
 				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
 				PkgSnow64InstrDecoder::WIDTH__IOG1_SIMM20,
 				__iog1_instr.simm20);
+			out.decoded_stall_type
+				= PkgSnow64InstrDecoder::DecStalTypEndsInEx;
 		end
 
 		2:
@@ -76,6 +85,8 @@ module Snow64InstrDecoder
 				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
 				PkgSnow64InstrDecoder::WIDTH__IOG2_SIMM12,
 				__iog2_instr.simm12);
+			out.decoded_stall_type
+				= PkgSnow64InstrDecoder::DecStalTypEndsInWb;
 		end
 
 		3:
@@ -92,6 +103,8 @@ module Snow64InstrDecoder
 				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,
 				PkgSnow64InstrDecoder::WIDTH__IOG3_SIMM12,
 				__iog3_instr.simm12);
+			out.decoded_stall_type
+				= PkgSnow64InstrDecoder::DecStalTypEndsInWb;
 		end
 
 		//4:
@@ -116,6 +129,7 @@ module Snow64InstrDecoder
 			out.oper = 0;
 			out.nop = 1;
 			out.signext_imm = 0;
+			out.decoded_stall_type = PkgSnow64InstrDecoder::DecStalTypNone;
 		end
 
 		endcase

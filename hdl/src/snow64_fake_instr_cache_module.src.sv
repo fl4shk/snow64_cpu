@@ -74,7 +74,7 @@ module Snow64FakeInstrCache(input logic clk,
 					out_mem_access.req <= 0;
 					out_mem_access.addr <= in_req_read.addr;
 
-					out_req_read.valid <= 0;
+					//out_req_read.valid <= 1;
 
 					__state <= PkgSnow64InstrCache::StWaitForMem;
 
@@ -87,7 +87,7 @@ module Snow64FakeInstrCache(input logic clk,
 			else
 			begin
 				out_mem_access.req <= 0;
-				out_req_read.valid <= 0;
+				//out_req_read.valid <= 0;
 			end
 		end
 
@@ -97,7 +97,7 @@ module Snow64FakeInstrCache(input logic clk,
 
 			if (in_mem_access.valid)
 			begin
-				out_req_read.valid <= 1;
+				//out_req_read.valid <= 1;
 				__state <= PkgSnow64InstrCache::StIdle;
 				__line <= in_mem_access.data;
 
