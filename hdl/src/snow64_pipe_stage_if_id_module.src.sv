@@ -3,9 +3,6 @@
 `include "src/snow64_pipe_stage_structs.header.sv"
 
 
-
-
-
 module Snow64PipeStageIfId(input logic clk,
 	input PortIn_Snow64PipeStageIfId_FromInstrCache in_from_instr_cache,
 	input PortIn_Snow64PipeStageIfId_FromPipeStageEx in_from_pipe_stage_ex,
@@ -37,54 +34,62 @@ module Snow64PipeStageIfId(input logic clk,
 		__out_inst_instr_decoder.rc_index};
 
 	logic [`MSB_POS__SNOW64_CPU_ADDR:0] __spec_reg_pc;
+	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __following_pc = __spec_reg_pc
+		+ __NUM_BYTES__INSTR;
 
-	//task send_bubble;
-	//	out_to_pipe_stage_ex.decoded_instr <= 0;
+	//wire [`MSB_POS__SNOW64_INSTR:0] __bubble_instr = 0;
+
+	wire __curr_decoded_instr_changes_pc
+		= ((__out_inst_instr_decoder.group == 1)
+		&& (!__out_inst_instr_decoder.nop));
+
+	task send_bubble;
+		out_to_pipe_stage_ex.decoded_instr <= 0;
+	endtask
+
+	task send_curr_instr;
+		out_to_pipe_stage_ex.decoded_instr <= __out_inst_instr_decoder;
+		out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
+	endtask
+
+	//task handle_ldst_instr;
 	//endtask
-
-	//task send_decoded_instr;
-	//	out_to_pipe_stage_ex.decoded_instr <= __out_inst_instr_decoder;
-	//endtask
-
-	//task send_pc;
-	//	out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
-	//endtask
-
-	//task regular_pc_update;
-	//	__spec_reg_pc <= __spec_reg_pc + __NUM_BYTES__INSTR;
-	//endtask
-
 
 
 	initial
 	begin
 		__state = StRegular;
 		__spec_reg_pc = -__NUM_BYTES__INSTR;
-		out_to_instr_cache = 0;
+
 		out_to_pipe_stage_ex = 0;
+		out_to_instr_cache = 0;
 	end
 
 
-	//assign out_to_instr_cache = {1'b1,
-	//	(__spec_reg_pc + __NUM_BYTES__INSTR)};
 
 	always @(*)
 	begin
 		case (__state)
+		StRegular:
+		begin
+			// Do not request an instruction from instr cache if the
+			// current instruction is one that changes the program counter.
+			out_to_instr_cache = (in_from_instr_cache.valid
+				&& __curr_decoded_instr_changes_pc)
+				? 0 : {1'b1, __following_pc};
+		end
 		StChangePc:
 		begin
-			out_to_instr_cache
-				= {1'b1, in_from_pipe_stage_ex.computed_pc};
+			out_to_instr_cache = {1'b1, in_from_pipe_stage_ex.computed_pc};
 		end
 
+		// StWaitForLdStPart0 or StWaitForLdStPart1:
 		default:
 		begin
-			out_to_instr_cache
-				= {1'b1, (__spec_reg_pc + __NUM_BYTES__INSTR)};
+			out_to_instr_cache = {1'b1, __following_pc};
 		end
 		endcase
 	end
-
 
 
 	always @(posedge clk)
@@ -95,107 +100,44 @@ module Snow64PipeStageIfId(input logic clk,
 			if ((!in_from_pipe_stage_ex.stall)
 				&& in_from_instr_cache.valid)
 			begin
-				case (__out_inst_instr_decoder.group)
-				0:
-				begin
-					case (__out_inst_instr_decoder.nop)
-					1'b0:
-					begin
-						//send_decoded_instr();
-						//send_pc();
+				__spec_reg_pc <= __following_pc;
 
-						out_to_pipe_stage_ex.decoded_instr
-							<= __out_inst_instr_decoder;
-						out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
+				case (__out_inst_instr_decoder.nop)
+				1'b0:
+				begin
+					case (__out_inst_instr_decoder.group)
+					// ALU/FPU instructions
+					0:
+					begin
+						send_curr_instr();
 					end
 
-					1'b1:
+					// Control-flow instructions
+					1:
 					begin
-						//send_bubble();
-						out_to_pipe_stage_ex.decoded_instr <= 0;
-					end
-					endcase
-					//regular_pc_update();
-					__spec_reg_pc <= __spec_reg_pc + __NUM_BYTES__INSTR;
-				end
-
-				1:
-				begin
-					case (__out_inst_instr_decoder.nop)
-					1'b0:
-					begin
-						//send_decoded_instr();
-						//send_pc();
-						out_to_pipe_stage_ex.decoded_instr
-							<= __out_inst_instr_decoder;
-						out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
+						send_curr_instr();
 						__state <= StChangePc;
 					end
 
-					1'b1:
+					// Load instructions
+					2:
 					begin
-						//send_bubble();
-						//regular_pc_update();
-						out_to_pipe_stage_ex.decoded_instr <= 0;
-						__spec_reg_pc <= __spec_reg_pc
-							+ __NUM_BYTES__INSTR;
-					end
-					endcase
-				end
-
-				2:
-				begin
-					case (__out_inst_instr_decoder.nop)
-					1'b0:
-					begin
-						//send_decoded_instr();
-						//send_pc();
-						out_to_pipe_stage_ex.decoded_instr
-							<= __out_inst_instr_decoder;
-						out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
+						send_curr_instr();
 						__state <= StWaitForLdStPart0;
 					end
 
-					1'b1:
+					// Store instructions
+					3:
 					begin
-						//send_bubble();
-						out_to_pipe_stage_ex.decoded_instr <= 0;
-					end
-					endcase
-					//regular_pc_update();
-					__spec_reg_pc <= __spec_reg_pc + __NUM_BYTES__INSTR;
-				end
-
-				3:
-				begin
-					case (__out_inst_instr_decoder.nop)
-					1'b0:
-					begin
-						//send_decoded_instr();
-						//send_pc();
-						out_to_pipe_stage_ex.decoded_instr
-							<= __out_inst_instr_decoder;
-						out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
+						send_curr_instr();
 						__state <= StWaitForLdStPart0;
 					end
-
-					1'b1:
-					begin
-						//send_bubble();
-						out_to_pipe_stage_ex.decoded_instr <= 0;
-					end
 					endcase
-					//regular_pc_update();
-					__spec_reg_pc <= __spec_reg_pc + __NUM_BYTES__INSTR;
 				end
 
-				default:
+				1'b1:
 				begin
-					// The instruction was a NOP
-					//send_bubble();
-					//regular_pc_update();
-					out_to_pipe_stage_ex.decoded_instr <= 0;
-					__spec_reg_pc <= __spec_reg_pc + __NUM_BYTES__INSTR;
+					send_bubble();
 				end
 				endcase
 			end
@@ -207,15 +149,13 @@ module Snow64PipeStageIfId(input logic clk,
 			// counter.
 			__spec_reg_pc <= in_from_pipe_stage_ex.computed_pc;
 			__state <= StRegular;
-			//send_bubble();
-			out_to_pipe_stage_ex.decoded_instr <= 0;
+			send_bubble();
 		end
 
 		StWaitForLdStPart0:
 		begin
 			__state <= StWaitForLdStPart1;
-			//send_bubble();
-			out_to_pipe_stage_ex.decoded_instr <= 0;
+			send_bubble();
 		end
 
 		StWaitForLdStPart1:
@@ -225,8 +165,7 @@ module Snow64PipeStageIfId(input logic clk,
 				__state <= StRegular;
 			end
 
-			//send_bubble();
-			out_to_pipe_stage_ex.decoded_instr <= 0;
+			send_bubble();
 		end
 		endcase
 	end

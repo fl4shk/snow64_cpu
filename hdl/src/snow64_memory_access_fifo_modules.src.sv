@@ -72,7 +72,14 @@ module Snow64MemoryAccessReadFifo(input logic clk,
 		begin
 			real_out_req_read.valid <= 0;
 
-			if (real_in_req_read.req)
+			case (real_in_req_read.req)
+			1'b0:
+			begin
+				real_out_to_memory_bus_guard.req <= 0;
+				real_out_req_read.busy <= 0;
+			end
+
+			1'b1:
 			begin
 				__state <= PkgSnow64MemoryAccessFifo::RdFifoStWaitForMem;
 
@@ -83,12 +90,7 @@ module Snow64MemoryAccessReadFifo(input logic clk,
 
 				__cmd_was_accepted <= 0;
 			end
-
-			else // if (!real_in_req_read.req)
-			begin
-				real_out_to_memory_bus_guard.req <= 0;
-				real_out_req_read.busy <= 0;
-			end
+			endcase
 		end
 
 		PkgSnow64MemoryAccessFifo::RdFifoStWaitForMem:
@@ -103,7 +105,7 @@ module Snow64MemoryAccessReadFifo(input logic clk,
 			// already has our data, we can make this work.
 			if ((real_in_from_memory_bus_guard.cmd_accepted
 				|| __cmd_was_accepted)
-				&& (real_in_from_memory_bus_guard.valid))
+				&& real_in_from_memory_bus_guard.valid)
 			begin
 				// Grant the requested data.
 				__state <= PkgSnow64MemoryAccessFifo::RdFifoStIdle;
@@ -192,26 +194,28 @@ module Snow64MemoryAccessWriteFifo(input logic clk,
 		begin
 			real_out_req_write.valid <= 0;
 
-			if (real_in_req_write.req)
+			case (real_in_req_write.req)
+			1'b0:
+			begin
+				real_out_to_memory_bus_guard.req <= 0;
+				real_out_req_write.busy <= 0;
+			end
+
+			1'b1:
 			begin
 				__state <= PkgSnow64MemoryAccessFifo::WrFifoStWaitForMem;
 
 				real_out_to_memory_bus_guard.req <= 1;
-				real_out_to_memory_bus_guard.addr <= real_in_req_write.addr;
+				real_out_to_memory_bus_guard.addr
+					<= real_in_req_write.addr;
 				real_out_to_memory_bus_guard.data
 					<= real_in_req_write.data;
-
 
 				real_out_req_write.busy <= 1;
 
 				__cmd_was_accepted <= 0;
 			end
-
-			else // if (!real_in_req_write.req)
-			begin
-				real_out_to_memory_bus_guard.req <= 0;
-				real_out_req_write.busy <= 0;
-			end
+			endcase
 		end
 
 		PkgSnow64MemoryAccessFifo::WrFifoStWaitForMem:
@@ -226,15 +230,13 @@ module Snow64MemoryAccessWriteFifo(input logic clk,
 			// already has our data, we can make this work.
 			if ((real_in_from_memory_bus_guard.cmd_accepted
 				|| __cmd_was_accepted)
-				&& (real_in_from_memory_bus_guard.valid))
+				&& real_in_from_memory_bus_guard.valid)
 			begin
 				// Grant the requested data.
 				__state <= PkgSnow64MemoryAccessFifo::WrFifoStIdle;
 
 				real_out_req_write.valid <= 1;
 				real_out_req_write.busy <= 0;
-				//real_out_req_write.data
-				//	<= real_in_from_memory_bus_guard.data;
 			end
 		end
 		endcase

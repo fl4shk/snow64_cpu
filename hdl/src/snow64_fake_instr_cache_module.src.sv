@@ -2,6 +2,8 @@
 `include "src/snow64_lar_file_defines.header.sv"
 
 // One line of instruction cache...
+// This can easily be replaced with a REAL instruction cache, as the rest
+// of the logic of the CPU is set up for it.
 module Snow64FakeInstrCache(input logic clk,
 	input PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
 		in_req_read,
@@ -23,8 +25,7 @@ module Snow64FakeInstrCache(input logic clk,
 
 	localparam __WIDTH__BASE_ADDR
 		= `WIDTH__SNOW64_CPU_ADDR - __WIDTH__DATA_OFFSET;
-	localparam __MSB_POS__BASE_ADDR
-		= `WIDTH2MP(__WIDTH__BASE_ADDR);
+	localparam __MSB_POS__BASE_ADDR = `WIDTH2MP(__WIDTH__BASE_ADDR);
 
 	logic [__MSB_POS__DATA_OFFSET:0] __captured_req_data_offset,
 		__curr_req_data_offset;
@@ -55,6 +56,7 @@ module Snow64FakeInstrCache(input logic clk,
 				if (__did_init && (__base_addr == __curr_req_base_addr))
 				begin
 					out_mem_access.req <= 0;
+
 					out_req_read.valid <= 1;
 
 					case (__curr_req_data_offset)
@@ -71,10 +73,12 @@ module Snow64FakeInstrCache(input logic clk,
 
 				else
 				begin
-					out_mem_access.req <= 0;
+					out_mem_access.req <= 1;
 					out_mem_access.addr <= in_req_read.addr;
 
-					//out_req_read.valid <= 1;
+					// The only time the output isn't valid is when there's
+					// a miss.
+					out_req_read.valid <= 0;
 
 					__state <= PkgSnow64InstrCache::StWaitForMem;
 
@@ -87,7 +91,6 @@ module Snow64FakeInstrCache(input logic clk,
 			else
 			begin
 				out_mem_access.req <= 0;
-				//out_req_read.valid <= 0;
 			end
 		end
 
@@ -97,7 +100,7 @@ module Snow64FakeInstrCache(input logic clk,
 
 			if (in_mem_access.valid)
 			begin
-				//out_req_read.valid <= 1;
+				out_req_read.valid <= 1;
 				__state <= PkgSnow64InstrCache::StIdle;
 				__line <= in_mem_access.data;
 
