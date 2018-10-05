@@ -7,7 +7,8 @@ module Snow64RotateLarData
 	input logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
 		in_amount, in_ddest_data_offset,
 	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
-	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_data, out_mask);
+	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		out_data, out_mask, out_inv_mask);
 
 
 	localparam __MSB_POS__DATA = `MSB_POS__SNOW64_LAR_FILE_DATA;
@@ -25,19 +26,30 @@ module Snow64RotateLarData
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__rotated_data_8, __rotated_data_16,
 		__rotated_data_32, __rotated_data_64,
-		__mask_8, __mask_16, __mask_32, __mask_64;
+		__mask_8, __mask_16, __mask_32, __mask_64,
+		__inv_mask_8, __inv_mask_16, __inv_mask_32, __inv_mask_64;
+
+
+	initial
+	begin
+		{out_data, out_mask, out_inv_mask} = 0;
+	end
 
 	always @(*)
 	begin
 		case (in_type_size)
 		PkgSnow64Cpu::IntTypSz8:
-			{out_data, out_mask} = {__rotated_data_8, __mask_8};
+			{out_data, out_mask, out_inv_mask}
+				= {__rotated_data_8, __mask_8, __inv_mask_8};
 		PkgSnow64Cpu::IntTypSz16:
-			{out_data, out_mask} = {__rotated_data_16, __mask_16};
+			{out_data, out_mask, out_inv_mask}
+				= {__rotated_data_16, __mask_16, __inv_mask_16};
 		PkgSnow64Cpu::IntTypSz32:
-			{out_data, out_mask} = {__rotated_data_32, __mask_32};
+			{out_data, out_mask, out_inv_mask}
+				= {__rotated_data_32, __mask_32, __inv_mask_32};
 		PkgSnow64Cpu::IntTypSz64:
-			{out_data, out_mask} = {__rotated_data_64, __mask_64};
+			{out_data, out_mask, out_inv_mask}
+				= {__rotated_data_64, __mask_64, __inv_mask_64};
 		endcase
 	end
 
@@ -141,7 +153,8 @@ module Snow64RotateLarData
 	`define MASK_64(x) (256'hffff_ffff_ffff_ffff << (x * 64))
 
 	`define PERF_MASK(width, num) \
-		num: __mask_``width = `MASK_``width(num)
+		num: {__mask_``width, __inv_mask_``width} \
+			= {`MASK_``width(num), ~`MASK_``width(num)}
 
 	always @(*)
 	begin
