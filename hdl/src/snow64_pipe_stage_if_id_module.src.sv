@@ -80,7 +80,8 @@ module Snow64PipeStageIfId(input logic clk,
 		end
 		StChangePc:
 		begin
-			out_to_instr_cache = {1'b1, in_from_pipe_stage_ex.computed_pc};
+			out_to_instr_cache = {1'b1,
+				in_from_pipe_stage_ex.computed_pc};
 		end
 
 		// StWaitForLdStPart0 or StWaitForLdStPart1:
@@ -115,7 +116,10 @@ module Snow64PipeStageIfId(input logic clk,
 					// Control-flow instructions
 					1:
 					begin
-						send_curr_instr();
+						//send_curr_instr();
+						out_to_pipe_stage_ex.decoded_instr
+							<= __out_inst_instr_decoder;
+						out_to_pipe_stage_ex.pc_val <= __following_pc;
 						__state <= StChangePc;
 					end
 
