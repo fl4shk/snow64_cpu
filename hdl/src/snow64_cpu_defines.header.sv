@@ -39,4 +39,5 @@
 `define MSB_POS__SNOW64_SIZE_2 `WIDTH2MP(`WIDTH__SNOW64_SIZE_2)
 
 
+
 `endif		// src__slash__snow64_cpu_defines_header_sv

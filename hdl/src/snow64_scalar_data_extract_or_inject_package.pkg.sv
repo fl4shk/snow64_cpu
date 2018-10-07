@@ -14,10 +14,13 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	DataOffset data_offset;
 } PortIn_ScalarDataExtractor;
+
 typedef struct packed
 {
 	ScalarData data;
 } PortOut_ScalarDataExtractor;
+
+
 
 typedef struct packed
 {
@@ -27,8 +30,6 @@ typedef struct packed
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	DataOffset data_offset;
 } PortIn_ScalarDataInjector;
-
-
 
 typedef struct packed
 {
