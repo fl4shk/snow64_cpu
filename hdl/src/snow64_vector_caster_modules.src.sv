@@ -493,8 +493,7 @@ endmodule
 // BFloat16 (to/from int) vector casting module.
 module Snow64ToOrFromBFloat16VectorCaster(input logic clk,
 	input PkgSnow64Caster::PortIn_ToOrFromBFloat16VectorCaster in,
-	output PkgSnow64Caster::PortOut_ToOrFromBFloat16VectorCaster
-		out);
+	output PkgSnow64Caster::PortOut_ToOrFromBFloat16VectorCaster out);
 
 	localparam __WIDTH__STATE = 2;
 	localparam __MSB_POS__STATE = `WIDTH2MP(__WIDTH__STATE);

@@ -54,6 +54,12 @@ typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
 	NeededCastTypNone
 } NeededCastType;
 
+typedef enum logic
+{
+	CastStNoWait,
+	CastStWaitForBFloat16Caster
+} CastState;
+
 endpackage : PkgSnow64PsEx
 
 module Snow64PsExOperandForwarder(input logic clk,
@@ -361,27 +367,27 @@ endmodule
 
 
 module Snow64PsExCastScalars(input logic clk,
-	input logic in_start,
+	input logic in_start, in_forced_64_bit_integers,
 	input PkgSnow64PsEx::TrueLarData
 		in_true_ra_data, in_true_rb_data, in_true_rc_data,
+	input logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
+		in_dsrc0_needed_cast_type, in_dsrc1_needed_cast_type,
 	input logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
 		in_uncasted_rb_scalar_data, in_uncasted_rc_scalar_data,
 	output logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
 		out_casted_rb_scalar_data, out_casted_rc_scalar_data,
 	output logic out_valid);
 
-	enum logic
-	{
-		StNoWait,
-		StWaitForBFloat16Caster
-	} __state;
+	logic __state;
 
 
 	wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
 		__dsrc0__uncasted_scalar_data = in_uncasted_rb_scalar_data,
 		__dsrc1__uncasted_scalar_data = in_uncasted_rc_scalar_data;
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-		__ddest__int_type_size = in_true_ra_data.int_type_size,
+		__ddest__int_type_size = in_forced_64_bit_integers
+			? PkgSnow64Cpu::IntTypSz64
+			: in_true_ra_data.int_type_size,
 		__dsrc0__int_type_size = in_true_rb_data.int_type_size,
 		__dsrc1__int_type_size = in_true_rc_data.int_type_size;
 
@@ -390,21 +396,41 @@ module Snow64PsExCastScalars(input logic clk,
 		__dsrc0__data_type = in_true_rb_data.data_type,
 		__dsrc1__data_type = in_true_rc_data.data_type;
 
-	wire __ddest__is_signed_int
-		= (__ddest__data_type == PkgSnow64Cpu::DataTypSgnInt);
+	//wire __ddest__is_signed_int
+	//	= (__ddest__data_type == PkgSnow64Cpu::DataTypSgnInt);
 	wire __dsrc0__is_signed_int
 		= (__dsrc0__data_type == PkgSnow64Cpu::DataTypSgnInt);
 	wire __dsrc1__is_signed_int
 		= (__dsrc1__data_type == PkgSnow64Cpu::DataTypSgnInt);
 
 
-	logic __dsrc0_start_bfloat16_cast_from_int,
+
+	wire __dsrc0_start_bfloat16_cast_from_int,
 		__dsrc1_start_bfloat16_cast_from_int,
 		__dsrc0_start_bfloat16_cast_to_int,
 		__dsrc1_start_bfloat16_cast_to_int;
 
-	logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
-		__dsrc0_needed_cast_type, __dsrc1_needed_cast_type;
+	wire __starting_any_cast = (in_start
+		&& (__state == PkgSnow64PsEx::CastStNoWait));
+
+	assign __dsrc0_start_bfloat16_cast_from_int
+		= (__starting_any_cast && (in_dsrc0_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypIntToBFloat16));
+	assign __dsrc1_start_bfloat16_cast_from_int
+		= (__starting_any_cast && (in_dsrc1_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypIntToBFloat16));
+	assign __dsrc0_start_bfloat16_cast_to_int
+		= (__starting_any_cast && (in_dsrc0_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypBFloat16ToInt));
+	assign __dsrc1_start_bfloat16_cast_to_int
+		= (__starting_any_cast && (in_dsrc1_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypBFloat16ToInt));
+	wire __starting_bfloat16_cast
+		= (__dsrc0_start_bfloat16_cast_from_int
+		|| __dsrc1_start_bfloat16_cast_from_int
+		|| __dsrc0_start_bfloat16_cast_to_int
+		|| __dsrc1_start_bfloat16_cast_to_int);
+
 
 	PkgSnow64Caster::PortIn_IntScalarCaster
 		__in_inst_dsrc0_int_scalar_caster,
@@ -510,69 +536,93 @@ module Snow64PsExCastScalars(input logic clk,
 
 	initial
 	begin
-		__state = StNoWait;
+		__state = PkgSnow64PsEx::CastStNoWait;
 
-		{__dsrc0_start_bfloat16_cast_from_int,
-			__dsrc1_start_bfloat16_cast_from_int,
-			__dsrc0_start_bfloat16_cast_to_int,
-			__dsrc1_start_bfloat16_cast_to_int} = 0;
-
-		{__dsrc0_needed_cast_type, __dsrc1_needed_cast_type} = 0;
 
 		{out_casted_rb_scalar_data, out_casted_rc_scalar_data} = 0;
 		out_valid = 0;
 	end
 
 
-	`define SET_NEEDED_CAST_TYPE(some_true_lar_data, out) \
-		case (in_true_ra_data.data_type) \
-		PkgSnow64Cpu::DataTypBFloat16: \
+
+	`define SET_OUT_CASTED_SCALAR_DATA(reg_name, dsrc_num) \
+	always @(*) \
+	begin \
+		case (out_valid) \
+		1'b0: \
 		begin \
-			case (some_true_lar_data.data_type) \
-			PkgSnow64Cpu::DataTypBFloat16: \
-			begin \
-				out = PkgSnow64PsEx::NeededCastTypNone; \
-			end \
-			\
-			default: \
-			begin \
-				out = PkgSnow64PsEx::NeededCastTypIntToBFloat16; \
-			end \
-			endcase \
+			out_casted_``reg_name``_scalar_data = 0; \
 		end \
 		\
-		/* We don't care about PkgSnow64Cpu::DataTypReserved, so we'll */ \
-		/* pretend it doesn't exist. */ \
-		default: \
+		1'b1: \
 		begin \
-			case (some_true_lar_data.data_type) \
-			PkgSnow64Cpu::DataTypBFloat16: \
+			case (in_dsrc``dsrc_num``_needed_cast_type) \
+			PkgSnow64PsEx::NeededCastTypIntToInt: \
 			begin \
-				out = PkgSnow64PsEx::NeededCastTypBFloat16ToInt; \
+				out_casted_``reg_name``_scalar_data \
+					= __out_inst_dsrc``dsrc_num``_int_scalar_caster.data; \
 			end \
 			\
-			default: \
+			PkgSnow64PsEx::NeededCastTypIntToBFloat16: \
 			begin \
-				out = PkgSnow64PsEx::NeededCastTypIntToInt; \
+				out_casted_``reg_name``_scalar_data \
+					= __out_inst_dsrc``dsrc_num``_bfloat16_cast_from_int \
+					.data; \
+			end \
+			\
+			PkgSnow64PsEx::NeededCastTypBFloat16ToInt: \
+			begin \
+				out_casted_``reg_name``_scalar_data \
+					= __out_inst_dsrc``dsrc_num``_bfloat16_cast_to_int \
+					.data; \
+			end \
+			\
+			PkgSnow64PsEx::NeededCastTypNone: \
+			begin \
+				out_casted_``reg_name``_scalar_data \
+					= in_uncasted_``reg_name``_scalar_data; \
 			end \
 			endcase \
 		end \
-		endcase
-
-	always @(*)
-	begin
-		`SET_NEEDED_CAST_TYPE(in_true_rb_data, __dsrc0_needed_cast_type)
+		endcase \
 	end
 
-	always @(*)
-	begin
-		`SET_NEEDED_CAST_TYPE(in_true_rc_data, __dsrc1_needed_cast_type)
-	end
-	`undef SET_NEEDED_CAST_TYPE
+	`SET_OUT_CASTED_SCALAR_DATA(rb, 0)
+	`SET_OUT_CASTED_SCALAR_DATA(rc, 1)
+	`undef SET_OUT_CASTED_SCALAR_DATA
 
 
 	always_ff @(posedge clk)
 	begin
+		case (__state)
+		PkgSnow64PsEx::CastStNoWait:
+		begin
+			case (__starting_bfloat16_cast)
+			1'b0:
+			begin
+				out_valid <= __starting_any_cast;
+			end
+
+			1'b1:
+			begin
+				__state <= PkgSnow64PsEx::CastStWaitForBFloat16Caster;
+				out_valid <= 1'b0;
+			end
+			endcase
+		end
+
+		PkgSnow64PsEx::CastStWaitForBFloat16Caster:
+		begin
+			if (__out_inst_dsrc0_bfloat16_cast_from_int.valid
+				|| __out_inst_dsrc1_bfloat16_cast_from_int.valid
+				|| __out_inst_dsrc0_bfloat16_cast_to_int.valid
+				|| __out_inst_dsrc1_bfloat16_cast_to_int.valid)
+			begin
+				__state <= PkgSnow64PsEx::CastStNoWait;
+				out_valid <= 1'b1;
+			end
+		end
+		endcase
 	end
 
 
@@ -581,15 +631,281 @@ endmodule
 
 
 module Snow64PsExCastVectors(input logic clk,
-	input logic in_start,
+	input logic in_start, in_forced_64_bit_integers,
 	input PkgSnow64PsEx::TrueLarData
 		in_true_ra_data, in_true_rb_data, in_true_rc_data,
+	input logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
+		in_dsrc0_needed_cast_type, in_dsrc1_needed_cast_type,
 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		out_casted_rb_data, out_casted_rc_data,
-	output wire out_valid);
+		out_casted_rb_vector_data, out_casted_rc_vector_data,
+	output logic out_valid);
+
+
+	logic __state;
+
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__dsrc0__data = in_true_rb_data.data,
+		__dsrc1__data = in_true_rc_data.data;
+
+	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
+		__ddest__int_type_size = in_forced_64_bit_integers
+			? PkgSnow64Cpu::IntTypSz64
+			: in_true_ra_data.int_type_size,
+		__dsrc0__int_type_size = in_true_rb_data.int_type_size,
+		__dsrc1__int_type_size = in_true_rc_data.int_type_size;
+
+	wire [`MSB_POS__SNOW64_CPU_DATA_TYPE:0]
+		__ddest__data_type = in_true_ra_data.data_type,
+		__dsrc0__data_type = in_true_rb_data.data_type,
+		__dsrc1__data_type = in_true_rc_data.data_type;
+
+	wire __ddest__is_signed_int
+		= (__ddest__data_type == PkgSnow64Cpu::DataTypSgnInt);
+	wire __dsrc0__is_signed_int
+		= (__dsrc0__data_type == PkgSnow64Cpu::DataTypSgnInt);
+	wire __dsrc1__is_signed_int
+		= (__dsrc1__data_type == PkgSnow64Cpu::DataTypSgnInt);
+
+	wire __dsrc0_start_bfloat16_cast_from_int,
+		__dsrc1_start_bfloat16_cast_from_int,
+		__dsrc0_start_bfloat16_cast_to_int,
+		__dsrc1_start_bfloat16_cast_to_int;
+
+	wire __starting_any_cast = (in_start
+		&& (__state == PkgSnow64PsEx::CastStNoWait));
+
+	assign __dsrc0_start_bfloat16_cast_from_int
+		= (__starting_any_cast && (in_dsrc0_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypIntToBFloat16));
+	assign __dsrc1_start_bfloat16_cast_from_int
+		= (__starting_any_cast && (in_dsrc1_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypIntToBFloat16));
+	assign __dsrc0_start_bfloat16_cast_to_int
+		= (__starting_any_cast && (in_dsrc0_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypBFloat16ToInt));
+	assign __dsrc1_start_bfloat16_cast_to_int
+		= (__starting_any_cast && (in_dsrc1_needed_cast_type
+		== PkgSnow64PsEx::NeededCastTypBFloat16ToInt));
+	wire __starting_bfloat16_cast
+		= (__dsrc0_start_bfloat16_cast_from_int
+		|| __dsrc1_start_bfloat16_cast_from_int
+		|| __dsrc0_start_bfloat16_cast_to_int
+		|| __dsrc1_start_bfloat16_cast_to_int);
+
+
+	PkgSnow64Caster::PortIn_IntVectorCaster
+		__in_inst_dsrc0_int_vector_caster,
+		__in_inst_dsrc1_int_vector_caster;
+	PkgSnow64Caster::PortOut_IntVectorCaster
+		__out_inst_dsrc0_int_vector_caster,
+		__out_inst_dsrc1_int_vector_caster;
+	Snow64IntVectorCaster __inst_dsrc0_int_vector_caster(.clk(clk),
+		.in(__in_inst_dsrc0_int_vector_caster),
+		.out(__out_inst_dsrc0_int_vector_caster));
+	Snow64IntVectorCaster __inst_dsrc1_int_vector_caster(.clk(clk),
+		.in(__in_inst_dsrc1_int_vector_caster),
+		.out(__out_inst_dsrc1_int_vector_caster));
+
+	// typedef struct packed
+	// {
+	// 	LarData to_cast;
+
+	// 	logic src_type_signedness;
+	// 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
+	// 		src_int_type_size, dst_int_type_size;
+	// } PortIn_IntVectorCaster;
+	assign __in_inst_dsrc0_int_vector_caster
+		= {__dsrc0__data,
+		__dsrc0__is_signed_int,
+		__dsrc0__int_type_size,
+		__ddest__int_type_size};
+	assign __in_inst_dsrc1_int_vector_caster
+		= {__dsrc1__data,
+		__dsrc1__is_signed_int,
+		__dsrc1__int_type_size,
+		__ddest__int_type_size};
+
+
+	PkgSnow64Caster::PortIn_ToOrFromBFloat16VectorCaster
+		__in_inst_dsrc0_tof_bfloat16_vector_caster,
+		__in_inst_dsrc1_tof_bfloat16_vector_caster;
+	PkgSnow64Caster::PortOut_ToOrFromBFloat16VectorCaster
+		__out_inst_dsrc0_tof_bfloat16_vector_caster,
+		__out_inst_dsrc1_tof_bfloat16_vector_caster;
+	Snow64ToOrFromBFloat16VectorCaster
+		__inst_dsrc0_tof_bfloat16_vector_caster(.clk(clk),
+		.in(__in_inst_dsrc0_tof_bfloat16_vector_caster),
+		.out(__out_inst_dsrc0_tof_bfloat16_vector_caster));
+	Snow64ToOrFromBFloat16VectorCaster
+		__inst_dsrc1_tof_bfloat16_vector_caster(.clk(clk),
+		.in(__in_inst_dsrc1_tof_bfloat16_vector_caster),
+		.out(__out_inst_dsrc1_tof_bfloat16_vector_caster));
+
+	// typedef struct packed
+	// {
+	// 	logic start, from_int_or_to_int;
+
+	// 	LarData to_cast;
+	// 	logic type_signedness;
+	// 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	// } PortIn_ToOrFromBFloat16VectorCaster;
+	assign __in_inst_dsrc0_tof_bfloat16_vector_caster
+		= {(__dsrc0_start_bfloat16_cast_from_int
+		|| __dsrc0_start_bfloat16_cast_to_int),
+		__dsrc0_start_bfloat16_cast_to_int,
+		__dsrc0__data,
+
+		// To int:  dsrc0 is BFloat16, ddest is integer
+		(__dsrc0_start_bfloat16_cast_to_int
+		? __ddest__is_signed_int : __dsrc0__is_signed_int),
+		(__dsrc0_start_bfloat16_cast_to_int
+		? __ddest__int_type_size : __dsrc0__int_type_size)};
+	assign __in_inst_dsrc1_tof_bfloat16_vector_caster
+		= {(__dsrc1_start_bfloat16_cast_from_int
+		|| __dsrc1_start_bfloat16_cast_to_int),
+		__dsrc1_start_bfloat16_cast_to_int,
+		__dsrc1__data,
+
+		// To int:  dsrc1 is BFloat16, ddest is integer
+		(__dsrc1_start_bfloat16_cast_to_int
+		? __ddest__is_signed_int : __dsrc1__is_signed_int),
+		(__dsrc1_start_bfloat16_cast_to_int
+		? __ddest__int_type_size : __dsrc1__int_type_size)};
+
+	initial
+	begin
+		__state = PkgSnow64PsEx::CastStNoWait;
+
+		{out_casted_rb_vector_data, out_casted_rc_vector_data} = 0;
+		out_valid = 0;
+	end
+
+
+	`define OUT_INST_TOF_BFLOAT16_VECTOR_CASTER(dsrc_num) \
+		__out_inst_dsrc``dsrc_num``_tof_bfloat16_vector_caster \
+
+	`define SET_OUT_CASTED_VECTOR_DATA(reg_name, dsrc_num) \
+	always @(*) \
+	begin \
+		case (out_valid) \
+		1'b0: \
+		begin \
+			out_casted_``reg_name``_vector_data = 0; \
+		end \
+		\
+		1'b1: \
+		begin \
+			case (in_dsrc``dsrc_num``_needed_cast_type) \
+			PkgSnow64PsEx::NeededCastTypIntToInt: \
+			begin \
+				out_casted_``reg_name``_vector_data \
+					= __out_inst_dsrc``dsrc_num``_int_vector_caster.data; \
+			end \
+			\
+			PkgSnow64PsEx::NeededCastTypIntToBFloat16: \
+			begin \
+				out_casted_``reg_name``_vector_data \
+					= `OUT_INST_TOF_BFLOAT16_VECTOR_CASTER(dsrc_num) \
+					.data; \
+			end \
+			\
+			PkgSnow64PsEx::NeededCastTypBFloat16ToInt: \
+			begin \
+				out_casted_``reg_name``_vector_data \
+					= `OUT_INST_TOF_BFLOAT16_VECTOR_CASTER(dsrc_num) \
+					.data; \
+			end \
+			\
+			PkgSnow64PsEx::NeededCastTypNone: \
+			begin \
+				out_casted_``reg_name``_vector_data \
+					= in_true_``reg_name``_data.data; \
+			end \
+			endcase \
+		end \
+		endcase \
+	end
+
+	`SET_OUT_CASTED_VECTOR_DATA(rb, 0)
+	`SET_OUT_CASTED_VECTOR_DATA(rc, 1)
+	`undef SET_OUT_CASTED_VECTOR_DATA
+	`undef OUT_INST_TOF_BFLOAT16_VECTOR_CASTER
+
+	always_ff @(posedge clk)
+	begin
+		case (__state)
+		PkgSnow64PsEx::CastStNoWait:
+		begin
+			case (__starting_bfloat16_cast)
+			1'b0:
+			begin
+				out_valid <= __starting_any_cast;
+			end
+
+			1'b1:
+			begin
+				__state <= PkgSnow64PsEx::CastStWaitForBFloat16Caster;
+				out_valid <= 1'b0;
+			end
+			endcase
+		end
+
+		PkgSnow64PsEx::CastStWaitForBFloat16Caster:
+		begin
+			if (__out_inst_dsrc0_tof_bfloat16_vector_caster.valid
+				|| __out_inst_dsrc1_tof_bfloat16_vector_caster.valid)
+			begin
+				__state <= PkgSnow64PsEx::CastStNoWait;
+				out_valid <= 1'b1;
+			end
+		end
+		endcase
+	end
+
 endmodule
 
 
+	//`define SET_NEEDED_CAST_TYPE(some_true_lar_data, out) \
+	//always @(*) \
+	//begin \
+	//	case (in_true_ra_data.data_type) \
+	//	PkgSnow64Cpu::DataTypBFloat16: \
+	//	begin \
+	//		case (some_true_lar_data.data_type) \
+	//		PkgSnow64Cpu::DataTypBFloat16: \
+	//		begin \
+	//			out = PkgSnow64PsEx::NeededCastTypNone; \
+	//		end \
+	//		\
+	//		default: \
+	//		begin \
+	//			out = PkgSnow64PsEx::NeededCastTypIntToBFloat16; \
+	//		end \
+	//		endcase \
+	//	end \
+	//	\
+	//	/* We don't care about PkgSnow64Cpu::DataTypReserved, so we'll */ \
+	//	/* pretend it doesn't exist. */ \
+	//	default: \
+	//	begin \
+	//		case (some_true_lar_data.data_type) \
+	//		PkgSnow64Cpu::DataTypBFloat16: \
+	//		begin \
+	//			out = PkgSnow64PsEx::NeededCastTypBFloat16ToInt; \
+	//		end \
+	//		\
+	//		default: \
+	//		begin \
+	//			out = PkgSnow64PsEx::NeededCastTypIntToInt; \
+	//		end \
+	//		endcase \
+	//	end \
+	//	endcase \
+	//end
+
+	//`SET_NEEDED_CAST_TYPE(__true_rb_data, __dsrc0_needed_cast_type)
+	//`SET_NEEDED_CAST_TYPE(__true_rc_data, __dsrc1_needed_cast_type)
+	//`undef SET_NEEDED_CAST_TYPE
 
 
 //module Snow64PsExPerfVectorOperation(input logic clk,
