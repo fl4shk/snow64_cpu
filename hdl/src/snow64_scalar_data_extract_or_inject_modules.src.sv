@@ -4,8 +4,8 @@
 module Snow64ScalarDataExtractor
 	(input PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataExtractor
 		in,
-	output PkgSnow64ScalarDataExtractOrInject
-		::PortOut_ScalarDataExtractor out);
+	output PkgSnow64ScalarDataExtractOrInject::PortOut_ScalarDataExtractor
+		out);
 
 	localparam __MSB_POS__DATA_OFFSET
 		= `MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET;
