@@ -13,20 +13,6 @@
 
 package PkgSnow64PsEx;
 
-//typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_STATE:0]
-//{
-//	StRegular,
-//	//StWaitForBFloat16CastFromInt,
-//	//StWaitForBFloat16CastToInt,
-//	StWaitForScalarCaster,
-//	StWaitForVectorCaster,
-//	StInjectCastedScalarsAndRotate,
-//
-//	StUseCastedScalars,
-//	StUseCastedVectors,
-//	StWaitForMultiCycleIntegerSubmodule,
-//	StWaitForBFloat16VectorFpu
-//} State;
 typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_STATE:0]
 {
 	StRegular,
@@ -35,10 +21,10 @@ typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_STATE:0]
 	StWaitForVectorCaster,
 	StInjectCastedScalars,
 
-	StUseCastedDataSingleCycleDuringStall,
-	StUseCastedDataMultiCycleeDuringStall,
-	StBad0,
-	StBad1
+	StUseUncastedDataMultiCycle,
+	StUseCastedDataSingleCycle,
+	StUseCastedDataMultiCycle,
+	StBad
 } State;
 
 typedef struct packed
@@ -61,10 +47,10 @@ typedef struct packed
 
 typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
 {
+	NeededCastTypNone,
 	NeededCastTypIntToInt,
 	NeededCastTypIntToBFloat16,
-	NeededCastTypBFloat16ToInt,
-	NeededCastTypNone
+	NeededCastTypBFloat16ToInt
 } NeededCastType;
 
 typedef enum logic
@@ -73,18 +59,12 @@ typedef enum logic
 	CastStWaitForBFloat16Caster
 } CastState;
 
+
 endpackage : PkgSnow64PsEx
 
 module Snow64PsExOperandForwarder(input logic clk,
 	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
 	input PkgSnow64PsEx::Results in_curr_results,
-	output Snow64Pipeline_LarFileReadMetadata
-		out_from_lar_file__rd_metadata_a, out_from_lar_file__rd_metadata_b,
-		out_from_lar_file__rd_metadata_c,
-	output Snow64Pipeline_LarFileReadShareddata
-		out_from_lar_file__rd_shareddata_a,
-		out_from_lar_file__rd_shareddata_b,
-		out_from_lar_file__rd_shareddata_c,
 	output PkgSnow64PsEx::TrueLarData
 		out_true_ra_data, out_true_rb_data, out_true_rc_data);
 
@@ -94,12 +74,18 @@ module Snow64PsExOperandForwarder(input logic clk,
 		= `WIDTH2MP(__WIDTH__OPERAND_FORWARDING_CHECK);
 
 
-	assign {out_from_lar_file__rd_metadata_a,
-		out_from_lar_file__rd_metadata_b,
-		out_from_lar_file__rd_metadata_c,
-		out_from_lar_file__rd_shareddata_a,
-		out_from_lar_file__rd_shareddata_b,
-		out_from_lar_file__rd_shareddata_c}
+	Snow64Pipeline_LarFileReadMetadata
+		__from_lar_file__rd_metadata_a, __from_lar_file__rd_metadata_b,
+		__from_lar_file__rd_metadata_c;
+	Snow64Pipeline_LarFileReadShareddata
+		__from_lar_file__rd_shareddata_a, __from_lar_file__rd_shareddata_b,
+		__from_lar_file__rd_shareddata_c;
+	assign {__from_lar_file__rd_metadata_a,
+		__from_lar_file__rd_metadata_b,
+		__from_lar_file__rd_metadata_c,
+		__from_lar_file__rd_shareddata_a,
+		__from_lar_file__rd_shareddata_b,
+		__from_lar_file__rd_shareddata_c}
 		= in_from_ctrl_unit;
 
 
@@ -109,25 +95,25 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 	assign __operand_forwarding_check__ra
 		= {(__past_results_0.valid && (__past_results_0.base_addr
-		== out_from_lar_file__rd_shareddata_a.base_addr)),
+		== __from_lar_file__rd_shareddata_a.base_addr)),
 		(__past_results_1.valid && (__past_results_1.base_addr
-		== out_from_lar_file__rd_shareddata_a.base_addr)),
+		== __from_lar_file__rd_shareddata_a.base_addr)),
 		(__past_results_2.valid && (__past_results_2.base_addr
-		== out_from_lar_file__rd_shareddata_a.base_addr))};
+		== __from_lar_file__rd_shareddata_a.base_addr))};
 	assign __operand_forwarding_check__rb
 		= {(__past_results_0.valid && (__past_results_0.base_addr
-		== out_from_lar_file__rd_shareddata_b.base_addr)),
+		== __from_lar_file__rd_shareddata_b.base_addr)),
 		(__past_results_1.valid && (__past_results_1.base_addr
-		== out_from_lar_file__rd_shareddata_b.base_addr)),
+		== __from_lar_file__rd_shareddata_b.base_addr)),
 		(__past_results_2.valid && (__past_results_2.base_addr
-		== out_from_lar_file__rd_shareddata_b.base_addr))};
+		== __from_lar_file__rd_shareddata_b.base_addr))};
 	assign __operand_forwarding_check__rc
 		= {(__past_results_0.valid && (__past_results_0.base_addr
-		== out_from_lar_file__rd_shareddata_c.base_addr)),
+		== __from_lar_file__rd_shareddata_c.base_addr)),
 		(__past_results_1.valid && (__past_results_1.base_addr
-		== out_from_lar_file__rd_shareddata_c.base_addr)),
+		== __from_lar_file__rd_shareddata_c.base_addr)),
 		(__past_results_2.valid && (__past_results_2.base_addr
-		== out_from_lar_file__rd_shareddata_c.base_addr))};
+		== __from_lar_file__rd_shareddata_c.base_addr))};
 
 
 	PkgSnow64PsEx::Results
@@ -169,8 +155,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 			__past_results_2.base_addr}; \
 		3'b000: {out_true_r``which_reg``_data.data, \
 			out_true_r``which_reg``_data.base_addr} \
-			= {out_from_lar_file__rd_shareddata_``which_reg.data, \
-			out_from_lar_file__rd_shareddata_``which_reg.base_addr}; \
+			= {__from_lar_file__rd_shareddata_``which_reg.data, \
+			__from_lar_file__rd_shareddata_``which_reg.base_addr}; \
 		endcase \
 	end
 
@@ -181,11 +167,11 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 	`define ASSIGN_NON_FORWARDED_TRUE_REG_DATA(which_reg) \
 		always @(*) out_true_r``which_reg``_data.data_offset \
-			= out_from_lar_file__rd_metadata_``which_reg.data_offset; \
+			= __from_lar_file__rd_metadata_``which_reg.data_offset; \
 		always @(*) out_true_r``which_reg``_data.data_type \
-			= out_from_lar_file__rd_metadata_``which_reg.data_type; \
+			= __from_lar_file__rd_metadata_``which_reg.data_type; \
 		always @(*) out_true_r``which_reg``_data.int_type_size \
-			= out_from_lar_file__rd_metadata_``which_reg.int_type_size;
+			= __from_lar_file__rd_metadata_``which_reg.int_type_size;
 
 	`ASSIGN_NON_FORWARDED_TRUE_REG_DATA(a)
 	`ASSIGN_NON_FORWARDED_TRUE_REG_DATA(b)
@@ -208,11 +194,11 @@ module Snow64PsExOperandForwarder(input logic clk,
 endmodule
 
 module Snow64PsExRotateLarData
-	(input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-		in_any_dsrc0_data, in_any_dsrc1_data,
+	(input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		in_dsrc0_data, in_dsrc1_data,
 	input logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
 		in_dsrc0_data_offset, in_dsrc1_data_offset, in_ddest_data_offset,
-	input logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] in_type_size,
 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		out_rotated_dsrc0_data, out_rotated_dsrc1_data,
 		out_mask, out_inv_mask);
@@ -230,6 +216,13 @@ module Snow64PsExRotateLarData
 	localparam __LSB_POS__DATA_OFFSET_64 = 3;
 
 
+	// We don't care about PkgSnow64Cpu::DataTypReserved, so we'll pretend
+	// it doesn't exist.
+	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __ddest_type_size
+		= (in_true_ra_data.data_type == PkgSnow64Cpu::DataTypBFloat16)
+		? PkgSnow64Cpu::IntTypSz16 : in_true_ra_data.int_type_size;
+
+
 	wire [__MSB_POS__DATA:0]
 		__out_inst_dsrc0_rotate_lar_data__data_8,
 		__out_inst_dsrc0_rotate_lar_data__data_16,
@@ -241,7 +234,7 @@ module Snow64PsExRotateLarData
 		__out_inst_dsrc1_rotate_lar_data__data_64;
 
 	Snow64RotateLarData __inst_dsrc0_rotate_lar_data
-		(.in_to_rotate(in_any_dsrc0_data),
+		(.in_to_rotate(in_dsrc0_data),
 		.in_src_data_offset(in_dsrc0_data_offset),
 		.in_dest_data_offset(in_ddest_data_offset),
 		.out_data_8(__out_inst_dsrc0_rotate_lar_data__data_8),
@@ -249,7 +242,7 @@ module Snow64PsExRotateLarData
 		.out_data_32(__out_inst_dsrc0_rotate_lar_data__data_32),
 		.out_data_64(__out_inst_dsrc0_rotate_lar_data__data_64));
 	Snow64RotateLarData __inst_dsrc1_rotate_lar_data
-		(.in_to_rotate(in_any_dsrc1_data),
+		(.in_to_rotate(in_dsrc1_data),
 		.in_src_data_offset(in_dsrc1_data_offset),
 		.in_dest_data_offset(in_ddest_data_offset),
 		.out_data_8(__out_inst_dsrc1_rotate_lar_data__data_8),
@@ -264,7 +257,7 @@ module Snow64PsExRotateLarData
 
 	always @(*)
 	begin
-		case (in_type_size)
+		case (__ddest_type_size)
 		PkgSnow64Cpu::IntTypSz8:
 		begin
 			{out_rotated_dsrc0_data, out_rotated_dsrc1_data,
@@ -570,6 +563,11 @@ module Snow64PsExCastScalars(input logic clk,
 		1'b1: \
 		begin \
 			case (in_dsrc``dsrc_num``_needed_cast_type) \
+			PkgSnow64PsEx::NeededCastTypNone: \
+			begin \
+				out_casted_``reg_name``_scalar_data \
+					= in_uncasted_``reg_name``_scalar_data; \
+			end \
 			PkgSnow64PsEx::NeededCastTypIntToInt: \
 			begin \
 				out_casted_``reg_name``_scalar_data \
@@ -590,11 +588,6 @@ module Snow64PsExCastScalars(input logic clk,
 					.data; \
 			end \
 			\
-			PkgSnow64PsEx::NeededCastTypNone: \
-			begin \
-				out_casted_``reg_name``_scalar_data \
-					= in_uncasted_``reg_name``_scalar_data; \
-			end \
 			endcase \
 		end \
 		endcase \
@@ -809,6 +802,12 @@ module Snow64PsExCastVectors(input logic clk,
 		1'b1: \
 		begin \
 			case (in_dsrc``dsrc_num``_needed_cast_type) \
+			PkgSnow64PsEx::NeededCastTypNone: \
+			begin \
+				out_casted_``reg_name``_vector_data \
+					= in_true_``reg_name``_data.data; \
+			end \
+			\
 			PkgSnow64PsEx::NeededCastTypIntToInt: \
 			begin \
 				out_casted_``reg_name``_vector_data \
@@ -827,12 +826,6 @@ module Snow64PsExCastVectors(input logic clk,
 				out_casted_``reg_name``_vector_data \
 					= `OUT_INST_TOF_BFLOAT16_VECTOR_CASTER(dsrc_num) \
 					.data; \
-			end \
-			\
-			PkgSnow64PsEx::NeededCastTypNone: \
-			begin \
-				out_casted_``reg_name``_vector_data \
-					= in_true_``reg_name``_data.data; \
 			end \
 			endcase \
 		end \
@@ -878,47 +871,6 @@ module Snow64PsExCastVectors(input logic clk,
 endmodule
 
 
-	//`define SET_NEEDED_CAST_TYPE(some_true_lar_data, out) \
-	//always @(*) \
-	//begin \
-	//	case (in_true_ra_data.data_type) \
-	//	PkgSnow64Cpu::DataTypBFloat16: \
-	//	begin \
-	//		case (some_true_lar_data.data_type) \
-	//		PkgSnow64Cpu::DataTypBFloat16: \
-	//		begin \
-	//			out = PkgSnow64PsEx::NeededCastTypNone; \
-	//		end \
-	//		\
-	//		default: \
-	//		begin \
-	//			out = PkgSnow64PsEx::NeededCastTypIntToBFloat16; \
-	//		end \
-	//		endcase \
-	//	end \
-	//	\
-	//	/* We don't care about PkgSnow64Cpu::DataTypReserved, so we'll */ \
-	//	/* pretend it doesn't exist. */ \
-	//	default: \
-	//	begin \
-	//		case (some_true_lar_data.data_type) \
-	//		PkgSnow64Cpu::DataTypBFloat16: \
-	//		begin \
-	//			out = PkgSnow64PsEx::NeededCastTypBFloat16ToInt; \
-	//		end \
-	//		\
-	//		default: \
-	//		begin \
-	//			out = PkgSnow64PsEx::NeededCastTypIntToInt; \
-	//		end \
-	//		endcase \
-	//	end \
-	//	endcase \
-	//end
-
-	//`SET_NEEDED_CAST_TYPE(__true_rb_data, __dsrc0_needed_cast_type)
-	//`SET_NEEDED_CAST_TYPE(__true_rc_data, __dsrc1_needed_cast_type)
-	//`undef SET_NEEDED_CAST_TYPE
 
 
 module Snow64PsExExtractScalarData
@@ -980,7 +932,7 @@ module Snow64PsExExtractScalarData
 endmodule
 
 // For when, for a scalar ALU/FPU instruction, there's a type mismatch
-// between ddest and either of dSrc0 and dSrc1 (or both)
+// between dDest and either of dSrc0 and dSrc1 (or both)
 module Snow64PsExInjectCastedScalarData
 	(input PkgSnow64PsEx::TrueLarData in_true_ra_data,
 	input logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
@@ -1013,13 +965,13 @@ module Snow64PsExInjectCastedScalarData
 	// since we're just going to mask off everything irrelevant after using
 	// the vector unit.
 	assign __in_inst_dsrc0_scalar_data_injector
-		= {in_true_ra_data.data,
+		= {`WIDTH__SNOW64_LAR_FILE_DATA'h00,
 		in_casted_rb_scalar_data,
 		in_true_ra_data.data_type,
 		in_true_ra_data.int_type_size,
 		in_true_ra_data.data_offset};
 	assign __in_inst_dsrc1_scalar_data_injector
-		= {in_true_ra_data.data,
+		= {`WIDTH__SNOW64_LAR_FILE_DATA'h00,
 		in_casted_rc_scalar_data,
 		in_true_ra_data.data_type,
 		in_true_ra_data.int_type_size,
@@ -1035,8 +987,25 @@ module Snow64PsExInjectCastedScalarData
 endmodule
 
 
+	`define GET_OUT_DDEST_DATA(some_out_inst_module_data) \
+	always @(*) \
+	begin \
+		case (in_curr_decoded_instr.op_type) \
+		PkgSnow64InstrDecoder::OpTypeScalar: \
+		begin \
+			out_ddest_data = ((some_out_inst_module_data & in_mask) \
+				| (in_true_ra_data.data & in_inv_mask)); \
+		end \
+		\
+		PkgSnow64InstrDecoder::OpTypeVector: \
+		begin \
+			out_ddest_data = some_out_inst_module_data; \
+		end \
+		endcase \
+	end
+
 // Use Snow64VectorAlu
-module Snow64PsExPerfSingleCycleVectorOperation
+module Snow64PsExUseVectorAlu
 	(input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
@@ -1048,6 +1017,24 @@ module Snow64PsExPerfSingleCycleVectorOperation
 	wire [`MSB_POS__SNOW64_SIZE_64:0] __signext_imm
 		= in_curr_decoded_instr.signext_imm;
 
+	wire [`MSB_POS__SNOW64_SIZE_8:0]
+		__scalar_pc_val_8, __scalar_signext_imm_8;
+	wire [`MSB_POS__SNOW64_SIZE_16:0]
+		__scalar_pc_val_16, __scalar_signext_imm_16;
+	wire [`MSB_POS__SNOW64_SIZE_32:0]
+		__scalar_pc_val_32, __scalar_signext_imm_32;
+	wire [`MSB_POS__SNOW64_SIZE_64:0]
+		__scalar_pc_val_64, __scalar_signext_imm_64;
+	assign __scalar_pc_val_8 = in_pc_val[`WIDTH2MP(8):0];
+	assign __scalar_signext_imm_8 = __signext_imm[`WIDTH2MP(8):0];
+	assign __scalar_pc_val_16 = in_pc_val[`WIDTH2MP(16):0];
+	assign __scalar_signext_imm_16 = __signext_imm[`WIDTH2MP(16):0];
+	assign __scalar_pc_val_32 = in_pc_val[`WIDTH2MP(32):0];
+	assign __scalar_signext_imm_32 = __signext_imm[`WIDTH2MP(32):0];
+	assign __scalar_pc_val_64 = in_pc_val[`WIDTH2MP(64):0];
+	assign __scalar_signext_imm_64 = __signext_imm[`WIDTH2MP(64):0];
+
+
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__vector_pc_val_8, __vector_pc_val_16,
 		__vector_pc_val_32, __vector_pc_val_64,
@@ -1055,100 +1042,98 @@ module Snow64PsExPerfSingleCycleVectorOperation
 		__vector_signext_imm_32, __vector_signext_imm_64;
 
 	assign __vector_pc_val_8[0 * 64 +: 64]
-		= {in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8]};
+		= {__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8};
 	assign __vector_pc_val_8[1 * 64 +: 64]
-		= {in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8]};
+		= {__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8};
 	assign __vector_pc_val_8[2 * 64 +: 64]
-		= {in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8]};
+		= {__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8};
 	assign __vector_pc_val_8[3 * 64 +: 64]
-		= {in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8],
-		in_pc_val[0 * 8 +: 8], in_pc_val[0 * 8 +: 8]};
+		= {__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8,
+		__scalar_pc_val_8, __scalar_pc_val_8};
 
 	assign __vector_pc_val_16[0 * 64 +: 64]
-		= {in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16],
-		in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16]};
+		= {__scalar_pc_val_16, __scalar_pc_val_16,
+		__scalar_pc_val_16, __scalar_pc_val_16};
 	assign __vector_pc_val_16[1 * 64 +: 64]
-		= {in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16],
-		in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16]};
+		= {__scalar_pc_val_16, __scalar_pc_val_16,
+		__scalar_pc_val_16, __scalar_pc_val_16};
 	assign __vector_pc_val_16[2 * 64 +: 64]
-		= {in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16],
-		in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16]};
+		= {__scalar_pc_val_16, __scalar_pc_val_16,
+		__scalar_pc_val_16, __scalar_pc_val_16};
 	assign __vector_pc_val_16[3 * 64 +: 64]
-		= {in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16],
-		in_pc_val[0 * 16 +: 16], in_pc_val[0 * 16 +: 16]};
+		= {__scalar_pc_val_16, __scalar_pc_val_16,
+		__scalar_pc_val_16, __scalar_pc_val_16};
 
 	assign __vector_pc_val_32[0 * 64 +: 64]
-		= {in_pc_val[0 * 32 +: 32], in_pc_val[0 * 32 +: 32]};
+		= {__scalar_pc_val_32, __scalar_pc_val_32};
 	assign __vector_pc_val_32[1 * 64 +: 64]
-		= {in_pc_val[0 * 32 +: 32], in_pc_val[0 * 32 +: 32]};
+		= {__scalar_pc_val_32, __scalar_pc_val_32};
 	assign __vector_pc_val_32[2 * 64 +: 64]
-		= {in_pc_val[0 * 32 +: 32], in_pc_val[0 * 32 +: 32]};
+		= {__scalar_pc_val_32, __scalar_pc_val_32};
 	assign __vector_pc_val_32[3 * 64 +: 64]
-		= {in_pc_val[0 * 32 +: 32], in_pc_val[0 * 32 +: 32]};
-
-	assign __vector_pc_val_64[0 * 64 +: 64] = in_pc_val;
-	assign __vector_pc_val_64[1 * 64 +: 64] = in_pc_val;
-	assign __vector_pc_val_64[2 * 64 +: 64] = in_pc_val;
-	assign __vector_pc_val_64[3 * 64 +: 64] = in_pc_val;
+		= {__scalar_pc_val_32, __scalar_pc_val_32};
+	assign __vector_pc_val_64[0 * 64 +: 64] = __scalar_pc_val_64;
+	assign __vector_pc_val_64[1 * 64 +: 64] = __scalar_pc_val_64;
+	assign __vector_pc_val_64[2 * 64 +: 64] = __scalar_pc_val_64;
+	assign __vector_pc_val_64[3 * 64 +: 64] = __scalar_pc_val_64;
 
 	assign __vector_signext_imm_8[0 * 64 +: 64]
-		= {__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8]};
+		= {__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8};
 	assign __vector_signext_imm_8[1 * 64 +: 64]
-		= {__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8]};
+		= {__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8};
 	assign __vector_signext_imm_8[2 * 64 +: 64]
-		= {__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8]};
+		= {__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8};
 	assign __vector_signext_imm_8[3 * 64 +: 64]
-		= {__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8],
-		__signext_imm[0 * 8 +: 8], __signext_imm[0 * 8 +: 8]};
+		= {__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8,
+		__scalar_signext_imm_8, __scalar_signext_imm_8};
 
 	assign __vector_signext_imm_16[0 * 64 +: 64]
-		= {__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16],
-		__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16]};
+		= {__scalar_signext_imm_16, __scalar_signext_imm_16,
+		__scalar_signext_imm_16, __scalar_signext_imm_16};
 	assign __vector_signext_imm_16[1 * 64 +: 64]
-		= {__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16],
-		__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16]};
+		= {__scalar_signext_imm_16, __scalar_signext_imm_16,
+		__scalar_signext_imm_16, __scalar_signext_imm_16};
 	assign __vector_signext_imm_16[2 * 64 +: 64]
-		= {__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16],
-		__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16]};
+		= {__scalar_signext_imm_16, __scalar_signext_imm_16,
+		__scalar_signext_imm_16, __scalar_signext_imm_16};
 	assign __vector_signext_imm_16[3 * 64 +: 64]
-		= {__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16],
-		__signext_imm[0 * 16 +: 16], __signext_imm[0 * 16 +: 16]};
+		= {__scalar_signext_imm_16, __scalar_signext_imm_16,
+		__scalar_signext_imm_16, __scalar_signext_imm_16};
 
 	assign __vector_signext_imm_32[0 * 64 +: 64]
-		= {__signext_imm[0 * 32 +: 32], __signext_imm[0 * 32 +: 32]};
+		= {__scalar_signext_imm_32, __scalar_signext_imm_32};
 	assign __vector_signext_imm_32[1 * 64 +: 64]
-		= {__signext_imm[0 * 32 +: 32], __signext_imm[0 * 32 +: 32]};
+		= {__scalar_signext_imm_32, __scalar_signext_imm_32};
 	assign __vector_signext_imm_32[2 * 64 +: 64]
-		= {__signext_imm[0 * 32 +: 32], __signext_imm[0 * 32 +: 32]};
+		= {__scalar_signext_imm_32, __scalar_signext_imm_32};
 	assign __vector_signext_imm_32[3 * 64 +: 64]
-		= {__signext_imm[0 * 32 +: 32], __signext_imm[0 * 32 +: 32]};
-
-	assign __vector_signext_imm_64[0 * 64 +: 64] = __signext_imm;
-	assign __vector_signext_imm_64[1 * 64 +: 64] = __signext_imm;
-	assign __vector_signext_imm_64[2 * 64 +: 64] = __signext_imm;
-	assign __vector_signext_imm_64[3 * 64 +: 64] = __signext_imm;
+		= {__scalar_signext_imm_32, __scalar_signext_imm_32};
+	assign __vector_signext_imm_64[0 * 64 +: 64] = __scalar_signext_imm_64;
+	assign __vector_signext_imm_64[1 * 64 +: 64] = __scalar_signext_imm_64;
+	assign __vector_signext_imm_64[2 * 64 +: 64] = __scalar_signext_imm_64;
+	assign __vector_signext_imm_64[3 * 64 +: 64] = __scalar_signext_imm_64;
 
 
 	PkgSnow64ArithLog::PortIn_VectorAlu __in_inst_vector_alu;
@@ -1163,14 +1148,13 @@ module Snow64PsExPerfSingleCycleVectorOperation
 	always @(*) __in_inst_vector_alu.type_signedness
 		= (in_true_ra_data.data_type == PkgSnow64Cpu::DataTypSgnInt);
 
-
+	always @(*) __in_inst_vector_alu.oper = in_curr_decoded_instr.oper;
 
 	always @(*)
 	begin
 		case (in_curr_decoded_instr.oper)
 		PkgSnow64InstrDecoder::Addi_OneRegOnePcOneSimm12:
 		begin
-			__in_inst_vector_alu.oper = PkgSnow64ArithLog::OpAddAgain;
 			case (in_true_ra_data.int_type_size)
 			PkgSnow64Cpu::IntTypSz8:
 				__in_inst_vector_alu.b = __vector_pc_val_8;
@@ -1185,8 +1169,6 @@ module Snow64PsExPerfSingleCycleVectorOperation
 
 		PkgSnow64InstrDecoder::Addi_TwoRegsOneSimm12:
 		begin
-			__in_inst_vector_alu.oper = PkgSnow64ArithLog::OpAddAgain;
-
 			case (in_true_ra_data.int_type_size)
 			PkgSnow64Cpu::IntTypSz8:
 				__in_inst_vector_alu.b = __vector_signext_imm_8;
@@ -1201,73 +1183,119 @@ module Snow64PsExPerfSingleCycleVectorOperation
 
 		default:
 		begin
-			__in_inst_vector_alu.oper = in_curr_decoded_instr.oper;
 			__in_inst_vector_alu.b = in_any_dsrc1_data;
 		end
 		endcase
 	end
 
-	always @(*)
-	begin
-		case (in_curr_decoded_instr.op_type)
-		PkgSnow64InstrDecoder::OpTypeScalar:
-		begin
-			out_ddest_data = ((__out_inst_vector_alu.data & in_mask)
-				| (in_true_ra_data.data & in_inv_mask));
-		end
+	`GET_OUT_DDEST_DATA(__out_inst_vector_alu.data)
 
-		PkgSnow64InstrDecoder::OpTypeVector:
-		begin
-			out_ddest_data = __out_inst_vector_alu.data;
-		end
-		endcase
-	end
 endmodule
 
-//module Snow64PsExPerfVectorOperation(input logic clk,
-//	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
-//	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
-//	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-//		in_any_dsrc0_data, in_any_dsrc1_data,
-//	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_data,
-//	output wire out_multi_cycle_op_valid);
-//
-//	// Arithmetic/logic vector units
-//	PkgSnow64ArithLog::PortIn_VectorAlu __in_inst_vector_alu;
-//	PkgSnow64ArithLog::PortOut_VectorAlu __out_inst_vector_alu;
-//	Snow64VectorAlu __inst_vector_alu(.in(__in_inst_vector_alu),
-//		.out(__out_inst_vector_alu));
-//
-//	PkgSnow64ArithLog::PortIn_VectorMul __in_inst_vector_mul;
-//	PkgSnow64ArithLog::PortOut_VectorMul __out_inst_vector_mul;
-//	Snow64VectorMul __inst_vector_mul(.clk(clk), .in(__in_inst_vector_mul),
-//		.out(__out_inst_vector_mul));
-//
-//	PkgSnow64ArithLog::PortIn_VectorDiv __in_inst_vector_div;
-//	PkgSnow64ArithLog::PortOut_VectorDiv __out_inst_vector_div;
-//	Snow64VectorDiv __inst_vector_div(.clk(clk), .in(__in_inst_vector_div),
-//		.out(__out_inst_vector_div));
-//
-//	PkgSnow64BFloat16::PortIn_VectorFpu __in_inst_vector_fpu;
-//	PkgSnow64BFloat16::PortOut_VectorFpu __out_inst_vector_fpu;
-//	Snow64BFloat16VectorFpu __inst_vector_fpu(.clk(clk),
-//		.in(__in_inst_vector_fpu), .out(__out_inst_vector_fpu));
-//
-//	assign out_multi_cycle_op_valid = (__out_inst_vector_mul.valid
-//		|| __out_inst_vector_div.valid || __out_inst_vector_fpu.valid);
-//
-//	initial
-//	begin
-//		__in_inst_vector_alu = 0;
-//		__in_inst_vector_mul = 0;
-//		__in_inst_vector_div = 0;
-//		__in_inst_vector_fpu = 0;
-//
-//		out_data = 0;
-//	end
-//
-//endmodule
 
+
+module Snow64PsExUseVectorMul(input logic clk,
+	input logic in_start,
+	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	output logic out_valid);
+
+	PkgSnow64ArithLog::PortIn_VectorMul __in_inst_vector_mul;
+	PkgSnow64ArithLog::PortOut_VectorMul __out_inst_vector_mul;
+	Snow64VectorMul __inst_vector_mul(.clk(clk), .in(__in_inst_vector_mul),
+		.out(__out_inst_vector_mul));
+
+	// typedef struct packed
+	// {
+	// 	logic enable;
+
+	// 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+
+	// 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
+	// } PortIn_VectorMul;
+
+	assign __in_inst_vector_mul
+		= {in_start,
+		in_true_ra_data.int_type_size,
+		in_any_dsrc0_data,
+		in_any_dsrc1_data};
+
+	always @(*) out_valid = __out_inst_vector_mul.valid;
+	`GET_OUT_DDEST_DATA(__out_inst_vector_mul.data)
+
+endmodule
+
+module Snow64PsExUseVectorDiv(input logic clk,
+	input logic in_start,
+	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	output logic out_valid);
+
+	PkgSnow64ArithLog::PortIn_VectorDiv __in_inst_vector_div;
+	PkgSnow64ArithLog::PortOut_VectorDiv __out_inst_vector_div;
+	Snow64VectorDiv __inst_vector_div(.clk(clk), .in(__in_inst_vector_div),
+		.out(__out_inst_vector_div));
+
+	// typedef struct packed
+	// {
+	// 	logic enable;
+
+	// 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	// 	logic type_signedness;
+
+	// 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
+	// } PortIn_VectorDiv;
+
+	assign __in_inst_vector_div
+		= {in_start,
+		in_true_ra_data.int_type_size,
+		(in_true_ra_data.data_type == PkgSnow64Cpu::DataTypSgnInt),
+		in_any_dsrc0_data,
+		in_any_dsrc1_data};
+
+	always @(*) out_valid = __out_inst_vector_div.valid;
+	`GET_OUT_DDEST_DATA(__out_inst_vector_div.data)
+
+endmodule
+
+module Snow64PsExUseVectorBFloat16Fpu(input logic clk,
+	input logic in_start,
+	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	output logic out_valid);
+
+	PkgSnow64BFloat16::PortIn_VectorFpu __in_inst_vector_fpu;
+	PkgSnow64BFloat16::PortOut_VectorFpu __out_inst_vector_fpu;
+	Snow64BFloat16VectorFpu __inst_vector_fpu(.clk(clk),
+		.in(__in_inst_vector_fpu), .out(__out_inst_vector_fpu));
+
+	// typedef struct packed
+	// {
+	// 	logic start;
+	// 	logic [`MSB_POS__SNOW64_BFLOAT16_FPU_OPER:0] oper;
+	// 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
+	// } PortIn_VectorFpu;
+	assign __in_inst_vector_fpu
+		= {in_start,
+		in_curr_decoded_instr.oper,
+		in_any_dsrc0_data,
+		in_any_dsrc1_data};
+
+	always @(*) out_valid = __out_inst_vector_fpu.valid;
+	`GET_OUT_DDEST_DATA(__out_inst_vector_fpu.data)
+
+endmodule
+
+`undef GET_OUT_DDEST_DATA
 
 
 
@@ -1682,3 +1710,286 @@ endmodule
 //
 //
 //endmodule
+
+
+
+module Snow64PipeStageEx(input logic clk,
+	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
+	input PortIn_Snow64PipeStageEx_FromPipeStageIfId
+		in_from_pipe_stage_if_id,
+	output PortOut_Snow64PipeStageEx_ToPipeStageIfId
+		out_to_pipe_stage_if_id,
+	output PortOut_Snow64PipeStageEx_ToPipeStageWb out_to_pipe_stage_wb);
+
+
+
+	logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_STATE:0]
+		__state = PkgSnow64PsEx::StRegular,
+		__next_state = PkgSnow64PsEx::StRegular;
+
+	wire __stall = (__next_state != PkgSnow64PsEx::StRegular);
+
+
+	Snow64Pipeline_DecodedInstr __curr_decoded_instr;
+	assign __curr_decoded_instr = in_from_pipe_stage_if_id.decoded_instr;
+
+
+	PkgSnow64PsEx::Results __curr_results = 0;
+
+
+
+	Snow64Pipeline_LarFileReadMetadata
+		__from_lar_file__rd_metadata_a, __from_lar_file__rd_metadata_b,
+		__from_lar_file__rd_metadata_c;
+	Snow64Pipeline_LarFileReadShareddata
+		__from_lar_file__rd_shareddata_a, __from_lar_file__rd_shareddata_b,
+		__from_lar_file__rd_shareddata_c;
+	PkgSnow64PsEx::TrueLarData
+		__true_ra_data, __true_rb_data, __true_rc_data;
+
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__rotated_dsrc0_data, __rotated_dsrc1_data,
+		__mask_for_scalar_op, __inv_mask_for_scalar_op;
+
+	wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
+		__curr_ddest_scalar_data, __curr_dsrc0_scalar_data,
+		__curr_dsrc1_scalar_data;
+
+	logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
+		__dsrc0_needed_cast_type = 0, __dsrc1_needed_cast_type = 0;
+
+	wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
+		__dsrc0_casted_scalar_data, __dsrc1_casted_scalar_data;
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__dsrc0_casted_vector_data, __dsrc1_casted_vector_data,
+		__dsrc0_injected_vector_data, __dsrc1_injected_vector_data;
+
+	// If the decoded instruction is entirely zero, then it is considered a
+	// bubble.
+	wire __need_any_cast = ((in_from_pipe_stage_if_id.decoded_instr != 0)
+		&& {__dsrc0_needed_cast_type, __dsrc1_needed_cast_type});
+
+	wire __in_inst_cast_scalars__start
+		= ((__state == PkgSnow64PsEx::StRegular) && __need_any_cast
+		&& (__curr_decoded_instr.op_type
+		== PkgSnow64InstrDecoder::OpTypeScalar));
+	wire __in_inst_cast_vectors__start
+		= ((__state == PkgSnow64PsEx::StRegular) && __need_any_cast
+		&& (__curr_decoded_instr.op_type
+		== PkgSnow64InstrDecoder::OpTypeVector));
+	wire __out_inst_cast_scalars__valid, __out_inst_cast_vectors__valid;
+
+
+
+	`define SET_NEEDED_CAST_TYPE(some_true_lar_data, out) \
+	always @(*) \
+	begin \
+		case (__true_ra_data.data_type) \
+		PkgSnow64Cpu::DataTypBFloat16: \
+		begin \
+			case (some_true_lar_data.data_type) \
+			PkgSnow64Cpu::DataTypBFloat16: \
+			begin \
+				out = PkgSnow64PsEx::NeededCastTypNone; \
+			end \
+			\
+			default: \
+			begin \
+				out = PkgSnow64PsEx::NeededCastTypIntToBFloat16; \
+			end \
+			endcase \
+		end \
+		\
+		/* We don't care about PkgSnow64Cpu::DataTypReserved, so we'll */ \
+		/* pretend it doesn't exist. */ \
+		default: \
+		begin \
+			case (some_true_lar_data.data_type) \
+			PkgSnow64Cpu::DataTypBFloat16: \
+			begin \
+				out = PkgSnow64PsEx::NeededCastTypBFloat16ToInt; \
+			end \
+			\
+			default: \
+			begin \
+				out = (__true_ra_data.int_type_size \
+					== some_true_lar_data.int_type_size) \
+					? PkgSnow64PsEx::NeededCastTypNone \
+					: PkgSnow64PsEx::NeededCastTypIntToInt; \
+			end \
+			endcase \
+		end \
+		endcase \
+	end
+
+	`SET_NEEDED_CAST_TYPE(__true_rb_data, __dsrc0_needed_cast_type)
+	`SET_NEEDED_CAST_TYPE(__true_rc_data, __dsrc1_needed_cast_type)
+	`undef SET_NEEDED_CAST_TYPE
+
+
+	// module Snow64PsExOperandForwarder(input logic clk,
+	// 	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
+	// 	input PkgSnow64PsEx::Results in_curr_results,
+	// 	output PkgSnow64PsEx::TrueLarData
+	// 		out_true_ra_data, out_true_rb_data, out_true_rc_data);
+	Snow64PsExOperandForwarder __inst_operand_forwarder(.clk(clk),
+		.in_from_ctrl_unit(in_from_ctrl_unit),
+		.in_curr_results(__curr_results),
+		.out_true_ra_data(__true_ra_data),
+		.out_true_rb_data(__true_rb_data),
+		.out_true_rc_data(__true_rc_data));
+
+	//module Snow64PsExRotateLarData
+	//	(input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	//	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	//		in_dsrc0_data, in_dsrc1_data,
+	//	input logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
+	//		in_dsrc0_data_offset, in_dsrc1_data_offset,
+	//		in_ddest_data_offset,
+	//	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	//		out_rotated_dsrc0_data, out_rotated_dsrc1_data,
+	//		out_mask, out_inv_mask);
+	Snow64PsExRotateLarData __inst_rotate_lar_data
+		(.in_true_ra_data(__true_ra_data),
+		.in_dsrc0_data(__true_rb_data.data),
+		.in_dsrc1_data(__true_rc_data.data),
+		.in_dsrc0_data_offset(__true_rb_data.data_offset),
+		.in_dsrc1_data_offset(__true_rc_data.data_offset),
+		.in_ddest_data_offset(__true_ra_data.data_offset),
+		.out_rotated_dsrc0_data(__rotated_dsrc0_data),
+		.out_rotated_dsrc1_data(__rotated_dsrc1_data),
+		.out_mask(__mask_for_scalar_op),
+		.out_inv_mask(__inv_mask_for_scalar_op));
+
+
+	// module Snow64PsExCastScalars(input logic clk,
+	// 	input logic in_start, in_forced_64_bit_integers,
+	// 	input PkgSnow64PsEx::TrueLarData
+	// 		in_true_ra_data, in_true_rb_data, in_true_rc_data,
+	// 	input logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
+	// 		in_dsrc0_needed_cast_type, in_dsrc1_needed_cast_type,
+	// 	input logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
+	// 		in_uncasted_rb_scalar_data, in_uncasted_rc_scalar_data,
+	// 	output logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
+	// 		out_casted_rb_scalar_data, out_casted_rc_scalar_data,
+	// 	output logic out_valid);
+	Snow64PsExCastScalars __inst_cast_scalars(.clk(clk),
+		.in_start(__in_inst_cast_scalars__start),
+		.in_forced_64_bit_integers
+			(__curr_decoded_instr.forced_64_bit_integers),
+		.in_true_ra_data(__true_ra_data),
+		.in_true_rb_data(__true_rb_data),
+		.in_true_rc_data(__true_rc_data),
+		.in_dsrc0_needed_cast_type(__dsrc0_needed_cast_type),
+		.in_dsrc1_needed_cast_type(__dsrc1_needed_cast_type),
+		.in_uncasted_rb_scalar_data(__curr_dsrc0_scalar_data),
+		.in_uncasted_rc_scalar_data(__curr_dsrc1_scalar_data),
+		.out_casted_rb_scalar_data(__dsrc0_casted_scalar_data),
+		.out_casted_rc_scalar_data(__dsrc1_casted_scalar_data),
+		.out_valid(__out_inst_cast_scalars__valid));
+
+
+	// module Snow64PsExCastVectors(input logic clk,
+	// 	input logic in_start, in_forced_64_bit_integers,
+	// 	input PkgSnow64PsEx::TrueLarData
+	// 		in_true_ra_data, in_true_rb_data, in_true_rc_data,
+	// 	input logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE:0]
+	// 		in_dsrc0_needed_cast_type, in_dsrc1_needed_cast_type,
+	// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		out_casted_rb_vector_data, out_casted_rc_vector_data,
+	// 	output logic out_valid);
+	Snow64PsExCastVectors __inst_cast_vectors(.clk(clk),
+		.in_start(__in_inst_cast_vectors__start),
+		.in_forced_64_bit_integers
+			(__curr_decoded_instr.forced_64_bit_integers),
+		.in_true_ra_data(__true_ra_data),
+		.in_true_rb_data(__true_rb_data),
+		.in_true_rc_data(__true_rc_data),
+		.in_dsrc0_needed_cast_type(__dsrc0_needed_cast_type),
+		.in_dsrc1_needed_cast_type(__dsrc1_needed_cast_type),
+		.out_casted_rb_vector_data(__dsrc0_casted_vector_data),
+		.out_casted_rc_vector_data(__dsrc1_casted_vector_data),
+		.out_valid(__out_inst_cast_vectors__valid));
+
+
+
+
+	// module Snow64PsExExtractScalarData
+	// 	(input PkgSnow64PsEx::TrueLarData
+	// 		in_true_ra_data, in_true_rb_data, in_true_rc_data,
+	// 	output logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
+	// 		out_ra_scalar_data, out_rb_scalar_data, out_rc_scalar_data);
+	Snow64PsExExtractScalarData __inst_extract_scalar_data
+		(.in_true_ra_data(__true_ra_data),
+		.in_true_rb_data(__true_rb_data),
+		.in_true_rc_data(__true_rc_data),
+		.out_ra_scalar_data(__curr_ddest_scalar_data),
+		.out_rb_scalar_data(__curr_dsrc0_scalar_data),
+		.out_rc_scalar_data(__curr_dsrc1_scalar_data));
+
+
+	// module Snow64PsExInjectCastedScalarData
+	// 	(input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	// 	input logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
+	// 		in_casted_rb_scalar_data, in_casted_rc_scalar_data,
+	// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		out_injected_rb_vector_data, out_injected_rc_vector_data);
+	Snow64PsExInjectCastedScalarData __inst_inject_scalar_data
+		(.in_true_ra_data(__true_ra_data),
+		.in_casted_rb_scalar_data(__dsrc0_casted_scalar_data),
+		.in_casted_rc_scalar_data(__dsrc1_casted_scalar_data),
+		.out_injected_rb_vector_data(__dsrc0_injected_vector_data),
+		.out_injected_rc_vector_data(__dsrc1_injected_vector_data));
+
+
+	// Whenever the next state is NOT going to be StRegular, we are not
+	// going to be ready to accept a new instruction on the next cycle.
+	always @(*) out_to_pipe_stage_if_id.stall = __stall;
+
+	always @(*)
+	begin
+		case (__curr_decoded_instr.oper)
+		PkgSnow64InstrDecoder::Btru_OneRegOneSimm20:
+		begin
+			//out_to_pipe_stage_if_id.computed_pc
+			//	= (__out_inst_ddest_scalar_data_extractor.data != 0)
+			//	? (in_from_pipe_stage_if_id.pc_val
+			//	+ __curr_decoded_instr.signext_imm)
+			//	: in_from_pipe_stage_if_id.pc_val;
+			out_to_pipe_stage_if_id.computed_pc
+				= (__curr_ddest_scalar_data != 0)
+				? (in_from_pipe_stage_if_id.pc_val
+				+ __curr_decoded_instr.signext_imm)
+				: in_from_pipe_stage_if_id.pc_val;
+		end
+
+		PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20:
+		begin
+			//out_to_pipe_stage_if_id.computed_pc
+			//	= (__out_inst_ddest_scalar_data_extractor.data == 0)
+			//	? (in_from_pipe_stage_if_id.pc_val
+			//	+ __curr_decoded_instr.signext_imm)
+			//	: in_from_pipe_stage_if_id.pc_val;
+			out_to_pipe_stage_if_id.computed_pc
+				= (__curr_ddest_scalar_data == 0)
+				? (in_from_pipe_stage_if_id.pc_val
+				+ __curr_decoded_instr.signext_imm)
+				: in_from_pipe_stage_if_id.pc_val;
+		end
+
+		//PkgSnow64InstrDecoder::Jmp_OneReg:
+		default:
+		begin
+			//out_to_pipe_stage_if_id.computed_pc
+			//	= __out_inst_ddest_scalar_data_extractor.data;
+			out_to_pipe_stage_if_id.computed_pc = __curr_ddest_scalar_data;
+		end
+
+		//default:
+		//begin
+		//	out_to_pipe_stage_if_id.computed_pc = 0;
+		//end
+		endcase
+	end
+
+endmodule

@@ -22,9 +22,9 @@ typedef enum logic [`MSB_POS__SNOW64_ALU_OPER:0]
 	OpNot,
 
 	OpAddAgain,
+	OpAddAgain2,
 	OpDummy2,
-	OpDummy3,
-	OpDummy4
+	OpDummy3
 } AluOper;
 
 //localparam __DEBUG_ENUM__OP_ADD = OpAdd;
