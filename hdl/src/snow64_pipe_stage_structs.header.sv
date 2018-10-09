@@ -112,7 +112,7 @@ typedef struct packed
 	logic `STRUCTDIM(Snow64Pipeline_DecodedInstr) decoded_instr;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] computed_data;
-	logic [`MSB_POS__SNOW64_CPU_ADDR:0] pc_val;
+	//logic [`MSB_POS__SNOW64_CPU_ADDR:0] pc_val;
 	logic [`MSB_POS__SNOW64_CPU_ADDR:0] ldst_addr;
 } PortOut_Snow64PipeStageEx_ToPipeStageWb;
 

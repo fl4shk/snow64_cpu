@@ -3,6 +3,14 @@
 `include "src/snow64_pipe_stage_structs.header.sv"
 
 
+// This file is the epitome of why Icarus Verilog should **definitely**
+// support EASY ability to put a packed struct inside another packed
+// struct.  At the time of this writing, Icarus Verilog's support for
+// *synthesizable* SystemVerilog is soooo incomplete.  It just causes all
+// kinds of problems.  You're almost better off not using SystemVerilog
+// with Icarus Verilog (though that may have changed by the time you're
+// reading this)....
+
 `define WIDTH__SNOW64_PIPE_STAGE_EX_STATE 3
 `define MSB_POS__SNOW64_PIPE_STAGE_EX_STATE \
 	`WIDTH2MP(`WIDTH__SNOW64_PIPE_STAGE_EX_STATE)
@@ -10,6 +18,10 @@
 `define WIDTH__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE 2
 `define MSB_POS__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE \
 	`WIDTH2MP(`WIDTH__SNOW64_PIPE_STAGE_EX_NEEDED_CAST_TYPE)
+
+`define WIDTH__SNOW64_PIPE_STAGE_EX_MULTI_CYCLE_OP_TYPE 2
+`define MSB_POS__SNOW64_PIPE_STAGE_EX_MULTI_CYCLE_OP_TYPE \
+	`WIDTH2MP(`WIDTH__SNOW64_PIPE_STAGE_EX_MULTI_CYCLE_OP_TYPE)
 
 package PkgSnow64PsEx;
 
@@ -21,11 +33,19 @@ typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_STATE:0]
 	StWaitForVectorCaster,
 	StInjectCastedScalars,
 
-	StUseUncastedDataMultiCycle,
 	StUseCastedDataSingleCycle,
 	StUseCastedDataMultiCycle,
-	StBad
+	StUseUncastedDataMultiCycle,
+	StWaitForMultiCycleOp
 } State;
+
+typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_MULTI_CYCLE_OP_TYPE:0]
+{
+	MultiCycOpTypNone,
+	MultiCycOpTypMul,
+	MultiCycOpTypDiv,
+	MultiCycOpTypFpu
+} MultiCycleOpType;
 
 typedef struct packed
 {
@@ -1004,7 +1024,6 @@ endmodule
 		endcase \
 	end
 
-// Use Snow64VectorAlu
 module Snow64PsExUseVectorAlu
 	(input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
@@ -1299,420 +1318,8 @@ endmodule
 
 
 
-
-//module Snow64PipeStageEx(input logic clk,
-//	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
-//	input PortIn_Snow64PipeStageEx_FromPipeStageIfId
-//		in_from_pipe_stage_if_id,
-//	output PortOut_Snow64PipeStageEx_ToPipeStageIfId
-//		out_to_pipe_stage_if_id,
-//	output PortOut_Snow64PipeStageEx_ToPipeStageWb out_to_pipe_stage_wb);
-//
-//
-//
-//
-//
-//	logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_STATE:0] __state, __next_state;
-//
-//	logic __dsrc0_needs_casted, __dsrc1_needs_casted;
-//
-//	//logic __stall;
-//	wire __stall = (__next_state != PkgSnow64PsEx::StRegular);
-//
-//	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __size_of_casted_scalars;
-//	logic __use_vector_fpu;
-//
-//	// Stuff for operand forwarding
-//	PkgSnow64PsEx::TrueLarData
-//		__true_ra_data, __true_rb_data, __true_rc_data;
-//	PkgSnow64PsEx::Results __curr_results;
-//
-//	Snow64PsExOperandForwarder __inst_operand_forwarder(.clk(clk),
-//		.in_from_ctrl_unit(in_from_ctrl_unit),
-//		.in_curr_results(__curr_results),
-//		.out_true_ra_data(__true_ra_data),
-//		.out_true_rb_data(__true_rb_data),
-//		.out_true_rc_data(__true_rc_data));
-//
-//
-//
-//	Snow64Pipeline_DecodedInstr __curr_decoded_instr;
-//	assign __curr_decoded_instr = in_from_pipe_stage_if_id.decoded_instr;
-//
-//
-//
-//
-//
-//	// Scalar data extractors
-//	PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataExtractor
-//		__in_inst_ddest_scalar_data_extractor,
-//		__in_inst_dsrc0_scalar_data_extractor,
-//		__in_inst_dsrc1_scalar_data_extractor;
-//	PkgSnow64ScalarDataExtractOrInject::PortOut_ScalarDataExtractor
-//		__out_inst_ddest_scalar_data_extractor,
-//		__out_inst_dsrc0_scalar_data_extractor,
-//		__out_inst_dsrc1_scalar_data_extractor;
-//	Snow64ScalarDataExtractor __inst_ddest_scalar_data_extractor
-//		(.in(__in_inst_ddest_scalar_data_extractor),
-//		.out(__out_inst_ddest_scalar_data_extractor));
-//	Snow64ScalarDataExtractor __inst_dsrc0_scalar_data_extractor
-//		(.in(__in_inst_dsrc0_scalar_data_extractor),
-//		.out(__out_inst_dsrc0_scalar_data_extractor));
-//	Snow64ScalarDataExtractor __inst_dsrc1_scalar_data_extractor
-//		(.in(__in_inst_dsrc1_scalar_data_extractor),
-//		.out(__out_inst_dsrc1_scalar_data_extractor));
-//
-//	// Scalar data injectors
-//	PkgSnow64ScalarDataExtractOrInject::PortIn_ScalarDataInjector
-//		__in_inst_dsrc0_scalar_data_injector,
-//		__in_inst_dsrc1_scalar_data_injector;
-//	PkgSnow64ScalarDataExtractOrInject::PortOut_ScalarDataInjector
-//		__out_inst_dsrc0_scalar_data_injector,
-//		__out_inst_dsrc1_scalar_data_injector;
-//	Snow64ScalarDataInjector __inst_dsrc0_scalar_data_injector
-//		(.in(__in_inst_dsrc0_scalar_data_injector),
-//		.out(__out_inst_dsrc0_scalar_data_injector));
-//
-//	// Casters
-//	PkgSnow64Caster::PortIn_IntScalarCaster
-//		__in_inst_dsrc0_int_scalar_caster,
-//		__in_inst_dsrc1_int_scalar_caster;
-//	PkgSnow64Caster::PortOut_IntScalarCaster
-//		__out_inst_dsrc0_int_scalar_caster,
-//		__out_inst_dsrc1_int_scalar_caster;
-//	Snow64IntScalarCaster __inst_dsrc0_int_scalar_caster(.clk(clk),
-//		.in(__in_inst_dsrc0_int_scalar_caster),
-//		.out(__out_inst_dsrc0_int_scalar_caster));
-//	Snow64IntScalarCaster __inst_dsrc1_int_scalar_caster(.clk(clk),
-//		.in(__in_inst_dsrc1_int_scalar_caster),
-//		.out(__out_inst_dsrc1_int_scalar_caster));
-//
-//	PkgSnow64Caster::PortIn_IntVectorCaster
-//		__in_inst_dsrc0_int_vector_caster,
-//		__in_inst_dsrc1_int_vector_caster;
-//	PkgSnow64Caster::PortOut_IntVectorCaster
-//		__out_inst_dsrc0_int_vector_caster,
-//		__out_inst_dsrc1_int_vector_caster;
-//	Snow64IntVectorCaster __inst_dsrc0_int_vector_caster(.clk(clk),
-//		.in(__in_inst_dsrc0_int_vector_caster),
-//		.out(__out_inst_dsrc0_int_vector_caster));
-//	Snow64IntVectorCaster __inst_dsrc1_int_vector_caster(.clk(clk),
-//		.in(__in_inst_dsrc1_int_vector_caster),
-//		.out(__out_inst_dsrc1_int_vector_caster));
-//
-//	PkgSnow64BFloat16::PortIn_CastFromInt
-//		__in_inst_dsrc0_bfloat16_cast_from_int,
-//		__in_inst_dsrc1_bfloat16_cast_from_int;
-//	PkgSnow64BFloat16::PortOut_CastFromInt
-//		__out_inst_dsrc0_bfloat16_cast_from_int,
-//		__out_inst_dsrc1_bfloat16_cast_from_int;
-//	Snow64BFloat16CastFromInt __inst_dsrc0_bfloat16_cast_from_int
-//		(.clk(clk), .in(__in_inst_dsrc0_bfloat16_cast_from_int),
-//		.out(__out_inst_dsrc0_bfloat16_cast_from_int));
-//	Snow64BFloat16CastFromInt __inst_dsrc1_bfloat16_cast_from_int
-//		(.clk(clk), .in(__in_inst_dsrc1_bfloat16_cast_from_int),
-//		.out(__out_inst_dsrc1_bfloat16_cast_from_int));
-//
-//	PkgSnow64BFloat16::PortIn_CastToInt
-//		__in_inst_dsrc0_bfloat16_cast_to_int,
-//		__in_inst_dsrc1_bfloat16_cast_to_int;
-//	PkgSnow64BFloat16::PortOut_CastToInt
-//		__out_inst_dsrc0_bfloat16_cast_to_int,
-//		__out_inst_dsrc1_bfloat16_cast_to_int;
-//	Snow64BFloat16CastToInt __inst_dsrc0_bfloat16_cast_to_int
-//		(.clk(clk), .in(__in_inst_dsrc0_bfloat16_cast_to_int),
-//		.out(__out_inst_dsrc0_bfloat16_cast_to_int));
-//	Snow64BFloat16CastToInt __inst_dsrc1_bfloat16_cast_to_int
-//		(.clk(clk), .in(__in_inst_dsrc1_bfloat16_cast_to_int),
-//		.out(__out_inst_dsrc1_bfloat16_cast_to_int));
-//
-//	PkgSnow64Caster::PortIn_ToOrFromBFloat16VectorCaster
-//		__in_inst_dsrc0_tof_bfloat16_vector_caster,
-//		__in_inst_dsrc1_tof_bfloat16_vector_caster;
-//	PkgSnow64Caster::PortOut_ToOrFromBFloat16VectorCaster
-//		__out_inst_dsrc0_tof_bfloat16_vector_caster,
-//		__out_inst_dsrc1_tof_bfloat16_vector_caster;
-//	Snow64ToOrFromBFloat16VectorCaster
-//		__inst_dsrc0_tof_bfloat16_vector_caster(.clk(clk),
-//		.in(__in_inst_dsrc0_tof_bfloat16_vector_caster),
-//		.out(__out_inst_dsrc0_tof_bfloat16_vector_caster));
-//	Snow64ToOrFromBFloat16VectorCaster
-//		__inst_dsrc1_tof_bfloat16_vector_caster(.clk(clk),
-//		.in(__in_inst_dsrc1_tof_bfloat16_vector_caster),
-//		.out(__out_inst_dsrc1_tof_bfloat16_vector_caster));
-//
-//	//logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-//	//	__in_inst_dsrc0_rotate__to_rotate,
-//	//	__in_inst_dsrc1_rotate__to_rotate;
-//	//logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-//	//	__in_inst_any_dsrc_rotate__type_size;
-//	//wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-//	//	__out_inst_dsrc0_rotate__data, __out_inst_dsrc1_rotate__data,
-//	//	__out_inst_dsrc0_rotate__mask, __out_inst_dsrc1_rotate__mask,
-//	//	__out_inst_dsrc0_rotate__inv_mask,
-//	//	__out_inst_dsrc1_rotate__inv_mask;
-//	//Snow64RotateLarData __inst_dsrc0_rotate
-//	//	(.in_to_rotate(__in_inst_dsrc0_rotate__to_rotate),
-//	//	.in_src_data_offset(__from_lar_file__rd_metadata_b.data_offset),
-//	//	.in_dest_data_offset(__from_lar_file__rd_metadata_a.data_offset),
-//	//	.in_type_size(__in_inst_any_dsrc_rotate__type_size),
-//	//	.out_data(__out_inst_dsrc0_rotate__data),
-//	//	.out_mask(__out_inst_dsrc0_rotate__mask),
-//	//	.out_inv_mask(__out_inst_dsrc0_rotate__inv_mask));
-//	//Snow64RotateLarData __inst_dsrc1_rotate
-//	//	(.in_to_rotate(__in_inst_dsrc1_rotate__to_rotate),
-//	//	.in_src_data_offset(__from_lar_file__rd_metadata_c.data_offset),
-//	//	.in_dest_data_offset(__from_lar_file__rd_metadata_a.data_offset),
-//	//	.in_type_size(__in_inst_any_dsrc_rotate__type_size),
-//	//	.out_data(__out_inst_dsrc1_rotate__data),
-//	//	.out_mask(__out_inst_dsrc1_rotate__mask),
-//	//	.out_inv_mask(__out_inst_dsrc1_rotate__inv_mask));
-//
-//
-//	//always @(*)
-//	//begin
-//	//	case (__next_state)
-//	//	StRegular:
-//	//	begin
-//	//		{__in_inst_dsrc0_rotate__to_rotate,
-//	//			__in_inst_dsrc1_rotate__to_rotate}
-//	//			= {__true_rb_data.data, __true_rc_data.data};
-//	//	end
-//
-//	//	StWaitForBFloat16CastFromInt:
-//	//	begin
-//	//	end
-//
-//	//	StWaitForBFloat16CastToInt:
-//	//	begin
-//	//	end
-//	//	endcase
-//	//end
-//
-//	//always @(*)
-//	//begin
-//	//	case (__from_lar_file__rd_metadata_a.data_type)
-//	//	PkgSnow64Cpu::DataTypBFloat16:
-//	//	begin
-//	//		__in_inst_any_dsrc_rotate__type_size
-//	//			= PkgSnow64Cpu::IntTypSz16;
-//	//	end
-//
-//	//	// We don't care about PkgSnow64Cpu::DataTypReserved
-//	//	default:
-//	//	begin
-//	//		__in_inst_any_dsrc_rotate__type_size
-//	//			= __from_lar_file__rd_metadata_c.int_type_size;
-//	//	end
-//	//	endcase
-//	//end
-//
-//
-//
-//	`define ASSIGN_TO_SCALAR_DATA_EXTRACTOR_INPUTS(which_r, which_e) \
-//		always @(*) \
-//			__in_inst_``which_e``_scalar_data_extractor.to_shift \
-//			= __true_r``which_r``_data.data; \
-//		always @(*) \
-//			__in_inst_``which_e``_scalar_data_extractor.data_type \
-//			= __true_r``which_r``_data.data_type; \
-//		always @(*) \
-//			__in_inst_``which_e``_scalar_data_extractor.int_type_size \
-//			= __true_r``which_r``_data.int_type_size; \
-//		always @(*) \
-//			__in_inst_``which_e``_scalar_data_extractor.data_offset \
-//			= __true_r``which_r``_data.data_offset;
-//
-//	`ASSIGN_TO_SCALAR_DATA_EXTRACTOR_INPUTS(a, ddest)
-//	`ASSIGN_TO_SCALAR_DATA_EXTRACTOR_INPUTS(b, dsrc0)
-//	`ASSIGN_TO_SCALAR_DATA_EXTRACTOR_INPUTS(c, dsrc1)
-//	`undef ASSIGN_TO_SCALAR_DATA_EXTRACTOR_INPUTS
-//
-//
-//
-//
-//	// ONLY ALU/FPU instructions can produce (__curr_results.valid == 1'b1)
-//	//always @(*) __curr_results.valid
-//	//	= ((__from_lar_file__rd_metadata_a.tag != 0)
-//	//	&& (__curr_decoded_instr.group == 0)
-//	//	&& (__next_state == StRegular));
-//	always @(*) __curr_results.valid
-//		= ((__from_lar_file__rd_metadata_a.tag != 0)
-//		&& (__curr_decoded_instr.group == 0)
-//		&& (!__stall));
-//	always @(*) __curr_results.base_addr
-//		= __from_lar_file__rd_shareddata_a.base_addr;
-//
-//
-//	//// Drive __curr_results.data
-//	//always @(*)
-//	//begin
-//	//	case (__state)
-//	//	PkgSnow64PsEx::StRegular:
-//	//	begin
-//	//		case (__curr_decoded_instr.op_type)
-//	//		PkgSnow64InstrDecoder::OpTypeScalar:
-//	//		begin
-//	//			__curr_results.computed_data
-//	//				= (__from_lar_file__rd_shareddata_a.data
-//	//				& __out_inst_dsrc0_rotate__inv_mask)
-//	//				| (__out_inst_vector_alu.data
-//	//				& __out_inst_dsrc0_rotate__mask);
-//	//		end
-//
-//	//		PkgSnow64InstrDecoder::OpTypeVector:
-//	//		begin
-//	//			__curr_results.computed_data = __out_inst_vector_alu.data;
-//	//		end
-//	//		endcase
-//	//	end
-//
-//	//	// Temporary!
-//	//	default:
-//	//	begin
-//	//		__curr_results.computed_data = 0;
-//	//	end
-//	//	endcase
-//	//end
-//
-//
-//
-//
-//
-//	// Whenever the next state is NOT going to be StRegular, we are not
-//	// going to be ready to accept a new instruction on the next cycle.
-//	//always @(*) out_to_pipe_stage_if_id.stall
-//	//	= (__next_state != StRegular);
-//	always @(*) out_to_pipe_stage_if_id.stall = __stall;
-//
-//
-//	always @(*)
-//	begin
-//		case (__curr_decoded_instr.oper)
-//		PkgSnow64InstrDecoder::Btru_OneRegOneSimm20:
-//		begin
-//			out_to_pipe_stage_if_id.computed_pc
-//				= (__out_inst_ddest_scalar_data_extractor.data != 0)
-//				? (in_from_pipe_stage_if_id.pc_val
-//				+ __curr_decoded_instr.signext_imm)
-//				: in_from_pipe_stage_if_id.pc_val;
-//		end
-//
-//		PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20:
-//		begin
-//			out_to_pipe_stage_if_id.computed_pc
-//				= (__out_inst_ddest_scalar_data_extractor.data == 0)
-//				? (in_from_pipe_stage_if_id.pc_val
-//				+ __curr_decoded_instr.signext_imm)
-//				: in_from_pipe_stage_if_id.pc_val;
-//		end
-//
-//		//PkgSnow64InstrDecoder::Jmp_OneReg:
-//		default:
-//		begin
-//			out_to_pipe_stage_if_id.computed_pc
-//				= __out_inst_ddest_scalar_data_extractor.data;
-//		end
-//
-//		//default:
-//		//begin
-//		//	out_to_pipe_stage_if_id.computed_pc = 0;
-//		//end
-//		endcase
-//	end
-//
-//
-//
-//	initial
-//	begin
-//		out_to_pipe_stage_if_id = 0;
-//		out_to_pipe_stage_wb = 0;
-//
-//		__state = PkgSnow64PsEx::StRegular;
-//		__next_state = PkgSnow64PsEx::StRegular;
-//
-//		{__dsrc0_needs_casted, __dsrc1_needs_casted} = 0;
-//		__size_of_casted_scalars = 0;
-//		__use_vector_fpu = 0;
-//
-//
-//		{__in_inst_ddest_scalar_data_extractor,
-//			__in_inst_dsrc0_scalar_data_extractor,
-//			__in_inst_dsrc1_scalar_data_extractor} = 0;
-//		//__in_inst_ddest_scalar_data_injector = 0;
-//		{__in_inst_dsrc0_scalar_data_injector,
-//			__in_inst_dsrc1_scalar_data_injector} = 0;
-//
-//		{__in_inst_dsrc0_int_scalar_caster,
-//			__in_inst_dsrc1_int_scalar_caster} = 0;
-//		{__in_inst_dsrc0_int_vector_caster,
-//			__in_inst_dsrc1_int_vector_caster} = 0;
-//
-//		{__in_inst_dsrc0_bfloat16_cast_from_int,
-//			__in_inst_dsrc1_bfloat16_cast_from_int} = 0;
-//		{__in_inst_dsrc0_bfloat16_cast_to_int,
-//			__in_inst_dsrc1_bfloat16_cast_to_int} = 0;
-//		{__in_inst_dsrc0_tof_bfloat16_vector_caster,
-//			__in_inst_dsrc1_tof_bfloat16_vector_caster} = 0;
-//
-//		__curr_results = 0;
-//	end
-//
-//
-//
-//
-//	// Compute __next_state
-//	//always @(*)
-//	//begin
-//	//	case (__state)
-//	//	StRegular:
-//	//	begin
-//	//	end
-//
-//	//	StWaitForBFloat16CastFromInt:
-//	//	begin
-//	//	end
-//
-//	//	StWaitForBFloat16CastToInt:
-//	//	begin
-//	//	end
-//
-//	//	StInjectCastedScalarsAndRotate:
-//	//	begin
-//	//	end
-//
-//	//	StUseCastedScalars:
-//	//	begin
-//	//	end
-//
-//	//	StUseCastedVectors:
-//	//	begin
-//	//	end
-//
-//	//	StWaitForMultiCycleIntegerSubmodule:
-//	//	begin
-//	//	end
-//
-//	//	StWaitForBFloat16VectorFpu:
-//	//	begin
-//	//		__next_state = __out_inst_vector_fpu.valid
-//	//			? StWaitForBFloat16VectorFpu : StRegular;
-//	//	end
-//	//	endcase
-//	//end
-//
-//
-//	// Send __next_state 
-//	always_ff @(posedge clk)
-//	begin
-//		__state <= __next_state;
-//	end
-//
-//
-//endmodule
-
-
-
+// This is far less of a monster than I was thinking it'd be, but only
+// because I separated out the submodules.
 module Snow64PipeStageEx(input logic clk,
 	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
 	input PortIn_Snow64PipeStageEx_FromPipeStageIfId
@@ -1728,6 +1335,9 @@ module Snow64PipeStageEx(input logic clk,
 		__next_state = PkgSnow64PsEx::StRegular;
 
 	wire __stall = (__next_state != PkgSnow64PsEx::StRegular);
+
+	logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_MULTI_CYCLE_OP_TYPE:0]
+		__multi_cycle_op_type = PkgSnow64PsEx::MultiCycOpTypNone;
 
 
 	Snow64Pipeline_DecodedInstr __curr_decoded_instr;
@@ -1779,6 +1389,106 @@ module Snow64PipeStageEx(input logic clk,
 		== PkgSnow64InstrDecoder::OpTypeVector));
 	wire __out_inst_cast_scalars__valid, __out_inst_cast_vectors__valid;
 
+	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__dsrc0_data_to_use = 0, __dsrc1_data_to_use = 0;
+
+	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+		__out_inst_use_vector_alu__data,
+		__out_inst_use_vector_mul__data,
+		__out_inst_use_vector_div__data,
+		__out_inst_use_vector_bfloat16_fpu__data;
+
+	wire __in_inst_use_vector_mul__start
+		= ((__next_state == PkgSnow64PsEx::StWaitForMultiCycleOp)
+		&& (__multi_cycle_op_type == PkgSnow64PsEx::MultiCycOpTypMul));
+	wire __in_inst_use_vector_div__start
+		= ((__next_state == PkgSnow64PsEx::StWaitForMultiCycleOp)
+		&& (__multi_cycle_op_type == PkgSnow64PsEx::MultiCycOpTypDiv));
+	wire __in_inst_use_vector_bfloat16_fpu__start
+		= ((__next_state == PkgSnow64PsEx::StWaitForMultiCycleOp)
+		&& (__multi_cycle_op_type == PkgSnow64PsEx::MultiCycOpTypFpu));
+	wire __out_inst_use_vector_mul__valid,
+		__out_inst_use_vector_div__valid,
+		__out_inst_use_vector_bfloat16_fpu__valid;
+
+	always @(*)
+	begin
+		case (__curr_decoded_instr.group)
+		0:
+		begin
+			case (__true_ra_data.data_type)
+			PkgSnow64Cpu::DataTypBFloat16:
+			begin
+				__multi_cycle_op_type = PkgSnow64PsEx::MultiCycOpTypFpu;
+			end
+
+			default:
+			begin
+				case (__curr_decoded_instr.oper)
+				PkgSnow64InstrDecoder::Mul_ThreeRegs:
+				begin
+					__multi_cycle_op_type
+						= PkgSnow64PsEx::MultiCycOpTypMul;
+				end
+
+				PkgSnow64InstrDecoder::Div_ThreeRegs:
+				begin
+					__multi_cycle_op_type
+						= PkgSnow64PsEx::MultiCycOpTypDiv;
+				end
+
+				default:
+				begin
+					__multi_cycle_op_type
+						= PkgSnow64PsEx::MultiCycOpTypNone;
+				end
+				endcase
+			end
+			endcase
+		end
+
+		default:
+		begin
+			__multi_cycle_op_type = PkgSnow64PsEx::MultiCycOpTypNone;
+		end
+		endcase
+	end
+
+	`define SET_DATA_TO_USE(reg_name, dsrc_num) \
+	always @(*) \
+	begin \
+		case (__state) \
+		PkgSnow64PsEx::StRegular: \
+		begin \
+			__dsrc``dsrc_num``_data_to_use \
+				= (__curr_decoded_instr.op_type \
+				== PkgSnow64InstrDecoder::OpTypeScalar) \
+				? __rotated_dsrc``dsrc_num``_data \
+				: __true_``reg_name``_data.data; \
+		end \
+		\
+		PkgSnow64PsEx::StUseUncastedDataMultiCycle: \
+		begin \
+			__dsrc``dsrc_num``_data_to_use \
+				= (__curr_decoded_instr.op_type \
+				== PkgSnow64InstrDecoder::OpTypeScalar) \
+				? __rotated_dsrc``dsrc_num``_data \
+				: __true_``reg_name``_data.data; \
+		end \
+		default: \
+		begin \
+			__dsrc``dsrc_num``_data_to_use \
+				= (__curr_decoded_instr.op_type \
+				== PkgSnow64InstrDecoder::OpTypeScalar) \
+				? __dsrc``dsrc_num``_injected_vector_data \
+				: __dsrc``dsrc_num``_casted_vector_data; \
+		end \
+		endcase \
+	end
+
+	`SET_DATA_TO_USE(rb, 0)
+	`SET_DATA_TO_USE(rc, 1)
+	`undef SET_DATA_TO_USE
 
 
 	`define SET_NEEDED_CAST_TYPE(some_true_lar_data, out) \
@@ -1941,6 +1651,123 @@ module Snow64PipeStageEx(input logic clk,
 		.out_injected_rb_vector_data(__dsrc0_injected_vector_data),
 		.out_injected_rc_vector_data(__dsrc1_injected_vector_data));
 
+	// module Snow64PsExUseVectorAlu
+	// 	(input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	// 	input logic [`MSB_POS__SNOW64_CPU_ADDR:0] in_pc_val,
+	// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data);
+	Snow64PsExUseVectorAlu __inst_use_vector_alu
+		(.in_curr_decoded_instr(__curr_decoded_instr),
+		.in_true_ra_data(__true_ra_data),
+		.in_any_dsrc0_data(__dsrc0_data_to_use),
+		.in_any_dsrc1_data(__dsrc1_data_to_use),
+		.in_mask(__mask_for_scalar_op),
+		.in_inv_mask(__inv_mask_for_scalar_op),
+		.in_pc_val(in_from_pipe_stage_if_id.pc_val),
+		.out_ddest_data(__out_inst_use_vector_alu__data));
+
+	//// module Snow64PsExUseVectorMul(input logic clk,
+	//// 	input logic in_start,
+	//// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	//// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	//// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	//// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	//// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	//// 	output logic out_valid);
+	//Snow64PsExUseVectorMul __inst_use_vector_mul(.clk(clk),
+	//	.in_start(__in_inst_use_vector_mul__start),
+	//	.in_curr_decoded_instr(__curr_decoded_instr),
+	//	.in_true_ra_data(__true_ra_data),
+	//	.in_any_dsrc0_data(__dsrc0_data_to_use),
+	//	.in_any_dsrc1_data(__dsrc1_data_to_use),
+	//	.in_mask(__mask_for_scalar_op),
+	//	.in_inv_mask(__inv_mask_for_scalar_op),
+	//	.out_ddest_data(__out_inst_use_vector_mul__data),
+	//	.out_valid(__out_inst_use_vector_mul__valid));
+	assign __out_inst_use_vector_mul__data = 0;
+	assign __out_inst_use_vector_mul__valid = 1;
+
+	//// module Snow64PsExUseVectorDiv(input logic clk,
+	//// 	input logic in_start,
+	//// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	//// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	//// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	//// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	//// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	//// 	output logic out_valid);
+	//Snow64PsExUseVectorDiv __inst_use_vector_div(.clk(clk),
+	//	.in_start(__in_inst_use_vector_div__start),
+	//	.in_curr_decoded_instr(__curr_decoded_instr),
+	//	.in_true_ra_data(__true_ra_data),
+	//	.in_any_dsrc0_data(__dsrc0_data_to_use),
+	//	.in_any_dsrc1_data(__dsrc1_data_to_use),
+	//	.in_mask(__mask_for_scalar_op),
+	//	.in_inv_mask(__inv_mask_for_scalar_op),
+	//	.out_ddest_data(__out_inst_use_vector_div__data),
+	//	.out_valid(__out_inst_use_vector_div__valid));
+	assign __out_inst_use_vector_div__data = 0;
+	assign __out_inst_use_vector_div__valid = 1;
+
+	//// module Snow64PsExUseVectorBFloat16Fpu(input logic clk,
+	//// 	input logic in_start,
+	//// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	//// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	//// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	//// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	//// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	//// 	output logic out_valid);
+	//Snow64PsExUseVectorBFloat16Fpu __inst_use_vector_bfloat16_fpu
+	//	(.clk(clk), .in_start(__in_inst_use_vector_bfloat16_fpu__start),
+	//	.in_curr_decoded_instr(__curr_decoded_instr),
+	//	.in_true_ra_data(__true_ra_data),
+	//	.in_any_dsrc0_data(__dsrc0_data_to_use),
+	//	.in_any_dsrc1_data(__dsrc1_data_to_use),
+	//	.in_mask(__mask_for_scalar_op),
+	//	.in_inv_mask(__inv_mask_for_scalar_op),
+	//	.out_ddest_data(__out_inst_use_vector_bfloat16_fpu__data),
+	//	.out_valid(__out_inst_use_vector_bfloat16_fpu__valid));
+	assign __out_inst_use_vector_bfloat16_fpu__data = 0;
+	assign __out_inst_use_vector_bfloat16_fpu__valid = 1;
+
+
+	// ONLY ALU/FPU instructions can produce (__curr_results.valid == 1'b1)
+	always @(*) __curr_results.valid
+		= ((__from_lar_file__rd_metadata_a.tag != 0)
+		&& (__curr_decoded_instr.group == 0)
+		&& (!__stall));
+	always @(*) __curr_results.base_addr
+		= __true_ra_data.base_addr;
+
+	always @(*)
+	begin
+		case (__multi_cycle_op_type)
+		PkgSnow64PsEx::MultiCycOpTypNone:
+		begin
+			__curr_results.computed_data
+				= __out_inst_use_vector_alu__data;
+		end
+
+		PkgSnow64PsEx::MultiCycOpTypMul:
+		begin
+			__curr_results.computed_data
+				= __out_inst_use_vector_mul__data;
+		end
+
+		PkgSnow64PsEx::MultiCycOpTypDiv:
+		begin
+			__curr_results.computed_data
+				= __out_inst_use_vector_div__data;
+		end
+
+		PkgSnow64PsEx::MultiCycOpTypFpu:
+		begin
+			__curr_results.computed_data
+				= __out_inst_use_vector_bfloat16_fpu__data;
+		end
+		endcase
+	end
 
 	// Whenever the next state is NOT going to be StRegular, we are not
 	// going to be ready to accept a new instruction on the next cycle.
@@ -1951,11 +1778,6 @@ module Snow64PipeStageEx(input logic clk,
 		case (__curr_decoded_instr.oper)
 		PkgSnow64InstrDecoder::Btru_OneRegOneSimm20:
 		begin
-			//out_to_pipe_stage_if_id.computed_pc
-			//	= (__out_inst_ddest_scalar_data_extractor.data != 0)
-			//	? (in_from_pipe_stage_if_id.pc_val
-			//	+ __curr_decoded_instr.signext_imm)
-			//	: in_from_pipe_stage_if_id.pc_val;
 			out_to_pipe_stage_if_id.computed_pc
 				= (__curr_ddest_scalar_data != 0)
 				? (in_from_pipe_stage_if_id.pc_val
@@ -1965,11 +1787,6 @@ module Snow64PipeStageEx(input logic clk,
 
 		PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20:
 		begin
-			//out_to_pipe_stage_if_id.computed_pc
-			//	= (__out_inst_ddest_scalar_data_extractor.data == 0)
-			//	? (in_from_pipe_stage_if_id.pc_val
-			//	+ __curr_decoded_instr.signext_imm)
-			//	: in_from_pipe_stage_if_id.pc_val;
 			out_to_pipe_stage_if_id.computed_pc
 				= (__curr_ddest_scalar_data == 0)
 				? (in_from_pipe_stage_if_id.pc_val
@@ -1977,19 +1794,141 @@ module Snow64PipeStageEx(input logic clk,
 				: in_from_pipe_stage_if_id.pc_val;
 		end
 
-		//PkgSnow64InstrDecoder::Jmp_OneReg:
 		default:
 		begin
-			//out_to_pipe_stage_if_id.computed_pc
-			//	= __out_inst_ddest_scalar_data_extractor.data;
 			out_to_pipe_stage_if_id.computed_pc = __curr_ddest_scalar_data;
 		end
-
-		//default:
-		//begin
-		//	out_to_pipe_stage_if_id.computed_pc = 0;
-		//end
 		endcase
+	end
+
+	// Compute __next_state
+	always @(*)
+	begin
+		case (__state)
+		PkgSnow64PsEx::StRegular:
+		begin
+			case (__need_any_cast)
+			1'b0:
+			begin
+				__next_state = (__multi_cycle_op_type
+					== PkgSnow64PsEx::MultiCycOpTypNone)
+					? PkgSnow64PsEx::StRegular
+					: PkgSnow64PsEx::StUseUncastedDataMultiCycle;
+			end
+
+			1'b1:
+			begin
+				__next_state = (__curr_decoded_instr.op_type
+					== PkgSnow64InstrDecoder::OpTypeScalar)
+					? PkgSnow64PsEx::StWaitForScalarCaster
+					: PkgSnow64PsEx::StWaitForVectorCaster;
+			end
+			endcase
+		end
+
+		PkgSnow64PsEx::StWaitForScalarCaster:
+		begin
+			__next_state = __out_inst_cast_scalars__valid
+				? PkgSnow64PsEx::StInjectCastedScalars
+				: PkgSnow64PsEx::StWaitForScalarCaster;
+		end
+
+		PkgSnow64PsEx::StWaitForVectorCaster:
+		begin
+			case (__out_inst_cast_vectors__valid)
+			1'b0:
+			begin
+				__next_state = PkgSnow64PsEx::StWaitForVectorCaster;
+			end
+
+			1'b1:
+			begin
+				__next_state
+					= (__multi_cycle_op_type
+					== PkgSnow64PsEx::MultiCycOpTypNone)
+					? PkgSnow64PsEx::StUseCastedDataSingleCycle
+					: PkgSnow64PsEx::StUseCastedDataMultiCycle;
+			end
+			endcase
+		end
+
+		PkgSnow64PsEx::StInjectCastedScalars:
+		begin
+			__next_state
+				= (__multi_cycle_op_type
+				== PkgSnow64PsEx::MultiCycOpTypNone)
+				? PkgSnow64PsEx::StUseCastedDataSingleCycle
+				: PkgSnow64PsEx::StUseCastedDataMultiCycle;
+		end
+
+		PkgSnow64PsEx::StUseCastedDataSingleCycle:
+		begin
+			__next_state = PkgSnow64PsEx::StRegular;
+		end
+
+		// PkgSnow64PsEx::StUseCastedDataMultiCycle or
+		// PkgSnow64PsEx::StUseUncastedDataMultiCycle
+		default:
+		begin
+			__next_state = PkgSnow64PsEx::StWaitForMultiCycleOp;
+		end
+
+		PkgSnow64PsEx::StWaitForMultiCycleOp:
+		begin
+			case (__multi_cycle_op_type)
+			PkgSnow64PsEx::MultiCycOpTypNone:
+			begin
+				// Eek!
+				__next_state = PkgSnow64PsEx::StWaitForMultiCycleOp;
+			end
+
+			PkgSnow64PsEx::MultiCycOpTypMul:
+			begin
+				__next_state = __out_inst_use_vector_mul__valid
+					? PkgSnow64PsEx::StRegular
+					: PkgSnow64PsEx::StWaitForMultiCycleOp;
+			end
+
+			PkgSnow64PsEx::MultiCycOpTypDiv:
+			begin
+				__next_state = __out_inst_use_vector_div__valid
+					? PkgSnow64PsEx::StRegular
+					: PkgSnow64PsEx::StWaitForMultiCycleOp;
+			end
+
+			PkgSnow64PsEx::MultiCycOpTypFpu:
+			begin
+				__next_state = __out_inst_use_vector_bfloat16_fpu__valid
+					? PkgSnow64PsEx::StRegular
+					: PkgSnow64PsEx::StWaitForMultiCycleOp;
+			end
+			endcase
+		end
+
+		endcase
+	end
+
+	always_ff @(posedge clk)
+	begin
+		case (__next_state)
+		PkgSnow64PsEx::StRegular:
+		begin
+			out_to_pipe_stage_wb.decoded_instr <= __curr_decoded_instr;
+			out_to_pipe_stage_wb.computed_data <= __curr_results.data;
+			out_to_pipe_stage_wb.ldst_addr
+				<= {__true_rb_data.base_addr, __true_rb_data.data_offset}
+				+ __curr_dsrc1_scalar_data
+				+ __curr_decoded_instr.signext_imm;
+		end
+
+		default:
+		begin
+			// bubble
+			out_to_pipe_stage_wb.decoded_instr <= 0;
+		end
+		endcase
+
+		__state <= __next_state;
 	end
 
 endmodule
