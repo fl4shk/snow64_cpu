@@ -35,8 +35,9 @@ typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_STATE:0]
 
 	StUseCastedDataSingleCycle,
 	StUseCastedDataMultiCycle,
-	StUseUncastedDataMultiCycle,
-	StWaitForMultiCycleOp
+	//StUseUncastedDataMultiCycle,
+	StWaitForMultiCycleOp,
+	StBad
 } State;
 
 typedef enum logic [`MSB_POS__SNOW64_PIPE_STAGE_EX_MULTI_CYCLE_OP_TYPE:0]
@@ -113,70 +114,54 @@ module Snow64PsExOperandForwarder(input logic clk,
 		__operand_forwarding_check__ra, __operand_forwarding_check__rb,
 		__operand_forwarding_check__rc;
 
-	assign __operand_forwarding_check__ra
-		= {(__past_results_0.valid && (__past_results_0.base_addr
-		== __from_lar_file__rd_shareddata_a.base_addr)),
-		(__past_results_1.valid && (__past_results_1.base_addr
-		== __from_lar_file__rd_shareddata_a.base_addr)),
-		(__past_results_2.valid && (__past_results_2.base_addr
-		== __from_lar_file__rd_shareddata_a.base_addr))};
-	assign __operand_forwarding_check__rb
-		= {(__past_results_0.valid && (__past_results_0.base_addr
-		== __from_lar_file__rd_shareddata_b.base_addr)),
-		(__past_results_1.valid && (__past_results_1.base_addr
-		== __from_lar_file__rd_shareddata_b.base_addr)),
-		(__past_results_2.valid && (__past_results_2.base_addr
-		== __from_lar_file__rd_shareddata_b.base_addr))};
-	assign __operand_forwarding_check__rc
-		= {(__past_results_0.valid && (__past_results_0.base_addr
-		== __from_lar_file__rd_shareddata_c.base_addr)),
-		(__past_results_1.valid && (__past_results_1.base_addr
-		== __from_lar_file__rd_shareddata_c.base_addr)),
-		(__past_results_2.valid && (__past_results_2.base_addr
-		== __from_lar_file__rd_shareddata_c.base_addr))};
+	`define PARTIAL_OP_FORWARDING_CHECK(reg_letter, past_results_num) \
+		(__past_results_``past_results_num``.valid \
+		&& (__past_results_``past_results_num``.base_addr \
+		== __from_lar_file__rd_shareddata_``reg_letter``.base_addr))
+
+	`define ASSIGN_OPERAND_FORWARDING_CHECK(reg_letter) \
+	assign __operand_forwarding_check__r``reg_letter \
+		= {`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 0), \
+		`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 1), \
+		`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 2)};
+
+	`ASSIGN_OPERAND_FORWARDING_CHECK(a)
+	`ASSIGN_OPERAND_FORWARDING_CHECK(b)
+	`ASSIGN_OPERAND_FORWARDING_CHECK(c)
+
+	`undef ASSIGN_OPERAND_FORWARDING_CHECK
+	`undef PARTIAL_OP_FORWARDING_CHECK
 
 
 	PkgSnow64PsEx::Results
 		__past_results_0, __past_results_1, __past_results_2;
 
 
+	// These two defines exist so that the PERF_OPERAND_FORWARDING `define
+	// can look "cleaner", or something to that effect.
+	`define FORWARD_FROM_PAST_RESULTS(reg_letter, past_results_num) \
+		{out_true_r``reg_letter``_data.data, \
+			out_true_r``reg_letter``_data.base_addr} \
+			= {__past_results_``past_results_num``.computed_data, \
+			__past_results_``past_results_num``.base_addr};
+	`define FORWARD_FROM_LAR_FILE(reg_letter) \
+		{out_true_r``reg_letter``_data.data, \
+			out_true_r``reg_letter``_data.base_addr} \
+			= {__from_lar_file__rd_shareddata_``reg_letter.data, \
+			__from_lar_file__rd_shareddata_``reg_letter.base_addr};
 
-	`define PERF_OPERAND_FORWARDING(which_reg) \
+	`define PERF_OPERAND_FORWARDING(reg_letter) \
 	always @(*) \
 	begin \
-		case (__operand_forwarding_check__r``which_reg) \
-		3'b111: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__past_results_0.computed_data, \
-			__past_results_0.base_addr}; \
-		3'b110: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__past_results_0.computed_data, \
-			__past_results_0.base_addr}; \
-		3'b101: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__past_results_0.computed_data, \
-			__past_results_0.base_addr}; \
-		3'b100: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__past_results_0.computed_data, \
-			__past_results_0.base_addr}; \
-		3'b011: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__past_results_1.computed_data, \
-			__past_results_1.base_addr}; \
-		3'b010: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__past_results_1.computed_data, \
-			__past_results_1.base_addr}; \
-		3'b001: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__past_results_2.computed_data, \
-			__past_results_2.base_addr}; \
-		3'b000: {out_true_r``which_reg``_data.data, \
-			out_true_r``which_reg``_data.base_addr} \
-			= {__from_lar_file__rd_shareddata_``which_reg.data, \
-			__from_lar_file__rd_shareddata_``which_reg.base_addr}; \
+		case (__operand_forwarding_check__r``reg_letter) \
+		3'b111: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		3'b110: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		3'b101: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		3'b100: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		3'b011: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		3'b010: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		3'b001: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
+		3'b000: `FORWARD_FROM_LAR_FILE(reg_letter) \
 		endcase \
 	end
 
@@ -184,6 +169,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 	`PERF_OPERAND_FORWARDING(b)
 	`PERF_OPERAND_FORWARDING(c)
 	`undef PERF_OPERAND_FORWARDING
+	`undef FORWARD_FROM_PAST_RESULTS
+	`undef FORWARD_FROM_LAR_FILE
 
 	`define ASSIGN_NON_FORWARDED_TRUE_REG_DATA(which_reg) \
 		always @(*) out_true_r``which_reg``_data.data_offset \
@@ -1398,18 +1385,26 @@ module Snow64PipeStageEx(input logic clk,
 		__out_inst_use_vector_div__data,
 		__out_inst_use_vector_bfloat16_fpu__data;
 
+	wire __going_to_perf_multi_cycle_op
+		= (__next_state == PkgSnow64PsEx::StWaitForMultiCycleOp);
+
 	wire __in_inst_use_vector_mul__start
-		= ((__next_state == PkgSnow64PsEx::StWaitForMultiCycleOp)
+		= (__going_to_perf_multi_cycle_op
 		&& (__multi_cycle_op_type == PkgSnow64PsEx::MultiCycOpTypMul));
 	wire __in_inst_use_vector_div__start
-		= ((__next_state == PkgSnow64PsEx::StWaitForMultiCycleOp)
+		= (__going_to_perf_multi_cycle_op
 		&& (__multi_cycle_op_type == PkgSnow64PsEx::MultiCycOpTypDiv));
 	wire __in_inst_use_vector_bfloat16_fpu__start
-		= ((__next_state == PkgSnow64PsEx::StWaitForMultiCycleOp)
+		= (__going_to_perf_multi_cycle_op
 		&& (__multi_cycle_op_type == PkgSnow64PsEx::MultiCycOpTypFpu));
 	wire __out_inst_use_vector_mul__valid,
 		__out_inst_use_vector_div__valid,
 		__out_inst_use_vector_bfloat16_fpu__valid;
+
+	wire __any_multi_cycle_op_out_valid
+		= (__out_inst_use_vector_mul__valid
+		|| __out_inst_use_vector_div__valid
+		|| __out_inst_use_vector_bfloat16_fpu__valid);
 
 	always @(*)
 	begin
@@ -1467,14 +1462,15 @@ module Snow64PipeStageEx(input logic clk,
 				: __true_``reg_name``_data.data; \
 		end \
 		\
-		PkgSnow64PsEx::StUseUncastedDataMultiCycle: \
-		begin \
-			__dsrc``dsrc_num``_data_to_use \
-				= (__curr_decoded_instr.op_type \
-				== PkgSnow64InstrDecoder::OpTypeScalar) \
-				? __rotated_dsrc``dsrc_num``_data \
-				: __true_``reg_name``_data.data; \
-		end \
+		/* PkgSnow64PsEx::StUseUncastedDataMultiCycle: */ \
+		/* begin */ \
+		/* 	__dsrc``dsrc_num``_data_to_use */ \
+		/* 		= (__curr_decoded_instr.op_type */ \
+		/* 		== PkgSnow64InstrDecoder::OpTypeScalar) */ \
+		/* 		? __rotated_dsrc``dsrc_num``_data */ \
+		/* 		: __true_``reg_name``_data.data; */ \
+		/* end */ \
+		\
 		default: \
 		begin \
 			__dsrc``dsrc_num``_data_to_use \
@@ -1668,68 +1664,68 @@ module Snow64PipeStageEx(input logic clk,
 		.in_pc_val(in_from_pipe_stage_if_id.pc_val),
 		.out_ddest_data(__out_inst_use_vector_alu__data));
 
-	//// module Snow64PsExUseVectorMul(input logic clk,
-	//// 	input logic in_start,
-	//// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
-	//// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
-	//// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-	//// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
-	//// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
-	//// 	output logic out_valid);
-	//Snow64PsExUseVectorMul __inst_use_vector_mul(.clk(clk),
-	//	.in_start(__in_inst_use_vector_mul__start),
-	//	.in_curr_decoded_instr(__curr_decoded_instr),
-	//	.in_true_ra_data(__true_ra_data),
-	//	.in_any_dsrc0_data(__dsrc0_data_to_use),
-	//	.in_any_dsrc1_data(__dsrc1_data_to_use),
-	//	.in_mask(__mask_for_scalar_op),
-	//	.in_inv_mask(__inv_mask_for_scalar_op),
-	//	.out_ddest_data(__out_inst_use_vector_mul__data),
-	//	.out_valid(__out_inst_use_vector_mul__valid));
-	assign __out_inst_use_vector_mul__data = 0;
-	assign __out_inst_use_vector_mul__valid = 1;
+	// module Snow64PsExUseVectorMul(input logic clk,
+	// 	input logic in_start,
+	// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	// 	output logic out_valid);
+	Snow64PsExUseVectorMul __inst_use_vector_mul(.clk(clk),
+		.in_start(__in_inst_use_vector_mul__start),
+		.in_curr_decoded_instr(__curr_decoded_instr),
+		.in_true_ra_data(__true_ra_data),
+		.in_any_dsrc0_data(__dsrc0_data_to_use),
+		.in_any_dsrc1_data(__dsrc1_data_to_use),
+		.in_mask(__mask_for_scalar_op),
+		.in_inv_mask(__inv_mask_for_scalar_op),
+		.out_ddest_data(__out_inst_use_vector_mul__data),
+		.out_valid(__out_inst_use_vector_mul__valid));
+	//assign __out_inst_use_vector_mul__data = 0;
+	//assign __out_inst_use_vector_mul__valid = 1;
 
-	//// module Snow64PsExUseVectorDiv(input logic clk,
-	//// 	input logic in_start,
-	//// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
-	//// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
-	//// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-	//// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
-	//// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
-	//// 	output logic out_valid);
-	//Snow64PsExUseVectorDiv __inst_use_vector_div(.clk(clk),
-	//	.in_start(__in_inst_use_vector_div__start),
-	//	.in_curr_decoded_instr(__curr_decoded_instr),
-	//	.in_true_ra_data(__true_ra_data),
-	//	.in_any_dsrc0_data(__dsrc0_data_to_use),
-	//	.in_any_dsrc1_data(__dsrc1_data_to_use),
-	//	.in_mask(__mask_for_scalar_op),
-	//	.in_inv_mask(__inv_mask_for_scalar_op),
-	//	.out_ddest_data(__out_inst_use_vector_div__data),
-	//	.out_valid(__out_inst_use_vector_div__valid));
-	assign __out_inst_use_vector_div__data = 0;
-	assign __out_inst_use_vector_div__valid = 1;
+	// module Snow64PsExUseVectorDiv(input logic clk,
+	// 	input logic in_start,
+	// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	// 	output logic out_valid);
+	Snow64PsExUseVectorDiv __inst_use_vector_div(.clk(clk),
+		.in_start(__in_inst_use_vector_div__start),
+		.in_curr_decoded_instr(__curr_decoded_instr),
+		.in_true_ra_data(__true_ra_data),
+		.in_any_dsrc0_data(__dsrc0_data_to_use),
+		.in_any_dsrc1_data(__dsrc1_data_to_use),
+		.in_mask(__mask_for_scalar_op),
+		.in_inv_mask(__inv_mask_for_scalar_op),
+		.out_ddest_data(__out_inst_use_vector_div__data),
+		.out_valid(__out_inst_use_vector_div__valid));
+	//assign __out_inst_use_vector_div__data = 0;
+	//assign __out_inst_use_vector_div__valid = 1;
 
-	//// module Snow64PsExUseVectorBFloat16Fpu(input logic clk,
-	//// 	input logic in_start,
-	//// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
-	//// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
-	//// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-	//// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
-	//// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
-	//// 	output logic out_valid);
-	//Snow64PsExUseVectorBFloat16Fpu __inst_use_vector_bfloat16_fpu
-	//	(.clk(clk), .in_start(__in_inst_use_vector_bfloat16_fpu__start),
-	//	.in_curr_decoded_instr(__curr_decoded_instr),
-	//	.in_true_ra_data(__true_ra_data),
-	//	.in_any_dsrc0_data(__dsrc0_data_to_use),
-	//	.in_any_dsrc1_data(__dsrc1_data_to_use),
-	//	.in_mask(__mask_for_scalar_op),
-	//	.in_inv_mask(__inv_mask_for_scalar_op),
-	//	.out_ddest_data(__out_inst_use_vector_bfloat16_fpu__data),
-	//	.out_valid(__out_inst_use_vector_bfloat16_fpu__valid));
-	assign __out_inst_use_vector_bfloat16_fpu__data = 0;
-	assign __out_inst_use_vector_bfloat16_fpu__valid = 1;
+	// module Snow64PsExUseVectorBFloat16Fpu(input logic clk,
+	// 	input logic in_start,
+	// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		in_any_dsrc0_data, in_any_dsrc1_data, in_mask, in_inv_mask,
+	// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] out_ddest_data,
+	// 	output logic out_valid);
+	Snow64PsExUseVectorBFloat16Fpu __inst_use_vector_bfloat16_fpu
+		(.clk(clk), .in_start(__in_inst_use_vector_bfloat16_fpu__start),
+		.in_curr_decoded_instr(__curr_decoded_instr),
+		.in_true_ra_data(__true_ra_data),
+		.in_any_dsrc0_data(__dsrc0_data_to_use),
+		.in_any_dsrc1_data(__dsrc1_data_to_use),
+		.in_mask(__mask_for_scalar_op),
+		.in_inv_mask(__inv_mask_for_scalar_op),
+		.out_ddest_data(__out_inst_use_vector_bfloat16_fpu__data),
+		.out_valid(__out_inst_use_vector_bfloat16_fpu__valid));
+	//assign __out_inst_use_vector_bfloat16_fpu__data = 0;
+	//assign __out_inst_use_vector_bfloat16_fpu__valid = 1;
 
 
 	// ONLY ALU/FPU instructions can produce (__curr_results.valid == 1'b1)
@@ -1810,10 +1806,14 @@ module Snow64PipeStageEx(input logic clk,
 			case (__need_any_cast)
 			1'b0:
 			begin
+				//__next_state = (__multi_cycle_op_type
+				//	== PkgSnow64PsEx::MultiCycOpTypNone)
+				//	? PkgSnow64PsEx::StRegular
+				//	: PkgSnow64PsEx::StUseUncastedDataMultiCycle;
 				__next_state = (__multi_cycle_op_type
 					== PkgSnow64PsEx::MultiCycOpTypNone)
 					? PkgSnow64PsEx::StRegular
-					: PkgSnow64PsEx::StUseUncastedDataMultiCycle;
+					: PkgSnow64PsEx::StWaitForMultiCycleOp;
 			end
 
 			1'b1:
@@ -1866,45 +1866,25 @@ module Snow64PipeStageEx(input logic clk,
 			__next_state = PkgSnow64PsEx::StRegular;
 		end
 
-		// PkgSnow64PsEx::StUseCastedDataMultiCycle or
-		// PkgSnow64PsEx::StUseUncastedDataMultiCycle
-		default:
+		PkgSnow64PsEx::StUseCastedDataMultiCycle:
 		begin
 			__next_state = PkgSnow64PsEx::StWaitForMultiCycleOp;
 		end
 
 		PkgSnow64PsEx::StWaitForMultiCycleOp:
 		begin
-			case (__multi_cycle_op_type)
-			PkgSnow64PsEx::MultiCycOpTypNone:
-			begin
-				// Eek!
-				__next_state = PkgSnow64PsEx::StWaitForMultiCycleOp;
-			end
-
-			PkgSnow64PsEx::MultiCycOpTypMul:
-			begin
-				__next_state = __out_inst_use_vector_mul__valid
-					? PkgSnow64PsEx::StRegular
-					: PkgSnow64PsEx::StWaitForMultiCycleOp;
-			end
-
-			PkgSnow64PsEx::MultiCycOpTypDiv:
-			begin
-				__next_state = __out_inst_use_vector_div__valid
-					? PkgSnow64PsEx::StRegular
-					: PkgSnow64PsEx::StWaitForMultiCycleOp;
-			end
-
-			PkgSnow64PsEx::MultiCycOpTypFpu:
-			begin
-				__next_state = __out_inst_use_vector_bfloat16_fpu__valid
-					? PkgSnow64PsEx::StRegular
-					: PkgSnow64PsEx::StWaitForMultiCycleOp;
-			end
-			endcase
+			// Since there can only be one of these active at once, it's
+			// fine to just do the ORing of the "valid" signals.
+			__next_state = __any_multi_cycle_op_out_valid
+				? PkgSnow64PsEx::StRegular
+				: PkgSnow64PsEx::StWaitForMultiCycleOp;
 		end
 
+		PkgSnow64PsEx::StBad:
+		begin
+			// Eek!
+			__next_state = PkgSnow64PsEx::StBad;
+		end
 		endcase
 	end
 

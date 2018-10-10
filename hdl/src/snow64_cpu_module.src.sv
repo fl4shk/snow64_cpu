@@ -65,28 +65,5 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 
 
 
-	//always @(*) __in_inst_lar_file__rd_a
-	//	= ;
-
-
-	//always @(*) __in_inst_lar_file__rd_a
-	//	= __out_inst_instr_decoder.ra_index;
-	//always @(*) __in_inst_lar_file__rd_b
-	//	= __out_inst_instr_decoder.rb_index;
-	//always @(*) __in_inst_lar_file__rd_c
-	//	= __out_inst_instr_decoder.rc_index;
-
-
-
-	//initial
-	//begin
-	//	__in_inst_fake_instr_cache__req_read = 0;
-
-	//	__in_inst_lar_file__rd_a = 0;
-	//	__in_inst_lar_file__rd_b = 0;
-	//	__in_inst_lar_file__rd_c = 0;
-	//	__in_inst_lar_file__wr = 0;
-
-	//end
 
 endmodule
