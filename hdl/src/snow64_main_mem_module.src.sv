@@ -47,13 +47,13 @@ module Snow64MainMem(input logic clk,
 
 
 		`INSTR_0(0) = 'h4f00_4010;
-		//`INSTR_1(0) = 'h4f0f_0000;
+		`INSTR_1(0) = 'h4f0f_0000;
 		`INSTR_2(0) = 'h0f00_e000;
 		`INSTR_3(0) = 'h0000_e001;
 		`INSTR_4(0) = 'h0001_0000;
 
-		`INSTR_0('h1000) = 'h0f00_e000;
-		`INSTR_1('h1000) = 'h0000_e001;
+		//`INSTR_0('h1000) = 'h0f00_e000;
+		//`INSTR_1('h1000) = 'h0000_e001;
 	end
 
 

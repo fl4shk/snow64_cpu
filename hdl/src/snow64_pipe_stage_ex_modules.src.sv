@@ -2032,10 +2032,10 @@ module Snow64PipeStageEx(input logic clk,
 		//	__true_rb_data.data,
 		//	__true_rc_data.data,
 		//	out_to_pipe_stage_wb.ldst_addr);
-		$display("EX:  %h, %h, %h",
-			(__true_ra_data.data != 0),
-			(__true_rb_data.data != 0),
-			(__true_rc_data.data != 0));
+		//$display("EX:  %h, %h, %h",
+		//	(__true_ra_data.data != 0),
+		//	(__true_rb_data.data != 0),
+		//	(__true_rc_data.data != 0));
 
 		out_to_pipe_stage_wb.ldst_addr
 			<= {__true_rb_data.base_addr, __true_rb_data.data_offset}
