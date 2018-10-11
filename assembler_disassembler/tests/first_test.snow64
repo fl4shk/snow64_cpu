@@ -20,25 +20,25 @@
 
 start:
 {
-	sim_syscall dzero, dzero, dzero, syscall_disp_regs
-	sim_syscall dzero, dzero, dzero, syscall_finish
-	//ldu32 dsp, dzero, dzero, const__above_top_of_stack
-	//ldu8 dsp, dzero, dsp, 0
+	//sim_syscall dzero, dzero, dzero, syscall_disp_regs
+	//sim_syscall dzero, dzero, dzero, syscall_finish
+	ldu32 dsp, dzero, dzero, const__above_top_of_stack
+	ldu8 dsp, dzero, dsp, 0
 
-	//bra main
+	bra main
 
 }
 
 
-//global_constants:
-//const__above_top_of_stack:
-//	.db32 0x10000
-//
-//
-//.org 0x1000
-//main:
-//{
-//	sim_syscall dsp, dzero, dzero, syscall_disp_regs
-//	sim_syscall dzero, dzero, dzero, syscall_finish
-//
-//}
+global_constants:
+const__above_top_of_stack:
+	.db32 0x10000
+
+
+.org 0x1000
+main:
+{
+	sim_syscall dsp, dzero, dzero, syscall_disp_regs
+	sim_syscall dzero, dzero, dzero, syscall_finish
+
+}

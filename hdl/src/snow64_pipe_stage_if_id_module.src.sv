@@ -49,7 +49,8 @@ module Snow64PipeStageIfId(input logic clk,
 	endtask
 
 	task send_curr_instr(input PkgSnow64Cpu::CpuAddr some_pc);
-		$display("send_curr_instr(%h)", some_pc);
+		$display("send_curr_instr(%h), %h", some_pc,
+			__out_inst_instr_decoder.group);
 		out_to_pipe_stage_ex.decoded_instr <= __out_inst_instr_decoder;
 		out_to_pipe_stage_ex.pc_val <= some_pc;
 		//out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
@@ -97,20 +98,24 @@ module Snow64PipeStageIfId(input logic clk,
 		// StWaitForLdStPart0 or StWaitForLdStPart1:
 		default:
 		begin
-			out_to_instr_cache = {1'b1, __following_pc};
+			//out_to_instr_cache = {1'b1, __following_pc};
+			out_to_instr_cache = {1'b1, __spec_reg_pc};
 		end
 		endcase
 	end
 
 	//always @(posedge clk)
 	//begin
-	//	$display("IF/ID stuff:  %h %h %h %d",
+	//	$display("IF/ID stuff:  %h %h %h %h",
 	//		in_from_instr_cache.valid, out_to_instr_cache.req,
-	//		__state, $signed(__spec_reg_pc));
+	//		__state, __spec_reg_pc);
 	//end
 
 	always @(posedge clk)
 	begin
+		$display("IF/ID:  %h, %h", __state,
+			__out_inst_instr_decoder.group);
+
 		case (__state)
 		StInit:
 		begin
@@ -141,6 +146,7 @@ module Snow64PipeStageIfId(input logic clk,
 				//__spec_reg_pc <= __following_pc;
 				__state <= StRegular;
 			end
+			send_bubble();
 		end
 
 		StRegular:
@@ -158,6 +164,8 @@ module Snow64PipeStageIfId(input logic clk,
 					0:
 					begin
 						send_curr_instr(__spec_reg_pc);
+						//$display("IF/ID StRegular next state:  %h",
+						//	StRegular);
 					end
 
 					// Control-flow instructions
@@ -167,7 +175,10 @@ module Snow64PipeStageIfId(input logic clk,
 						out_to_pipe_stage_ex.decoded_instr
 							<= __out_inst_instr_decoder;
 						out_to_pipe_stage_ex.pc_val <= __following_pc;
+						//send_curr_instr(__following_pc);
 						__state <= StChangePc;
+						//$display("IF/ID StRegular next state:  %h",
+						//	StChangePc);
 					end
 
 					// Load instructions
@@ -175,6 +186,8 @@ module Snow64PipeStageIfId(input logic clk,
 					begin
 						send_curr_instr(__spec_reg_pc);
 						__state <= StWaitForLdStPart0;
+						//$display("IF/ID StRegular next state:  %h",
+						//	StWaitForLdStPart0);
 					end
 
 					// Store instructions
@@ -182,15 +195,24 @@ module Snow64PipeStageIfId(input logic clk,
 					begin
 						send_curr_instr(__spec_reg_pc);
 						__state <= StWaitForLdStPart0;
+						//$display("IF/ID StRegular next state:  %h",
+						//	StWaitForLdStPart0);
 					end
 					endcase
 				end
 
 				1'b1:
 				begin
+					//$display("IF/ID StRegular next state:  %h", StRegular);
 					send_bubble();
 				end
 				endcase
+			end
+
+			else if (!in_from_instr_cache.valid)
+			begin
+				//$display("IF/ID StRegular next state:  %h", StRegular);
+				send_bubble();
 			end
 		end
 

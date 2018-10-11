@@ -76,6 +76,7 @@ module __Snow64LarFileShareddataData(input logic clk,
 	begin
 		if (in_wr_req)
 		begin
+			//$display("Shareddata stuff:  %h, %h", in_wr_index, in_wr_data);
 			__arr[in_wr_index] <= in_wr_data;
 		end
 	end
@@ -317,6 +318,7 @@ module Snow64LarFile(input logic clk,
 	localparam __UNALLOCATED_TAG = 0;
 
 	logic [__MSB_POS__LAR_FILE_WRITE_STATE:0] __wr_state;
+	logic __did_write_back = 0;
 
 
 	// Tag stack
@@ -1059,6 +1061,9 @@ module Snow64LarFile(input logic clk,
 		(input logic [__MSB_POS__LAR_FILE_METADATA_TAG:0] n_wr_index,
 		input logic [__MSB_POS__LAR_FILE_DATA:0] n_wr_data);
 
+		$display("Lar File prep_shareddata_data_write:  %h, %h",
+			n_wr_index, n_wr_data);
+
 		__in_shareddata_data_wr_req <= 1;
 		__in_shareddata_data_wr_index <= n_wr_index;
 		__in_shareddata_data_wr_data <= n_wr_data;
@@ -1180,6 +1185,7 @@ module Snow64LarFile(input logic clk,
 
 		PkgSnow64LarFile::WrStStartLdSt:
 		begin
+			__did_write_back <= 0;
 			// If we already had the address's data.
 			if (`__IN_LDST_CAPTURED_ALIASED_METADATA_TAG != 0)
 			begin
@@ -1490,9 +1496,15 @@ module Snow64LarFile(input logic clk,
 			stop_mem_read();
 			stop_mem_write();
 
-			if (real_in_mem_read.valid)
+			if (__did_write_back)
 			begin
 				finish_ldst();
+			end
+
+			if (real_in_mem_read.valid)
+			begin
+				//finish_ldst();
+				__did_write_back <= 1;
 
 				prep_shareddata_data_write
 					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
@@ -1521,19 +1533,28 @@ module Snow64LarFile(input logic clk,
 			stop_mem_read();
 			stop_mem_write();
 
+			if (__did_write_back)
+			begin
+				//finish_ldst();
+
+				if ((!`REAL_IN_MEM_WRITE__VALID)
+					&& __captured_in_mem_write__valid
+					&& (!real_in_mem_read.valid)
+					&& __captured_in_mem_read__valid)
+				begin
+					finish_ldst();
+				end
+			end
+
 			if (real_in_mem_read.valid)
 			begin
+				__did_write_back <= 1;
 				__captured_in_mem_read__valid <= 1;
 
 				prep_shareddata_data_write
 					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
 					real_in_mem_read.data);
 
-				if ((!`REAL_IN_MEM_WRITE__VALID)
-					&& __captured_in_mem_write__valid)
-				begin
-					finish_ldst();
-				end
 			end
 
 			else // if (!real_in_mem_read.valid)
@@ -1541,15 +1562,16 @@ module Snow64LarFile(input logic clk,
 				stop_shareddata_data_write();
 			end
 
+
 			if (`REAL_IN_MEM_WRITE__VALID)
 			begin
 				__captured_in_mem_write__valid <= 1;
 
-				if ((!real_in_mem_read.valid)
-					&& __captured_in_mem_read__valid)
-				begin
-					finish_ldst();
-				end
+				//if ((!real_in_mem_read.valid)
+				//	&& __captured_in_mem_read__valid)
+				//begin
+				//	finish_ldst();
+				//end
 			end
 		end
 		endcase

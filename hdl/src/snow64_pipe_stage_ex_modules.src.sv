@@ -196,8 +196,12 @@ module Snow64PsExOperandForwarder(input logic clk,
 	end
 
 
-	always_ff @(posedge clk)
+	always @(posedge clk)
 	begin
+		//$display("Snow64PsExOperandForwarder stuff:  %h, %h, %h",
+		//	__past_results_0.valid,
+		//	__past_results_1.valid,
+		//	__past_results_2.valid);
 		__past_results_0 <= in_curr_results;
 		__past_results_1 <= __past_results_0;
 		__past_results_2 <= __past_results_1;
@@ -1378,7 +1382,7 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 			&& (in_curr_decoded_instr.oper
 			== PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12))
 		begin
-			$display("sim_syscall pc:  ", in_pc_val);
+			$display("sim_syscall pc:  %h", in_pc_val);
 			case (__syscall_type)
 			SyscTypDispRegs:
 			begin
@@ -1433,12 +1437,15 @@ module Snow64PipeStageEx(input logic clk,
 
 
 
-	Snow64Pipeline_LarFileReadMetadata
-		__from_lar_file__rd_metadata_a, __from_lar_file__rd_metadata_b,
-		__from_lar_file__rd_metadata_c;
-	Snow64Pipeline_LarFileReadShareddata
-		__from_lar_file__rd_shareddata_a, __from_lar_file__rd_shareddata_b,
-		__from_lar_file__rd_shareddata_c;
+	//Snow64Pipeline_LarFileReadMetadata
+	//	__from_lar_file__rd_metadata_a, __from_lar_file__rd_metadata_b,
+	//	__from_lar_file__rd_metadata_c;
+	//Snow64Pipeline_LarFileReadShareddata
+	//	__from_lar_file__rd_shareddata_a, __from_lar_file__rd_shareddata_b,
+	//	__from_lar_file__rd_shareddata_c;
+	Snow64Pipeline_LarFileReadMetadata __from_lar_file__rd_metadata_a;
+	assign __from_lar_file__rd_metadata_a
+		= in_from_ctrl_unit.out_inst_lar_file__rd_metadata_a;
 	PkgSnow64PsEx::TrueLarData
 		__true_ra_data, __true_rb_data, __true_rc_data;
 
@@ -1834,6 +1841,16 @@ module Snow64PipeStageEx(input logic clk,
 	//assign __out_inst_use_vector_bfloat16_fpu__valid = 1;
 
 
+	//always @(posedge clk)
+	//begin
+	//	$dis
+	//end
+
+	initial
+	begin
+		out_to_pipe_stage_wb = 0;
+	end
+
 	// ONLY ALU/FPU instructions can produce (__curr_results.valid == 1'b1)
 	always @(*) __curr_results.valid
 		= ((__from_lar_file__rd_metadata_a.tag != 0)
@@ -1911,26 +1928,36 @@ module Snow64PipeStageEx(input logic clk,
 		case (__state)
 		PkgSnow64PsEx::StRegular:
 		begin
-			case (__need_any_cast)
-			1'b0:
-			begin
-				//__next_state = (__multi_cycle_op_type
-				//	== PkgSnow64PsEx::MultiCycOpTypNone)
-				//	? PkgSnow64PsEx::StRegular
-				//	: PkgSnow64PsEx::StUseUncastedDataMultiCycle;
-				__next_state = (__multi_cycle_op_type
-					== PkgSnow64PsEx::MultiCycOpTypNone)
-					? PkgSnow64PsEx::StRegular
-					: PkgSnow64PsEx::StWaitForMultiCycleOp;
-			end
+			case (__curr_decoded_instr.group)
+				0:
+				begin
+					case (__need_any_cast)
+					1'b0:
+					begin
+						//__next_state = (__multi_cycle_op_type
+						//	== PkgSnow64PsEx::MultiCycOpTypNone)
+						//	? PkgSnow64PsEx::StRegular
+						//	: PkgSnow64PsEx::StUseUncastedDataMultiCycle;
+						__next_state = (__multi_cycle_op_type
+							== PkgSnow64PsEx::MultiCycOpTypNone)
+							? PkgSnow64PsEx::StRegular
+							: PkgSnow64PsEx::StWaitForMultiCycleOp;
+					end
 
-			1'b1:
-			begin
-				__next_state = (__curr_decoded_instr.op_type
-					== PkgSnow64InstrDecoder::OpTypeScalar)
-					? PkgSnow64PsEx::StWaitForScalarCaster
-					: PkgSnow64PsEx::StWaitForVectorCaster;
-			end
+					1'b1:
+					begin
+						__next_state = (__curr_decoded_instr.op_type
+							== PkgSnow64InstrDecoder::OpTypeScalar)
+							? PkgSnow64PsEx::StWaitForScalarCaster
+							: PkgSnow64PsEx::StWaitForVectorCaster;
+					end
+					endcase
+				end
+
+				default:
+				begin
+					__next_state = PkgSnow64PsEx::StRegular;
+				end
 			endcase
 		end
 
@@ -1996,17 +2023,30 @@ module Snow64PipeStageEx(input logic clk,
 		endcase
 	end
 
-	always_ff @(posedge clk)
+	always @(posedge clk)
 	begin
+		//$display("EX:  %h, %h:  %h:  %h, %h, %h:  %h",
+		//	__state, __next_state,
+		//	__curr_decoded_instr.group,
+		//	__true_ra_data.data,
+		//	__true_rb_data.data,
+		//	__true_rc_data.data,
+		//	out_to_pipe_stage_wb.ldst_addr);
+		$display("EX:  %h, %h, %h",
+			(__true_ra_data.data != 0),
+			(__true_rb_data.data != 0),
+			(__true_rc_data.data != 0));
+
+		out_to_pipe_stage_wb.ldst_addr
+			<= {__true_rb_data.base_addr, __true_rb_data.data_offset}
+			+ __curr_dsrc1_scalar_data
+			+ __curr_decoded_instr.signext_imm;
+		out_to_pipe_stage_wb.computed_data <= __curr_results.data;
+
 		case (__next_state)
 		PkgSnow64PsEx::StRegular:
 		begin
 			out_to_pipe_stage_wb.decoded_instr <= __curr_decoded_instr;
-			out_to_pipe_stage_wb.computed_data <= __curr_results.data;
-			out_to_pipe_stage_wb.ldst_addr
-				<= {__true_rb_data.base_addr, __true_rb_data.data_offset}
-				+ __curr_dsrc1_scalar_data
-				+ __curr_decoded_instr.signext_imm;
 		end
 
 		default:

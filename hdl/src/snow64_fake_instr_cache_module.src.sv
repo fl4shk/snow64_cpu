@@ -50,7 +50,7 @@ module Snow64FakeInstrCache(input logic clk,
 
 	initial
 	begin
-		#50
+		#100
 		$display("From fake instr cache:  Finishing");
 		$finish;
 	end
@@ -64,13 +64,13 @@ module Snow64FakeInstrCache(input logic clk,
 	//		$signed(in_req_read.addr));
 	//end
 
-	always @(posedge clk)
-	begin
-		$display("fake instr cache stuff:  %d %h %h %h %h %h %h",
-			$signed(in_req_read.addr), __state, __curr_req_data_offset, 
-			out_req_read.instr, __base_addr,
-			__line, out_req_read.valid);
-	end
+	//always @(posedge clk)
+	//begin
+	//	$display("fake instr cache stuff:  %h %h %h %h %h %h %h",
+	//		in_req_read.addr, __state, __curr_req_data_offset, 
+	//		out_req_read.instr, __base_addr,
+	//		__line, out_req_read.valid);
+	//end
 
 	always_ff @(posedge clk)
 	begin

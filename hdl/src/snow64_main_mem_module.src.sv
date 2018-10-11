@@ -1,6 +1,25 @@
 `include "src/snow64_cpu_defines.header.sv"
 `include "src/snow64_lar_file_defines.header.sv"
 
+`define INSTR_0(base_addr) \
+	__mem[base_addr >> 5][0 * 32 +: 32]
+`define INSTR_1(base_addr) \
+	__mem[base_addr >> 5][1 * 32 +: 32]
+`define INSTR_2(base_addr) \
+	__mem[base_addr >> 5][2 * 32 +: 32]
+`define INSTR_3(base_addr) \
+	__mem[base_addr >> 5][3 * 32 +: 32]
+`define INSTR_4(base_addr) \
+	__mem[base_addr >> 5][4 * 32 +: 32]
+`define INSTR_5(base_addr) \
+	__mem[base_addr >> 5][5 * 32 +: 32]
+`define INSTR_6(base_addr) \
+	__mem[base_addr >> 5][6 * 32 +: 32]
+`define INSTR_7(base_addr) \
+	__mem[base_addr >> 5][7 * 32 +: 32]
+
+
+`define INSTR(addr) __mem[addr / PkgSnow64MainMem::WIDTH__DATA_INOUT
 
 module Snow64MainMem(input logic clk,
 	input logic in_req_wr,
@@ -26,10 +45,15 @@ module Snow64MainMem(input logic clk,
 		//$display("Snow64MainMem:  %h", __mem[1]);
 		//__mem[0][31:0] = 32'h0000_e000;
 
-		__mem[0][31:0] = 32'h0000_e000;
-		__mem[0][63:32] = 32'h0000_e001;
-		__mem[0][95:64] = 32'h0000_e001;
-		__mem[0][127:96] = 32'h0000_e001;
+
+		`INSTR_0(0) = 'h4f00_4010;
+		//`INSTR_1(0) = 'h4f0f_0000;
+		`INSTR_2(0) = 'h0f00_e000;
+		`INSTR_3(0) = 'h0000_e001;
+		`INSTR_4(0) = 'h0001_0000;
+
+		`INSTR_0('h1000) = 'h0f00_e000;
+		`INSTR_1('h1000) = 'h0000_e001;
 	end
 
 
@@ -51,3 +75,5 @@ module Snow64MainMem(input logic clk,
 
 
 endmodule
+
+`undef INSTR
