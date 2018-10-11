@@ -151,8 +151,7 @@ module Snow64PipeStageWb(input logic clk,
 
 	always @(posedge clk)
 	begin
-		$display("WB stuff:  %h %h; %h", __state, __next_state,
-			__curr_decoded_instr.group);
+		$display("WB state stuff:  %h %h", __state, __next_state);
 
 		if (__state == StWaitForLarFileValid)
 		begin

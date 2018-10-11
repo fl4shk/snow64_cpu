@@ -198,5 +198,25 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 
 	`undef ASSIGN_SUBMODULE_PORT
 
+	always @(posedge clk)
+	begin
+		//$display("Snow64Cpu LAR file read ports:  %h, %h, %h",
+		//	__in_inst_lar_file__rd_a.index,
+		//	__in_inst_lar_file__rd_b.index,
+		//	__in_inst_lar_file__rd_c.index);
+		$display("Snow64Cpu LAR file metadata tag:  %h, %h, %h",
+			__out_inst_lar_file__rd_metadata_a.tag,
+			__out_inst_lar_file__rd_metadata_b.tag,
+			__out_inst_lar_file__rd_metadata_c.tag);
+		//$display("Snow64Cpu LAR file shareddata data:  %h, %h, %h",
+		//	__out_inst_lar_file__rd_shareddata_a.data,
+		//	__out_inst_lar_file__rd_shareddata_b.data,
+		//	__out_inst_lar_file__rd_shareddata_c.data);
+		//$display("Snow64Cpu LAR file metadata int_type_size:  %h, %h, %h",
+		//	__out_inst_lar_file__rd_metadata_a.int_type_size,
+		//	__out_inst_lar_file__rd_metadata_b.int_type_size,
+		//	__out_inst_lar_file__rd_metadata_c.int_type_size);
+	end
+
 
 endmodule

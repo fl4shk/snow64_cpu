@@ -63,8 +63,8 @@ module Snow64MainMem(input logic clk,
 
 		//else // if (!in_req_wr)
 		begin
-			$display("Snow64MainMem data read:  %h %h", in_addr,
-				__mem[in_addr]);
+			//$display("Snow64MainMem data read:  %h %h", in_addr,
+			//	__mem[in_addr]);
 			out_data <= __mem[in_addr];
 		end
 	end

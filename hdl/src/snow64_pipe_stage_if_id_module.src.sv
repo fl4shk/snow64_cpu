@@ -30,9 +30,19 @@ module Snow64PipeStageIfId(input logic clk,
 	Snow64InstrDecoder __inst_instr_decoder(.in(in_from_instr_cache.instr),
 		.out(__out_inst_instr_decoder));
 
-	assign out_to_ctrl_unit = {__out_inst_instr_decoder.ra_index,
-		__out_inst_instr_decoder.rb_index,
-		__out_inst_instr_decoder.rc_index};
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
+		__curr_ra_index = 0,
+		__curr_rb_index = 0,
+		__curr_rc_index = 0,
+		__captured_ra_index = 0,
+		__captured_rb_index = 0,
+		__captured_rc_index = 0;
+
+	//assign out_to_ctrl_unit = {__out_inst_instr_decoder.ra_index,
+	//	__out_inst_instr_decoder.rb_index,
+	//	__out_inst_instr_decoder.rc_index};
+	assign out_to_ctrl_unit = {__curr_ra_index, __curr_rb_index,
+		__curr_rc_index};
 
 	logic [`MSB_POS__SNOW64_CPU_ADDR:0] __spec_reg_pc;
 	wire [`MSB_POS__SNOW64_CPU_ADDR:0] __following_pc = __spec_reg_pc
@@ -452,10 +462,31 @@ module Snow64PipeStageIfId(input logic clk,
 	//		__state, __spec_reg_pc);
 	//end
 
+	always @(*)
+	begin
+		case (__state)
+		StRegular:
+		begin
+			{__curr_ra_index, __curr_rb_index, __curr_rc_index}
+				= {__out_inst_instr_decoder.ra_index,
+				__out_inst_instr_decoder.rb_index,
+				__out_inst_instr_decoder.rc_index};
+		end
+
+		default:
+		begin
+			//{__curr_ra_index, __curr_rb_index, __curr_rc_index}
+			//	= {__captured_ra_index, __captured_rb_index,
+			//	__captured_rc_index};
+			{__curr_ra_index, __curr_rb_index, __curr_rc_index}
+				= 0;
+		end
+		endcase
+	end
+
 	always @(posedge clk)
 	begin
-		$display("IF/ID:  %h, %h", __state,
-			__out_inst_instr_decoder.group);
+		$display("IF/ID state:  %h", __state);
 
 		show_decoded_instr();
 
@@ -494,6 +525,10 @@ module Snow64PipeStageIfId(input logic clk,
 
 		StRegular:
 		begin
+			__captured_ra_index <= __out_inst_instr_decoder.ra_index;
+			__captured_rb_index <= __out_inst_instr_decoder.rb_index;
+			__captured_rc_index <= __out_inst_instr_decoder.rc_index;
+
 			if ((!in_from_pipe_stage_ex.stall)
 				&& in_from_instr_cache.valid)
 			begin
