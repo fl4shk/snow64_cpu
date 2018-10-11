@@ -31,7 +31,7 @@ module Snow64InstrDecoder
 		= ((__iog0_instr.group == 0)
 		&& ((__iog0_instr.oper == PkgSnow64InstrDecoder::Shl_ThreeRegs)
 		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Shr_ThreeRegs)
-		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Not_ThreeRegs)));
+		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Not_TwoRegs)));
 
 
 	always @(*)

@@ -40,10 +40,6 @@ module Snow64MainMem(input logic clk,
 		end
 
 		//$readmemh("initial_mem_contents.txt.ignore", __mem);
-		//#2
-		//$display("Snow64MainMem:  %h", __mem[0]);
-		//$display("Snow64MainMem:  %h", __mem[1]);
-		//__mem[0][31:0] = 32'h0000_e000;
 
 
 		`INSTR_0(0) = 'h4f00_4010;
@@ -67,8 +63,8 @@ module Snow64MainMem(input logic clk,
 
 		//else // if (!in_req_wr)
 		begin
-			//$display("Snow64MainMem data read:  %h %h", in_addr,
-			//	__mem[in_addr]);
+			$display("Snow64MainMem data read:  %h %h", in_addr,
+				__mem[in_addr]);
 			out_data <= __mem[in_addr];
 		end
 	end

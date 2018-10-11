@@ -15,6 +15,9 @@ module Snow64PipeStageWb(input logic clk,
 	
 	logic __state = StRegular, __next_state = StRegular;
 
+	wire __from_out_lar_file__wr__valid
+		= in_from_ctrl_unit.out_inst_lar_file__wr__valid;
+
 
 	PkgSnow64InstrDecoder::PortOut_InstrDecoder __curr_decoded_instr;
 	assign __curr_decoded_instr = in_from_pipe_stage_ex.decoded_instr;
@@ -116,7 +119,7 @@ module Snow64PipeStageWb(input logic clk,
 	//		__state,
 	//		__next_state,
 	//		out_to_ctrl_unit.in_inst_lar_file__wr__req,
-	//		in_from_ctrl_unit.out_inst_lar_file__wr__valid);
+	//		__from_out_lar_file__wr__valid);
 	//end
 
 	initial
@@ -139,7 +142,7 @@ module Snow64PipeStageWb(input logic clk,
 
 		StWaitForLarFileValid:
 		begin
-			__next_state = in_from_ctrl_unit.out_inst_lar_file__wr__valid
+			__next_state = __from_out_lar_file__wr__valid
 				? StRegular
 				: StWaitForLarFileValid;
 		end
@@ -154,7 +157,7 @@ module Snow64PipeStageWb(input logic clk,
 		if (__state == StWaitForLarFileValid)
 		begin
 			$display("WB StWaitForLarFileValid:  %h %h",
-				in_from_ctrl_unit.out_inst_lar_file__wr__valid,
+				__from_out_lar_file__wr__valid,
 				out_to_ctrl_unit.in_inst_lar_file__wr__req);
 		end
 	end

@@ -24,8 +24,8 @@ typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 
 	Shl_ThreeRegs,
 	Shr_ThreeRegs,
-	Inv_ThreeRegs,
-	Not_ThreeRegs,
+	Inv_TwoRegs,
+	Not_TwoRegs,
 
 	Addi_OneRegOnePcOneSimm12,
 	Addi_TwoRegsOneSimm12,
