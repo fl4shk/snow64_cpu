@@ -14,11 +14,12 @@ module Snow64PipeStageIfId(input logic clk,
 
 	localparam __NUM_BYTES__INSTR = `WIDTH__SNOW64_INSTR / 8;
 
-	localparam __WIDTH__STATE = 2;
+	localparam __WIDTH__STATE = 3;
 	localparam __MSB_POS__STATE = `WIDTH2MP(__WIDTH__STATE);
 
 	enum logic [__MSB_POS__STATE:0]
 	{
+		StInit,
 		StRegular,
 		StChangePc,
 		StWaitForLdStPart0,
@@ -47,19 +48,20 @@ module Snow64PipeStageIfId(input logic clk,
 		out_to_pipe_stage_ex.decoded_instr <= 0;
 	endtask
 
-	task send_curr_instr;
+	task send_curr_instr(input PkgSnow64Cpu::CpuAddr some_pc);
+		$display("send_curr_instr(%h)", some_pc);
 		out_to_pipe_stage_ex.decoded_instr <= __out_inst_instr_decoder;
-		out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
+		out_to_pipe_stage_ex.pc_val <= some_pc;
+		//out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
+		//out_to_pipe_stage_ex.pc_val <= __following_pc;
 	endtask
-
-	//task handle_ldst_instr;
-	//endtask
-
 
 	initial
 	begin
-		__state = StRegular;
-		__spec_reg_pc = -__NUM_BYTES__INSTR;
+		//__state = StRegular;
+		__state = StInit;
+		//__spec_reg_pc = -__NUM_BYTES__INSTR;
+		__spec_reg_pc = 0;
 
 		out_to_pipe_stage_ex = 0;
 		out_to_instr_cache = 0;
@@ -70,6 +72,14 @@ module Snow64PipeStageIfId(input logic clk,
 	always @(*)
 	begin
 		case (__state)
+		StInit:
+		begin
+			//out_to_instr_cache = {1'b1, __following_pc};
+			out_to_instr_cache = {1'b1, __spec_reg_pc};
+			//out_to_instr_cache = (in_from_instr_cache.valid
+			//	&& __curr_decoded_instr_changes_pc)
+			//	? 0 : {1'b1, __following_pc};
+		end
 		StRegular:
 		begin
 			// Do not request an instruction from instr cache if the
@@ -92,10 +102,47 @@ module Snow64PipeStageIfId(input logic clk,
 		endcase
 	end
 
+	//always @(posedge clk)
+	//begin
+	//	$display("IF/ID stuff:  %h %h %h %d",
+	//		in_from_instr_cache.valid, out_to_instr_cache.req,
+	//		__state, $signed(__spec_reg_pc));
+	//end
 
 	always @(posedge clk)
 	begin
 		case (__state)
+		StInit:
+		begin
+			//if (in_from_instr_cache.valid)
+			//begin
+			//	stuff_for_sending_instr();
+			//end
+
+			//else
+			//begin
+			//	send_bubble();
+			//end
+			//__state <= StRegular;
+			
+			//if (in_from_instr_cache.valid)
+			//begin
+			//	__spec_reg_pc <= __following_pc;
+			//	stuff_for_sending_instr(__following_pc,
+			//		__following_pc + 4);
+			//end
+			//else
+			//begin
+			//	send_bubble();
+			//end
+
+			if (in_from_instr_cache.valid)
+			begin
+				//__spec_reg_pc <= __following_pc;
+				__state <= StRegular;
+			end
+		end
+
 		StRegular:
 		begin
 			if ((!in_from_pipe_stage_ex.stall)
@@ -110,7 +157,7 @@ module Snow64PipeStageIfId(input logic clk,
 					// ALU/FPU instructions
 					0:
 					begin
-						send_curr_instr();
+						send_curr_instr(__spec_reg_pc);
 					end
 
 					// Control-flow instructions
@@ -126,14 +173,14 @@ module Snow64PipeStageIfId(input logic clk,
 					// Load instructions
 					2:
 					begin
-						send_curr_instr();
+						send_curr_instr(__spec_reg_pc);
 						__state <= StWaitForLdStPart0;
 					end
 
 					// Store instructions
 					3:
 					begin
-						send_curr_instr();
+						send_curr_instr(__spec_reg_pc);
 						__state <= StWaitForLdStPart0;
 					end
 					endcase

@@ -40,10 +40,8 @@ module Snow64InstrDecoder
 		0:
 		begin
 			out.oper = __iog0_instr.oper;
-			out.nop = ((__iog0_instr.oper
-				== PkgSnow64InstrDecoder::Bad0_Iog0)
-				|| (__iog0_instr.oper
-				== PkgSnow64InstrDecoder::Bad1_Iog0));
+			out.nop = (__iog0_instr.oper
+				== PkgSnow64InstrDecoder::Bad_Iog0);
 
 			out.signext_imm 
 				= `SIGN_EXTEND(PkgSnow64InstrDecoder::WIDTH__ADDR,

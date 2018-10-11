@@ -235,6 +235,9 @@ private:		// visitor functions
 	antlrcpp::Any visitInstrOpGrp0TwoRegsOneSimm12Vector
 		(AssemblerGrammarParser
 		::InstrOpGrp0TwoRegsOneSimm12VectorContext *ctx);
+	antlrcpp::Any visitInstrOpGrp0ThreeRegsOneSimm12
+		(AssemblerGrammarParser::InstrOpGrp0ThreeRegsOneSimm12Context
+		*ctx);
 
 	antlrcpp::Any visitInstrOpGrp1RelBranch
 		(AssemblerGrammarParser::InstrOpGrp1RelBranchContext *ctx);

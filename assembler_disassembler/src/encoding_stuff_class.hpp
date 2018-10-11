@@ -22,6 +22,8 @@ public:		// enums
 		OneRegOnePcOneSimm12Vector,
 		TwoRegsOneSimm12Vector,
 
+		ThreeRegsOneSimm12,
+
 		RelBranch,
 		Jump,
 
@@ -62,6 +64,9 @@ private:		// variables
 	MapType __iog0_one_reg_one_pc_one_simm12_vector_map;
 	MapType __iog0_two_regs_one_simm12_vector_map;
 
+	// sim_syscall
+	MapType __iog0_three_regs_one_simm12_map;
+
 	// Group 1 (control flow stuff)
 	MapType __iog1_rel_branch_map;
 	MapType __iog1_jump_map;
@@ -92,7 +97,7 @@ public:		// functions
 
 	gen_getter_by_con_ref(reg_names_map);
 
-	// Group 0 (ALU operations)
+	// Group 0 (ALU/FPU/etc. operations)
 	gen_getter_by_con_ref(iog0_three_regs_scalar_map);
 	gen_getter_by_con_ref(iog0_two_regs_scalar_map);
 	gen_getter_by_con_ref(iog0_one_reg_one_pc_one_simm12_scalar_map);
@@ -102,6 +107,7 @@ public:		// functions
 	gen_getter_by_con_ref(iog0_two_regs_vector_map);
 	gen_getter_by_con_ref(iog0_one_reg_one_pc_one_simm12_vector_map);
 	gen_getter_by_con_ref(iog0_two_regs_one_simm12_vector_map);
+	gen_getter_by_con_ref(iog0_three_regs_one_simm12_map);
 
 	// Group 1 (control flow stuff)
 	gen_getter_by_con_ref(iog1_rel_branch_map);

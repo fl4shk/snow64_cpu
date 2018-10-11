@@ -230,14 +230,14 @@ module Snow64LarFile(input logic clk,
 
 
 	PartialPortOut_LarFile_ReadMetadata
-		real_out_rd_metadata_a, real_out_rd_metadata_b,
-		real_out_rd_metadata_c;
+		real_out_rd_metadata_a = 0, real_out_rd_metadata_b = 0,
+		real_out_rd_metadata_c = 0;
 	PartialPortOut_LarFile_ReadShareddata
-		real_out_rd_shareddata_a, real_out_rd_shareddata_b,
-		real_out_rd_shareddata_c;
-	PartialPortOut_LarFile_Write real_out_wr;
-	PartialPortOut_LarFile_MemRead real_out_mem_read;
-	PartialPortOut_LarFile_MemWrite real_out_mem_write;
+		real_out_rd_shareddata_a = 0, real_out_rd_shareddata_b = 0,
+		real_out_rd_shareddata_c = 0;
+	PartialPortOut_LarFile_Write real_out_wr = 0;
+	PartialPortOut_LarFile_MemRead real_out_mem_read = 0;
+	PartialPortOut_LarFile_MemWrite real_out_mem_write = 0;
 
 	assign out = {real_out_rd_metadata_a, real_out_rd_metadata_b,
 		real_out_rd_metadata_c,

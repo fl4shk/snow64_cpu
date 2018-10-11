@@ -326,6 +326,8 @@ antlrcpp::Any Assembler::visitInstruction
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp0OneRegOnePcOneSimm12Vector())
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp0TwoRegsOneSimm12Vector())
 
+	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp0ThreeRegsOneSimm12())
+
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp1RelBranch())
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp1Jump())
 
@@ -604,6 +606,30 @@ antlrcpp::Any Assembler::visitInstrOpGrp0TwoRegsOneSimm12Vector
 	return nullptr;
 }
 
+antlrcpp::Any Assembler::visitInstrOpGrp0ThreeRegsOneSimm12
+	(AssemblerGrammarParser::InstrOpGrp0ThreeRegsOneSimm12Context *ctx)
+{
+	ANY_PUSH_TOK_IF(ctx->TokInstrNameSimSyscall())
+	else
+	{
+		err(ctx, "visitInstrOpGrp0ThreeRegsOneSimm12():  Eek!");
+	}
+
+	const auto opcode = get_instr_opcode_from_str(__encoding_stuff
+		.iog0_three_regs_one_simm12_map());
+
+	auto&& reg_encodings = get_reg_encodings(ctx);
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto simm12 = pop_num();
+
+	__warn_if_simm12_out_of_range(ctx, simm12);
+
+	encode_group_0_instr(0, reg_encodings.at(0), reg_encodings.at(1),
+		reg_encodings.at(2), opcode, simm12);
+
+	return nullptr;
+}
 antlrcpp::Any Assembler::visitInstrOpGrp1RelBranch
 	(AssemblerGrammarParser::InstrOpGrp1RelBranchContext *ctx)
 {
@@ -1322,6 +1348,8 @@ antlrcpp::Any Assembler::visitInstrName
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameNotv())
 
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameAddiv())
+
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSimSyscall())
 
 	// Group 1 Instructions
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBtru())

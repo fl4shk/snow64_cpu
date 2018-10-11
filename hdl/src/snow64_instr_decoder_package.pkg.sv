@@ -29,8 +29,8 @@ typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 
 	Addi_OneRegOnePcOneSimm12,
 	Addi_TwoRegsOneSimm12,
-	Bad0_Iog0,
-	Bad1_Iog0
+	SimSyscall_ThreeRegsOneSimm12,
+	Bad_Iog0
 } Iog0Oper;
 
 // Group 1 instructions:  control flow and interrupts stuff

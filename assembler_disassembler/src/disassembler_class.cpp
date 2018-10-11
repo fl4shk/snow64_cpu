@@ -160,6 +160,11 @@ antlrcpp::Any Disassembler::visitLine
 						*reg_b_name, simm12));
 					break;
 
+				case EncodingStuff::ArgsType::ThreeRegsOneSimm12:
+					printout(*instr_name, " ", strappcom2(*reg_a_name,
+						*reg_b_name, *reg_c_name, simm12));
+					break;
+
 
 				case EncodingStuff::ArgsType::RelBranch:
 					printout(*instr_name, " ", strappcom2(*reg_a_name,

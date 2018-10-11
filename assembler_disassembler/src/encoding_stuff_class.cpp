@@ -81,6 +81,11 @@ EncodingStuff::EncodingStuff()
 	insert_map_entry(__iog0_two_regs_one_simm12_vector_map, "addiv",
 		temp);
 
+	// Group 0 (sim_syscall)
+	//temp = 0;
+	insert_map_entry(__iog0_three_regs_one_simm12_map, "sim_syscall",
+		temp);
+
 	// Group 1 (control flow and interrupts stuff)
 	temp = 0;
 	insert_map_entry(__iog1_rel_branch_map, "btru", temp);
@@ -157,6 +162,9 @@ void EncodingStuff::decode_iog0_instr_name_and_args_type(u32 sv_bit,
 		DECODE_ITERATION(iog0_two_regs_one_simm12_vector_map,
 			ArgsType::TwoRegsOneSimm12Vector);
 	}
+
+	DECODE_ITERATION(iog0_three_regs_one_simm12_map,
+		ArgsType::ThreeRegsOneSimm12);
 
 	instr_name = cstm_strdup("unknown_instruction");
 	args_type = ArgsType::Unknown;

@@ -35,6 +35,8 @@ instruction:
 	| instrOpGrp0OneRegOnePcOneSimm12Vector
 	| instrOpGrp0TwoRegsOneSimm12Vector
 
+	| instrOpGrp0ThreeRegsOneSimm12
+
 	| instrOpGrp1RelBranch
 	| instrOpGrp1Jump
 
@@ -89,6 +91,12 @@ instrOpGrp0OneRegOnePcOneSimm12Vector:
 instrOpGrp0TwoRegsOneSimm12Vector:
 	TokInstrNameAddiv
 	regOrIdentName TokComma regOrIdentName TokComma expr
+	;
+
+instrOpGrp0ThreeRegsOneSimm12:
+	TokInstrNameSimSyscall
+	regOrIdentName TokComma regOrIdentName TokComma regOrIdentName TokComma
+	expr
 	;
 
 instrOpGrp1RelBranch:
@@ -288,6 +296,8 @@ instrName:
 
 	| TokInstrNameAddiv
 
+	| TokInstrNameSimSyscall
+
 
 	// Group 1 Instructions
 	| TokInstrNameBtru
@@ -387,6 +397,8 @@ TokInstrNameNotv: 'notv' ;
 
 TokInstrNameAddis: 'addis' ;
 TokInstrNameAddiv: 'addiv' ;
+
+TokInstrNameSimSyscall: 'sim_syscall' ;
 
 // Group 1 Instructions
 TokInstrNameBtru: 'btru' ;

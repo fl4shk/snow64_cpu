@@ -32,7 +32,8 @@ module Snow64FakeInstrCache(input logic clk,
 	logic [__MSB_POS__BASE_ADDR:0] __base_addr, __curr_req_base_addr;
 
 	assign {__curr_req_base_addr, __curr_req_data_offset}
-		= in_req_read.addr;
+		= in_req_read.addr[`MSB_POS__SNOW64_CPU_ADDR
+		:$clog2(`WIDTH__SNOW64_INSTR / 8)];
 
 	logic [`MSB_POS__SNOW64_ICACHE_LINE_DATA:0] __line;
 
@@ -43,8 +44,33 @@ module Snow64FakeInstrCache(input logic clk,
 		__captured_req_data_offset = 0;
 		__base_addr = 0;
 		__line = 0;
+		out_req_read = 0;
+		out_mem_access = 0;
 	end
 
+	initial
+	begin
+		#50
+		$display("From fake instr cache:  Finishing");
+		$finish;
+	end
+
+	//always @(posedge clk)
+	//begin
+	//	//$display("fake instr cache stuff:  %h %h %h", __did_init, __state,
+	//	//	in_req_read.req);
+	//	$display("fake instr cache stuff:  %h;  %h, %h, %h, %d",
+	//		__state, __captured_req_data_offset, __base_addr, __line,
+	//		$signed(in_req_read.addr));
+	//end
+
+	always @(posedge clk)
+	begin
+		$display("fake instr cache stuff:  %d %h %h %h %h %h %h",
+			$signed(in_req_read.addr), __state, __curr_req_data_offset, 
+			out_req_read.instr, __base_addr,
+			__line, out_req_read.valid);
+	end
 
 	always_ff @(posedge clk)
 	begin

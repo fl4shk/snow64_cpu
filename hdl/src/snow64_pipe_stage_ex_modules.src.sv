@@ -109,6 +109,11 @@ module Snow64PsExOperandForwarder(input logic clk,
 		__from_lar_file__rd_shareddata_c}
 		= in_from_ctrl_unit;
 
+	//always @(posedge clk)
+	//begin
+	//	$display("Snow64PsExOperandForwarder:  %h",
+	//		__from_lar_file__rd_shareddata_a.data);
+	//end
 
 	wire [__MSB_POS__OPERAND_FORWARDING_CHECK:0]
 		__operand_forwarding_check__ra, __operand_forwarding_check__rb,
@@ -134,7 +139,7 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 
 	PkgSnow64PsEx::Results
-		__past_results_0, __past_results_1, __past_results_2;
+		__past_results_0 = 0, __past_results_1 = 0, __past_results_2 = 0;
 
 
 	// These two defines exist so that the PERF_OPERAND_FORWARDING `define
@@ -185,11 +190,11 @@ module Snow64PsExOperandForwarder(input logic clk,
 	`ASSIGN_NON_FORWARDED_TRUE_REG_DATA(c)
 	`undef ASSIGN_NON_FORWARDED_TRUE_REG_DATA
 
-
 	initial
 	begin
-		{__past_results_0, __past_results_1, __past_results_2} = 0;
+		{out_true_ra_data, out_true_rb_data, out_true_rc_data} = 0;
 	end
+
 
 	always_ff @(posedge clk)
 	begin
@@ -1304,6 +1309,99 @@ endmodule
 `undef GET_OUT_DDEST_DATA
 
 
+module Snow64PsExPerfSimSyscall(input logic clk,
+	input logic [`MSB_POS__SNOW64_CPU_ADDR:0] in_pc_val,
+	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	input PkgSnow64PsEx::TrueLarData
+		in_true_ra_data, in_true_rb_data, in_true_rc_data);
+
+	localparam __WIDTH__SYSCALL_TYPE = 3;
+	localparam __MSB_POS__SYSCALL_TYPE = `WIDTH2MP(__WIDTH__SYSCALL_TYPE);
+	typedef enum logic [__MSB_POS__SYSCALL_TYPE:0]
+	{
+		SyscTypDispRegs,
+		SyscTypFinish
+	} SyscallType;
+	
+	wire [__MSB_POS__SYSCALL_TYPE:0] __syscall_type
+		= in_curr_decoded_instr.signext_imm[__MSB_POS__SYSCALL_TYPE:0];
+
+	task disp_reg(input PkgSnow64PsEx::TrueLarData to_disp);
+		case (to_disp.data_type)
+		PkgSnow64Cpu::DataTypBFloat16:
+		begin
+			$display("data_type:  BFloat16");
+		end
+		PkgSnow64Cpu::DataTypReserved:
+		begin
+			$display("data_type:  Reserved (Eek!)");
+		end
+		PkgSnow64Cpu::DataTypUnsgnInt:
+		begin
+			$display("data_type:  UnsgnInt");
+		end
+		PkgSnow64Cpu::DataTypSgnInt:
+		begin
+			$display("data_type:  SgnInt");
+		end
+		endcase
+
+		case (to_disp.int_type_size)
+		PkgSnow64Cpu::IntTypSz8:
+		begin
+			$display("int_type_size:  8");
+		end
+		PkgSnow64Cpu::IntTypSz16:
+		begin
+			$display("int_type_size:  16");
+		end
+		PkgSnow64Cpu::IntTypSz32:
+		begin
+			$display("int_type_size:  32");
+		end
+		PkgSnow64Cpu::IntTypSz64:
+		begin
+			$display("int_type_size:  64");
+		end
+		endcase
+
+		$display("data_offset:  %h", to_disp.data_offset);
+		$display("data:  %h", to_disp.data);
+		$display("base_addr:  %h", to_disp.base_addr);
+		$display("raw address:  %h", {to_disp.base_addr,
+			to_disp.data_offset});
+	endtask
+
+	always @(posedge clk)
+	begin
+		if ((in_curr_decoded_instr.group == 0)
+			&& (in_curr_decoded_instr.oper
+			== PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12))
+		begin
+			$display("sim_syscall pc:  ", in_pc_val);
+			case (__syscall_type)
+			SyscTypDispRegs:
+			begin
+				$display("rA:  ");
+				disp_reg(in_true_ra_data);
+				//$display();
+				//$display("rB:  ");
+				//disp_reg(in_true_rb_data);
+				//$display();
+				//$display("rC:  ");
+				//disp_reg(in_true_rc_data);
+			end
+
+			SyscTypFinish:
+			begin
+				$display("EX:  Finishing.");
+				$finish;
+			end
+			endcase
+		end
+	end
+
+endmodule
 
 // This is far less of a monster than I was thinking it'd be, but only
 // because I separated out the submodules.
@@ -1533,6 +1631,14 @@ module Snow64PipeStageEx(input logic clk,
 	`undef SET_NEEDED_CAST_TYPE
 
 
+	Snow64PsExPerfSimSyscall __inst_perf_sim_syscall(.clk(clk),
+		.in_pc_val(in_from_pipe_stage_if_id.pc_val),
+		.in_curr_decoded_instr(__curr_decoded_instr),
+		.in_true_ra_data(__true_ra_data),
+		.in_true_rb_data(__true_rb_data),
+		.in_true_rc_data(__true_rc_data));
+
+
 	// module Snow64PsExOperandForwarder(input logic clk,
 	// 	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
 	// 	input PkgSnow64PsEx::Results in_curr_results,
@@ -1732,6 +1838,8 @@ module Snow64PipeStageEx(input logic clk,
 	always @(*) __curr_results.valid
 		= ((__from_lar_file__rd_metadata_a.tag != 0)
 		&& (__curr_decoded_instr.group == 0)
+		&& (__curr_decoded_instr.oper
+		!= PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12)
 		&& (!__stall));
 	always @(*) __curr_results.base_addr
 		= __true_ra_data.base_addr;

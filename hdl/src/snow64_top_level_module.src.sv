@@ -16,6 +16,7 @@ module Snow64TopLevel;
 		__clk = !__clk;
 	end
 
+
 	PkgSnow64Cpu::PortIn_Cpu __in_inst_cpu;
 	PkgSnow64Cpu::PortOut_Cpu __out_inst_cpu;
 	Snow64Cpu __inst_cpu(.clk(__clk), .in(__in_inst_cpu),
@@ -39,7 +40,7 @@ module Snow64TopLevel;
 		__in_main_mem_data, __out_main_mem_data;
 	assign __in_main_mem_data = __out_inst_cpu.data;
 
-	Snow64MainMem __inst_main_mem(.clk(clk),
+	Snow64MainMem __inst_main_mem(.clk(__clk),
 		.in_req_wr(__in_main_mem_req_wr), .in_addr(__in_main_mem_addr),
 		.in_data(__in_main_mem_data), .out_data(__out_main_mem_data));
 
