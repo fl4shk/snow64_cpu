@@ -112,6 +112,11 @@ module Snow64PipeStageIfId(input logic clk,
 		endcase
 	end
 
+	//always @(__following_pc)
+	//begin
+	//	$display("Updating __following_pc:  %h", __following_pc);
+	//end
+
 
 	always @(*)
 	begin
@@ -136,34 +141,34 @@ module Snow64PipeStageIfId(input logic clk,
 			//	&& in_from_instr_cache.valid
 			//	&& __curr_decoded_instr_changes_pc)
 			//	? 0 : {1'b1, __following_pc};
-			out_to_instr_cache = (in_from_instr_cache.valid
-				&& __curr_decoded_instr_changes_pc)
-				? 0 : {1'b1, __following_pc};
-			//case (in_from_pipe_stage_ex.stall)
-			//1'b0:
-			//begin
-			//	//out_to_instr_cache = (in_from_instr_cache.valid
-			//	//	&& __curr_decoded_instr_changes_pc)
-			//	//	? 0 : {1'b1, __following_pc};
-			//	case (in_from_instr_cache.valid)
-			//	1'b0:
-			//	begin
-			//		out_to_instr_cache = {1'b1, __spec_reg_pc};
-			//	end
+			//out_to_instr_cache = (in_from_instr_cache.valid
+			//	&& __curr_decoded_instr_changes_pc)
+			//	? 0 : {1'b1, __following_pc};
+			case (in_from_pipe_stage_ex.stall)
+			1'b0:
+			begin
+				//out_to_instr_cache = (in_from_instr_cache.valid
+				//	&& __curr_decoded_instr_changes_pc)
+				//	? 0 : {1'b1, __following_pc};
+				case (in_from_instr_cache.valid)
+				1'b0:
+				begin
+					out_to_instr_cache = {1'b1, __spec_reg_pc};
+				end
 
-			//	1'b1:
-			//	begin
-			//		out_to_instr_cache = __curr_decoded_instr_changes_pc
-			//			? {1'b1, __spec_reg_pc} : {1'b1, __following_pc};
-			//	end
-			//	endcase
-			//end
+				1'b1:
+				begin
+					out_to_instr_cache = __curr_decoded_instr_changes_pc
+						? {1'b1, __spec_reg_pc} : {1'b1, __following_pc};
+				end
+				endcase
+			end
 
-			//1'b1:
-			//begin
-			//	out_to_instr_cache = {1'b1, __spec_reg_pc};
-			//end
-			//endcase
+			1'b1:
+			begin
+				out_to_instr_cache = {1'b1, __spec_reg_pc};
+			end
+			endcase
 		end
 		StChangePc:
 		begin

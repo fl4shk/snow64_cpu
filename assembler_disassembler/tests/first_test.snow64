@@ -18,43 +18,78 @@
 .equ syscall_disp_regs 0
 .equ syscall_finish 1
 
+.equ num_bytes__size_8 (8 / 8)
+.equ num_bytes__size_16 (16 / 8)
+.equ num_bytes__size_32 (32 / 8)
+.equ num_bytes__size_64 (64 / 8)
+
+
 start:
 {
 	//sim_syscall dzero, dzero, dzero, syscall_disp_regs
 	//sim_syscall dzero, dzero, dzero, syscall_finish
-	ldu32 dsp, dzero, dzero, const__above_top_of_stack
+	ldu32 dsp, dzero, dzero, __const__above_top_of_stack
 	ldu8 dsp, dzero, dsp, 0
-
-	//ldu32 du0, dzero, dzero, __const__3
-	//ldu32 du1, dzero, dzero, __const__4
-	ldu32 du2, dsp, dzero, 0
-	ldu32 du3, dsp, dzero, 4
-
-	//sim_syscall du0, dzero, dzero, syscall_disp_regs
-	//sim_syscall du1, dzero, dzero, syscall_disp_regs
-
-	//adds du2, du0, du1
-	muls du2, du0, du1
-	sim_syscall du2, dzero, dzero, syscall_disp_regs
-
 
 	bra main
 
-
+__const_pool:
+__const__above_top_of_stack:
+	.db32 0x10000
 }
 
 
-.org 0x100
-global_constants:
-const__above_top_of_stack:
-	.db32 0xf000
-
-
-.org 0x1000
 main:
 {
-	//muls dzero, dzero, dzero
-	sim_syscall dsp, dzero, dzero, syscall_disp_regs
+	.equ __stack_space 64
+	.equ __sp_offset__output (0 * num_bytes__size_64)
+	.equ __sp_offset__temp_0 (1 * num_bytes__size_64)
+	.equ __sp_offset__temp_1 (2 * num_bytes__size_64)
+	.equ __sp_offset__temp_2 (3 * num_bytes__size_64)
+
+
+
+	.equ __local__output reg_du0
+	.equ __local__temp_0 reg_du1
+	.equ __local__temp_1 reg_du2
+	.equ __local__temp_2 reg_du3
+
+	.equ __var__temp_0 reg_du4
+	.equ __var__temp_1 reg_du5
+
+
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__stack_space
+
+	ldu64 __local__output, dsp, dzero, __sp_offset__output
+	ldu64 __local__temp_0, dsp, dzero, __sp_offset__temp_0
+	ldu64 __local__temp_1, dsp, dzero, __sp_offset__temp_1
+	ldu64 __local__temp_2, dsp, dzero, __sp_offset__temp_2
+
+
+	addis __local__temp_0, dzero, 0x90
+	addis __local__temp_1, dzero, 0x8
+	shls __local__output, __local__temp_0, __local__temp_1
+
+
+__finish:
+	sim_syscall __local__temp_0, dzero, dzero, syscall_disp_regs
+	sim_syscall __local__temp_1, dzero, dzero, syscall_disp_regs
+	sim_syscall __local__output, dzero, dzero, syscall_disp_regs
 	sim_syscall dzero, dzero, dzero, syscall_finish
 
+
+.org 0x500
+__const_pool:
+	.db64 const__0x3
+	.db64 const__0x9000
+
+
 }
+.org 0x5000
+const__0x9000:
+	.db64 0x9000
+
+.org 0x6000
+const__0x3:
+	.db64 0x3

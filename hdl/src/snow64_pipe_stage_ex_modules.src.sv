@@ -67,6 +67,7 @@ typedef struct packed
 
 typedef struct packed
 {
+	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0] index;
 	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] data_offset;
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
@@ -94,6 +95,7 @@ endpackage : PkgSnow64PsEx
 
 module Snow64PsExOperandForwarder(input logic clk,
 	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
+	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
 	input PkgSnow64PsEx::Results in_curr_results,
 	output PkgSnow64PsEx::TrueLarData
 		out_true_ra_data, out_true_rb_data, out_true_rc_data);
@@ -187,6 +189,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 	`undef FORWARD_FROM_LAR_FILE
 
 	`define ASSIGN_NON_FORWARDED_TRUE_REG_DATA(which_reg) \
+		always @(*) out_true_r``which_reg``_data.index \
+			= in_curr_decoded_instr.r``which_reg``_index; \
 		always @(*) out_true_r``which_reg``_data.data_offset \
 			= __from_lar_file__rd_metadata_``which_reg.data_offset; \
 		always @(*) out_true_r``which_reg``_data.data_type \
@@ -228,8 +232,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 endmodule
 
-module Snow64PsExRotateLarData
-	(input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+module Snow64PsExRotateLarData(input logic in_forced_64_bit_integers,
+	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		in_dsrc0_data, in_dsrc1_data,
 	input logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
@@ -254,8 +258,10 @@ module Snow64PsExRotateLarData
 	// We don't care about PkgSnow64Cpu::DataTypReserved, so we'll pretend
 	// it doesn't exist.
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __ddest_type_size
-		= (in_true_ra_data.data_type == PkgSnow64Cpu::DataTypBFloat16)
-		? PkgSnow64Cpu::IntTypSz16 : in_true_ra_data.int_type_size;
+		= in_forced_64_bit_integers
+		? PkgSnow64Cpu::IntTypSz64
+		: ((in_true_ra_data.data_type == PkgSnow64Cpu::DataTypBFloat16)
+		? PkgSnow64Cpu::IntTypSz16 : in_true_ra_data.int_type_size);
 
 
 	wire [__MSB_POS__DATA:0]
@@ -1634,40 +1640,50 @@ module Snow64PipeStageEx(input logic clk,
 	`define SET_NEEDED_CAST_TYPE(some_true_lar_data, out) \
 	always @(*) \
 	begin \
-		case (__true_ra_data.data_type) \
-		PkgSnow64Cpu::DataTypBFloat16: \
+		case ((some_true_lar_data.index == 0) \
+			|| __curr_decoded_instr.forced_64_bit_integers)\
+		1'b0: \
 		begin \
-			case (some_true_lar_data.data_type) \
+			case (__true_ra_data.data_type) \
 			PkgSnow64Cpu::DataTypBFloat16: \
 			begin \
-				out = PkgSnow64PsEx::NeededCastTypNone; \
+				case (some_true_lar_data.data_type) \
+				PkgSnow64Cpu::DataTypBFloat16: \
+				begin \
+					out = PkgSnow64PsEx::NeededCastTypNone; \
+				end \
+				\
+				default: \
+				begin \
+					out = PkgSnow64PsEx::NeededCastTypIntToBFloat16; \
+				end \
+				endcase \
 			end \
 			\
+			/* We don't care about PkgSnow64Cpu::DataTypReserved, so */ \
+			/* we'll pretend it doesn't exist. */ \
 			default: \
 			begin \
-				out = PkgSnow64PsEx::NeededCastTypIntToBFloat16; \
+				case (some_true_lar_data.data_type) \
+				PkgSnow64Cpu::DataTypBFloat16: \
+				begin \
+					out = PkgSnow64PsEx::NeededCastTypBFloat16ToInt; \
+				end \
+				\
+				default: \
+				begin \
+					out = (__true_ra_data.int_type_size \
+						== some_true_lar_data.int_type_size) \
+						? PkgSnow64PsEx::NeededCastTypNone \
+						: PkgSnow64PsEx::NeededCastTypIntToInt; \
+				end \
+				endcase \
 			end \
 			endcase \
 		end \
-		\
-		/* We don't care about PkgSnow64Cpu::DataTypReserved, so we'll */ \
-		/* pretend it doesn't exist. */ \
-		default: \
+		1'b1: \
 		begin \
-			case (some_true_lar_data.data_type) \
-			PkgSnow64Cpu::DataTypBFloat16: \
-			begin \
-				out = PkgSnow64PsEx::NeededCastTypBFloat16ToInt; \
-			end \
-			\
-			default: \
-			begin \
-				out = (__true_ra_data.int_type_size \
-					== some_true_lar_data.int_type_size) \
-					? PkgSnow64PsEx::NeededCastTypNone \
-					: PkgSnow64PsEx::NeededCastTypIntToInt; \
-			end \
-			endcase \
+			out = PkgSnow64PsEx::NeededCastTypNone; \
 		end \
 		endcase \
 	end
@@ -1687,28 +1703,33 @@ module Snow64PipeStageEx(input logic clk,
 
 	// module Snow64PsExOperandForwarder(input logic clk,
 	// 	input PortIn_Snow64PipeStageEx_FromCtrlUnit in_from_ctrl_unit,
+	// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
 	// 	input PkgSnow64PsEx::Results in_curr_results,
 	// 	output PkgSnow64PsEx::TrueLarData
 	// 		out_true_ra_data, out_true_rb_data, out_true_rc_data);
 	Snow64PsExOperandForwarder __inst_operand_forwarder(.clk(clk),
 		.in_from_ctrl_unit(in_from_ctrl_unit),
+		.in_curr_decoded_instr(__curr_decoded_instr),
 		.in_curr_results(__curr_results),
 		.out_true_ra_data(__curr_true_ra_data),
 		.out_true_rb_data(__curr_true_rb_data),
 		.out_true_rc_data(__curr_true_rc_data));
 
-	//module Snow64PsExRotateLarData
-	//	(input PkgSnow64PsEx::TrueLarData in_true_ra_data,
-	//	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-	//		in_dsrc0_data, in_dsrc1_data,
-	//	input logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
-	//		in_dsrc0_data_offset, in_dsrc1_data_offset,
-	//		in_ddest_data_offset,
-	//	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
-	//		out_rotated_dsrc0_data, out_rotated_dsrc1_data,
-	//		out_mask, out_inv_mask);
+	// module Snow64PsExRotateLarData
+	// 	(input logic in_forced_64_bit_integers,
+	// 	input PkgSnow64PsEx::TrueLarData in_true_ra_data,
+	// 	input logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		in_dsrc0_data, in_dsrc1_data,
+	// 	input logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0]
+	// 		in_dsrc0_data_offset, in_dsrc1_data_offset,
+	// 		in_ddest_data_offset,
+	// 	output logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
+	// 		out_rotated_dsrc0_data, out_rotated_dsrc1_data,
+	// 		out_mask, out_inv_mask);
 	Snow64PsExRotateLarData __inst_rotate_lar_data
-		(.in_true_ra_data(__true_ra_data),
+		(.in_forced_64_bit_integers
+			(__curr_decoded_instr.forced_64_bit_integers),
+		.in_true_ra_data(__true_ra_data),
 		.in_dsrc0_data(__true_rb_data.data),
 		.in_dsrc1_data(__true_rc_data.data),
 		.in_dsrc0_data_offset(__true_rb_data.data_offset),
@@ -2097,6 +2118,10 @@ module Snow64PipeStageEx(input logic clk,
 		//	(__true_ra_data.data != 0),
 		//	(__true_rb_data.data != 0),
 		//	(__true_rc_data.data != 0));
+		//$display("EX scalar data:  %h, %h, %h",
+		//	__curr_ddest_scalar_data,
+		//	__curr_dsrc0_scalar_data,
+		//	__curr_dsrc1_scalar_data);
 
 		out_to_pipe_stage_wb.ldst_addr
 			<= {__true_rb_data.base_addr, __true_rb_data.data_offset}
@@ -2115,16 +2140,16 @@ module Snow64PipeStageEx(input logic clk,
 		//	__curr_dsrc0_scalar_data,
 		//	__curr_dsrc1_scalar_data,
 		//	out_to_pipe_stage_if_id.computed_pc);
+		//$display("EX stage stuffs:  %h %h %h %h %h",
+		//	__multi_cycle_op_type,
+		//	__out_inst_use_vector_alu__data,
+		//	__mask_for_scalar_op, __inv_mask_for_scalar_op,
+		//	__curr_results.computed_data);
 
 		case (__next_state)
 		PkgSnow64PsEx::StRegular:
 		begin
 			out_to_pipe_stage_wb.decoded_instr <= __curr_decoded_instr;
-			//$display("EX stage __next_state StRegular:  %h %h %h %h %h",
-			//	__multi_cycle_op_type,
-			//	__out_inst_use_vector_alu__data,
-			//	__mask_for_scalar_op, __inv_mask_for_scalar_op,
-			//	__curr_results.computed_data);
 		end
 
 		default:
@@ -2142,6 +2167,10 @@ module Snow64PipeStageEx(input logic clk,
 			__captured_true_ra_data <= __curr_true_ra_data;
 			__captured_true_rb_data <= __curr_true_rb_data;
 			__captured_true_rc_data <= __curr_true_rc_data;
+			$display("EX __state StRegular scalar data:  %h, %h, %h",
+				__curr_ddest_scalar_data,
+				__curr_dsrc0_scalar_data,
+				__curr_dsrc1_scalar_data);
 		end
 	end
 

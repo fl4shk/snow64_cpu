@@ -179,12 +179,12 @@ module Snow64PipeStageWb(input logic clk,
 
 				default:
 				begin
-					if (__curr_decoded_instr.ra_index != 0)
-					begin
-					$display("WB group 0 instr (non-dzero dDest):  %h, %h",
-							__curr_decoded_instr.ra_index,
-							in_from_pipe_stage_ex.computed_data);
-					end
+					//if (__curr_decoded_instr.ra_index != 0)
+					//begin
+					//$display("WB group 0 instr (non-dzero dDest):  %h, %h",
+					//		__curr_decoded_instr.ra_index,
+					//		in_from_pipe_stage_ex.computed_data);
+					//end
 					out_to_ctrl_unit.in_inst_lar_file__wr__req <= 1;
 					out_to_ctrl_unit.in_inst_lar_file__wr__write_type
 						<= PkgSnow64LarFile::WriteTypOnlyData;
