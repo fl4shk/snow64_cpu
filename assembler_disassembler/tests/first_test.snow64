@@ -32,10 +32,10 @@ start:
 
 global_constants:
 const__above_top_of_stack:
-	.db32 0x10000
+	.db32 0xf000
 
 
-.org 0x1000
+.org 0x100
 main:
 {
 	sim_syscall dsp, dzero, dzero, syscall_disp_regs

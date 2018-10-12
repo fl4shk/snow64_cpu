@@ -1061,8 +1061,8 @@ module Snow64LarFile(input logic clk,
 		(input logic [__MSB_POS__LAR_FILE_METADATA_TAG:0] n_wr_index,
 		input logic [__MSB_POS__LAR_FILE_DATA:0] n_wr_data);
 
-		$display("Lar File prep_shareddata_data_write:  %h, %h",
-			n_wr_index, n_wr_data);
+		//$display("Lar File prep_shareddata_data_write:  %h, %h",
+		//	n_wr_index, n_wr_data);
 
 		__in_shareddata_data_wr_req <= 1;
 		__in_shareddata_data_wr_index <= n_wr_index;

@@ -149,17 +149,17 @@ module Snow64PipeStageWb(input logic clk,
 		endcase
 	end
 
-	always @(posedge clk)
-	begin
-		$display("WB state stuff:  %h %h", __state, __next_state);
+	//always @(posedge clk)
+	//begin
+	//	$display("WB state stuff:  %h %h", __state, __next_state);
 
-		if (__state == StWaitForLarFileValid)
-		begin
-			$display("WB StWaitForLarFileValid:  %h %h",
-				__from_out_lar_file__wr__valid,
-				out_to_ctrl_unit.in_inst_lar_file__wr__req);
-		end
-	end
+	//	if (__state == StWaitForLarFileValid)
+	//	begin
+	//		$display("WB StWaitForLarFileValid:  %h %h",
+	//			__from_out_lar_file__wr__valid,
+	//			out_to_ctrl_unit.in_inst_lar_file__wr__req);
+	//	end
+	//end
 	always @(posedge clk)
 	begin
 		__state <= __next_state;

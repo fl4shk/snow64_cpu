@@ -198,11 +198,11 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 	always @(posedge clk)
 	begin
-		$display("Snow64PsExOperandForwarder valid:  %h:  %h %h %h",
-			in_curr_results.valid,
-			__past_results_0.valid,
-			__past_results_1.valid,
-			__past_results_2.valid);
+		//$display("Snow64PsExOperandForwarder valid:  %h:  %h %h %h",
+		//	in_curr_results.valid,
+		//	__past_results_0.valid,
+		//	__past_results_1.valid,
+		//	__past_results_2.valid);
 		//$display("Snow64PsExOperandForwarder base_addr:  %h %h %h",
 		//	__past_results_0.base_addr,
 		//	__past_results_1.base_addr,
@@ -1871,14 +1871,14 @@ module Snow64PipeStageEx(input logic clk,
 	always @(*) __curr_results.base_addr
 		= __true_ra_data.base_addr;
 
-	always @(posedge clk)
-	begin
-		$display("EX __curr_results.valid stuff:  %h %h %h %h",
-			__from_lar_file__rd_metadata_a.tag,
-			__curr_decoded_instr.group,
-			__curr_decoded_instr.oper,
-			__stall);
-	end
+	//always @(posedge clk)
+	//begin
+	//	$display("EX __curr_results.valid stuff:  %h %h %h %h",
+	//		__from_lar_file__rd_metadata_a.tag,
+	//		__curr_decoded_instr.group,
+	//		__curr_decoded_instr.oper,
+	//		__stall);
+	//end
 
 	always @(*)
 	begin

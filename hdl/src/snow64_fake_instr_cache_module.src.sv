@@ -48,12 +48,12 @@ module Snow64FakeInstrCache(input logic clk,
 		out_mem_access = 0;
 	end
 
-	//initial
-	//begin
-	//	#100
-	//	$display("From fake instr cache:  Finishing");
-	//	$finish;
-	//end
+	initial
+	begin
+		#100
+		$display("From fake instr cache:  Finishing");
+		$finish;
+	end
 
 	//always @(posedge clk)
 	//begin
