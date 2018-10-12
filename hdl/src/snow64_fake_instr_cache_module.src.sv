@@ -48,12 +48,12 @@ module Snow64FakeInstrCache(input logic clk,
 		out_mem_access = 0;
 	end
 
-	initial
-	begin
-		#200
-		$display("From fake instr cache:  Finishing");
-		$finish;
-	end
+	//initial
+	//begin
+	//	#200
+	//	$display("From fake instr cache:  Finishing");
+	//	$finish;
+	//end
 
 	//always @(posedge clk)
 	//begin
@@ -74,6 +74,7 @@ module Snow64FakeInstrCache(input logic clk,
 
 	always @(posedge clk)
 	begin
+		//$display("FAKE INSTR CACHE state:  %h", __state);
 		case (__state)
 		PkgSnow64InstrCache::StIdle:
 		begin
@@ -146,16 +147,16 @@ module Snow64FakeInstrCache(input logic clk,
 				__line <= in_mem_access.data;
 
 				`define HANDLE_DATA_OUTPUT(some_req_data_offset) \
-					0: \
+					some_req_data_offset: \
 					begin \
 						out_req_read.instr \
 							<= in_mem_access.data \
 							[some_req_data_offset * 32 +: 32]; \
-				/*$display("FAKE INSTR CACHE:  After miss:  %h, %h, %h", */ \
-				/*			in_mem_access.data */ \
-				/*			[some_req_data_offset * 32 +: 32], */ \
-				/*			__base_addr, */ \
-				/*			__captured_req_data_offset); */ \
+				$display("FAKE INSTR CACHE:  After miss:  %h, %h, %h", \
+							in_mem_access.data \
+							[some_req_data_offset * 32 +: 32], \
+							__base_addr, \
+							__captured_req_data_offset); \
 					end
 
 				case (__captured_req_data_offset)

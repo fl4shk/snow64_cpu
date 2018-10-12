@@ -168,16 +168,32 @@ module Snow64PipeStageWb(input logic clk,
 		StRegular:
 		begin
 			case (__curr_decoded_instr.group)
-			// ALU/FPU/Mul/Div
+			// ALU/FPU/Mul/Div/SimSyscall
 			0:
 			begin
-				out_to_ctrl_unit.in_inst_lar_file__wr__req <= 1;
-				out_to_ctrl_unit.in_inst_lar_file__wr__write_type
-					<= PkgSnow64LarFile::WriteTypOnlyData;
-				out_to_ctrl_unit.in_inst_lar_file__wr__index
-					<= __curr_decoded_instr.ra_index;
-				out_to_ctrl_unit.in_inst_lar_file__wr__non_ldst_data
-					<= in_from_pipe_stage_ex.computed_data;
+				case (__curr_decoded_instr.oper) 
+				PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12:
+				begin
+					out_to_ctrl_unit.in_inst_lar_file__wr__req <= 0;
+				end
+
+				default:
+				begin
+					if (__curr_decoded_instr.ra_index != 0)
+					begin
+					$display("WB group 0 instr (non-dzero dDest):  %h, %h",
+							__curr_decoded_instr.ra_index,
+							in_from_pipe_stage_ex.computed_data);
+					end
+					out_to_ctrl_unit.in_inst_lar_file__wr__req <= 1;
+					out_to_ctrl_unit.in_inst_lar_file__wr__write_type
+						<= PkgSnow64LarFile::WriteTypOnlyData;
+					out_to_ctrl_unit.in_inst_lar_file__wr__index
+						<= __curr_decoded_instr.ra_index;
+					out_to_ctrl_unit.in_inst_lar_file__wr__non_ldst_data
+						<= in_from_pipe_stage_ex.computed_data;
+				end
+				endcase
 			end
 
 			// Loads

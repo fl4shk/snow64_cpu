@@ -65,9 +65,9 @@ module Snow64PipeStageIfId(input logic clk,
 	endtask
 
 	task send_curr_instr(input PkgSnow64Cpu::CpuAddr some_pc);
-		$display("send_curr_instr(%h):  %h, %h; %h", some_pc,
+		$display("send_curr_instr(%h):  %h, %h; %h, %h", some_pc,
 			__out_inst_instr_decoder.group, __out_inst_instr_decoder.oper,
-			in_from_instr_cache.instr);
+			in_from_instr_cache.valid, in_from_instr_cache.instr);
 		out_to_pipe_stage_ex.decoded_instr <= __out_inst_instr_decoder;
 		out_to_pipe_stage_ex.pc_val <= some_pc;
 		//out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
@@ -87,43 +87,6 @@ module Snow64PipeStageIfId(input logic clk,
 
 		out_to_pipe_stage_ex = 0;
 		out_to_instr_cache = 0;
-	end
-
-
-
-	always @(*)
-	begin
-		case (__state)
-		StInit:
-		begin
-			//out_to_instr_cache = {1'b1, __following_pc};
-			out_to_instr_cache = {1'b1, __spec_reg_pc};
-			//out_to_instr_cache = (in_from_instr_cache.valid
-			//	&& __curr_decoded_instr_changes_pc)
-			//	? 0 : {1'b1, __following_pc};
-		end
-		StRegular:
-		begin
-			// Do not request an instruction from instr cache if the
-			// current instruction is one that changes the program counter.
-			out_to_instr_cache = ((!in_from_pipe_stage_ex.stall)
-				&& in_from_instr_cache.valid
-				&& __curr_decoded_instr_changes_pc)
-				? 0 : {1'b1, __following_pc};
-		end
-		StChangePc:
-		begin
-			out_to_instr_cache = {1'b1,
-				in_from_pipe_stage_ex.computed_pc};
-		end
-
-		// StWaitForLdStPart0 or StWaitForLdStPart1:
-		default:
-		begin
-			//out_to_instr_cache = {1'b1, __following_pc};
-			out_to_instr_cache = {1'b1, __spec_reg_pc};
-		end
-		endcase
 	end
 
 
@@ -149,131 +112,83 @@ module Snow64PipeStageIfId(input logic clk,
 		endcase
 	end
 
-	//always @(posedge clk)
-	//begin
-	//	$display("IF/ID stuff:  %h %h %h %h",
-	//		in_from_instr_cache.valid, out_to_instr_cache.req,
-	//		__state, __spec_reg_pc);
-	//end
 
-	//always @(posedge clk)
-	//begin
-	//	//$display("IF/ID state:  %h", __state);
+	always @(*)
+	begin
+		case (__state)
+		StInit:
+		begin
+			//out_to_instr_cache = {1'b1, __following_pc};
+			out_to_instr_cache = {1'b1, __spec_reg_pc};
+			//out_to_instr_cache = (in_from_instr_cache.valid
+			//	&& __curr_decoded_instr_changes_pc)
+			//	? 0 : {1'b1, __following_pc};
+		end
+		StRegular:
+		begin
+			// Do not request an instruction from instr cache if the
+			// current instruction is one that changes the program counter.
+			//out_to_instr_cache = ((!in_from_pipe_stage_ex.stall)
+			//	&& in_from_instr_cache.valid
+			//	&& __curr_decoded_instr_changes_pc)
+			//	? 0 : {1'b1, __following_pc};
+			//out_to_instr_cache = ((!in_from_pipe_stage_ex.stall)
+			//	&& in_from_instr_cache.valid
+			//	&& __curr_decoded_instr_changes_pc)
+			//	? 0 : {1'b1, __following_pc};
+			out_to_instr_cache = (in_from_instr_cache.valid
+				&& __curr_decoded_instr_changes_pc)
+				? 0 : {1'b1, __following_pc};
+			//case (in_from_pipe_stage_ex.stall)
+			//1'b0:
+			//begin
+			//	//out_to_instr_cache = (in_from_instr_cache.valid
+			//	//	&& __curr_decoded_instr_changes_pc)
+			//	//	? 0 : {1'b1, __following_pc};
+			//	case (in_from_instr_cache.valid)
+			//	1'b0:
+			//	begin
+			//		out_to_instr_cache = {1'b1, __spec_reg_pc};
+			//	end
 
-	//	show_decoded_instr();
+			//	1'b1:
+			//	begin
+			//		out_to_instr_cache = __curr_decoded_instr_changes_pc
+			//			? {1'b1, __spec_reg_pc} : {1'b1, __following_pc};
+			//	end
+			//	endcase
+			//end
 
-	//	case (__state)
-	//	StInit:
-	//	begin
-	//		if (in_from_instr_cache.valid)
-	//		begin
-	//			//__spec_reg_pc <= __following_pc;
-	//			__state <= StRegular;
-	//		end
-	//		send_bubble();
-	//	end
+			//1'b1:
+			//begin
+			//	out_to_instr_cache = {1'b1, __spec_reg_pc};
+			//end
+			//endcase
+		end
+		StChangePc:
+		begin
+			out_to_instr_cache = {1'b1,
+				in_from_pipe_stage_ex.computed_pc};
+		end
 
-	//	StRegular:
-	//	begin
-	//		//__captured_ra_index <= __out_inst_instr_decoder.ra_index;
-	//		//__captured_rb_index <= __out_inst_instr_decoder.rb_index;
-	//		//__captured_rc_index <= __out_inst_instr_decoder.rc_index;
+		// StWaitForLdStPart0 or StWaitForLdStPart1:
+		default:
+		begin
+			//out_to_instr_cache = {1'b1, __following_pc};
+			out_to_instr_cache = {1'b1, __spec_reg_pc};
+		end
+		endcase
+	end
 
-	//		if ((!in_from_pipe_stage_ex.stall)
-	//			&& in_from_instr_cache.valid)
-	//		begin
-	//			__spec_reg_pc <= __following_pc;
 
-	//			case (__out_inst_instr_decoder.nop)
-	//			1'b0:
-	//			begin
-	//				case (__out_inst_instr_decoder.group)
-	//				// ALU/FPU instructions
-	//				0:
-	//				begin
-	//					send_curr_instr(__spec_reg_pc);
-	//					//$display("IF/ID StRegular next state:  %h",
-	//					//	StRegular);
-	//				end
 
-	//				// Control-flow instructions
-	//				1:
-	//				begin
-	//					//send_curr_instr();
-	//					out_to_pipe_stage_ex.decoded_instr
-	//						<= __out_inst_instr_decoder;
-	//					out_to_pipe_stage_ex.pc_val <= __following_pc;
-	//					//send_curr_instr(__following_pc);
-	//					__state <= StChangePc;
-	//					//$display("IF/ID StRegular next state:  %h",
-	//					//	StChangePc);
-	//				end
-
-	//				// Load instructions
-	//				2:
-	//				begin
-	//					send_curr_instr(__spec_reg_pc);
-	//					__state <= StWaitForLdStPart0;
-	//					//$display("IF/ID StRegular next state:  %h",
-	//					//	StWaitForLdStPart0);
-	//				end
-
-	//				// Store instructions
-	//				3:
-	//				begin
-	//					send_curr_instr(__spec_reg_pc);
-	//					__state <= StWaitForLdStPart0;
-	//					//$display("IF/ID StRegular next state:  %h",
-	//					//	StWaitForLdStPart0);
-	//				end
-	//				endcase
-	//			end
-
-	//			1'b1:
-	//			begin
-	//				//$display("IF/ID StRegular next state:  %h", StRegular);
-	//				send_bubble();
-	//			end
-	//			endcase
-	//		end
-
-	//		else if (!in_from_instr_cache.valid)
-	//		begin
-	//			//$display("IF/ID StRegular next state:  %h", StRegular);
-	//			send_bubble();
-	//		end
-	//	end
-
-	//	StChangePc:
-	//	begin
-	//		// EX stage:  combinational logic for updating the program
-	//		// counter.
-	//		__spec_reg_pc <= in_from_pipe_stage_ex.computed_pc;
-	//		__state <= StRegular;
-	//		send_bubble();
-	//	end
-
-	//	StWaitForLdStPart0:
-	//	begin
-	//		__state <= StWaitForLdStPart1;
-	//		send_bubble();
-	//	end
-
-	//	StWaitForLdStPart1:
-	//	begin
-	//		if (!__from_pipe_stage_wb__stall)
-	//		begin
-	//			__state <= StRegular;
-	//		end
-
-	//		send_bubble();
-	//	end
-	//	endcase
-	//end
 
 	always @(posedge clk)
 	begin
 		show_decoded_instr();
+
+		//$display("IF/ID:  %h, %h; %h", __state, __spec_reg_pc,
+		//	in_from_instr_cache.valid);
 
 		case (__state)
 		StInit:
@@ -292,68 +207,78 @@ module Snow64PipeStageIfId(input logic clk,
 			//__captured_rb_index <= __out_inst_instr_decoder.rb_index;
 			//__captured_rc_index <= __out_inst_instr_decoder.rc_index;
 
-			if ((!in_from_pipe_stage_ex.stall)
-				&& in_from_instr_cache.valid)
+			//if ((!in_from_pipe_stage_ex.stall)
+			//	&& in_from_instr_cache.valid)
+			if (!in_from_pipe_stage_ex.stall)
 			begin
-				__spec_reg_pc <= __following_pc;
-
-				case (__out_inst_instr_decoder.nop)
-				1'b0:
+				if (in_from_instr_cache.valid)
 				begin
-					case (__out_inst_instr_decoder.group)
-					// ALU/FPU instructions
-					0:
-					begin
-						send_curr_instr(__spec_reg_pc);
-					end
+					__spec_reg_pc <= __following_pc;
 
-					// Control-flow instructions
-					1:
+					case (__out_inst_instr_decoder.nop)
+					1'b0:
 					begin
-						//send_curr_instr();
+						case (__out_inst_instr_decoder.group)
+						// ALU/FPU instructions
+						0:
+						begin
+							send_curr_instr(__spec_reg_pc);
+						end
+
+						// Control-flow instructions
+						1:
+						begin
+							//send_curr_instr();
 						$display("send_ctrl_flow_instr(%h):  %h, %h, %h",
-							__spec_reg_pc,
-							__out_inst_instr_decoder.group,
-							__out_inst_instr_decoder.oper,
-							in_from_instr_cache.instr);
-						out_to_pipe_stage_ex.decoded_instr
-							<= __out_inst_instr_decoder;
-						out_to_pipe_stage_ex.pc_val <= __following_pc;
-						//send_curr_instr(__following_pc);
-						__state <= StChangePc;
+								__spec_reg_pc,
+								__out_inst_instr_decoder.group,
+								__out_inst_instr_decoder.oper,
+								in_from_instr_cache.instr);
+							out_to_pipe_stage_ex.decoded_instr
+								<= __out_inst_instr_decoder;
+							out_to_pipe_stage_ex.pc_val <= __following_pc;
+							//send_curr_instr(__following_pc);
+							__state <= StChangePc;
+						end
+
+						// Load instructions
+						2:
+						begin
+							send_curr_instr(__spec_reg_pc);
+							__state <= StWaitForLdStPart0;
+						end
+
+						// Store instructions
+						3:
+						begin
+							send_curr_instr(__spec_reg_pc);
+							__state <= StWaitForLdStPart0;
+						end
+						endcase
 					end
 
-					// Load instructions
-					2:
+					1'b1:
 					begin
-						send_curr_instr(__spec_reg_pc);
-						__state <= StWaitForLdStPart0;
-					end
+						//$display("IF/ID StRegular next state:  %h",
+						//	StRegular);
 
-					// Store instructions
-					3:
-					begin
-						send_curr_instr(__spec_reg_pc);
-						__state <= StWaitForLdStPart0;
+						$display("NOP send_bubble(%h)", __spec_reg_pc);
+						send_bubble();
 					end
 					endcase
 				end
 
-				1'b1:
+				else // if (!in_from_instr_cache.valid)
 				begin
-					//$display("IF/ID StRegular next state:  %h", StRegular);
-
-					$display("NOP send_bubble(%h)", __spec_reg_pc);
 					send_bubble();
 				end
-				endcase
 			end
 
-			else if (!in_from_instr_cache.valid)
-			begin
-				//$display("IF/ID StRegular next state:  %h", StRegular);
-				send_bubble();
-			end
+			//else if (!in_from_pipe_stage_ex.stall)
+			//begin
+			//	//$display("IF/ID StRegular next state:  %h", StRegular);
+			//	send_bubble();
+			//end
 		end
 
 		StChangePc:
