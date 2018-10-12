@@ -227,8 +227,8 @@ module Snow64PipeStageIfId(input logic clk,
 					get_reg_name_str(__out_inst_instr_decoder.rc_index),
 					__out_inst_instr_decoder.signext_imm);
 			default:
-				$display("%h:  Unknown instruction (group 0)!",
-					__spec_reg_pc);
+				$display("%h:  Unknown instruction (group 0):  %h",
+					__spec_reg_pc, in_from_instr_cache.instr);
 			endcase
 		end
 
@@ -250,8 +250,8 @@ module Snow64PipeStageIfId(input logic clk,
 					__spec_reg_pc,
 					get_reg_name_str(__out_inst_instr_decoder.ra_index));
 			default:
-				$display("%h:  Unknown instruction (group 1)!",
-					__spec_reg_pc);
+				$display("%h:  Unknown instruction (group 1):  %h",
+					__spec_reg_pc, in_from_instr_cache.instr);
 			endcase
 		end
 
@@ -324,8 +324,8 @@ module Snow64PipeStageIfId(input logic clk,
 					get_reg_name_str(__out_inst_instr_decoder.rc_index),
 					__out_inst_instr_decoder.signext_imm);
 			default:
-				$display("%h:  Unknown instruction (group 2)!",
-					__spec_reg_pc);
+				$display("%h:  Unknown instruction (group 2):  %h",
+					__spec_reg_pc, in_from_instr_cache.instr);
 			endcase
 		end
 
@@ -398,15 +398,15 @@ module Snow64PipeStageIfId(input logic clk,
 					get_reg_name_str(__out_inst_instr_decoder.rc_index),
 					__out_inst_instr_decoder.signext_imm);
 			default:
-				$display("%h:  Unknown instruction (group 3)!",
-					__spec_reg_pc);
+				$display("%h:  Unknown instruction (group 3):  %h",
+					__spec_reg_pc, in_from_instr_cache.instr);
 			endcase
 		end
 
 		default:
 		begin
-			$display("%h:  Unknown instruction (bad group)!",
-				__spec_reg_pc);
+			$display("%h:  Unknown instruction (bad group):  %h",
+				__spec_reg_pc, in_from_instr_cache.instr);
 		end
 		endcase
 	endtask

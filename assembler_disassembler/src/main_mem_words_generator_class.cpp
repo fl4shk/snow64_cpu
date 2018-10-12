@@ -16,12 +16,38 @@ int MainMemWordsGenerator::run()
 antlrcpp::Any MainMemWordsGenerator::visitProgram
 	(DisassemblerGrammarParser::ProgramContext *ctx)
 {
+	printout("`define INSTR_0(word_addr) ",
+		"__mem[word_addr][0 * 32 +: 32]\n");
+	printout("`define INSTR_1(word_addr) ",
+		"__mem[word_addr][1 * 32 +: 32]\n");
+	printout("`define INSTR_2(word_addr) ",
+		"__mem[word_addr][2 * 32 +: 32]\n");
+	printout("`define INSTR_3(word_addr) ",
+		"__mem[word_addr][3 * 32 +: 32]\n");
+	printout("`define INSTR_4(word_addr) ",
+		"__mem[word_addr][4 * 32 +: 32]\n");
+	printout("`define INSTR_5(word_addr) ",
+		"__mem[word_addr][5 * 32 +: 32]\n");
+	printout("`define INSTR_6(word_addr) ",
+		"__mem[word_addr][6 * 32 +: 32]\n");
+	printout("`define INSTR_7(word_addr) ",
+		"__mem[word_addr][7 * 32 +: 32]\n");
+
 	auto&& lines = ctx->line();
 
 	for (auto line : lines)
 	{
 		line->accept(this);
 	}
+
+	printout("`undef INSTR_0\n");
+	printout("`undef INSTR_1\n");
+	printout("`undef INSTR_2\n");
+	printout("`undef INSTR_3\n");
+	printout("`undef INSTR_4\n");
+	printout("`undef INSTR_5\n");
+	printout("`undef INSTR_6\n");
+	printout("`undef INSTR_7\n");
 
 	return nullptr;
 }
@@ -46,7 +72,7 @@ antlrcpp::Any MainMemWordsGenerator::visitLine
 				"addresses aligned to 32-bits."));
 		}
 
-		printout("@", std::hex, addr, "\n");
+		//printout("@", std::hex, addr, "\n");
 		__curr_instr_addr = addr;
 	}
 	else if (ctx->TokHexNum())
@@ -55,7 +81,7 @@ antlrcpp::Any MainMemWordsGenerator::visitLine
 			ctx->TokHexNum()->toString(), num_good_chars);
 
 		// Require that everything be 32-bit or 64-bit
-		if (num_good_chars == 4)
+		if (num_good_chars == 8)
 		{
 			gen(instruction);
 		}
@@ -66,7 +92,7 @@ antlrcpp::Any MainMemWordsGenerator::visitLine
 				"32-bit and 64-bit data."));
 		}
 
-		printout("\n");
+		//printout("\n");
 	}
 	else if (ctx->TokNewline())
 	{
@@ -138,12 +164,19 @@ void MainMemWordsGenerator::gen(u32 instruction)
 {
 	static constexpr size_t num_bytes_per_instr = sizeof(u32);
 
-	const size_t mem_word_addr = get_bits_with_range(__curr_instr_addr,
-		(sizeof(u64) - 1), 5);
 
-	// (get_bits_with_range(__curr_instr_addr, 5, 2))
-	//{
-	//}
+	const size_t mem_word_addr = get_bits_with_range(__curr_instr_addr,
+		((sizeof(u64) * 8) - 1), 5);
+
+	const std::string __sysver_defines_arr[]
+		= {"`INSTR_0", "`INSTR_1", "`INSTR_2", "`INSTR_3",
+		"`INSTR_4", "`INSTR_5", "`INSTR_6", "`INSTR_7"};
+
+	printout(__sysver_defines_arr[get_bits_with_range(__curr_instr_addr,
+		4, 2)]);
+	printout("('h", std::hex, mem_word_addr, std::dec, ") = 'h",
+		std::hex, instruction, std::dec, ";\n");
+
 
 	__curr_instr_addr += num_bytes_per_instr;
 }

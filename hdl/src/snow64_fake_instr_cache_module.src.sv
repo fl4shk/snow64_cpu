@@ -50,7 +50,7 @@ module Snow64FakeInstrCache(input logic clk,
 
 	initial
 	begin
-		#100
+		#1000
 		$display("From fake instr cache:  Finishing");
 		$finish;
 	end
