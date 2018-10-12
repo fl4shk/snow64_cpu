@@ -23,25 +23,32 @@ start:
 	//sim_syscall dzero, dzero, dzero, syscall_disp_regs
 	//sim_syscall dzero, dzero, dzero, syscall_finish
 	ldu32 dsp, dzero, dzero, const__above_top_of_stack
-	ldu8 dsp, dzero, dsp, 0
+	//ldu8 dsp, dzero, dsp, 0
 
-	ldu32 du0, dsp, dzero, 0
-	ldu32 du1, dsp, dzero, 4
-	ldu32 du2, dsp, dzero, 32
-
-
-	addis du0, du1, 3
-	//addis du1, dzero, 3
-	//muls du2, du0, du1
+	ldu32 du0, dzero, dzero, const__3
+	ldu32 du1, dzero, dzero, const__4
+	ldu32 du2, dsp, dzero, 0
 
 	sim_syscall du0, dzero, dzero, syscall_disp_regs
+	sim_syscall du1, dzero, dzero, syscall_disp_regs
+
+	addv du2, du0, du1
+
+	sim_syscall du2, dzero, dzero, syscall_disp_regs
 
 	bra main
+
 
 }
 
 
+.org 0x100
 global_constants:
+const__3:
+	.db32 3
+
+const__4:
+	.db32 4
 const__above_top_of_stack:
 	.db32 0xf000
 
@@ -49,6 +56,7 @@ const__above_top_of_stack:
 .org 0x1000
 main:
 {
+	//muls dzero, dzero, dzero
 	sim_syscall dsp, dzero, dzero, syscall_disp_regs
 	sim_syscall dzero, dzero, dzero, syscall_finish
 

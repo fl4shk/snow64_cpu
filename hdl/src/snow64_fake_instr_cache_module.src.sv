@@ -50,7 +50,7 @@ module Snow64FakeInstrCache(input logic clk,
 
 	initial
 	begin
-		#1000
+		#200
 		$display("From fake instr cache:  Finishing");
 		$finish;
 	end
@@ -72,7 +72,7 @@ module Snow64FakeInstrCache(input logic clk,
 	//		__line, out_req_read.valid);
 	//end
 
-	always_ff @(posedge clk)
+	always @(posedge clk)
 	begin
 		case (__state)
 		PkgSnow64InstrCache::StIdle:
@@ -85,20 +85,35 @@ module Snow64FakeInstrCache(input logic clk,
 
 					out_req_read.valid <= 1;
 
+					`define REQ_DATA(some_req_data_offset) \
+						__line[some_req_data_offset * 32 +: 32]
+
+					`define HANDLE_DATA_OUTPUT(some_req_data_offset) \
+						some_req_data_offset: \
+						begin \
+							out_req_read.instr \
+								<= `REQ_DATA(some_req_data_offset); \
+						end
+
 					case (__curr_req_data_offset)
-					0: out_req_read.instr <= __line[0 * 32 +: 32];
-					1: out_req_read.instr <= __line[1 * 32 +: 32];
-					2: out_req_read.instr <= __line[2 * 32 +: 32];
-					3: out_req_read.instr <= __line[3 * 32 +: 32];
-					4: out_req_read.instr <= __line[4 * 32 +: 32];
-					5: out_req_read.instr <= __line[5 * 32 +: 32];
-					6: out_req_read.instr <= __line[6 * 32 +: 32];
-					7: out_req_read.instr <= __line[7 * 32 +: 32];
+					`HANDLE_DATA_OUTPUT(0)
+					`HANDLE_DATA_OUTPUT(1)
+					`HANDLE_DATA_OUTPUT(2)
+					`HANDLE_DATA_OUTPUT(3)
+					`HANDLE_DATA_OUTPUT(4)
+					`HANDLE_DATA_OUTPUT(5)
+					`HANDLE_DATA_OUTPUT(6)
+					`HANDLE_DATA_OUTPUT(7)
 					endcase
+
+					`undef HANDLE_DATA_OUTPUT
+					`undef REQ_DATA
 				end
 
 				else
 				begin
+					$display("FAKE INSTR CACHE:  miss:  %h",
+						in_req_read.addr);
 					out_mem_access.req <= 1;
 					out_mem_access.addr <= in_req_read.addr;
 
@@ -130,16 +145,31 @@ module Snow64FakeInstrCache(input logic clk,
 				__state <= PkgSnow64InstrCache::StIdle;
 				__line <= in_mem_access.data;
 
+				`define HANDLE_DATA_OUTPUT(some_req_data_offset) \
+					0: \
+					begin \
+						out_req_read.instr \
+							<= in_mem_access.data \
+							[some_req_data_offset * 32 +: 32]; \
+				/*$display("FAKE INSTR CACHE:  After miss:  %h, %h, %h", */ \
+				/*			in_mem_access.data */ \
+				/*			[some_req_data_offset * 32 +: 32], */ \
+				/*			__base_addr, */ \
+				/*			__captured_req_data_offset); */ \
+					end
+
 				case (__captured_req_data_offset)
-				0: out_req_read.instr <= in_mem_access.data[0 * 32 +: 32];
-				1: out_req_read.instr <= in_mem_access.data[1 * 32 +: 32];
-				2: out_req_read.instr <= in_mem_access.data[2 * 32 +: 32];
-				3: out_req_read.instr <= in_mem_access.data[3 * 32 +: 32];
-				4: out_req_read.instr <= in_mem_access.data[4 * 32 +: 32];
-				5: out_req_read.instr <= in_mem_access.data[5 * 32 +: 32];
-				6: out_req_read.instr <= in_mem_access.data[6 * 32 +: 32];
-				7: out_req_read.instr <= in_mem_access.data[7 * 32 +: 32];
+				`HANDLE_DATA_OUTPUT(0)
+				`HANDLE_DATA_OUTPUT(1)
+				`HANDLE_DATA_OUTPUT(2)
+				`HANDLE_DATA_OUTPUT(3)
+				`HANDLE_DATA_OUTPUT(4)
+				`HANDLE_DATA_OUTPUT(5)
+				`HANDLE_DATA_OUTPUT(6)
+				`HANDLE_DATA_OUTPUT(7)
 				endcase
+
+				`undef HANDLE_DATA_OUTPUT
 			end
 		end
 		endcase

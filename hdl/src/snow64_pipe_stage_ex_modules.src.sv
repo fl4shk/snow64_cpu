@@ -1392,12 +1392,12 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 			&& (in_curr_decoded_instr.oper
 			== PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12))
 		begin
-			$display("sim_syscall pc:  %h", in_pc_val);
+			//$display("sim_syscall pc:  %h", in_pc_val);
 			case (__syscall_type)
 			SyscTypDispRegs:
 			begin
 				$display("rA:  ");
-				disp_reg(in_true_ra_data);
+				//disp_reg(in_true_ra_data);
 				//$display();
 				//$display("rB:  ");
 				//disp_reg(in_true_rb_data);
@@ -1950,25 +1950,34 @@ module Snow64PipeStageEx(input logic clk,
 			case (__curr_decoded_instr.group)
 				0:
 				begin
-					case (__need_any_cast)
-					1'b0:
+					case (__curr_decoded_instr.oper)
+					PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12:
 					begin
-						//__next_state = (__multi_cycle_op_type
-						//	== PkgSnow64PsEx::MultiCycOpTypNone)
-						//	? PkgSnow64PsEx::StRegular
-						//	: PkgSnow64PsEx::StUseUncastedDataMultiCycle;
-						__next_state = (__multi_cycle_op_type
-							== PkgSnow64PsEx::MultiCycOpTypNone)
-							? PkgSnow64PsEx::StRegular
-							: PkgSnow64PsEx::StWaitForMultiCycleOp;
+						__next_state = PkgSnow64PsEx::StRegular;
 					end
-
-					1'b1:
+					default:
 					begin
-						__next_state = (__curr_decoded_instr.op_type
-							== PkgSnow64InstrDecoder::OpTypeScalar)
-							? PkgSnow64PsEx::StWaitForScalarCaster
-							: PkgSnow64PsEx::StWaitForVectorCaster;
+						case (__need_any_cast)
+						1'b0:
+						begin
+							//__next_state = (__multi_cycle_op_type
+							//	== PkgSnow64PsEx::MultiCycOpTypNone)
+							//	? PkgSnow64PsEx::StRegular
+							//	: PkgSnow64PsEx::StUseUncastedDataMultiCycle;
+							__next_state = (__multi_cycle_op_type
+								== PkgSnow64PsEx::MultiCycOpTypNone)
+								? PkgSnow64PsEx::StRegular
+								: PkgSnow64PsEx::StWaitForMultiCycleOp;
+						end
+
+						1'b1:
+						begin
+							__next_state = (__curr_decoded_instr.op_type
+								== PkgSnow64InstrDecoder::OpTypeScalar)
+								? PkgSnow64PsEx::StWaitForScalarCaster
+								: PkgSnow64PsEx::StWaitForVectorCaster;
+						end
+						endcase
 					end
 					endcase
 				end
@@ -2044,6 +2053,8 @@ module Snow64PipeStageEx(input logic clk,
 
 	always @(posedge clk)
 	begin
+		//$display("EX state stuff:  %h, %h, %h",
+		//	__state, __next_state, __stall);
 		//$display("EX:  %h, %h:  %h:  %h, %h, %h:  %h",
 		//	__state, __next_state,
 		//	__curr_decoded_instr.group,
