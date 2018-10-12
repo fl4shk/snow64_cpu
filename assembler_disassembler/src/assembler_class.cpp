@@ -778,7 +778,8 @@ antlrcpp::Any Assembler::visitPseudoInstrPcrelOneRegOneSimm12Scalar
 	auto one_reg_encoding = get_one_reg_encoding(ctx);
 
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
-	const auto pc_relative_offset = get_pc_relative_offset(pop_num());
+	const auto pc_relative_offset = get_pc_relative_offset(pop_num())
+		+ sizeof(s32);
 
 	__warn_if_simm12_out_of_range(ctx, pc_relative_offset, true);
 
@@ -798,7 +799,8 @@ antlrcpp::Any Assembler::visitPseudoInstrPcrelOneRegOneSimm12Vector
 	auto one_reg_encoding = get_one_reg_encoding(ctx);
 
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
-	const auto pc_relative_offset = get_pc_relative_offset(pop_num());
+	const auto pc_relative_offset = get_pc_relative_offset(pop_num())
+		+ sizeof(s32);
 
 	__warn_if_simm12_out_of_range(ctx, pc_relative_offset, true);
 

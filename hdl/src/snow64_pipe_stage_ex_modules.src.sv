@@ -1197,13 +1197,17 @@ module Snow64PsExUseVectorAlu
 		begin
 			case (in_true_ra_data.int_type_size)
 			PkgSnow64Cpu::IntTypSz8:
-				__in_inst_vector_alu.b = __vector_pc_val_8;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {__vector_pc_val_8, __vector_signext_imm_8};
 			PkgSnow64Cpu::IntTypSz16:
-				__in_inst_vector_alu.b = __vector_pc_val_16;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {__vector_pc_val_16, __vector_signext_imm_16};
 			PkgSnow64Cpu::IntTypSz32:
-				__in_inst_vector_alu.b = __vector_pc_val_32;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {__vector_pc_val_32, __vector_signext_imm_32};
 			PkgSnow64Cpu::IntTypSz64:
-				__in_inst_vector_alu.b = __vector_pc_val_64;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {__vector_pc_val_64, __vector_signext_imm_64};
 			endcase
 		end
 
@@ -1342,13 +1346,18 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 	input logic [`MSB_POS__SNOW64_CPU_ADDR:0] in_pc_val,
 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
 	input PkgSnow64PsEx::TrueLarData
-		in_true_ra_data, in_true_rb_data, in_true_rc_data);
+		in_true_ra_data, in_true_rb_data, in_true_rc_data,
+	input logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
+		in_curr_ddest_scalar_data, in_curr_dsrc0_scalar_data,
+		in_curr_dsrc1_scalar_data);
 
 	localparam __WIDTH__SYSCALL_TYPE = 3;
 	localparam __MSB_POS__SYSCALL_TYPE = `WIDTH2MP(__WIDTH__SYSCALL_TYPE);
 	typedef enum logic [__MSB_POS__SYSCALL_TYPE:0]
 	{
 		SyscTypDispRegs,
+		SyscTypDispDdestVectorData,
+		SyscTypDispDdestScalarData,
 		SyscTypFinish
 	} SyscallType;
 	
@@ -1419,6 +1428,17 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 				//$display();
 				//$display("rC:  ");
 				//disp_reg(in_true_rc_data);
+			end
+
+			SyscTypDispDdestVectorData:
+			begin
+				$display("dDest vector data:  %h", in_true_ra_data.data);
+			end
+
+			SyscTypDispDdestScalarData:
+			begin
+				$display("dDest scalar data:  %h",
+					in_curr_ddest_scalar_data);
 			end
 
 			SyscTypFinish:
@@ -1641,7 +1661,10 @@ module Snow64PipeStageEx(input logic clk,
 	always @(*) \
 	begin \
 		case ((some_true_lar_data.index == 0) \
-			|| __curr_decoded_instr.forced_64_bit_integers)\
+			|| __curr_decoded_instr.forced_64_bit_integers \
+			|| ((__curr_decoded_instr.group == 0) \
+			&& (__curr_decoded_instr.oper \
+			== PkgSnow64InstrDecoder::Addi_OneRegOnePcOneSimm12))) \
 		1'b0: \
 		begin \
 			case (__true_ra_data.data_type) \
@@ -1693,12 +1716,23 @@ module Snow64PipeStageEx(input logic clk,
 	`undef SET_NEEDED_CAST_TYPE
 
 
+	// module Snow64PsExPerfSimSyscall(input logic clk,
+	// 	input logic [`MSB_POS__SNOW64_CPU_ADDR:0] in_pc_val,
+	// 	input Snow64Pipeline_DecodedInstr in_curr_decoded_instr,
+	// 	input PkgSnow64PsEx::TrueLarData
+	// 		in_true_ra_data, in_true_rb_data, in_true_rc_data,
+	// 	input logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
+	// 		in_curr_ddest_scalar_data, in_curr_dsrc0_scalar_data,
+	// 		in_curr_dsrc1_scalar_data);
 	Snow64PsExPerfSimSyscall __inst_perf_sim_syscall(.clk(clk),
 		.in_pc_val(in_from_pipe_stage_if_id.pc_val),
 		.in_curr_decoded_instr(__curr_decoded_instr),
 		.in_true_ra_data(__true_ra_data),
 		.in_true_rb_data(__true_rb_data),
-		.in_true_rc_data(__true_rc_data));
+		.in_true_rc_data(__true_rc_data),
+		.in_curr_ddest_scalar_data(__curr_ddest_scalar_data),
+		.in_curr_dsrc0_scalar_data(__curr_dsrc0_scalar_data),
+		.in_curr_dsrc1_scalar_data(__curr_dsrc1_scalar_data));
 
 
 	// module Snow64PsExOperandForwarder(input logic clk,
@@ -2167,10 +2201,10 @@ module Snow64PipeStageEx(input logic clk,
 			__captured_true_ra_data <= __curr_true_ra_data;
 			__captured_true_rb_data <= __curr_true_rb_data;
 			__captured_true_rc_data <= __curr_true_rc_data;
-			$display("EX __state StRegular scalar data:  %h, %h, %h",
-				__curr_ddest_scalar_data,
-				__curr_dsrc0_scalar_data,
-				__curr_dsrc1_scalar_data);
+			//$display("EX __state StRegular scalar data:  %h, %h, %h",
+			//	__curr_ddest_scalar_data,
+			//	__curr_dsrc0_scalar_data,
+			//	__curr_dsrc1_scalar_data);
 		end
 	end
 

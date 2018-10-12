@@ -1031,6 +1031,7 @@ module Snow64LarFile(input logic clk,
 	task finish_ldst;
 		__wr_state <= PkgSnow64LarFile::WrStIdle;
 		`REAL_OUT_WR__VALID <= 1;
+		//$display("Lar File:  finish_ldst()");
 	endtask
 
 	task prep_mem_read;
@@ -1076,6 +1077,8 @@ module Snow64LarFile(input logic clk,
 	// Writes into the LAR file
 	always @(posedge clk)
 	begin
+		//$display("Lar File state and stuff:  %h %h", __wr_state,
+		//	__in_wr__index);
 		case (__wr_state)
 		PkgSnow64LarFile::WrStIdle:
 		begin
@@ -1119,7 +1122,7 @@ module Snow64LarFile(input logic clk,
 					if (`BEFORE_LDST_IN_WR_METADATA_TAG
 						!= __UNALLOCATED_TAG)
 					begin
-						`REAL_OUT_WR__VALID <= 1;
+						//`REAL_OUT_WR__VALID <= 1;
 						__lar_shareddata__dirty
 							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
@@ -1129,7 +1132,7 @@ module Snow64LarFile(input logic clk,
 					else
 					begin
 						stop_shareddata_data_write();
-						`REAL_OUT_WR__VALID <= 0;
+						//`REAL_OUT_WR__VALID <= 0;
 					end
 				end
 
@@ -1139,7 +1142,7 @@ module Snow64LarFile(input logic clk,
 					if (`BEFORE_LDST_IN_WR_METADATA_TAG
 						!= __UNALLOCATED_TAG)
 					begin
-						`REAL_OUT_WR__VALID <= 1;
+						//`REAL_OUT_WR__VALID <= 1;
 						__lar_shareddata__dirty
 							[`BEFORE_LDST_IN_WR_METADATA_TAG] <= 1;
 						prep_shareddata_data_write
@@ -1154,7 +1157,7 @@ module Snow64LarFile(input logic clk,
 					else
 					begin
 						stop_shareddata_data_write();
-						`REAL_OUT_WR__VALID <= 0;
+						//`REAL_OUT_WR__VALID <= 0;
 					end
 				end
 
@@ -1163,7 +1166,7 @@ module Snow64LarFile(input logic clk,
 				default:
 				begin
 					stop_shareddata_data_write();
-					`REAL_OUT_WR__VALID <= 0;
+					//`REAL_OUT_WR__VALID <= 0;
 					__wr_state <= PkgSnow64LarFile::WrStStartLdSt;
 
 					__lar_metadata__data_type[__in_wr__index]
@@ -1179,8 +1182,8 @@ module Snow64LarFile(input logic clk,
 			else // if (not writing into the LAR file this cycle)
 			begin
 				stop_shareddata_data_write();
-				`REAL_OUT_WR__VALID <= 0;
 			end
+			`REAL_OUT_WR__VALID <= 0;
 		end
 
 		PkgSnow64LarFile::WrStStartLdSt:
@@ -1189,6 +1192,7 @@ module Snow64LarFile(input logic clk,
 			// If we already had the address's data.
 			if (`__IN_LDST_CAPTURED_ALIASED_METADATA_TAG != 0)
 			begin
+				//$display("Lar File:  hit");
 				stop_mem_read();
 
 				// A tag already exists.  We set our tag to the existing
@@ -1496,10 +1500,9 @@ module Snow64LarFile(input logic clk,
 			stop_mem_read();
 			stop_mem_write();
 
-			if (__did_write_back)
-			begin
-				finish_ldst();
-			end
+			//if (__did_write_back)
+			//begin
+			//end
 
 			if (real_in_mem_read.valid)
 			begin
@@ -1509,6 +1512,8 @@ module Snow64LarFile(input logic clk,
 				prep_shareddata_data_write
 					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
 					real_in_mem_read.data);
+				$display("Lar File:  Read mem done");
+				finish_ldst();
 			end
 			else
 			begin
@@ -1524,6 +1529,7 @@ module Snow64LarFile(input logic clk,
 
 			if (`REAL_IN_MEM_WRITE__VALID)
 			begin
+				$display("Lar File:  Write mem done");
 				finish_ldst();
 			end
 		end
@@ -1533,18 +1539,19 @@ module Snow64LarFile(input logic clk,
 			stop_mem_read();
 			stop_mem_write();
 
-			if (__did_write_back)
-			begin
-				//finish_ldst();
+			//if (__did_write_back)
+			//begin
+			//	//finish_ldst();
 
-				if ((!`REAL_IN_MEM_WRITE__VALID)
-					&& __captured_in_mem_write__valid
-					&& (!real_in_mem_read.valid)
-					&& __captured_in_mem_read__valid)
-				begin
-					finish_ldst();
-				end
-			end
+			//	if ((!`REAL_IN_MEM_WRITE__VALID)
+			//		&& __captured_in_mem_write__valid
+			//		&& (!real_in_mem_read.valid)
+			//		&& __captured_in_mem_read__valid)
+			//	begin
+			//		$display("Lar File:  read AND write mem done");
+			//		finish_ldst();
+			//	end
+			//end
 
 			if (real_in_mem_read.valid)
 			begin
@@ -1555,6 +1562,12 @@ module Snow64LarFile(input logic clk,
 					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
 					real_in_mem_read.data);
 
+				if ((!`REAL_IN_MEM_WRITE__VALID)
+					&& __captured_in_mem_write__valid)
+				begin
+					$display("Lar File:  read AND Write mem done");
+					finish_ldst();
+				end
 			end
 
 			else // if (!real_in_mem_read.valid)
@@ -1567,11 +1580,12 @@ module Snow64LarFile(input logic clk,
 			begin
 				__captured_in_mem_write__valid <= 1;
 
-				//if ((!real_in_mem_read.valid)
-				//	&& __captured_in_mem_read__valid)
-				//begin
-				//	finish_ldst();
-				//end
+				if ((!real_in_mem_read.valid)
+					&& __captured_in_mem_read__valid)
+				begin
+					$display("Lar File:  Read AND write mem done");
+					finish_ldst();
+				end
 			end
 		end
 		endcase

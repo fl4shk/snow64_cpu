@@ -192,8 +192,15 @@ module Snow64PipeStageIfId(input logic clk,
 	begin
 		show_decoded_instr();
 
-		//$display("IF/ID:  %h, %h; %h", __state, __spec_reg_pc,
-		//	in_from_instr_cache.valid);
+		//$display("IF/ID:  %h, %h; %h, %h, %h", __state, __spec_reg_pc,
+		//	in_from_instr_cache.valid,
+		//	in_from_pipe_stage_ex.stall,
+		//	in_from_pipe_stage_wb.stall);
+
+		//if (__state > StRegular)
+		//begin
+		//	$display("IF/ID stall:  %h", __state);
+		//end
 
 		case (__state)
 		StInit:

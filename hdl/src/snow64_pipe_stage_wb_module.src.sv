@@ -27,7 +27,10 @@ module Snow64PipeStageWb(input logic clk,
 
 	task prep_ldst(input logic [`MSB_POS__SNOW64_LAR_FILE_WRITE_TYPE:0]
 		some_write_type);
-		$display("WB:  prep_ldst():  %h", in_from_pipe_stage_ex.ldst_addr);
+		$display("WB:  prep_ldst():  %h %h; %h",
+			__curr_decoded_instr.ra_index,
+			in_from_pipe_stage_ex.ldst_addr,
+			some_write_type);
 		out_to_ctrl_unit.in_inst_lar_file__wr__req <= 1;
 		out_to_ctrl_unit.in_inst_lar_file__wr__write_type
 			<= some_write_type;
@@ -162,6 +165,9 @@ module Snow64PipeStageWb(input logic clk,
 	//end
 	always @(posedge clk)
 	begin
+		//$display("WB stuff:  %h %h;  %h, %h;  %h", __state, __next_state,
+		//	__curr_decoded_instr.group, __curr_decoded_instr.oper,
+		//	__from_out_lar_file__wr__valid);
 		__state <= __next_state;
 
 		case (__state)
