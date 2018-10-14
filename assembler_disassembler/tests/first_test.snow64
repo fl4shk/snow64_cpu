@@ -79,19 +79,18 @@ __after_call_main:
 
 
 	// Copy main()'s return value to outside the partial stack frame
-	//ldu64 du3, dfp, dzero, __local_fp_offset__copy_of_main_ret_val
+	ldu64 du3, dfp, dzero, __local_fp_offset__copy_of_main_ret_val
 	ldu64 du1, dsp, dzero, __call_main_sp_offset__return_val
-
 	sim_syscall du1, dzero, dzero, sysc_disp_ddest_scalar_data
 
-	//adds du3, dzero, du1
+	adds du3, dzero, du1
 
 
 	// Restore dsp
 	ldu8 dsp, dsp, dzero, __call_main_stack_space
 
 __finish:
-	//sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
+	sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
 	sim_syscall dzero, dzero, dzero, sysc_finish
 
 __pool:
@@ -112,25 +111,27 @@ main:
 	ldu8 dfp, dsp, dzero, 0
 	ldu8 dsp, dsp, dzero, -__stack_space
 
-	//ldu64 du0, dfp, dzero, __fp_offset__return_val
-	//ldu64 du1, dfp, dzero, __fp_offset__return_addr
-
-	//ldu64 du2, dsp, dzero, __sp_offset__temp_0
-	//ldu64 du3, dsp, dzero, __sp_offset__temp_1
 
 	ldu64 du0, dfp, dzero, __fp_offset__return_val
 	ldu64 du1, dsp, dzero, __sp_offset__temp_0
-	ldu64 du2, dsp, dzero, __sp_offset__temp_1
-	ldu64 du3, dsp, dzero, __sp_offset__temp_2
 
 
 	pcrels du1, __pool
-	ldu16 du2, dzero, du1, (0 * num_bytes__size_16)
-	//sim_syscall du2, dzero, dzero, sysc_disp_ddest_scalar_data
-	ldu16 du3, dzero, du1, (1 * num_bytes__size_16)
-	//sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
 
-	adds du0, du2, du2
+	.equ __pool_offset__0x9000 (0 * num_bytes__size_16)
+	.equ __pool_offset__0x3 (1 * num_bytes__size_16)
+	ldu16 du2, dzero, du1, __pool_offset__0x9000
+	ldu16 du3, dzero, du1, __pool_offset__0x3
+	sim_syscall du2, dzero, dzero, sysc_disp_ddest_scalar_data
+	sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
+
+	// Have to cast first
+	adds du0, dzero, du2
+	sim_syscall du0, dzero, dzero, sysc_disp_ddest_scalar_data
+	adds du1, dzero, du3
+	sim_syscall du1, dzero, dzero, sysc_disp_ddest_scalar_data
+
+	shls du0, du0, du1
 
 	//addis du0, dzero, 0x9
 	//sim_syscall du0, du1, du1, sysc_disp_ddest_scalar_data

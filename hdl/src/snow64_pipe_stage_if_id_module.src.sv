@@ -33,10 +33,10 @@ module Snow64PipeStageIfId(input logic clk,
 	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0]
 		__curr_ra_index = 0,
 		__curr_rb_index = 0,
-		__curr_rc_index = 0;
-		//__captured_ra_index = 0,
-		//__captured_rb_index = 0,
-		//__captured_rc_index = 0;
+		__curr_rc_index = 0,
+		__captured_ra_index = 0,
+		__captured_rb_index = 0,
+		__captured_rc_index = 0;
 
 	//assign out_to_ctrl_unit = {__out_inst_instr_decoder.ra_index,
 	//	__out_inst_instr_decoder.rb_index,
@@ -98,7 +98,10 @@ module Snow64PipeStageIfId(input logic clk,
 			case (in_from_instr_cache.valid)
 			1'b0:
 			begin
-				{__curr_ra_index, __curr_rb_index, __curr_rc_index} = 0;
+				//{__curr_ra_index, __curr_rb_index, __curr_rc_index} = 0;
+				{__curr_ra_index, __curr_rb_index, __curr_rc_index}
+					= {__captured_ra_index, __captured_rb_index,
+					__captured_rc_index};
 			end
 
 			1'b1:
@@ -224,9 +227,13 @@ module Snow64PipeStageIfId(input logic clk,
 		StRegular:
 		begin
 			show_decoded_instr();
-			//__captured_ra_index <= __out_inst_instr_decoder.ra_index;
-			//__captured_rb_index <= __out_inst_instr_decoder.rb_index;
-			//__captured_rc_index <= __out_inst_instr_decoder.rc_index;
+
+			if (in_from_instr_cache.valid)
+			begin
+				__captured_ra_index <= __out_inst_instr_decoder.ra_index;
+				__captured_rb_index <= __out_inst_instr_decoder.rb_index;
+				__captured_rc_index <= __out_inst_instr_decoder.rc_index;
+			end
 
 			//if ((!in_from_pipe_stage_ex.stall)
 			//	&& in_from_instr_cache.valid)
