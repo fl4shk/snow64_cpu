@@ -152,11 +152,11 @@ module Snow64FakeInstrCache(input logic clk,
 						out_req_read.instr \
 							<= in_mem_access.data \
 							[some_req_data_offset * 32 +: 32]; \
-				$display("FAKE INSTR CACHE:  After miss:  %h, %h, %h", \
-							in_mem_access.data \
-							[some_req_data_offset * 32 +: 32], \
-							__base_addr, \
-							__captured_req_data_offset); \
+				/* $display("FAKE INSTR CACHE:  After miss:  %h, %h, %h", */ \
+				/* 			in_mem_access.data */ \
+				/* 			[some_req_data_offset * 32 +: 32], */ \
+				/* 			__base_addr, */ \
+				/* 			__captured_req_data_offset); */ \
 					end
 
 				case (__captured_req_data_offset)

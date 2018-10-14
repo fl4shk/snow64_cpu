@@ -1182,7 +1182,7 @@ module Snow64PsExUseVectorAlu
 	Snow64VectorAlu __inst_vector_alu(.in(__in_inst_vector_alu),
 		.out(__out_inst_vector_alu));
 
-	always @(*) __in_inst_vector_alu.a = in_any_dsrc0_data;
+	//always @(*) __in_inst_vector_alu.a = in_any_dsrc0_data;
 	always @(*) __in_inst_vector_alu.int_type_size
 		= in_true_ra_data.int_type_size;
 	always @(*) __in_inst_vector_alu.type_signedness
@@ -1215,19 +1215,29 @@ module Snow64PsExUseVectorAlu
 		begin
 			case (in_true_ra_data.int_type_size)
 			PkgSnow64Cpu::IntTypSz8:
-				__in_inst_vector_alu.b = __vector_signext_imm_8;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {in_any_dsrc0_data, __vector_signext_imm_8};
 			PkgSnow64Cpu::IntTypSz16:
-				__in_inst_vector_alu.b = __vector_signext_imm_16;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {in_any_dsrc0_data, __vector_signext_imm_16};
 			PkgSnow64Cpu::IntTypSz32:
-				__in_inst_vector_alu.b = __vector_signext_imm_32;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {in_any_dsrc0_data, __vector_signext_imm_32};
 			PkgSnow64Cpu::IntTypSz64:
-				__in_inst_vector_alu.b = __vector_signext_imm_64;
+				{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+					= {in_any_dsrc0_data, __vector_signext_imm_64};
 			endcase
+		end
+
+		PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12:
+		begin
+			{__in_inst_vector_alu.a, __in_inst_vector_alu.b} = 0;
 		end
 
 		default:
 		begin
-			__in_inst_vector_alu.b = in_any_dsrc1_data;
+			{__in_inst_vector_alu.a, __in_inst_vector_alu.b}
+				= {in_any_dsrc0_data, in_any_dsrc1_data};
 		end
 		endcase
 	end
@@ -1358,6 +1368,7 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 		SyscTypDispRegs,
 		SyscTypDispDdestVectorData,
 		SyscTypDispDdestScalarData,
+		SyscTypDispDdestAddr,
 		SyscTypFinish
 	} SyscallType;
 	
@@ -1420,7 +1431,7 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 			case (__syscall_type)
 			SyscTypDispRegs:
 			begin
-				$display("rA:  ");
+				$display("dDest:  ");
 				disp_reg(in_true_ra_data);
 				//$display();
 				//$display("rB:  ");
@@ -1439,6 +1450,13 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 			begin
 				$display("dDest scalar data:  %h",
 					in_curr_ddest_scalar_data);
+			end
+
+			SyscTypDispDdestAddr:
+			begin
+				$display("dDest full address:  %h",
+					{in_true_ra_data.base_addr,
+					in_true_ra_data.data_offset});
 			end
 
 			SyscTypFinish:
@@ -1948,6 +1966,8 @@ module Snow64PipeStageEx(input logic clk,
 	// ONLY ALU/FPU instructions can produce (__curr_results.valid == 1'b1)
 	always @(*) __curr_results.valid
 		= ((__from_lar_file__rd_metadata_a.tag != 0)
+		&& (__curr_decoded_instr != 0)
+		&& (__curr_decoded_instr.ra_index != 0)
 		&& (__curr_decoded_instr.group == 0)
 		&& (__curr_decoded_instr.oper
 		!= PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12)
@@ -2179,6 +2199,18 @@ module Snow64PipeStageEx(input logic clk,
 		//	__out_inst_use_vector_alu__data,
 		//	__mask_for_scalar_op, __inv_mask_for_scalar_op,
 		//	__curr_results.computed_data);
+		//$display("EX stage stuffs:  %h %h %h; %h %h; %h %h",
+		//	__curr_ddest_scalar_data,
+		//	__curr_dsrc0_scalar_data,
+		//	__curr_dsrc1_scalar_data,
+		//	__curr_results.valid, __curr_results.computed_data,
+		//	__mask_for_scalar_op, __inv_mask_for_scalar_op);
+		//$display("EX stage stuffs:  %h %h %h; %h; %h",
+		//	__curr_ddest_scalar_data,
+		//	__curr_dsrc0_scalar_data,
+		//	__curr_dsrc1_scalar_data,
+		//	__curr_results.valid,
+		//	(__curr_decoded_instr != 0));
 
 		case (__next_state)
 		PkgSnow64PsEx::StRegular:

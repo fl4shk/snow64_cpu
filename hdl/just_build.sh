@@ -4,11 +4,11 @@
 #set -o pipefail
 set -e
 set -o pipefail
-./just_build.sh "$@"
-
+../assembler_disassembler/full_assemble.sh "$@" >initial_mem_contents.txt.ignore
 if [ $? -ne 0 ]
 then
 	exit
 fi
-#./snow64_cpu.vvp >thing.txt.ignore
-./snow64_cpu.vvp
+
+make
+

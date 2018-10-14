@@ -1512,7 +1512,7 @@ module Snow64LarFile(input logic clk,
 				prep_shareddata_data_write
 					(`IN_LDST_MODDABLE_CURR_METADATA_TAG,
 					real_in_mem_read.data);
-				$display("Lar File:  Read mem done");
+				//$display("Lar File:  Read mem done");
 				finish_ldst();
 			end
 			else
@@ -1529,7 +1529,7 @@ module Snow64LarFile(input logic clk,
 
 			if (`REAL_IN_MEM_WRITE__VALID)
 			begin
-				$display("Lar File:  Write mem done");
+				//$display("Lar File:  Write mem done");
 				finish_ldst();
 			end
 		end
@@ -1565,7 +1565,7 @@ module Snow64LarFile(input logic clk,
 				if ((!`REAL_IN_MEM_WRITE__VALID)
 					&& __captured_in_mem_write__valid)
 				begin
-					$display("Lar File:  read AND Write mem done");
+					//$display("Lar File:  read AND Write mem done");
 					finish_ldst();
 				end
 			end
@@ -1583,7 +1583,7 @@ module Snow64LarFile(input logic clk,
 				if ((!real_in_mem_read.valid)
 					&& __captured_in_mem_read__valid)
 				begin
-					$display("Lar File:  Read AND write mem done");
+					//$display("Lar File:  Read AND write mem done");
 					finish_ldst();
 				end
 			end

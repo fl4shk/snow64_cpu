@@ -65,9 +65,9 @@ module Snow64PipeStageIfId(input logic clk,
 	endtask
 
 	task send_curr_instr(input PkgSnow64Cpu::CpuAddr some_pc);
-		$display("send_curr_instr(%h):  %h, %h; %h, %h", some_pc,
-			__out_inst_instr_decoder.group, __out_inst_instr_decoder.oper,
-			in_from_instr_cache.valid, in_from_instr_cache.instr);
+		//$display("send_curr_instr(%h):  %h, %h; %h, %h", some_pc,
+		//	__out_inst_instr_decoder.group, __out_inst_instr_decoder.oper,
+		//	in_from_instr_cache.valid, in_from_instr_cache.instr);
 		out_to_pipe_stage_ex.decoded_instr <= __out_inst_instr_decoder;
 		out_to_pipe_stage_ex.pc_val <= some_pc;
 		//out_to_pipe_stage_ex.pc_val <= __spec_reg_pc;
@@ -95,10 +95,20 @@ module Snow64PipeStageIfId(input logic clk,
 		case (__state)
 		StRegular:
 		begin
-			{__curr_ra_index, __curr_rb_index, __curr_rc_index}
-				= {__out_inst_instr_decoder.ra_index,
-				__out_inst_instr_decoder.rb_index,
-				__out_inst_instr_decoder.rc_index};
+			case (in_from_instr_cache.valid)
+			1'b0:
+			begin
+				{__curr_ra_index, __curr_rb_index, __curr_rc_index} = 0;
+			end
+
+			1'b1:
+			begin
+				{__curr_ra_index, __curr_rb_index, __curr_rc_index}
+					= {__out_inst_instr_decoder.ra_index,
+					__out_inst_instr_decoder.rb_index,
+					__out_inst_instr_decoder.rc_index};
+			end
+			endcase
 		end
 
 		default:
@@ -106,8 +116,7 @@ module Snow64PipeStageIfId(input logic clk,
 			//{__curr_ra_index, __curr_rb_index, __curr_rc_index}
 			//	= {__captured_ra_index, __captured_rb_index,
 			//	__captured_rc_index};
-			{__curr_ra_index, __curr_rb_index, __curr_rc_index}
-				= 0;
+			{__curr_ra_index, __curr_rb_index, __curr_rc_index} = 0;
 		end
 		endcase
 	end
@@ -190,7 +199,6 @@ module Snow64PipeStageIfId(input logic clk,
 
 	always @(posedge clk)
 	begin
-		show_decoded_instr();
 
 		//$display("IF/ID:  %h, %h; %h, %h, %h", __state, __spec_reg_pc,
 		//	in_from_instr_cache.valid,
@@ -215,6 +223,7 @@ module Snow64PipeStageIfId(input logic clk,
 
 		StRegular:
 		begin
+			show_decoded_instr();
 			//__captured_ra_index <= __out_inst_instr_decoder.ra_index;
 			//__captured_rb_index <= __out_inst_instr_decoder.rb_index;
 			//__captured_rc_index <= __out_inst_instr_decoder.rc_index;

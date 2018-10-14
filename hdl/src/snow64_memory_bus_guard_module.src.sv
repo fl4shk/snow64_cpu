@@ -187,6 +187,8 @@ module Snow64MemoryBusGuard(input logic clk,
 			begin
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
+				//$display("MBG:  preparing to read instructions:  %h",
+				//	real_in_req_read_instr.addr);
 				prep_mem_read(real_in_req_read_instr.addr);
 
 				real_out_req_read_instr.cmd_accepted <= 1;
@@ -254,6 +256,8 @@ module Snow64MemoryBusGuard(input logic clk,
 			case (__stage_1_to_2__req_type)
 			PkgSnow64MemoryBusGuard::ReqTypReadInstr:
 			begin
+				//$display("MBG:  have instructions:  %h",
+				//	real_in_mem_access.data);
 				real_out_req_read_instr.valid <= 1;
 				real_out_req_read_data.valid <= 0;
 				real_out_req_write_data.valid <= 0;

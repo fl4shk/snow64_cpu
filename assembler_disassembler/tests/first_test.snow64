@@ -18,7 +18,8 @@
 .equ sysc_disp_regs 0
 .equ sysc_disp_ddest_vector_data 1
 .equ sysc_disp_ddest_scalar_data 2
-.equ sysc_finish 3
+.equ sysc_disp_ddest_addr 3
+.equ sysc_finish 4
 
 .equ num_bytes__size_8 (8 / 8)
 .equ num_bytes__size_16 (16 / 8)
@@ -26,76 +27,184 @@
 .equ num_bytes__size_64 (64 / 8)
 
 
+.equ offset_pcrel__right_after_call (2 * num_bytes__size_64)
+
 start:
 {
-	ldu32 dsp, dzero, dzero, __const__above_top_of_stack
-	ldu8 dsp, dzero, dsp, 0
+	// We don't need a pc-relative load in this case.
+	ldu32 du0, dzero, dzero, __const__above_top_of_stack
+	ldu8 dsp, dzero, du0, 0
 
+
+
+	.equ __local_stack_space (3 * num_bytes__size_64)
+	.equ __local_sp_offset__temp_0 (0 * num_bytes__size_64)
+	.equ __local_sp_offset__temp_1 (1 * num_bytes__size_64)
+	.equ __local_fp_offset__copy_of_main_ret_val \
+		(0 * num_bytes__size_64)
+
+
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__local_stack_space
+
+
+	ldu64 du1, dsp, dzero, __local_sp_offset__temp_0
+	addis du1, dzero, 0x20
+
+
+	.equ __call_main_stack_space (2 * num_bytes__size_64)
+	.equ __call_main_sp_offset__return_val (0 * num_bytes__size_64)
+	.equ __call_main_sp_offset__return_addr (1 * num_bytes__size_64)
+
+
+	ldu8 dsp, dsp, dzero, -__call_main_stack_space
+
+
+	ldu64 du0, dsp, dzero, __call_main_sp_offset__return_val
+	addis du0, dzero, 0x1
+
+	ldu64 dlr, dsp, dzero, __call_main_sp_offset__return_addr
+
+
+	// This could *easily* be just one instruction, instead of two.
+	//addis dlr, pc, offset_pcrel__right_after_call
+	pcrels dlr, __after_call_main
 	bra main
+
+
+__after_call_main:
+	// Restore dfp
+	ldu8 dfp, dsp, dzero, (__call_main_stack_space + __local_stack_space)
+	sim_syscall dfp, dzero, dzero, sysc_disp_ddest_addr
+
+
+	// Copy main()'s return value to outside the partial stack frame
+	//ldu64 du3, dfp, dzero, __local_fp_offset__copy_of_main_ret_val
+	ldu64 du1, dsp, dzero, __call_main_sp_offset__return_val
+
+	sim_syscall du1, dzero, dzero, sysc_disp_ddest_scalar_data
+
+	//adds du3, dzero, du1
+
+
+	// Restore dsp
+	ldu8 dsp, dsp, dzero, __call_main_stack_space
+
+__finish:
+	//sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
+	sim_syscall dzero, dzero, dzero, sysc_finish
 
 __pool:
 __const__above_top_of_stack:
 	.db32 0x10000
 }
 
-
 main:
 {
-	.equ __stack_space 64
-	.equ __sp_offset__output (0 * num_bytes__size_64)
-	.equ __sp_offset__temp_0 (1 * num_bytes__size_64)
-	.equ __sp_offset__temp_1 (2 * num_bytes__size_64)
-	.equ __sp_offset__temp_2 (3 * num_bytes__size_64)
-	.equ __sp_offset__temp_3 (4 * num_bytes__size_64)
+	.equ __stack_space (3 * num_bytes__size_64)
+	.equ __sp_offset__temp_0 (0 * num_bytes__size_64)
+	.equ __sp_offset__temp_1 (1 * num_bytes__size_64)
+	.equ __sp_offset__temp_2 (2 * num_bytes__size_64)
 
 
-	.equ __pool_offset__0x9000 (0 * num_bytes__size_16)
-	.equ __pool_offset__0x3 (1 * num_bytes__size_16)
-
-	.equ __vlocal__output reg_du0
-	.equ __vlocal__temp_0 reg_du1
-	.equ __vlocal__temp_1 reg_du2
-	.equ __vlocal__temp_2 reg_du3
-	.equ __vlocal__temp_3 reg_du4
-
-	.equ __clocal__temp_0 reg_du5
-	.equ __clocal__temp_1 reg_du6
-
-
+	.equ __fp_offset__return_val (0 * num_bytes__size_64)
+	.equ __fp_offset__return_addr (1 * num_bytes__size_64)
 	ldu8 dfp, dsp, dzero, 0
 	ldu8 dsp, dsp, dzero, -__stack_space
 
-	ldu64 __vlocal__output, dsp, dzero, __sp_offset__output
-	ldu64 __vlocal__temp_0, dsp, dzero, __sp_offset__temp_0
-	ldu64 __vlocal__temp_1, dsp, dzero, __sp_offset__temp_1
-	ldu64 __vlocal__temp_2, dsp, dzero, __sp_offset__temp_2
-	ldu64 __vlocal__temp_3, dsp, dzero, __sp_offset__temp_3
+	//ldu64 du0, dfp, dzero, __fp_offset__return_val
+	//ldu64 du1, dfp, dzero, __fp_offset__return_addr
+
+	//ldu64 du2, dsp, dzero, __sp_offset__temp_0
+	//ldu64 du3, dsp, dzero, __sp_offset__temp_1
+
+	ldu64 du0, dfp, dzero, __fp_offset__return_val
+	ldu64 du1, dsp, dzero, __sp_offset__temp_0
+	ldu64 du2, dsp, dzero, __sp_offset__temp_1
+	ldu64 du3, dsp, dzero, __sp_offset__temp_2
 
 
-	pcrels __vlocal__temp_2, __pool
-	//addis __vlocal__temp_2, dzero, __pool
-	ldu16 __clocal__temp_0, dzero, __vlocal__temp_2, __pool_offset__0x9000
-	ldu16 __clocal__temp_1, dzero, __vlocal__temp_2, __pool_offset__0x3
-	//sim_syscall __vlocal__temp_2, dzero, dzero, sysc_disp_ddest_scalar_data
-	sim_syscall __clocal__temp_1, dzero, dzero, sysc_disp_ddest_scalar_data
-	sim_syscall __clocal__temp_0, dzero, dzero, sysc_disp_ddest_scalar_data
+	pcrels du1, __pool
+	ldu16 du2, dzero, du1, (0 * num_bytes__size_16)
+	sim_syscall du2, dzero, dzero, sysc_disp_ddest_scalar_data
+	ldu16 du3, dzero, du1, (1 * num_bytes__size_16)
+	sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
 
-	adds __vlocal__temp_0, dzero, __clocal__temp_0
-	adds __vlocal__temp_1, dzero, __clocal__temp_1
-	shls __vlocal__output, __vlocal__temp_0, __vlocal__temp_1
-
+	addis du0, dzero, 0x9
+	sim_syscall du0, du1, du1, sysc_disp_ddest_scalar_data
+	addis du1, dzero, 0x7
+	sim_syscall du1, du0, du0, sysc_disp_ddest_scalar_data
+	//adds du0, du0, du1
+	shls du0, du0, du1
+	//addis du0, dzero, 0x7
+	sim_syscall du0, dzero, dzero, sysc_disp_ddest_scalar_data
 
 
 __finish:
-	sim_syscall __vlocal__temp_2, dzero, dzero, sysc_disp_ddest_scalar_data
-	sim_syscall __vlocal__temp_1, dzero, dzero, sysc_disp_ddest_scalar_data
-	sim_syscall __vlocal__temp_0, dzero, dzero, sysc_disp_ddest_scalar_data
-	sim_syscall __vlocal__output, dzero, dzero, sysc_disp_ddest_scalar_data
-	sim_syscall dzero, dzero, dzero, sysc_finish
-
-	.db32 0x19943260
+	ldu8 dsp, dsp, dzero, __stack_space
+	jmp dlr
 
 __pool:
-	.db32 0x90000003
-	.db32 0xaaaabbbb
+	.db32 0x00039000
 }
+
+//main:
+//{
+//	.equ __stack_space 64
+//	.equ __sp_offset__output (0 * num_bytes__size_64)
+//	.equ __sp_offset__temp_0 (1 * num_bytes__size_64)
+//	.equ __sp_offset__temp_1 (2 * num_bytes__size_64)
+//	.equ __sp_offset__temp_2 (3 * num_bytes__size_64)
+//	.equ __sp_offset__temp_3 (4 * num_bytes__size_64)
+//
+//
+//	.equ __pool_offset__0x9000 (0 * num_bytes__size_16)
+//	.equ __pool_offset__0x3 (1 * num_bytes__size_16)
+//
+//	.equ __vlocal__output reg_du0
+//	.equ __vlocal__temp_0 reg_du1
+//	.equ __vlocal__temp_1 reg_du2
+//	.equ __vlocal__temp_2 reg_du3
+//	.equ __vlocal__temp_3 reg_du4
+//
+//	.equ __clocal__temp_0 reg_du5
+//	.equ __clocal__temp_1 reg_du6
+//
+//
+//	ldu8 dfp, dsp, dzero, 0
+//	ldu8 dsp, dsp, dzero, -__stack_space
+//
+//	ldu64 __vlocal__output, dsp, dzero, __sp_offset__output
+//	ldu64 __vlocal__temp_0, dsp, dzero, __sp_offset__temp_0
+//	ldu64 __vlocal__temp_1, dsp, dzero, __sp_offset__temp_1
+//	ldu64 __vlocal__temp_2, dsp, dzero, __sp_offset__temp_2
+//	ldu64 __vlocal__temp_3, dsp, dzero, __sp_offset__temp_3
+//
+//
+//	pcrels __vlocal__temp_2, __pool
+//	//addis __vlocal__temp_2, dzero, __pool
+//	ldu16 __clocal__temp_0, dzero, __vlocal__temp_2, __pool_offset__0x9000
+//	ldu16 __clocal__temp_1, dzero, __vlocal__temp_2, __pool_offset__0x3
+//	//sim_syscall __vlocal__temp_2, dzero, dzero, sysc_disp_ddest_scalar_data
+//	sim_syscall __clocal__temp_1, dzero, dzero, sysc_disp_ddest_scalar_data
+//	sim_syscall __clocal__temp_0, dzero, dzero, sysc_disp_ddest_scalar_data
+//
+//	adds __vlocal__temp_0, dzero, __clocal__temp_0
+//	adds __vlocal__temp_1, dzero, __clocal__temp_1
+//	shls __vlocal__output, __vlocal__temp_0, __vlocal__temp_1
+//
+//
+//
+//__finish:
+//	sim_syscall __vlocal__temp_2, dzero, dzero, sysc_disp_ddest_scalar_data
+//	sim_syscall __vlocal__temp_1, dzero, dzero, sysc_disp_ddest_scalar_data
+//	sim_syscall __vlocal__temp_0, dzero, dzero, sysc_disp_ddest_scalar_data
+//	sim_syscall __vlocal__output, dzero, dzero, sysc_disp_ddest_scalar_data
+//	sim_syscall dzero, dzero, dzero, sysc_finish
+//
+//	.db32 0x19943260
+//
+//__pool:
+//	.db32 0x90000003
+//	.db32 0xaaaabbbb
+//}
