@@ -639,8 +639,11 @@ module Snow64PsExCastScalars(input logic clk,
 	`undef SET_OUT_CASTED_SCALAR_DATA
 
 
-	always_ff @(posedge clk)
+	always @(posedge clk)
 	begin
+		//$display("Snow64PsExCastScalars:  %h %h; %h",
+		//	out_casted_rb_scalar_data, out_casted_rc_scalar_data,
+		//	__starting_any_cast);
 		case (__state)
 		PkgSnow64PsEx::CastStNoWait:
 		begin
@@ -1543,6 +1546,9 @@ module Snow64PipeStageEx(input logic clk,
 
 	wire [`MSB_POS__SNOW64_SCALAR_DATA:0]
 		__dsrc0_casted_scalar_data, __dsrc1_casted_scalar_data;
+	logic [`MSB_POS__SNOW64_SCALAR_DATA:0]
+		__captured_dsrc0_casted_scalar_data = 0,
+		__captured_dsrc1_casted_scalar_data = 0;
 	wire [`MSB_POS__SNOW64_LAR_FILE_DATA:0]
 		__dsrc0_casted_vector_data, __dsrc1_casted_vector_data,
 		__dsrc0_injected_vector_data, __dsrc1_injected_vector_data;
@@ -1867,8 +1873,8 @@ module Snow64PipeStageEx(input logic clk,
 	// 		out_injected_rb_vector_data, out_injected_rc_vector_data);
 	Snow64PsExInjectCastedScalarData __inst_inject_scalar_data
 		(.in_true_ra_data(__true_ra_data),
-		.in_casted_rb_scalar_data(__dsrc0_casted_scalar_data),
-		.in_casted_rc_scalar_data(__dsrc1_casted_scalar_data),
+		.in_casted_rb_scalar_data(__captured_dsrc0_casted_scalar_data),
+		.in_casted_rc_scalar_data(__captured_dsrc1_casted_scalar_data),
 		.out_injected_rb_vector_data(__dsrc0_injected_vector_data),
 		.out_injected_rc_vector_data(__dsrc1_injected_vector_data));
 
@@ -2205,12 +2211,31 @@ module Snow64PipeStageEx(input logic clk,
 		//	__curr_dsrc1_scalar_data,
 		//	__curr_results.valid, __curr_results.computed_data,
 		//	__mask_for_scalar_op, __inv_mask_for_scalar_op);
-		//$display("EX stage stuffs:  %h %h %h; %h; %h",
-		//	__curr_ddest_scalar_data,
-		//	__curr_dsrc0_scalar_data,
-		//	__curr_dsrc1_scalar_data,
-		//	__curr_results.valid,
-		//	(__curr_decoded_instr != 0));
+		$display("EX stage stuffs:  %h %h %h; %h %h",
+			__curr_ddest_scalar_data,
+			__curr_dsrc0_scalar_data,
+			__curr_dsrc1_scalar_data,
+			__state, __next_state);
+
+		//case (__state)
+		//PkgSnow64PsEx::StWaitForScalarCaster:
+		//begin
+		//	$display("EX stage cast:  WaitS:  %h %h %h",
+		//		__dsrc0_casted_scalar_data,
+		//		__dsrc1_casted_scalar_data,
+		//		__out_inst_cast_scalars__valid);
+		//end
+
+		//PkgSnow64PsEx::StInjectCastedScalars:
+		//begin
+		//	$display("EX stage cast:  Inject:  %h %h; %h %h",
+		//		__dsrc0_casted_scalar_data,
+		//		__dsrc1_casted_scalar_data,
+		//		__dsrc0_injected_vector_data,
+		//		__dsrc1_injected_vector_data);
+		//end
+		//endcase
+
 
 		case (__next_state)
 		PkgSnow64PsEx::StRegular:
@@ -2227,7 +2252,8 @@ module Snow64PipeStageEx(input logic clk,
 
 		__state <= __next_state;
 
-		if (__state == PkgSnow64PsEx::StRegular)
+		case (__state)
+		PkgSnow64PsEx::StRegular:
 		begin
 			__captured_multi_cycle_op_type <= __curr_multi_cycle_op_type;
 			__captured_true_ra_data <= __curr_true_ra_data;
@@ -2238,6 +2264,15 @@ module Snow64PipeStageEx(input logic clk,
 			//	__curr_dsrc0_scalar_data,
 			//	__curr_dsrc1_scalar_data);
 		end
+
+		PkgSnow64PsEx::StWaitForScalarCaster:
+		begin
+			__captured_dsrc0_casted_scalar_data
+				<= __dsrc0_casted_scalar_data;
+			__captured_dsrc1_casted_scalar_data
+				<= __dsrc0_casted_scalar_data;
+		end
+		endcase
 	end
 
 endmodule

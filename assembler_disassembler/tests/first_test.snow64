@@ -126,16 +126,18 @@ main:
 
 	pcrels du1, __pool
 	ldu16 du2, dzero, du1, (0 * num_bytes__size_16)
-	sim_syscall du2, dzero, dzero, sysc_disp_ddest_scalar_data
+	//sim_syscall du2, dzero, dzero, sysc_disp_ddest_scalar_data
 	ldu16 du3, dzero, du1, (1 * num_bytes__size_16)
-	sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
+	//sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
 
-	addis du0, dzero, 0x9
-	sim_syscall du0, du1, du1, sysc_disp_ddest_scalar_data
-	addis du1, dzero, 0x7
-	sim_syscall du1, du0, du0, sysc_disp_ddest_scalar_data
-	//adds du0, du0, du1
-	shls du0, du0, du1
+	adds du0, du2, du2
+
+	//addis du0, dzero, 0x9
+	//sim_syscall du0, du1, du1, sysc_disp_ddest_scalar_data
+	//addis du1, dzero, 0x7
+	//sim_syscall du1, du0, du0, sysc_disp_ddest_scalar_data
+	////adds du0, du0, du1
+	//shls du0, du0, du1
 	//addis du0, dzero, 0x7
 	sim_syscall du0, dzero, dzero, sysc_disp_ddest_scalar_data
 
