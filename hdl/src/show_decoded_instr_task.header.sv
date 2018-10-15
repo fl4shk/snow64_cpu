@@ -1,42 +1,17 @@
-`ifndef src__slash__show_decoded_instr_task_header_sv
-`define src__slash__show_decoded_instr_task_header_sv
 
 // src/show_decoded_instr_task.header.sv
 
-`include "src/misc_defines.header.sv"
 
 
 	function string get_op_type_suffix_str(input logic some_op_type);
 
 		case (some_op_type)
 		PkgSnow64InstrDecoder::OpTypeScalar: return "s";
-		PkgSnow64InstrDecoder::OpTypeVector: return "s";
+		PkgSnow64InstrDecoder::OpTypeVector: return "v";
 		endcase
 	endfunction
 
-	function string get_reg_name_str
-		(input logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0] some_reg_index);
-
-		case (some_reg_index)
-		0: return "dzero";
-		1: return "du0";
-		2: return "du1";
-		3: return "du2";
-		4: return "du3";
-		5: return "du4";
-		6: return "du5";
-		7: return "du6";
-		8: return "du7";
-		9: return "du8";
-		10: return "du9";
-		11: return "du10";
-		12: return "du12";
-		13: return "dlr";
-		14: return "dfp";
-		15: return "dsp";
-		endcase
-	endfunction
-
+	`include "src/get_reg_name_str_task.header.sv"
 
 	task show_decoded_instr;
 		case (__out_inst_instr_decoder.group)
@@ -346,5 +321,3 @@
 		end
 		endcase
 	endtask
-
-`endif		// src__slash__show_decoded_instr_task_header_sv

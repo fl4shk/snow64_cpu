@@ -862,10 +862,30 @@ antlrcpp::Any Assembler::visitDotDb16Directive
 {
 	auto&& expressions = ctx->expr();
 
+	std::vector<s64> exprs_vec;
+
 	for (auto expr : expressions)
 	{
 		expr->accept(this);
-		gen_16(pop_num());
+		//gen_16(pop_num());
+		exprs_vec.push_back(pop_num());
+	}
+
+	{
+	size_t i;
+	u32 to_gen;
+	for (i=0; i<(exprs_vec.size() - (exprs_vec.size() % 2)); i+=2)
+	{
+		to_gen = 0;
+		set_bits_with_range(to_gen, exprs_vec.at(i), 15, 0);
+		set_bits_with_range(to_gen, exprs_vec.at(i + 1), 31, 16);
+		gen_32(to_gen);
+	}
+
+	if ((exprs_vec.size() % 2) == 1)
+	{
+		gen_16(exprs_vec.at(i));
+	}
 	}
 
 	return nullptr;
@@ -875,10 +895,42 @@ antlrcpp::Any Assembler::visitDotDb8Directive
 {
 	auto&& expressions = ctx->expr();
 
+	//for (auto expr : expressions)
+	//{
+	//	expr->accept(this);
+	//	gen_8(pop_num());
+	//}
+
+	std::vector<s64> exprs_vec;
+
 	for (auto expr : expressions)
 	{
 		expr->accept(this);
-		gen_8(pop_num());
+		exprs_vec.push_back(pop_num());
+	}
+
+	{
+	size_t i;
+	u32 to_gen;
+	for (i=0; i<(exprs_vec.size() - (exprs_vec.size() % 4)); i+=4)
+	{
+		to_gen = 0;
+		set_bits_with_range(to_gen, exprs_vec.at(i), 7, 0);
+		set_bits_with_range(to_gen, exprs_vec.at(i + 1), 15, 8);
+		set_bits_with_range(to_gen, exprs_vec.at(i + 2), 23, 16);
+		set_bits_with_range(to_gen, exprs_vec.at(i + 3), 31, 24);
+		gen_32(to_gen);
+	}
+
+	//if ((exprs_vec.size() % 2) == 1)
+	//{
+	//	gen_16(exprs_vec.at(i));
+	//}
+
+	for (; i<exprs_vec.size(); ++i)
+	{
+		gen_8(exprs_vec.at(i));
+	}
 	}
 
 	return nullptr;

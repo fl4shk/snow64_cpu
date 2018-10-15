@@ -1378,6 +1378,8 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 	wire [__MSB_POS__SYSCALL_TYPE:0] __syscall_type
 		= in_curr_decoded_instr.signext_imm[__MSB_POS__SYSCALL_TYPE:0];
 
+	`include "src/get_reg_name_str_task.header.sv"
+
 	task disp_reg(input PkgSnow64PsEx::TrueLarData to_disp);
 		case (to_disp.data_type)
 		PkgSnow64Cpu::DataTypBFloat16:
@@ -1434,7 +1436,8 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 			case (__syscall_type)
 			SyscTypDispRegs:
 			begin
-				$display("dDest:  ");
+				$display("%s all stuff:  ",
+					get_reg_name_str(in_curr_decoded_instr.ra_index));
 				disp_reg(in_true_ra_data);
 				//$display();
 				//$display("rB:  ");
@@ -1446,18 +1449,22 @@ module Snow64PsExPerfSimSyscall(input logic clk,
 
 			SyscTypDispDdestVectorData:
 			begin
-				$display("dDest vector data:  %h", in_true_ra_data.data);
+				$display("%s vector data:  %h",
+					get_reg_name_str(in_curr_decoded_instr.ra_index),
+					in_true_ra_data.data);
 			end
 
 			SyscTypDispDdestScalarData:
 			begin
-				$display("dDest scalar data:  %h",
+				$display("%s scalar data:  %h",
+					get_reg_name_str(in_curr_decoded_instr.ra_index),
 					in_curr_ddest_scalar_data);
 			end
 
 			SyscTypDispDdestAddr:
 			begin
-				$display("dDest full address:  %h",
+				$display("%s full address:  %h",
+					get_reg_name_str(in_curr_decoded_instr.ra_index),
 					{in_true_ra_data.base_addr,
 					in_true_ra_data.data_offset});
 			end

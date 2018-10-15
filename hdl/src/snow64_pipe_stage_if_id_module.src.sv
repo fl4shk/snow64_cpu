@@ -226,7 +226,7 @@ module Snow64PipeStageIfId(input logic clk,
 
 		StRegular:
 		begin
-			show_decoded_instr();
+			//show_decoded_instr();
 
 			if (in_from_instr_cache.valid)
 			begin
@@ -257,11 +257,11 @@ module Snow64PipeStageIfId(input logic clk,
 						1:
 						begin
 							//send_curr_instr();
-						$display("send_ctrl_flow_instr(%h):  %h, %h, %h",
-								__spec_reg_pc,
-								__out_inst_instr_decoder.group,
-								__out_inst_instr_decoder.oper,
-								in_from_instr_cache.instr);
+						//$display("send_ctrl_flow_instr(%h):  %h, %h, %h",
+						//		__spec_reg_pc,
+						//		__out_inst_instr_decoder.group,
+						//		__out_inst_instr_decoder.oper,
+						//		in_from_instr_cache.instr);
 							out_to_pipe_stage_ex.decoded_instr
 								<= __out_inst_instr_decoder;
 							out_to_pipe_stage_ex.pc_val <= __following_pc;

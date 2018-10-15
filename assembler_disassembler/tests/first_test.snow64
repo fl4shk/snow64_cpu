@@ -27,7 +27,7 @@
 .equ num_bytes__size_64 (64 / 8)
 
 
-.equ offset_pcrel__right_after_call (2 * num_bytes__size_64)
+.equ offset_pcrel__right_after_call (2 * num_bytes__size_32)
 
 start:
 {
@@ -40,17 +40,17 @@ start:
 	.equ __local_stack_space (3 * num_bytes__size_64)
 	.equ __local_sp_offset__temp_0 (0 * num_bytes__size_64)
 	.equ __local_sp_offset__temp_1 (1 * num_bytes__size_64)
+
 	.equ __local_fp_offset__copy_of_main_ret_val \
-		(0 * num_bytes__size_64)
+		(-(1 * num_bytes__size_64))
 
 
 	ldu8 dfp, dsp, dzero, 0
-	sim_syscall dfp, dzero, dzero, sysc_disp_ddest_addr
 	ldu8 dsp, dsp, dzero, -__local_stack_space
 
 
-	ldu64 du1, dsp, dzero, __local_sp_offset__temp_0
-	addis du1, dzero, 0x20
+	ldu64 du0, dsp, dzero, __local_sp_offset__temp_0
+	sim_syscall du0, dzero, dzero, sysc_disp_ddest_addr
 
 
 	.equ __call_main_stack_space (2 * num_bytes__size_64)
@@ -61,13 +61,7 @@ start:
 	ldu8 dsp, dsp, dzero, -__call_main_stack_space
 
 
-	ldu64 du0, dsp, dzero, __call_main_sp_offset__return_val
-	addis du0, dzero, 0x1
-
 	ldu64 dlr, dsp, dzero, __call_main_sp_offset__return_addr
-
-
-	// This could *easily* be just one instruction, instead of two.
 	addis dlr, pc, offset_pcrel__right_after_call
 	bra main
 
@@ -75,15 +69,12 @@ start:
 __after_call_main:
 	// Restore dfp
 	ldu8 dfp, dsp, dzero, (__call_main_stack_space + __local_stack_space)
-	sim_syscall dfp, dzero, dzero, sysc_disp_ddest_addr
 
 
-	//// Copy main()'s return value to outside the partial stack frame
-	//ldu64 du3, dfp, dzero, __local_fp_offset__copy_of_main_ret_val
-	//ldu64 du1, dsp, dzero, __call_main_sp_offset__return_val
-	//sim_syscall du1, dzero, dzero, sysc_disp_ddest_scalar_data
-
-	//adds du3, dzero, du1
+	// Copy main()'s return value to outside the partial stack frame
+	ldu64 du3, dfp, dzero, __local_fp_offset__copy_of_main_ret_val
+	ldu64 du1, dsp, dzero, __call_main_sp_offset__return_val
+	adds du3, dzero, du1
 
 
 	// Restore dsp
@@ -113,28 +104,22 @@ main:
 	ldu8 dsp, dsp, dzero, -__stack_space
 
 
-	//ldu64 du0, dfp, dzero, __fp_offset__return_val
-	//ldu64 du1, dsp, dzero, __sp_offset__temp_0
+	ldu64 du0, dfp, dzero, __fp_offset__return_val
+	ldu64 du1, dsp, dzero, __sp_offset__temp_0
 
 
-	//pcrels du1, __pool
+	pcrels du1, __pool
 
-	//.equ __pool_offset__0x9000 (0 * num_bytes__size_16)
-	//.equ __pool_offset__0x3 (1 * num_bytes__size_16)
-	//ldu16 du2, dzero, du1, __pool_offset__0x9000
-	//ldu16 du3, dzero, du1, __pool_offset__0x3
-	//sim_syscall du2, dzero, dzero, sysc_disp_ddest_scalar_data
-	//sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
+	.equ __pool_offset__0x9000 (0 * num_bytes__size_16)
+	.equ __pool_offset__0x3 (1 * num_bytes__size_16)
+	ldu16 du2, dzero, du1, __pool_offset__0x9000
+	ldu16 du3, dzero, du1, __pool_offset__0x3
 
-	//// Have to cast first
-	//adds du0, dzero, du2
-	//sim_syscall du0, dzero, dzero, sysc_disp_ddest_scalar_data
-	//adds du1, dzero, du3
-	//sim_syscall du1, dzero, dzero, sysc_disp_ddest_scalar_data
+	// Have to cast first
+	adds du0, dzero, du2
+	adds du1, dzero, du3
 
-	//shls du0, du0, du1
-
-	//sim_syscall du0, dzero, dzero, sysc_disp_ddest_scalar_data
+	shls du0, du0, du1
 
 
 __finish:
@@ -142,5 +127,6 @@ __finish:
 	jmp dlr
 
 __pool:
-	.db32 0x00039000
+	//.db32 0x00039000
+	.db16 0x9000, 0x0003
 }

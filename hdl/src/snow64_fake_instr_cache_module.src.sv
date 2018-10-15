@@ -113,8 +113,8 @@ module Snow64FakeInstrCache(input logic clk,
 
 				else
 				begin
-					$display("FAKE INSTR CACHE:  miss:  %h",
-						in_req_read.addr);
+					//$display("FAKE INSTR CACHE:  miss:  %h",
+					//	in_req_read.addr);
 					out_mem_access.req <= 1;
 					out_mem_access.addr <= in_req_read.addr;
 
