@@ -37,9 +37,8 @@ start:
 
 
 
-	.equ __local_stack_space (3 * num_bytes__size_64)
-	.equ __local_sp_offset__temp_0 (0 * num_bytes__size_64)
-	.equ __local_sp_offset__temp_1 (1 * num_bytes__size_64)
+	.equ __local_stack_space (1 * num_bytes__size_64)
+	.equ __local_sp_offset__temp (0 * num_bytes__size_64)
 
 	.equ __local_fp_offset__copy_of_main_ret_val \
 		(-(1 * num_bytes__size_64))
@@ -49,8 +48,12 @@ start:
 	ldu8 dsp, dsp, dzero, -__local_stack_space
 
 
-	ldu64 du0, dsp, dzero, __local_sp_offset__temp_0
-	sim_syscall du0, dzero, dzero, sysc_disp_ddest_addr
+
+
+	//// du0 = &main;
+	//ldu64 du0, dsp, dzero, __local_sp_offset__temp
+	//pcrels du0, __const__addr_of_main
+	//ldu32 du0, dzero, du0, 0
 
 
 	.equ __call_main_stack_space (2 * num_bytes__size_64)
@@ -64,6 +67,7 @@ start:
 	ldu64 dlr, dsp, dzero, __call_main_sp_offset__return_addr
 	addis dlr, pc, offset_pcrel__right_after_call
 	bra main
+	//jmp du0
 
 
 __after_call_main:
@@ -82,12 +86,13 @@ __after_call_main:
 
 __finish:
 	sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
-	sim_syscall du3, dzero, dzero, sysc_disp_ddest_addr
 	sim_syscall dzero, dzero, dzero, sysc_finish
 
 __pool:
 __const__above_top_of_stack:
 	.db32 0x10000
+__const__addr_of_main:
+	.db32 main
 }
 
 main:
@@ -116,8 +121,8 @@ main:
 	ldu16 du3, dzero, du1, __pool_offset__0x3
 
 	// Have to cast first
-	adds du0, dzero, du2
 	adds du1, dzero, du3
+	adds du0, dzero, du2
 
 	shls du0, du0, du1
 
@@ -127,6 +132,5 @@ __finish:
 	jmp dlr
 
 __pool:
-	//.db32 0x00039000
 	.db16 0x9000, 0x0003
 }

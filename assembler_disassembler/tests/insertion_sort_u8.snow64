@@ -1,205 +1,117 @@
+.equ reg_dzero 0
+.equ reg_du0 1
+.equ reg_du1 2
+.equ reg_du2 3
+.equ reg_du3 4
+.equ reg_du4 5
+.equ reg_du5 6
+.equ reg_du6 7
+.equ reg_du7 8
+.equ reg_du8 9
+.equ reg_du9 10
+.equ reg_du10 11
+.equ reg_du11 12
+.equ reg_dlr 13
+.equ reg_dfp 14
+.equ reg_dsp 15
+
+.equ sysc_disp_regs 0
+.equ sysc_disp_ddest_vector_data 1
+.equ sysc_disp_ddest_scalar_data 2
+.equ sysc_disp_ddest_addr 3
+.equ sysc_finish 4
+
+.equ num_bytes__size_8 (8 / 8)
+.equ num_bytes__size_16 (16 / 8)
+.equ num_bytes__size_32 (32 / 8)
+.equ num_bytes__size_64 (64 / 8)
+
+
+.equ offset_pcrel__right_after_call (2 * num_bytes__size_32)
+
 start:
 {
-	ldu32 dsp, dzero, dzero, const__above_top_of_stack
-	ldu8 dsp, dzero, dsp, 0
+	// We don't need a pc-relative load in this case.
+	ldu32 du0, dzero, dzero, __const__above_top_of_stack
+	ldu8 dsp, dzero, du0, 0
 
+
+
+	.equ __local_stack_space (1 * num_bytes__size_64)
+	.equ __local_sp_offset__temp (0 * num_bytes__size_64)
+
+	.equ __local_fp_offset__copy_of_main_ret_val \
+		(-(1 * num_bytes__size_64))
+
+
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__local_stack_space
+
+
+
+
+	.equ __call_main_stack_space (2 * num_bytes__size_64)
+	.equ __call_main_sp_offset__return_val (0 * num_bytes__size_64)
+	.equ __call_main_sp_offset__return_addr (1 * num_bytes__size_64)
+
+
+	ldu8 dsp, dsp, dzero, -__call_main_stack_space
+
+
+	ldu64 dlr, dsp, dzero, __call_main_sp_offset__return_addr
+	addis dlr, pc, offset_pcrel__right_after_call
 	bra main
+
+
+__after_call_main:
+	// Restore dfp
+	ldu8 dfp, dsp, dzero, (__call_main_stack_space + __local_stack_space)
+
+
+	// Copy main()'s return value to outside the partial stack frame
+	ldu64 du3, dfp, dzero, __local_fp_offset__copy_of_main_ret_val
+	ldu64 du1, dsp, dzero, __call_main_sp_offset__return_val
+	adds du3, dzero, du1
+
+
+	// Restore dsp
+	ldu8 dsp, dsp, dzero, __call_main_stack_space
+
+__finish:
+	sim_syscall du3, dzero, dzero, sysc_disp_ddest_scalar_data
+	sim_syscall dzero, dzero, dzero, sysc_finish
+
+__pool:
+__const__above_top_of_stack:
+	.db32 0x10000
+__const__addr_of_main:
+	.db32 main
 }
 
-
-global_vars:
-
-global_constants:
-const__above_top_of_stack:
-	.db32 0x10000
-
-const__start__data_to_sort:
-	.db8 3, 2, 6, 1, 9, 9, 4
-const__end__data_to_sort:
-const__align__data_to_sort:
-	.db8 0
-
-
-.org 0x1000
 main:
 {
+	.equ __stack_space (3 * num_bytes__size_64)
+	.equ __sp_offset__temp_0 (0 * num_bytes__size_64)
+	.equ __sp_offset__temp_1 (1 * num_bytes__size_64)
+	.equ __sp_offset__temp_2 (2 * num_bytes__size_64)
+
+
+	.equ __fp_offset__return_val (0 * num_bytes__size_64)
+	.equ __fp_offset__return_addr (1 * num_bytes__size_64)
 	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__stack_space
 
-	// Space for du0 and dlr
-	ldu8 dsp, dsp, dzero, -(2 + 8)
 
+	ldu64 du0, dfp, dzero, __fp_offset__return_val
+	ldu64 du1, dsp, dzero, __sp_offset__temp_0
 
-	ldu16 du0, dsp, dzero, 0
-	ldu64 dlr, dsp, dzero, 2
 
+	pcrels du1, __pool
 
-	pcrels du0, __constants
-	ldu16 du1, dzero, du0, __const__addr__insertion_sort_u8 - __constants
-	ldu16 du2, dzero, du0, __const__addr__start__data_to_sort - __constants
-	ldu16 du3, dzero, du0, __const__addr__end__data_to_sort - __constants
 
-
-
-	// Space for const__start__data_to_sort, const__end__data_to_sort
-	ldu8 dsp, dsp, dzero, -(8 * 2)
-
-	// first argument:  const__start__data_to_sort 
-	ldu64 du0, dzero, dsp, 0
-	adds du0, dzero, du2
-
-	// second argument:
-	// const__end__data_to_sort - const__start__data_to_sort
-	ldu64 du0, dzero, dsp, 8
-	subs du0, du3, du2
-
-
-	// Call insertion_sort_u8
-	pcrels dlr, __done
-	jmp du1
-
-__done:
-	ldu8 dsp, dsp, dzero, (8 * 2)
-	ldu8 dfp, dsp, dzero, (2 + 8)
-
-__infin:
-	bra __infin
-
-
-__constants:
-__const__addr__insertion_sort_u8:
-	.db16 insertion_sort_u8
-
-__const__addr__start__data_to_sort:
-	.db16 const__start__data_to_sort
-
-__const__addr__end__data_to_sort:
-	.db16 const__end__data_to_sort
-
-__const__align_thing:
-	.db16 0
-}
-
-
-
-.org 0x4000
-insertion_sort_u8:
-{
-	.equ __sp_offset__i (8 * 0)
-	.equ __sp_offset__j (8 * 1)
-	.equ __sp_offset__ucmp_64 (8 * 2)
-	.equ __sp_offset__address_temp (8 * 3)
-	.equ __sp_offset__ucmp_8 (8 * 4)
-	.equ __stack_space__insertion_sort_u8 (8 * 5)
-
-	ldu8 dfp, dsp, dzero, 0
-
-
-	// Allocate space for local vars
-	ldu8 dsp, dsp, dzero, -__stack_space__insertion_sort_u8
-
-
-
-	// "i" in du0
-	ldu64 du0, dsp, dzero, __sp_offset__i
-
-	// "j" in du1
-	ldu64 du1, dsp, dzero, __sp_offset__j
-
-	// "ucmp_64" in du2
-	ldu64 du2, dsp, dzero, __sp_offset__ucmp_64
-
-	// "address_temp" in du3
-	ldu8 du3, dsp, dzero, __sp_offset__address_temp
-
-	// "ucmp_8_0" in du4
-	ldu8 du4, dsp, dzero, (__sp_offset__ucmp_8 + 0)
-
-	// "ucmp_8_1" in du5
-	ldu8 du5, dsp, dzero, (__sp_offset__ucmp_8 + 1)
-
-
-	// "&A" in du6
-	ldu64 du6, dfp, dzero, -8
-
-	// "length(A)" in du7
-	ldu64 du7, dfp, dzero, 0
-
-
-
-
-	// i <- 1;
-	addis du0, dzero, 1
-
-__loop_0:
-	{
-	// while (i < length(A))
-		// du2 = (i < length(A));
-		slts du2, du0, du7
-		bfal du2, __after_loop_0
-
-		// j <- i;
-		adds du1, dzero, du0
-
-	__loop_1:
-		// while ((j != 0) && (A[j - 1] > A[j]))
-		{
-			// du2 = (j != 0);
-			subs du2, du1, dzero
-
-			// if (j == 0) goto __after_loop_1
-			bfal du2, __after_loop_1
-
-
-			// du3 = ((&A) + j);
-			adds du3, du6, du1
-
-			// du7 is A[j - 1]
-			ldu8 du7, dzero, du3, -1
-
-			// du8 is A[j]
-			ldu8 du8, dzero, du3, 0
-
-
-			// du4 = (A[j - 1] <= A[j]);
-			slts du4, du7, du8
-			subs du5, du7, du8
-			orrs du4, du4, du5
-
-			// if (A[j - 1] <= A[j]) goto __after_loop_1
-			btru du4, __after_loop_1
-
-
-			// swap(A[j - 1], A[j])
-
-			// X = X ^ Y;
-			xors du7, du7, du8
-
-			// Y = Y ^ X;
-			xors du8, du8, du7
-
-			// X = X ^ Y;
-			xors du7, du7, du8
-
-
-			// j <- j - 1;
-			addis du1, du1, -1
-		}
-
-	__after_loop_1:
-		// i <- i + 1;
-		addis du0, du0, 1
-	}
-
-
-__after_loop_0:
-
-
-
-__return:
-	// Deallocate local vars
-	ldu8 dsp, dsp, dzero, __stack_space__insertion_sort_u8
-
-
-	// return
+__finish:
+	ldu8 dsp, dsp, dzero, __stack_space
 	jmp dlr
+
+__pool:
 }
