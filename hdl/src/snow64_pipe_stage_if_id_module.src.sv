@@ -98,10 +98,10 @@ module Snow64PipeStageIfId(input logic clk,
 			case (in_from_instr_cache.valid)
 			1'b0:
 			begin
-				//{__curr_ra_index, __curr_rb_index, __curr_rc_index} = 0;
-				{__curr_ra_index, __curr_rb_index, __curr_rc_index}
-					= {__captured_ra_index, __captured_rb_index,
-					__captured_rc_index};
+				{__curr_ra_index, __curr_rb_index, __curr_rc_index} = 0;
+				//{__curr_ra_index, __curr_rb_index, __curr_rc_index}
+				//	= {__captured_ra_index, __captured_rb_index,
+				//	__captured_rc_index};
 			end
 
 			1'b1:

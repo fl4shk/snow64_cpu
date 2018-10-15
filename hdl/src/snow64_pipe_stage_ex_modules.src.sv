@@ -2214,41 +2214,41 @@ module Snow64PipeStageEx(input logic clk,
 		//	__curr_dsrc1_scalar_data,
 		//	__curr_results.valid, __curr_results.computed_data,
 		//	__mask_for_scalar_op, __inv_mask_for_scalar_op);
-		$display("EX stage stuffs:  %h %h %h; %h %h",
-			__curr_ddest_scalar_data,
-			__curr_dsrc0_scalar_data,
-			__curr_dsrc1_scalar_data,
-			__state, __next_state);
+		//$display("EX stage stuffs:  %h %h %h; %h %h",
+		//	__curr_ddest_scalar_data,
+		//	__curr_dsrc0_scalar_data,
+		//	__curr_dsrc1_scalar_data,
+		//	__state, __next_state);
 
-		case (__state)
-		PkgSnow64PsEx::StWaitForScalarCaster:
-		begin
-			$display("EX stage cast:  WaitS:  %h %h %h",
-				__dsrc0_casted_scalar_data,
-				__dsrc1_casted_scalar_data,
-				__out_inst_cast_scalars__valid);
-		end
+		//case (__state)
+		//PkgSnow64PsEx::StWaitForScalarCaster:
+		//begin
+		//	$display("EX stage cast:  WaitS:  %h %h %h",
+		//		__dsrc0_casted_scalar_data,
+		//		__dsrc1_casted_scalar_data,
+		//		__out_inst_cast_scalars__valid);
+		//end
 
-		PkgSnow64PsEx::StInjectCastedScalars:
-		begin
-			$display("EX stage cast:  Inject:  %h %h; %h %h; %h %h",
-				__true_ra_data.data_type,
-				__true_ra_data.int_type_size,
-				__captured_dsrc0_casted_scalar_data,
-				__captured_dsrc1_casted_scalar_data,
-				__dsrc0_injected_vector_data,
-				__dsrc1_injected_vector_data);
-		end
+		//PkgSnow64PsEx::StInjectCastedScalars:
+		//begin
+		//	$display("EX stage cast:  Inject:  %h %h; %h %h; %h %h",
+		//		__true_ra_data.data_type,
+		//		__true_ra_data.int_type_size,
+		//		__captured_dsrc0_casted_scalar_data,
+		//		__captured_dsrc1_casted_scalar_data,
+		//		__dsrc0_injected_vector_data,
+		//		__dsrc1_injected_vector_data);
+		//end
 
-		PkgSnow64PsEx::StUseCastedDataSingleCycle:
-		begin
-			$display("EX stage cast:  UseSc:  %h %h; %h, %h",
-				__dsrc0_data_to_use,
-				__dsrc1_data_to_use,
-				__curr_results.computed_data,
-				__true_ra_data.data);
-		end
-		endcase
+		//PkgSnow64PsEx::StUseCastedDataSingleCycle:
+		//begin
+		//	$display("EX stage cast:  UseSc:  %h %h; %h, %h",
+		//		__dsrc0_data_to_use,
+		//		__dsrc1_data_to_use,
+		//		__curr_results.computed_data,
+		//		__true_ra_data.data);
+		//end
+		//endcase
 
 
 		case (__next_state)
