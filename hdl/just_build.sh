@@ -5,10 +5,10 @@
 set -e
 set -o pipefail
 ../assembler_disassembler/full_assemble.sh "$@" >initial_mem_contents.txt.ignore
-if [ $? -ne 0 ]
-then
-	exit
-fi
-
-make
-
+#if [ $? -ne 0 ]
+#then
+#	exit
+#fi
+#
+#make
+#

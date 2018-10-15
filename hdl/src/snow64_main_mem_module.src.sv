@@ -41,7 +41,8 @@ module Snow64MainMem(input logic clk,
 		//`INSTR_0('h1000) = 'h0f00_e000;
 		//`INSTR_1('h1000) = 'h0000_e001;
 
-		`include "initial_mem_contents.txt.ignore"
+		//`include "initial_mem_contents.txt.ignore"
+		$readmemh("initial_mem_contents.txt.ignore", __mem);
 	end
 
 

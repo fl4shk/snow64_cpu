@@ -90,13 +90,6 @@ __const__addr_of_main:
 
 
 __vars:
-.equ DATA_SIZE 10
-data_a:
-	.db32 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-data_b:
-	.db32 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
-data_c:
-	.db32 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 main:
 {
@@ -113,48 +106,9 @@ main:
 	ldu64 du0, dfp, dzero, __LOCAL_FP_OFFSET__RETURN_VAL
 	adds du0, dzero, dzero
 
-	ldu64 du1, dsp, dzero, __LOCAL_SP_OFFSET__TEMP
+	//ldu64 du1, dsp, dzero, __LOCAL_SP_OFFSET__TEMP
 
-	pcrels du1, __pool
-	.equ __POOL_OFFSET__ADDR_OF_DATA_A (0 * NUM_BYTES__SIZE_32)
-	.equ __POOL_OFFSET__ADDR_OF_DATA_B (1 * NUM_BYTES__SIZE_32)
-	.equ __POOL_OFFSET__ADDR_OF_DATA_C (2 * NUM_BYTES__SIZE_32)
-	ldu32 du2, dzero, du1, __POOL_OFFSET__ADDR_OF_DATA_A
-	ldu32 du3, dzero, du1, __POOL_OFFSET__ADDR_OF_DATA_B
-	ldu32 du4, dzero, du1, __POOL_OFFSET__ADDR_OF_DATA_C
-
-
-
-	ldu32 du2, dzero, du2, 0
-	ldu32 du3, dzero, du3, 0
-	ldu32 du4, dzero, du4, 0
-
-	// For printing
-	ldu32 du5, du4, dzero, 0
-
-
-	addis du1, dzero, DATA_SIZE
-
-__add_loop:
-	adds du4, du2, du3
-	ldu32 du2, du2, dzero, NUM_BYTES__SIZE_32
-	ldu32 du3, du3, dzero, NUM_BYTES__SIZE_32
-	ldu32 du4, du4, dzero, NUM_BYTES__SIZE_32
-	addis du1, du1, -1
-	btru du1, __add_loop
-
-
-
-	addis du1, dzero, DATA_SIZE
-	//sim_syscall du1, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
-
-
-__print_loop:
-	sim_syscall du5, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
-	ldu32 du5, du5, dzero, NUM_BYTES__SIZE_32
-	//sim_syscall du1, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
-	addis du1, du1, -1
-	btru du1, __print_loop
+	//pcrels du1, __pool
 
 
 __finish:
@@ -162,5 +116,4 @@ __finish:
 	jmp dlr
 
 __pool:
-	.db32 data_a, data_b, data_c
 }

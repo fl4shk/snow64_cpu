@@ -1,0 +1,74 @@
+.equ reg_dzero 0
+.equ REG_DU0 1
+.equ REG_DU1 2
+.equ REG_DU2 3
+.equ REG_DU3 4
+.equ REG_DU4 5
+.equ REG_DU5 6
+.equ REG_DU6 7
+.equ REG_DU7 8
+.equ REG_DU8 9
+.equ REG_DU9 10
+.equ REG_DU10 11
+.equ REG_DU11 12
+.equ REG_DLR 13
+.equ REG_DFP 14
+.equ REG_DSP 15
+
+.equ SYSC_DISP_REGS 0
+.equ SYSC_DISP_DDEST_VECTOR_DATA 1
+.equ SYSC_DISP_DDEST_SCALAR_DATA 2
+.equ SYSC_DISP_DDEST_ADDR 3
+.equ SYSC_FINISH 4
+
+.equ NUM_BYTES__SIZE_8 (8 / 8)
+.equ NUM_BYTES__SIZE_16 (16 / 8)
+.equ NUM_BYTES__SIZE_32 (32 / 8)
+.equ NUM_BYTES__SIZE_64 (64 / 8)
+
+
+.equ OFFSET_PCREL__RIGHT_AFTER_CALL (2 * NUM_BYTES__SIZE_32)
+
+start:
+{
+	// We don't need a pc-relative load in this case.
+	ldu32 du0, dzero, dzero, __const__above_top_of_stack
+	ldu8 dsp, dzero, du0, 0
+
+
+
+	.equ __LOCAL_STACK_SPACE (8 * NUM_BYTES__SIZE_32)
+	.equ __LOCAL_SP_OFFSET__C (0 * NUM_BYTES__SIZE_32)
+	.equ __LOCAL_SP_OFFSET__A (1 * NUM_BYTES__SIZE_32)
+	.equ __LOCAL_SP_OFFSET__B (2 * NUM_BYTES__SIZE_32)
+	.equ __LOCAL_SP_OFFSET__TEMP_0 (3 * NUM_BYTES__SIZE_32)
+	.equ __LOCAL_SP_OFFSET__TEMP_1 (4 * NUM_BYTES__SIZE_32)
+	.equ __LOCAL_SP_OFFSET__TEMP_2 (5 * NUM_BYTES__SIZE_32)
+
+
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__LOCAL_STACK_SPACE
+
+	ldu32 du0, dsp, dzero, __LOCAL_SP_OFFSET__C
+	ldu32 du1, dsp, dzero, __LOCAL_SP_OFFSET__A
+	ldu32 du2, dsp, dzero, __LOCAL_SP_OFFSET__B
+	ldu32 du3, dsp, dzero, __LOCAL_SP_OFFSET__TEMP_0
+	ldu32 du4, dsp, dzero, __LOCAL_SP_OFFSET__TEMP_1
+	ldu32 du5, dsp, dzero, __LOCAL_SP_OFFSET__TEMP_2
+
+
+	addis du1, dzero, 0x99
+	addis du2, dzero, 0x7a
+	muls du0, du1, du2
+
+
+
+
+__finish:
+	sim_syscall du0, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
+	sim_syscall dzero, dzero, dzero, SYSC_FINISH
+
+__pool:
+__const__above_top_of_stack:
+	.db32 0x10000
+}

@@ -1283,6 +1283,15 @@ module Snow64PsExUseVectorMul(input logic clk,
 	always @(*) out_valid = __out_inst_vector_mul.valid;
 	`GET_OUT_DDEST_DATA(__out_inst_vector_mul.data)
 
+	//always @(posedge clk)
+	//begin
+	//	//if (out_valid)
+	//	begin
+	//		$display("UseVectorMul:  %h",
+	//			__out_inst_vector_mul.data);
+	//	end
+	//end
+
 endmodule
 
 module Snow64PsExUseVectorDiv(input logic clk,
@@ -2221,6 +2230,14 @@ module Snow64PipeStageEx(input logic clk,
 		//	__curr_dsrc1_scalar_data,
 		//	__curr_results.valid, __curr_results.computed_data,
 		//	__mask_for_scalar_op, __inv_mask_for_scalar_op);
+		//$display("EX stage stuffs:  %h %h %h; %h; %h %h; %h %h",
+		//	__curr_ddest_scalar_data,
+		//	__curr_dsrc0_scalar_data,
+		//	__curr_dsrc1_scalar_data,
+		//	__curr_results.valid,
+		//	__mask_for_scalar_op, __inv_mask_for_scalar_op,
+		//	__out_inst_use_vector_mul__valid,
+		//	__out_inst_use_vector_mul__data);
 		//$display("EX stage stuffs:  %h %h %h; %h %h",
 		//	__curr_ddest_scalar_data,
 		//	__curr_dsrc0_scalar_data,
@@ -2258,6 +2275,18 @@ module Snow64PipeStageEx(input logic clk,
 		//endcase
 
 
+		//case (__next_state)
+		//PkgSnow64PsEx::StWaitForMultiCycleOp:
+		//begin
+		//	$display("EX __next_state WaitFMCO:  %h %h %h; %h %h",
+		//		__in_inst_use_vector_mul__start,
+		//		__in_inst_use_vector_div__start,
+		//		__in_inst_use_vector_bfloat16_fpu__start,
+		//		__dsrc0_data_to_use,
+		//		__dsrc1_data_to_use);
+		//end
+		//endcase
+
 		case (__next_state)
 		PkgSnow64PsEx::StRegular:
 		begin
@@ -2281,10 +2310,11 @@ module Snow64PipeStageEx(input logic clk,
 			__captured_true_ra_data <= __curr_true_ra_data;
 			__captured_true_rb_data <= __curr_true_rb_data;
 			__captured_true_rc_data <= __curr_true_rc_data;
-			//$display("EX __state StRegular scalar data:  %h, %h, %h",
+			//$display("EX __state StRegular stuff:  %h %h %h; %h %h",
 			//	__curr_ddest_scalar_data,
 			//	__curr_dsrc0_scalar_data,
-			//	__curr_dsrc1_scalar_data);
+			//	__curr_dsrc1_scalar_data,
+			//	__mask_for_scalar_op, __inv_mask_for_scalar_op);
 		end
 
 		PkgSnow64PsEx::StWaitForScalarCaster:

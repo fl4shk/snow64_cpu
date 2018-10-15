@@ -1,0 +1,166 @@
+.equ reg_dzero 0
+.equ REG_DU0 1
+.equ REG_DU1 2
+.equ REG_DU2 3
+.equ REG_DU3 4
+.equ REG_DU4 5
+.equ REG_DU5 6
+.equ REG_DU6 7
+.equ REG_DU7 8
+.equ REG_DU8 9
+.equ REG_DU9 10
+.equ REG_DU10 11
+.equ REG_DU11 12
+.equ REG_DLR 13
+.equ REG_DFP 14
+.equ REG_DSP 15
+
+.equ SYSC_DISP_REGS 0
+.equ SYSC_DISP_DDEST_VECTOR_DATA 1
+.equ SYSC_DISP_DDEST_SCALAR_DATA 2
+.equ SYSC_DISP_DDEST_ADDR 3
+.equ SYSC_FINISH 4
+
+.equ NUM_BYTES__SIZE_8 (8 / 8)
+.equ NUM_BYTES__SIZE_16 (16 / 8)
+.equ NUM_BYTES__SIZE_32 (32 / 8)
+.equ NUM_BYTES__SIZE_64 (64 / 8)
+
+
+.equ OFFSET_PCREL__RIGHT_AFTER_CALL (2 * NUM_BYTES__SIZE_32)
+
+start:
+{
+	// We don't need a pc-relative load in this case.
+	ldu32 du0, dzero, dzero, __const__above_top_of_stack
+	ldu8 dsp, dzero, du0, 0
+
+
+
+	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP (0 * NUM_BYTES__SIZE_64)
+
+	.equ __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL \
+		(-(1 * NUM_BYTES__SIZE_64))
+
+
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__LOCAL_STACK_SPACE
+
+
+
+
+	.equ __CALL_MAIN_STACK_SPACE (2 * NUM_BYTES__SIZE_64)
+	.equ __CALL_MAIN_SP_OFFSET__RETURN_VAL (0 * NUM_BYTES__SIZE_64)
+	.equ __CALL_MAIN_SP_OFFSET__RETURN_ADDR (1 * NUM_BYTES__SIZE_64)
+
+
+	ldu8 dsp, dsp, dzero, -__CALL_MAIN_STACK_SPACE
+
+
+	ldu64 dlr, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
+	addis dlr, pc, OFFSET_PCREL__RIGHT_AFTER_CALL
+	bra main
+
+
+__after_call_main:
+	// Restore dfp
+	ldu8 dfp, dsp, dzero, (__CALL_MAIN_STACK_SPACE + __LOCAL_STACK_SPACE)
+
+
+	// Copy main()'s return value to outside the partial stack frame
+	ldu64 du3, dfp, dzero, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
+	ldu64 du1, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_VAL
+	adds du3, dzero, du1
+
+
+	// Restore dsp
+	ldu8 dsp, dsp, dzero, __CALL_MAIN_STACK_SPACE
+
+__finish:
+	sim_syscall du3, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
+	sim_syscall dzero, dzero, dzero, SYSC_FINISH
+
+__pool:
+__const__above_top_of_stack:
+	.db32 0x10000
+__const__addr_of_main:
+	.db32 main
+}
+
+
+__vars:
+.equ DATA_SIZE 10
+data_a:
+	.db32 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+data_b:
+	.db32 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+data_c:
+	.db32 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+main:
+{
+	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP (0 * NUM_BYTES__SIZE_64)
+
+
+	.equ __LOCAL_FP_OFFSET__RETURN_VAL (0 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (1 * NUM_BYTES__SIZE_64)
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__LOCAL_STACK_SPACE
+
+
+	ldu64 du0, dfp, dzero, __LOCAL_FP_OFFSET__RETURN_VAL
+	adds du0, dzero, dzero
+
+	ldu64 du1, dsp, dzero, __LOCAL_SP_OFFSET__TEMP
+
+	pcrels du1, __pool
+	.equ __POOL_OFFSET__ADDR_OF_DATA_A (0 * NUM_BYTES__SIZE_32)
+	.equ __POOL_OFFSET__ADDR_OF_DATA_B (1 * NUM_BYTES__SIZE_32)
+	.equ __POOL_OFFSET__ADDR_OF_DATA_C (2 * NUM_BYTES__SIZE_32)
+	ldu32 du2, dzero, du1, __POOL_OFFSET__ADDR_OF_DATA_A
+	ldu32 du3, dzero, du1, __POOL_OFFSET__ADDR_OF_DATA_B
+	ldu32 du4, dzero, du1, __POOL_OFFSET__ADDR_OF_DATA_C
+
+
+
+	ldu32 du2, dzero, du2, 0
+	ldu32 du3, dzero, du3, 0
+	ldu32 du4, dzero, du4, 0
+
+	// For printing
+	ldu32 du5, du4, dzero, 0
+
+
+	addis du1, dzero, DATA_SIZE
+
+__add_loop:
+	divs du4, du2, du3
+	ldu32 du2, du2, dzero, NUM_BYTES__SIZE_32
+	ldu32 du3, du3, dzero, NUM_BYTES__SIZE_32
+	ldu32 du4, du4, dzero, NUM_BYTES__SIZE_32
+	addis du0, du0, 1
+	addis du1, du1, -1
+	btru du1, __add_loop
+
+
+
+	addis du1, dzero, DATA_SIZE
+
+
+__print_loop:
+	sim_syscall du5, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
+	ldu32 du5, du5, dzero, NUM_BYTES__SIZE_32
+	addis du0, du0, 1
+	addis du1, du1, -1
+	btru du1, __print_loop
+
+
+__finish:
+	ldu8 dsp, dsp, dzero, __LOCAL_STACK_SPACE
+	jmp dlr
+
+__pool:
+	.db32 data_a, data_b, data_c
+}

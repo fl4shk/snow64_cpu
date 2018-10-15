@@ -92,6 +92,7 @@ __var__stack_pointer:
 }
 
 
+.org 0x1000
 main:
 {
 	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__SIZE_64)
@@ -105,7 +106,9 @@ main:
 
 
 	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
-	adds du0, dzero, dzero
+	//adds du0, dzero, dzero
+
+	addis du0, dzero, 0x123
 
 	//ldu64 du1, dsp, dzero, __LOCAL_SP_OFFSET__TEMP
 

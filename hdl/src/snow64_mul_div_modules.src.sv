@@ -38,7 +38,7 @@ module __Snow64SubMul(input logic clk,
 	`ifdef FORMAL_TINY_MUL
 	PkgSnow64SlicedData::FormalSlicedData2
 	`else // if !defined(FORMAL_TINY_MUL)
-	PkgSnow64SlicedData::SlicedData8
+	PkgSnow64SlicedData::SlicedData16
 	`endif		// FORMAL_TINY_MUL
 		__in_a_sliced_small, __in_b_sliced_small;
 
@@ -163,12 +163,17 @@ module __Snow64SubMul(input logic clk,
 		begin
 			if (in.enable)
 			begin
+				//$display("__Snow64SubMul enabled:  %h %h; %h %h; %h",
+				//	in.a, in.b, out.data_1, out.data_0, in.do_large);
 				out.valid <= 0;
 
 				case (in.do_large)
 				0:
 				begin
 					__state <= StMulMediumAdds;
+					//out.data_0 <= in.a[0 * 32 +: 32] * in.b[0 * 32 +: 32];
+					//out.data_1 <= in.a[1 * 32 +: 32] * in.b[1 * 32 +: 32];
+					//out.valid <= 1;
 
 					__captured_prod_1_0 <= __curr_prod_1_0;
 					__captured_prod_0_1 <= __curr_prod_0_1;
@@ -184,6 +189,7 @@ module __Snow64SubMul(input logic clk,
 
 				1:
 				begin
+					//out.valid <= 0;
 					__state <= StMulLargeAdds_0;
 
 					__captured_prod_0_0 <= __curr_prod_0_0;
@@ -282,6 +288,11 @@ module __Snow64SubMul(input logic clk,
 	end
 
 endmodule
+
+//module __Snow64SubMul(input logic clk,
+//	input PkgSnow64ArithLog::PortIn_SubMul in,
+//	output PkgSnow64ArithLog::PortOut_Mul out);
+//endmodule
 
 module Snow64Mul(input logic clk,
 	input PkgSnow64ArithLog::PortIn_Mul in,
@@ -393,16 +404,17 @@ module Snow64Mul(input logic clk,
 	initial
 	begin
 		__state = StIdle;
+		__in_sub_mul = 0;
 	end
 
 
 
-	always @(*) __in_sub_mul.enable = ((in.enable) && (__state == StIdle)
-			&& (in.int_type_size >= PkgSnow64Cpu::IntTypSz32));
-	always @(*) __in_sub_mul.do_large = (in.int_type_size
-		== PkgSnow64Cpu::IntTypSz64);
-	always @(*) __in_sub_mul.a = in.a;
-	always @(*) __in_sub_mul.b = in.b;
+	//always @(*) __in_sub_mul.enable = ((in.enable) && (__state == StIdle)
+	//		&& (in.int_type_size >= PkgSnow64Cpu::IntTypSz32));
+	//always @(*) __in_sub_mul.do_large = (in.int_type_size
+	//	== PkgSnow64Cpu::IntTypSz64);
+	//always @(*) __in_sub_mul.a = in.a;
+	//always @(*) __in_sub_mul.b = in.b;
 
 	always @(*) out.can_accept_cmd = (__state == StIdle);
 
@@ -429,6 +441,13 @@ module Snow64Mul(input logic clk,
 				default:
 				begin
 					__state <= StWaitForSubMul;
+
+					__in_sub_mul.enable <= 1;
+					__in_sub_mul.do_large <= (in.int_type_size
+						== PkgSnow64Cpu::IntTypSz64);
+					__in_sub_mul.a <= in.a;
+					__in_sub_mul.b <= in.b;
+
 					out.valid <= 0;
 				end
 				endcase
@@ -441,6 +460,8 @@ module Snow64Mul(input logic clk,
 
 		StWaitForSubMul:
 		begin
+			__in_sub_mul.enable <= 0;
+
 			if (__out_sub_mul.valid)
 			begin
 				__state <= StIdle;
@@ -720,11 +741,11 @@ module Snow64VectorMul(input logic clk,
 	input PkgSnow64ArithLog::PortIn_VectorMul in,
 	output PkgSnow64ArithLog::PortOut_VectorMul out);
 
-	enum logic
-	{
-		StIdle,
-		StWaitForSubmodule
-	} __state;
+	//enum logic
+	//{
+	//	StIdle,
+	//	StWaitForSubmodule
+	//} __state;
 
 	logic __real_out_valid;
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __real_out_data;
@@ -747,76 +768,106 @@ module Snow64VectorMul(input logic clk,
 	assign out.valid = __real_out_valid;
 	assign out.data = __real_out_data;
 
-	initial
-	begin
-		__state = StIdle;
-		__real_out_valid = 0;
-		__real_out_data = 0;
+	assign __in_inst_mul_0.enable = in.enable;
+	assign __in_inst_mul_1.enable = in.enable;
+	assign __in_inst_mul_2.enable = in.enable;
+	assign __in_inst_mul_3.enable = in.enable;
 
-		__in_inst_mul_0 = 0;
-		__in_inst_mul_1 = 0;
-		__in_inst_mul_2 = 0;
-		__in_inst_mul_3 = 0;
-	end
+	assign __in_inst_mul_0.int_type_size = in.int_type_size;
+	assign __in_inst_mul_1.int_type_size = in.int_type_size;
+	assign __in_inst_mul_2.int_type_size = in.int_type_size;
+	assign __in_inst_mul_3.int_type_size = in.int_type_size;
 
-	always_ff @(posedge clk)
-	begin
-		case (__state)
-		StIdle:
-		begin
-			__real_out_valid <= 0;
+	assign __in_inst_mul_0.a = in.a[0 * 64 +: 64];
+	assign __in_inst_mul_1.a = in.a[1 * 64 +: 64];
+	assign __in_inst_mul_2.a = in.a[2 * 64 +: 64];
+	assign __in_inst_mul_3.a = in.a[3 * 64 +: 64];
 
-			if (in.enable)
-			begin
-				__state <= StWaitForSubmodule;
+	assign __in_inst_mul_0.b = in.b[0 * 64 +: 64];
+	assign __in_inst_mul_1.b = in.b[1 * 64 +: 64];
+	assign __in_inst_mul_2.b = in.b[2 * 64 +: 64];
+	assign __in_inst_mul_3.b = in.b[3 * 64 +: 64];
 
-				__in_inst_mul_0.enable <= 1;
-				__in_inst_mul_1.enable <= 1;
-				__in_inst_mul_2.enable <= 1;
-				__in_inst_mul_3.enable <= 1;
+	assign __real_out_valid = __out_inst_mul_0.valid;
+	assign __real_out_data[0 * 64 +: 64]
+		= {__out_inst_mul_0.data_1, __out_inst_mul_0.data_0};
+	assign __real_out_data[1 * 64 +: 64]
+		= {__out_inst_mul_1.data_1, __out_inst_mul_1.data_0};
+	assign __real_out_data[2 * 64 +: 64]
+		= {__out_inst_mul_2.data_1, __out_inst_mul_2.data_0};
+	assign __real_out_data[3 * 64 +: 64]
+		= {__out_inst_mul_3.data_1, __out_inst_mul_3.data_0};
 
-				__in_inst_mul_0.int_type_size <= in.int_type_size;
-				__in_inst_mul_1.int_type_size <= in.int_type_size;
-				__in_inst_mul_2.int_type_size <= in.int_type_size;
-				__in_inst_mul_3.int_type_size <= in.int_type_size;
+	//initial
+	//begin
+	//	__state = StIdle;
+	//	__real_out_valid = 0;
+	//	__real_out_data = 0;
 
-				__in_inst_mul_0.a <= in.a[0 * 64 +: 64];
-				__in_inst_mul_1.a <= in.a[1 * 64 +: 64];
-				__in_inst_mul_2.a <= in.a[2 * 64 +: 64];
-				__in_inst_mul_3.a <= in.a[3 * 64 +: 64];
+	//	__in_inst_mul_0 = 0;
+	//	__in_inst_mul_1 = 0;
+	//	__in_inst_mul_2 = 0;
+	//	__in_inst_mul_3 = 0;
+	//end
 
-				__in_inst_mul_0.b <= in.b[0 * 64 +: 64];
-				__in_inst_mul_1.b <= in.b[1 * 64 +: 64];
-				__in_inst_mul_2.b <= in.b[2 * 64 +: 64];
-				__in_inst_mul_3.b <= in.b[3 * 64 +: 64];
-			end
-		end
+	//always_ff @(posedge clk)
+	//begin
+	//	case (__state)
+	//	StIdle:
+	//	begin
+	//		__real_out_valid <= 0;
 
-		StWaitForSubmodule:
-		begin
-			__in_inst_mul_0.enable <= 0;
-			__in_inst_mul_1.enable <= 0;
-			__in_inst_mul_2.enable <= 0;
-			__in_inst_mul_3.enable <= 0;
+	//		if (in.enable)
+	//		begin
+	//			__state <= StWaitForSubmodule;
 
-			if (__out_inst_mul_0.valid)
-			begin
-				__state <= StIdle;
+	//			__in_inst_mul_0.enable <= 1;
+	//			__in_inst_mul_1.enable <= 1;
+	//			__in_inst_mul_2.enable <= 1;
+	//			__in_inst_mul_3.enable <= 1;
 
-				__real_out_valid <= 1;
+	//			__in_inst_mul_0.int_type_size <= in.int_type_size;
+	//			__in_inst_mul_1.int_type_size <= in.int_type_size;
+	//			__in_inst_mul_2.int_type_size <= in.int_type_size;
+	//			__in_inst_mul_3.int_type_size <= in.int_type_size;
 
-				__real_out_data[0 * 64 +: 64]
-					<= {__out_inst_mul_0.data_1, __out_inst_mul_0.data_0};
-				__real_out_data[1 * 64 +: 64]
-					<= {__out_inst_mul_1.data_1, __out_inst_mul_1.data_0};
-				__real_out_data[2 * 64 +: 64]
-					<= {__out_inst_mul_2.data_1, __out_inst_mul_2.data_0};
-				__real_out_data[3 * 64 +: 64]
-					<= {__out_inst_mul_3.data_1, __out_inst_mul_3.data_0};
-			end
-		end
-		endcase
-	end
+	//			__in_inst_mul_0.a <= in.a[0 * 64 +: 64];
+	//			__in_inst_mul_1.a <= in.a[1 * 64 +: 64];
+	//			__in_inst_mul_2.a <= in.a[2 * 64 +: 64];
+	//			__in_inst_mul_3.a <= in.a[3 * 64 +: 64];
+
+	//			__in_inst_mul_0.b <= in.b[0 * 64 +: 64];
+	//			__in_inst_mul_1.b <= in.b[1 * 64 +: 64];
+	//			__in_inst_mul_2.b <= in.b[2 * 64 +: 64];
+	//			__in_inst_mul_3.b <= in.b[3 * 64 +: 64];
+	//		end
+	//	end
+
+	//	StWaitForSubmodule:
+	//	begin
+	//		__in_inst_mul_0.enable <= 0;
+	//		__in_inst_mul_1.enable <= 0;
+	//		__in_inst_mul_2.enable <= 0;
+	//		__in_inst_mul_3.enable <= 0;
+
+	//		if (__out_inst_mul_0.valid)
+	//		begin
+	//			__state <= StIdle;
+
+	//			__real_out_valid <= 1;
+
+	//			__real_out_data[0 * 64 +: 64]
+	//				<= {__out_inst_mul_0.data_1, __out_inst_mul_0.data_0};
+	//			__real_out_data[1 * 64 +: 64]
+	//				<= {__out_inst_mul_1.data_1, __out_inst_mul_1.data_0};
+	//			__real_out_data[2 * 64 +: 64]
+	//				<= {__out_inst_mul_2.data_1, __out_inst_mul_2.data_0};
+	//			__real_out_data[3 * 64 +: 64]
+	//				<= {__out_inst_mul_3.data_1, __out_inst_mul_3.data_0};
+	//		end
+	//	end
+	//	endcase
+	//end
 
 endmodule
 
