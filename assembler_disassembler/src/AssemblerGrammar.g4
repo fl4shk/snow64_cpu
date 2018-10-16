@@ -231,7 +231,7 @@ exprMulDivModEtc:
 	| numExpr
 	| identName
 	| currPc
-	| exprDotAlign
+	| exprDotAlign2Curr
 	| exprDotAlign2Next
 	| TokLParen expr TokRParen
 	;
@@ -242,8 +242,8 @@ exprUnary:
 	| exprLogNot
 	;
 
-exprDotAlign:
-	TokDotAlign TokLParen expr TokComma expr TokRParen
+exprDotAlign2Curr:
+	TokDotAlign2Curr TokLParen expr TokComma expr TokRParen
 	;
 exprDotAlign2Next:
 	TokDotAlign2Next TokLParen expr TokComma expr TokRParen
@@ -449,7 +449,7 @@ TokDotDb64: '.db64' ;
 TokDotDb32: '.db32' ;
 TokDotDb16: '.db16' ;
 TokDotDb8: '.db8' ;
-TokDotAlign: '.align' ;
+TokDotAlign2Curr: '.align2curr' ;
 TokDotAlign2Next: '.align2next' ;
 
 // Punctuation, etc.

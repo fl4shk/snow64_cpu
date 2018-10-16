@@ -1287,7 +1287,7 @@ antlrcpp::Any Assembler::visitExprMulDivModEtc
 		get_sym_address(ctx);
 	}
 	else ANY_ACCEPT_IF_BASIC(ctx->currPc())
-	else ANY_ACCEPT_IF_BASIC(ctx->exprDotAlign())
+	else ANY_ACCEPT_IF_BASIC(ctx->exprDotAlign2Curr())
 	else ANY_ACCEPT_IF_BASIC(ctx->exprDotAlign2Next())
 	else
 	{
@@ -1310,8 +1310,8 @@ antlrcpp::Any Assembler::visitExprUnary
 	}
 	return nullptr;
 }
-antlrcpp::Any Assembler::visitExprDotAlign
-	(AssemblerGrammarParser::ExprDotAlignContext *ctx)
+antlrcpp::Any Assembler::visitExprDotAlign2Curr
+	(AssemblerGrammarParser::ExprDotAlign2CurrContext *ctx)
 {
 	auto&& expressions = ctx->expr();
 
@@ -1320,24 +1320,6 @@ antlrcpp::Any Assembler::visitExprDotAlign
 
 	ctx->expr().at(1)->accept(this);
 	const u64 align_amount = pop_num();
-
-	//printout("visitExprDotAlign():  ",
-	//	std::hex, to_align, std::dec,
-	//	"\n");
-	//if (to_align & ((1 << align_amount) - 1))
-	//{
-	//	to_align &= ~((1 << align_amount) - 1);
-	//	printout("visitExprDotAlign inside if():  ",
-	//		std::hex, to_align, std::dec,
-	//		"\n");
-	//	//to_align += (1 << align_amount);
-	//	printout("visitExprDotAlign inside if():  ",
-	//		std::hex, to_align, std::dec,
-	//		"\n");
-	//}
-	//printout("visitExprDotAlign():  ",
-	//	std::hex, to_align, std::dec,
-	//	"\n");
 
 	if (align_amount != 0)
 	{
@@ -1358,24 +1340,6 @@ antlrcpp::Any Assembler::visitExprDotAlign2Next
 
 	ctx->expr().at(1)->accept(this);
 	const u64 align_amount = pop_num();
-
-	//printout("visitExprDotAlign2Next():  ",
-	//	std::hex, to_align, std::dec,
-	//	"\n");
-	//if (to_align & ((1 << align_amount) - 1))
-	//{
-	//	to_align &= ~((1 << align_amount) - 1);
-	//	printout("visitExprDotAlign2Next inside if():  ",
-	//		std::hex, to_align, std::dec,
-	//		"\n");
-	//	to_align += (1 << align_amount);
-	//	printout("visitExprDotAlign2Next inside if():  ",
-	//		std::hex, to_align, std::dec,
-	//		"\n");
-	//}
-	//printout("visitExprDotAlign2Next():  ",
-	//	std::hex, to_align, std::dec,
-	//	"\n");
 
 	if ((align_amount != 0)
 		&& (get_bits_with_range(to_align, align_amount - 1, 0) != 0))

@@ -33,7 +33,7 @@ syn match snow64_directive	"\.db64"
 syn match snow64_directive	"\.db32"
 syn match snow64_directive	"\.db16"
 syn match snow64_directive	"\.db8"
-syn match snow64_directive	"\.align"
+syn match snow64_directive	"\.align2curr"
 syn match snow64_directive	"\.align2next"
 
 "syn match 

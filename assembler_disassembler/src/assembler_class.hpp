@@ -301,8 +301,8 @@ private:		// visitor functions
 
 	antlrcpp::Any visitExprUnary
 		(AssemblerGrammarParser::ExprUnaryContext *ctx);
-	antlrcpp::Any visitExprDotAlign
-		(AssemblerGrammarParser::ExprDotAlignContext *ctx);
+	antlrcpp::Any visitExprDotAlign2Curr
+		(AssemblerGrammarParser::ExprDotAlign2CurrContext *ctx);
 	antlrcpp::Any visitExprDotAlign2Next
 		(AssemblerGrammarParser::ExprDotAlign2NextContext *ctx);
 	antlrcpp::Any visitExprBitInvert
