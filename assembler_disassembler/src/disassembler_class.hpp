@@ -12,8 +12,10 @@
 #include "symbol_table_classes.hpp"
 
 #include "encoding_stuff_class.hpp"
+#include "asm_disasm_visitor_base_class.hpp"
 
-class Disassembler : public DisassemblerGrammarVisitor
+class Disassembler : public DisassemblerGrammarVisitor,
+	public AsmDisasmVisitorBase
 {
 private:		// variables
 	EncodingStuff __encoding_stuff;
@@ -25,31 +27,31 @@ public:		// functions
 	int run();
 
 private:		// functions
-	inline void err(antlr4::ParserRuleContext* ctx, 
-		const std::string& msg)
-	{
-		if (ctx == nullptr)
-		{
-			printerr("Error:  ", msg, "\n");
-		}
-		else
-		{
-			auto tok = ctx->getStart();
-			const size_t line = tok->getLine();
-			const size_t pos_in_line = tok->getCharPositionInLine();
-			//printerr("Error in file \"", *__file_name, "\", on line ",
-			//	line, ", position ", pos_in_line, ":  ", msg, "\n");
-			printerr("Error on line ", line, ", position ", pos_in_line, 
-				":  ", msg, "\n");
-		}
-		exit(1);
-	}
-	inline void err(const std::string& msg)
-	{
-		//printerr("Error in file \"", *__file_name, "\":  ", msg, "\n");
-		printerr("Error:  ", msg, "\n");
-		exit(1);
-	}
+	//inline void err(antlr4::ParserRuleContext* ctx, 
+	//	const std::string& msg)
+	//{
+	//	if (ctx == nullptr)
+	//	{
+	//		printerr("Error:  ", msg, "\n");
+	//	}
+	//	else
+	//	{
+	//		auto tok = ctx->getStart();
+	//		const size_t line = tok->getLine();
+	//		const size_t pos_in_line = tok->getCharPositionInLine();
+	//		//printerr("Error in file \"", *__file_name, "\", on line ",
+	//		//	line, ", position ", pos_in_line, ":  ", msg, "\n");
+	//		printerr("Error on line ", line, ", position ", pos_in_line, 
+	//			":  ", msg, "\n");
+	//	}
+	//	exit(1);
+	//}
+	//inline void err(const std::string& msg)
+	//{
+	//	//printerr("Error in file \"", *__file_name, "\":  ", msg, "\n");
+	//	printerr("Error:  ", msg, "\n");
+	//	exit(1);
+	//}
 
 private:		// visitor functions
 	antlrcpp::Any visitProgram
@@ -59,8 +61,8 @@ private:		// visitor functions
 
 
 private:		// functions
-	u32 convert_hex_string(antlr4::ParserRuleContext* ctx, 
-		const std::string& str, u32& num_good_chars) const;
+	//u32 convert_hex_string(antlr4::ParserRuleContext* ctx, 
+	//	const std::string& str, u32& num_good_chars) const;
 
 	inline void display_dot_db32(u32 data) const
 	{

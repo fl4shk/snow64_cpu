@@ -12,8 +12,10 @@
 #include "symbol_table_classes.hpp"
 
 #include "encoding_stuff_class.hpp"
+#include "asm_disasm_visitor_base_class.hpp"
 
-class MainMemWordsGenerator : public DisassemblerGrammarVisitor
+class MainMemWordsGenerator : public DisassemblerGrammarVisitor,
+	public AsmDisasmVisitorBase
 {
 public:		// classes
 	class MemWord
@@ -63,32 +65,6 @@ public:		// functions
 
 	int run();
 
-private:		// functions
-	inline void err(antlr4::ParserRuleContext* ctx, 
-		const std::string& msg)
-	{
-		if (ctx == nullptr)
-		{
-			printerr("Error:  ", msg, "\n");
-		}
-		else
-		{
-			auto tok = ctx->getStart();
-			const size_t line = tok->getLine();
-			const size_t pos_in_line = tok->getCharPositionInLine();
-			//printerr("Error in file \"", *__file_name, "\", on line ",
-			//	line, ", position ", pos_in_line, ":  ", msg, "\n");
-			printerr("Error on line ", line, ", position ", pos_in_line, 
-				":  ", msg, "\n");
-		}
-		exit(1);
-	}
-	inline void err(const std::string& msg)
-	{
-		//printerr("Error in file \"", *__file_name, "\":  ", msg, "\n");
-		printerr("Error:  ", msg, "\n");
-		exit(1);
-	}
 
 private:		// visitor functions
 	antlrcpp::Any visitProgram
@@ -98,10 +74,9 @@ private:		// visitor functions
 
 
 private:		// functions
-	u32 convert_hex_string(antlr4::ParserRuleContext* ctx, 
-		const std::string& str, u32& num_good_chars) const;
 
-	void gen(u32 instruction);
+	void gen(antlr4::ParserRuleContext* ctx, 
+		u32 to_gen, u32 num_good_chars);
 
 };
 

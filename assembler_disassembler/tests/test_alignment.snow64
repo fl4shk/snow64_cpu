@@ -98,13 +98,14 @@ __const__addr_of_main:
 	.db32 .align2next(4, 1)
 	.db32 .align2next(5, 1)
 	.db32 .align2next(6, 1)
+	.db16 3
+	.db16 3
 }
 
 
 __vars:
 
-//.org .align2next(., 2)
-.org 0x8000
+.org .align2next(., 2)
 main:
 {
 	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)

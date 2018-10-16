@@ -117,11 +117,11 @@ antlrcpp::Any MainMemWordsGenerator::visitLine
 		//// It should still work, though
 		//printout(".org ", std::hex, "0x", addr, std::dec, "\n");
 
-		if ((addr & (~static_cast<u64>(0b11))) != addr)
-		{
-			err(ctx, sconcat("MainMemWordsGenerator can ONLY handle ",
-				"addresses aligned to 32-bits."));
-		}
+		//if ((addr & (~static_cast<u64>(0b11))) != addr)
+		//{
+		//	err(ctx, sconcat("MainMemWordsGenerator can ONLY handle ",
+		//		"addresses aligned to 32-bits."));
+		//}
 
 		//printout("@", std::hex, addr, "\n");
 		__curr_instr_addr = addr;
@@ -131,16 +131,17 @@ antlrcpp::Any MainMemWordsGenerator::visitLine
 		const u32 instruction = convert_hex_string(ctx, 
 			ctx->TokHexNum()->toString(), num_good_chars);
 
-		// Require that everything be 32-bit or 64-bit
-		if (num_good_chars == 8)
+		if ((num_good_chars == 2)
+			|| (num_good_chars == 4)
+			|| (num_good_chars == 8))
 		{
-			gen(instruction);
+			gen(ctx, instruction, num_good_chars);
 		}
 
 		else
 		{
 			err(ctx, sconcat("MainMemWordsGenerator can ONLY convert ",
-				"32-bit and 64-bit data."));
+				"lines with 8-bit, 16-bit, or 32-bit data."));
 		}
 
 		//printout("\n");
@@ -156,80 +157,21 @@ antlrcpp::Any MainMemWordsGenerator::visitLine
 
 	return nullptr;
 }
-u32 MainMemWordsGenerator::convert_hex_string
-	(antlr4::ParserRuleContext* ctx, const std::string& str,
-	u32& num_good_chars) const
+
+void MainMemWordsGenerator::gen(antlr4::ParserRuleContext* ctx, 
+	u32 to_gen, u32 num_good_chars)
 {
-	std::string temp_str;
-
-	for (size_t i=0; i<str.size(); ++i)
-	{
-		if ((str.at(i) != '@') && (str.at(i) != ' '))
-		{
-			temp_str += str.at(i);
-		}
-	}
-	//printout("str, temp_str:  ", strappcom2(str, temp_str), "\n");
-	num_good_chars = temp_str.size();
-
-	u32 temp = 0;
-	for (size_t i=0; i<temp_str.size(); ++i)
-	{
-		if ((temp_str.at(i) >= '0') && (temp_str.at(i) <= '9'))
-		{
-			temp |= (temp_str.at(i) - '0');
-		}
-		else if ((temp_str.at(i) >= 'a') && (temp_str.at(i) <= 'f'))
-		{
-			temp |= (temp_str.at(i) - 'a' + 0xa);
-		}
-		else if ((temp_str.at(i) >= 'A') && (temp_str.at(i) <= 'F'))
-		{
-			temp |= (temp_str.at(i) - 'A' + 0xa);
-		}
-		else
-		{
-			const std::string msg("convert_hex_string():  Eek!");
-
-			auto tok = ctx->getStart();
-			const size_t line = tok->getLine();
-			const size_t pos_in_line = tok->getCharPositionInLine();
-			//printerr("Error in file \"", *__file_name, "\", on line ",
-			//	line, ", position ", pos_in_line, ":  ", msg, "\n");
-			printerr("Error on line ", line, ", position ", pos_in_line, 
-				":  ", msg, "\n");
-			exit(1);
-		}
-
-		if ((i + 1) < temp_str.size())
-		{
-			temp <<= 4;
-		}
-	}
-	//printout(std::hex, "0x", temp, std::dec);
-
-	return temp;
-}
-
-void MainMemWordsGenerator::gen(u32 instruction)
-{
-	static constexpr size_t num_bytes_per_instr = sizeof(u32);
-
+	//static constexpr size_t num_bytes_per_instr = sizeof(u32);
 
 	const size_t mem_word_addr = get_bits_with_range(__curr_instr_addr,
 		((sizeof(u64) * 8) - 1), 5);
 	const size_t index_into_mem_word
 		= get_bits_with_range(__curr_instr_addr, 4, 2);
 
-	//const std::string __sysver_defines_arr[]
-	//	= {"`INSTR_0", "`INSTR_1", "`INSTR_2", "`INSTR_3",
-	//	"`INSTR_4", "`INSTR_5", "`INSTR_6", "`INSTR_7"};
-
-
-	//printout(__sysver_defines_arr[get_bits_with_range(__curr_instr_addr,
-	//	4, 2)]);
-	//printout("('h", std::hex, mem_word_addr, std::dec, ") = 'h",
-	//	std::hex, instruction, std::dec, ";\n");
+	const size_t index_into_data_element_8
+		= get_bits_with_range(__curr_instr_addr, 1, 0);
+	const size_t index_into_data_element_16
+		= get_bits_with_range(__curr_instr_addr, 1, 1);
 
 	if (__mem_words_map.find(mem_word_addr) == __mem_words_map.end())
 	{
@@ -238,7 +180,59 @@ void MainMemWordsGenerator::gen(u32 instruction)
 
 	auto& some_mem_word = __mem_words_map.at(mem_word_addr);
 
-	some_mem_word.data[index_into_mem_word] = instruction;
+	switch (num_good_chars)
+	{
+		case 8:
+			some_mem_word.data[index_into_mem_word] = to_gen;
+			__curr_instr_addr += sizeof(u32);
+			break;
 
-	__curr_instr_addr += num_bytes_per_instr;
+		case 4:
+			switch (index_into_data_element_16)
+			{
+				case 0:
+					clear_and_set_bits_with_range
+						(some_mem_word.data[index_into_mem_word],
+						to_gen, 15, 0);
+					break;
+				case 1:
+					clear_and_set_bits_with_range
+						(some_mem_word.data[index_into_mem_word],
+						to_gen, 31, 16);
+					break;
+			}
+			__curr_instr_addr += sizeof(u16);
+			break;
+
+		case 2:
+			switch (index_into_data_element_8)
+			{
+				case 0:
+					clear_and_set_bits_with_range
+						(some_mem_word.data[index_into_mem_word],
+						to_gen, 7, 0);
+					break;
+				case 1:
+					clear_and_set_bits_with_range
+						(some_mem_word.data[index_into_mem_word],
+						to_gen, 15, 8);
+					break;
+				case 2:
+					clear_and_set_bits_with_range
+						(some_mem_word.data[index_into_mem_word],
+						to_gen, 23, 16);
+					break;
+				case 3:
+					clear_and_set_bits_with_range
+						(some_mem_word.data[index_into_mem_word],
+						to_gen, 31, 24);
+					break;
+			}
+			__curr_instr_addr += sizeof(8);
+			break;
+
+		default:
+			err(ctx, "MainMemWordsGenerator::gen():  Eek!");
+			break;
+	}
 }
