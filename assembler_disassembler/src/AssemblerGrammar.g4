@@ -152,11 +152,11 @@ pseudoInstrPcrelOneRegOneSimm12Vector:
 directive:
 	dotOrgDirective
 	| dotSpaceDirective
+	| dotEquDirective
 	| dotDb64Directive
 	| dotDb32Directive
 	| dotDb16Directive
 	| dotDb8Directive
-	| dotEquDirective
 	;
 
 
@@ -195,8 +195,6 @@ dotEquDirective:
 	TokDotEqu identName expr
 	;
 
-// Expression parsing.  This part of the grammar is borrowed from a
-// previous assembler I wrote.
 expr:
 	exprLogical
 	| expr TokOpLogical exprLogical
@@ -233,6 +231,8 @@ exprMulDivModEtc:
 	| numExpr
 	| identName
 	| currPc
+	| exprDotAlign
+	| exprDotAlign2Next
 	| TokLParen expr TokRParen
 	;
 
@@ -240,6 +240,13 @@ exprUnary:
 	exprBitInvert
 	| exprNegate
 	| exprLogNot
+	;
+
+exprDotAlign:
+	TokDotAlign TokLParen expr TokComma expr TokRParen
+	;
+exprDotAlign2Next:
+	TokDotAlign2Next TokLParen expr TokComma expr TokRParen
 	;
 
 exprBitInvert: TokBitInvert expr ;
@@ -434,14 +441,16 @@ TokPseudoInstrNameBra: 'bra' ;
 TokPseudoInstrNamePcrels: 'pcrels' ;
 TokPseudoInstrNamePcrelv: 'pcrelv' ;
 
-// Directives
+// Directives and stuff
 TokDotOrg: '.org' ;
 TokDotSpace: '.space' ;
+TokDotEqu: '.equ' ;
 TokDotDb64: '.db64' ;
 TokDotDb32: '.db32' ;
 TokDotDb16: '.db16' ;
 TokDotDb8: '.db8' ;
-TokDotEqu: '.equ' ;
+TokDotAlign: '.align' ;
+TokDotAlign2Next: '.align2next' ;
 
 // Punctuation, etc.
 TokPeriod: '.' ;

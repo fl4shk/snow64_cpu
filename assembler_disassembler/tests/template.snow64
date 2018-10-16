@@ -26,85 +26,85 @@
 .equ NUM_BYTES__SIZE_32 (32 / 8)
 .equ NUM_BYTES__SIZE_64 (64 / 8)
 
+.equ NUM_BYTES__LAR_DATA (4 * NUM_BYTES__SIZE_64)
 
 .equ OFFSET_PCREL__RIGHT_AFTER_CALL (2 * NUM_BYTES__SIZE_32)
 
 start:
 {
 	// We don't need a pc-relative load in this case.
-	ldu64 dsp, dzero, dzero, __var__stack_pointer
-	ldu64 dfp, dzero, dzero, __var__frame_pointer
+	ldu32 du0, dzero, dzero, __const__above_top_of_stack
+	ldu8 dsp, dzero, du0, 0
 
 
 
-	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_STACK_SPACE NUM_BYTES__LAR_DATA
 	.equ __LOCAL_SP_OFFSET__TEMP (0 * NUM_BYTES__SIZE_64)
 
 	.equ __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL \
 		(-(1 * NUM_BYTES__SIZE_64))
 
 
-	adds dfp, dzero, dsp
-	addis dsp, dsp, -__LOCAL_STACK_SPACE
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__LOCAL_STACK_SPACE
 
 
 
 
-	.equ __CALL_MAIN_STACK_SPACE (2 * NUM_BYTES__SIZE_64)
+	.equ __CALL_MAIN_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
 	.equ __CALL_MAIN_SP_OFFSET__RETURN_VAL (0 * NUM_BYTES__SIZE_64)
 	.equ __CALL_MAIN_SP_OFFSET__RETURN_ADDR (1 * NUM_BYTES__SIZE_64)
 
 
-	addis dsp, dsp, -__CALL_MAIN_STACK_SPACE
-	ldu64 dlr, dzero, dsp, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
+	ldu8 dsp, dsp, dzero, -__CALL_MAIN_STACK_SPACE
 
+
+	ldu64 dlr, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
 	addis dlr, pc, OFFSET_PCREL__RIGHT_AFTER_CALL
 	bra main
 
 
 __after_call_main:
 	// Restore dfp
-	addis dfp, dsp, (__CALL_MAIN_STACK_SPACE + __LOCAL_STACK_SPACE)
+	ldu8 dfp, dsp, dzero, (__CALL_MAIN_STACK_SPACE + __LOCAL_STACK_SPACE)
 
 
 	// Copy main()'s return value to outside the partial stack frame
-	ldu64 du3, dzero, dfp, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
-	ldu64 du1, dzero, dsp, __CALL_MAIN_SP_OFFSET__RETURN_VAL
+	ldu64 du3, dfp, dzero, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
+	ldu64 du1, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_VAL
 	adds du3, dzero, du1
 
 
 	// Restore dsp
-	addis dsp, dsp, __CALL_MAIN_STACK_SPACE
+	ldu8 dsp, dsp, dzero, __CALL_MAIN_STACK_SPACE
 
 __finish:
 	sim_syscall du3, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
 	sim_syscall dzero, dzero, dzero, SYSC_FINISH
 
 __pool:
+__const__above_top_of_stack:
+	.db32 0x10000
 __const__addr_of_main:
 	.db32 main
-
-__vars:
-__var__frame_pointer:
-	.db64 0
-__var__stack_pointer:
-	.db64 0x10000
 }
 
 
+__vars:
+
 main:
 {
-	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
 	.equ __LOCAL_SP_OFFSET__TEMP (0 * NUM_BYTES__SIZE_64)
 
 
 	.equ __LOCAL_FP_OFFSET__RETURN_VAL (0 * NUM_BYTES__SIZE_64)
 	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (1 * NUM_BYTES__SIZE_64)
-	adds dfp, dzero, dsp
-	addis dsp, dsp, -__LOCAL_STACK_SPACE
+	ldu8 dfp, dsp, dzero, 0
+	ldu8 dsp, dsp, dzero, -__LOCAL_STACK_SPACE
 
 
-	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
+	ldu64 du0, dfp, dzero, __LOCAL_FP_OFFSET__RETURN_VAL
 	adds du0, dzero, dzero
 
 	//ldu64 du1, dsp, dzero, __LOCAL_SP_OFFSET__TEMP
@@ -113,7 +113,7 @@ main:
 
 
 __finish:
-	addis dsp, dsp, __LOCAL_STACK_SPACE
+	ldu8 dsp, dsp, dzero, __LOCAL_STACK_SPACE
 	jmp dlr
 
 __pool:

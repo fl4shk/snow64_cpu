@@ -358,11 +358,11 @@ antlrcpp::Any Assembler::visitDirective
 {
 	ANY_ACCEPT_IF_BASIC(ctx->dotOrgDirective())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotSpaceDirective())
+	else ANY_ACCEPT_IF_BASIC(ctx->dotEquDirective())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb64Directive())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb32Directive())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb16Directive())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb8Directive())
-	else ANY_ACCEPT_IF_BASIC(ctx->dotEquDirective())
 	else
 	{
 		err(ctx, "visitDirective():  Eek!");
@@ -828,6 +828,32 @@ antlrcpp::Any Assembler::visitDotSpaceDirective
 	return nullptr;
 }
 
+antlrcpp::Any Assembler::visitDotEquDirective
+	(AssemblerGrammarParser::DotEquDirectiveContext *ctx)
+{
+	ANY_JUST_ACCEPT_BASIC(ctx->identName());
+	auto name = pop_str();
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto expr = pop_num();
+
+	{
+	auto sym = sym_tbl().find_in_this_blklev(__curr_scope_node, name);
+	if ((sym != nullptr) && !__pass && sym->found_as_label())
+	{
+		err(ctx, sconcat("Error:  Cannot have two identical identifers!  ",
+			"The offending identifier is \"", *name, "\"\n"));
+	}
+	}
+	auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
+
+	sym->set_found_as_label(true);
+	sym->set_addr(expr);
+
+
+	return nullptr;
+}
+
 antlrcpp::Any Assembler::visitDotDb64Directive
 	(AssemblerGrammarParser::DotDb64DirectiveContext *ctx)
 {
@@ -932,31 +958,6 @@ antlrcpp::Any Assembler::visitDotDb8Directive
 		gen_8(exprs_vec.at(i));
 	}
 	}
-
-	return nullptr;
-}
-antlrcpp::Any Assembler::visitDotEquDirective
-	(AssemblerGrammarParser::DotEquDirectiveContext *ctx)
-{
-	ANY_JUST_ACCEPT_BASIC(ctx->identName());
-	auto name = pop_str();
-
-	ANY_JUST_ACCEPT_BASIC(ctx->expr());
-	const auto expr = pop_num();
-
-	{
-	auto sym = sym_tbl().find_in_this_blklev(__curr_scope_node, name);
-	if ((sym != nullptr) && !__pass && sym->found_as_label())
-	{
-		err(ctx, sconcat("Error:  Cannot have two identical identifers!  ",
-			"The offending identifier is \"", *name, "\"\n"));
-	}
-	}
-	auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
-
-	sym->set_found_as_label(true);
-	sym->set_addr(expr);
-
 
 	return nullptr;
 }
@@ -1273,6 +1274,8 @@ antlrcpp::Any Assembler::visitExprMulDivModEtc
 		get_sym_address(ctx);
 	}
 	else ANY_ACCEPT_IF_BASIC(ctx->currPc())
+	else ANY_ACCEPT_IF_BASIC(ctx->exprDotAlign())
+	else ANY_ACCEPT_IF_BASIC(ctx->exprDotAlign2Next())
 	else
 	{
 		//ctx->expr()->accept(this);
@@ -1294,6 +1297,85 @@ antlrcpp::Any Assembler::visitExprUnary
 	}
 	return nullptr;
 }
+antlrcpp::Any Assembler::visitExprDotAlign
+	(AssemblerGrammarParser::ExprDotAlignContext *ctx)
+{
+	auto&& expressions = ctx->expr();
+
+	ctx->expr().at(0)->accept(this);
+	s64 to_align = pop_num();
+
+	ctx->expr().at(1)->accept(this);
+	const u64 align_amount = pop_num();
+
+	//printout("visitExprDotAlign():  ",
+	//	std::hex, to_align, std::dec,
+	//	"\n");
+	//if (to_align & ((1 << align_amount) - 1))
+	//{
+	//	to_align &= ~((1 << align_amount) - 1);
+	//	printout("visitExprDotAlign inside if():  ",
+	//		std::hex, to_align, std::dec,
+	//		"\n");
+	//	//to_align += (1 << align_amount);
+	//	printout("visitExprDotAlign inside if():  ",
+	//		std::hex, to_align, std::dec,
+	//		"\n");
+	//}
+	//printout("visitExprDotAlign():  ",
+	//	std::hex, to_align, std::dec,
+	//	"\n");
+
+	if (align_amount != 0)
+	{
+		clear_bits_with_range(to_align, align_amount - 1, 0);
+	}
+
+	push_num(to_align);
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitExprDotAlign2Next
+	(AssemblerGrammarParser::ExprDotAlign2NextContext *ctx)
+{
+	auto&& expressions = ctx->expr();
+
+	ctx->expr().at(0)->accept(this);
+	s64 to_align = pop_num();
+
+	ctx->expr().at(1)->accept(this);
+	const u64 align_amount = pop_num();
+
+	//printout("visitExprDotAlign2Next():  ",
+	//	std::hex, to_align, std::dec,
+	//	"\n");
+	//if (to_align & ((1 << align_amount) - 1))
+	//{
+	//	to_align &= ~((1 << align_amount) - 1);
+	//	printout("visitExprDotAlign2Next inside if():  ",
+	//		std::hex, to_align, std::dec,
+	//		"\n");
+	//	to_align += (1 << align_amount);
+	//	printout("visitExprDotAlign2Next inside if():  ",
+	//		std::hex, to_align, std::dec,
+	//		"\n");
+	//}
+	//printout("visitExprDotAlign2Next():  ",
+	//	std::hex, to_align, std::dec,
+	//	"\n");
+
+	if ((align_amount != 0)
+		&& (get_bits_with_range(to_align, align_amount - 1, 0) != 0))
+	{
+		clear_bits_with_range(to_align, align_amount - 1, 0);
+		to_align += (1 << align_amount);
+	}
+
+	push_num(to_align);
+
+	return nullptr;
+}
+
 
 antlrcpp::Any Assembler::visitExprBitInvert
 	(AssemblerGrammarParser::ExprBitInvertContext *ctx)

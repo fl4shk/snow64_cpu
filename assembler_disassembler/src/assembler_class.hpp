@@ -269,6 +269,8 @@ private:		// visitor functions
 		(AssemblerGrammarParser::DotOrgDirectiveContext *ctx);
 	antlrcpp::Any visitDotSpaceDirective
 		(AssemblerGrammarParser::DotSpaceDirectiveContext *ctx);
+	antlrcpp::Any visitDotEquDirective
+		(AssemblerGrammarParser::DotEquDirectiveContext *ctx);
 	antlrcpp::Any visitDotDb64Directive
 		(AssemblerGrammarParser::DotDb64DirectiveContext *ctx);
 	antlrcpp::Any visitDotDb32Directive
@@ -277,8 +279,6 @@ private:		// visitor functions
 		(AssemblerGrammarParser::DotDb16DirectiveContext *ctx);
 	antlrcpp::Any visitDotDb8Directive
 		(AssemblerGrammarParser::DotDb8DirectiveContext *ctx);
-	antlrcpp::Any visitDotEquDirective
-		(AssemblerGrammarParser::DotEquDirectiveContext *ctx);
 
 	// Expression parsing
 	antlrcpp::Any visitExpr
@@ -299,6 +299,10 @@ private:		// visitor functions
 
 	antlrcpp::Any visitExprUnary
 		(AssemblerGrammarParser::ExprUnaryContext *ctx);
+	antlrcpp::Any visitExprDotAlign
+		(AssemblerGrammarParser::ExprDotAlignContext *ctx);
+	antlrcpp::Any visitExprDotAlign2Next
+		(AssemblerGrammarParser::ExprDotAlign2NextContext *ctx);
 	antlrcpp::Any visitExprBitInvert
 		(AssemblerGrammarParser::ExprBitInvertContext *ctx);
 	antlrcpp::Any visitExprNegate
