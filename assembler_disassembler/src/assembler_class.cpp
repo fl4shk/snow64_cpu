@@ -309,7 +309,10 @@ antlrcpp::Any Assembler::visitLabel
 	sym->set_found_as_label(true);
 	sym->set_addr(pc().curr);
 
-	//printout("visitLabel():  ", pc().curr, "\n");
+	//printout("visitLabel():  ",
+	//	*name, " ",
+	//	std::hex, pc().curr, std::dec,
+	//	"\n");
 
 	return nullptr;
 }
@@ -816,6 +819,9 @@ antlrcpp::Any Assembler::visitDotOrgDirective
 {
 	ANY_JUST_ACCEPT_BASIC(ctx->expr());
 	__pc.curr = pop_num();
+	//printout("visitDotOrgDirective():  ",
+	//	std::hex, __pc.curr, std::dec,
+	//	"\n");
 
 	return nullptr;
 }
@@ -849,6 +855,13 @@ antlrcpp::Any Assembler::visitDotEquDirective
 
 	sym->set_found_as_label(true);
 	sym->set_addr(expr);
+
+	//if (*name == "CODE_ALIGN_AMOUNT")
+	//{
+	//	printout(".equ CODE_ALIGN_AMOUNT:  ",
+	//		std::hex, expr, std::dec,
+	//		"\n");
+	//}
 
 
 	return nullptr;

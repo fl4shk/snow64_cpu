@@ -544,23 +544,49 @@ private:		// functions
 	template<typename CtxType>
 	inline void get_sym_address(CtxType* ctx)
 	{
-		if (!__pass)
-		{
-			pop_str();
-			push_num(0);
-		}
-		else // if (__pass)
+		//if (!__pass)
+		//{
+		//	pop_str();
+		//	push_num(0);
+		//}
+		//else // if (__pass)
 		{
 			auto name = pop_str();
-			auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
+			//auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
+			auto sym = sym_tbl().find(__curr_scope_node, name);
+
+			//if (*name == "CODE_ALIGN_AMOUNT")
+			//{
+			//	printout("CODE_ALIGN_AMOUNT get_sym_address():  ",
+			//		std::hex, sym->addr(), std::dec,
+			//		"\n");
+			//}
+			//else if (*name == "main")
+			//{
+			//	printout("main get_sym_address():  ",
+			//		std::hex, sym->addr(), std::dec,
+			//		"\n");
+			//}
 
 			// Only allow known symbols to be used.
-			if (!sym->found_as_label())
+
+			if (__pass)
 			{
-				err(ctx, sconcat("Error:  Unknown symbol called \"",
-					*name, "\"."));
+				if (!sym->found_as_label())
+				{
+					err(ctx, sconcat("Error:  Unknown symbol called \"",
+						*name, "\"."));
+				}
 			}
-			push_num(sym->addr());
+
+			if (sym != nullptr)
+			{
+				push_num(sym->addr());
+			}
+			else
+			{
+				push_num(0);
+			}
 		}
 	}
 
