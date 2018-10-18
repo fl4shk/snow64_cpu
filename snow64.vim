@@ -22,7 +22,7 @@ syn keyword snow64_iog0_instr	adds subs slts muls divs ands orrs xors shls shrs 
 syn keyword snow64_iog1_instr	btru bfal jmp
 syn keyword snow64_iog2_instr	ldu8 lds8 ldu16 lds16 ldu32 lds32 ldu64 lds64 ldf16
 syn keyword snow64_iog3_instr	stu8 sts8 stu16 sts16 stu32 sts32 stu64 sts64 stf16
-syn keyword snow64_pseudo_instr	bra pcrels pcrelv
+syn keyword snow64_pseudo_instr	bra bl jl pcrels pcrelv cpys cpyis
 
 syn keyword snow64_reg		dzero du0 du1 du2 du3 du4 du5 du6 du7 du8 du9 du10 du11 dlr dfp dsp pc
 

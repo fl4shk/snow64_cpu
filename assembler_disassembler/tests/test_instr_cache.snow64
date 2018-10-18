@@ -26,9 +26,6 @@
 .equ NUM_BYTES__SIZE_32 (32 / 8)
 .equ NUM_BYTES__SIZE_64 (64 / 8)
 
-//.equ CODE_ALIGN_AMOUNT 2
-//.equ DATA_ALIGN_AMOUNT 5
-
 .equ NUM_BYTES__LAR_DATA (4 * NUM_BYTES__SIZE_64)
 
 .equ OFFSET_PCREL__RIGHT_AFTER_CALL (2 * NUM_BYTES__SIZE_32)
@@ -63,8 +60,9 @@ start:
 
 
 	ldu64 dlr, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
-	addis dlr, pc, OFFSET_PCREL__RIGHT_AFTER_CALL
-	bra main
+	//addis dlr, pc, OFFSET_PCREL__RIGHT_AFTER_CALL
+	//bra main
+	bl main
 
 
 __after_call_main:
@@ -92,10 +90,10 @@ __const__addresses:
 	.db16 main
 }
 
-.org .align2next(., DATA_ALIGN_AMOUNT)
+.dataalign
 global_constants:
 
-.org .align2next(., DATA_ALIGN_AMOUNT)
+.dataalign
 global_vars:
 
 
@@ -143,3 +141,4 @@ __pool:
 }
 
 .codealign
+

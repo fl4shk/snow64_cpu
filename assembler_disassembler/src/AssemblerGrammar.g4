@@ -131,13 +131,26 @@ instrOpGrp3StThreeRegsOneSimm12:
 
 pseudoInstruction:
 	pseudoInstrBraOneSimm20
+	| pseudoInstrBlOneSimm20
+	| pseudoInstrJlOneReg
 	| pseudoInstrPcrelOneRegOneSimm12Scalar
 	| pseudoInstrPcrelOneRegOneSimm12Vector
+	| pseudoInstrCpysTwoRegs
+	| pseudoInstrCpyisOneRegOneSimm12
 	;
 
 pseudoInstrBraOneSimm20:
 	TokPseudoInstrNameBra expr
 	;
+
+pseudoInstrBlOneSimm20:
+	TokPseudoInstrNameBl expr
+	;
+
+pseudoInstrJlOneReg:
+	TokPseudoInstrNameJl regOrIdentName
+	;
+
 
 pseudoInstrPcrelOneRegOneSimm12Scalar:
 	TokPseudoInstrNamePcrels regOrIdentName TokComma expr
@@ -146,6 +159,13 @@ pseudoInstrPcrelOneRegOneSimm12Vector:
 	TokPseudoInstrNamePcrelv regOrIdentName TokComma expr
 	;
 
+pseudoInstrCpysTwoRegs:
+	TokPseudoInstrNameCpys regOrIdentName TokComma regOrIdentName
+	;
+
+pseudoInstrCpyisOneRegOneSimm12:
+	TokPseudoInstrNameCpyis regOrIdentName TokComma expr
+	;
 
 
 // Assembler directives 
@@ -347,9 +367,12 @@ instrName:
 
 pseudoInstrName:
 	TokPseudoInstrNameBra
-
+	| TokPseudoInstrNameBl
+	| TokPseudoInstrNameJl
 	| TokPseudoInstrNamePcrels
 	| TokPseudoInstrNamePcrelv
+	| TokPseudoInstrNameCpys
+	| TokPseudoInstrNameCpyis
 	;
 
 numExpr: TokDecNum | TokHexNum | TokBinNum;
@@ -448,8 +471,13 @@ TokInstrNameStF16: 'stf16' ;
 
 // Pseudo Instructions
 TokPseudoInstrNameBra: 'bra' ;
+TokPseudoInstrNameBl: 'bl' ;
+TokPseudoInstrNameJl: 'jl' ;
 TokPseudoInstrNamePcrels: 'pcrels' ;
 TokPseudoInstrNamePcrelv: 'pcrelv' ;
+TokPseudoInstrNameCpys: 'cpys' ;
+TokPseudoInstrNameCpyis: 'cpyis' ;
+
 
 // Directives and stuff
 TokDotOrg: '.org' ;

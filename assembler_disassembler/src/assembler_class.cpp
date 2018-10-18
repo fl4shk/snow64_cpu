@@ -348,8 +348,12 @@ antlrcpp::Any Assembler::visitPseudoInstruction
 	(AssemblerGrammarParser::PseudoInstructionContext *ctx)
 {
 	ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrBraOneSimm20())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrBlOneSimm20())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrJlOneReg())
 	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrPcrelOneRegOneSimm12Scalar())
 	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrPcrelOneRegOneSimm12Vector())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrCpysTwoRegs())
+	else ANY_ACCEPT_IF_BASIC(ctx->pseudoInstrCpyisOneRegOneSimm12())
 	else
 	{
 		err(ctx, "visitPseudoInstruction():  Eek!");
@@ -772,6 +776,70 @@ antlrcpp::Any Assembler::visitPseudoInstrBraOneSimm20
 	return nullptr;
 }
 
+antlrcpp::Any Assembler::visitPseudoInstrBlOneSimm20
+	(AssemblerGrammarParser::PseudoInstrBlOneSimm20Context *ctx)
+{
+	{
+	const auto opcode = __encoding_stuff
+		.iog0_one_reg_one_pc_one_simm12_scalar_map()
+		.at(cstm_strdup("addis"));
+
+	const auto lr_encoding = __encoding_stuff.reg_names_map()
+		.at(cstm_strdup("dlr"));
+
+	//static constexpr auto pc_relative_offset = call_return_offset;
+
+	encode_group_0_instr(0, lr_encoding, 0, 0, opcode,
+		call_return_offset);
+	}
+
+
+	{
+	const auto opcode = __encoding_stuff.iog1_rel_branch_map()
+		.at(cstm_strdup("bfal"));
+
+	const auto one_reg_encoding = 0;
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+
+	const auto branch_offset = get_pc_relative_offset(pop_num());
+
+	__warn_if_simm20_out_of_range(ctx, branch_offset, true);
+
+	encode_group_1_instr(one_reg_encoding, opcode, branch_offset);
+	}
+
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitPseudoInstrJlOneReg
+	(AssemblerGrammarParser::PseudoInstrJlOneRegContext *ctx)
+{
+	{
+	const auto opcode = __encoding_stuff
+		.iog0_one_reg_one_pc_one_simm12_scalar_map()
+		.at(cstm_strdup("addis"));
+
+	const auto lr_encoding = __encoding_stuff.reg_names_map()
+		.at(cstm_strdup("dlr"));
+
+	//static constexpr auto pc_relative_offset = call_return_offset;
+
+	encode_group_0_instr(0, lr_encoding, 0, 0, opcode,
+		call_return_offset);
+	}
+
+
+	{
+	const auto opcode = __encoding_stuff.iog1_jump_map()
+		.at(cstm_strdup("jmp"));
+	const auto one_reg_encoding = get_one_reg_encoding(ctx);
+
+	encode_group_1_instr(one_reg_encoding, opcode, 0);
+	}
+
+	return nullptr;
+}
 antlrcpp::Any Assembler::visitPseudoInstrPcrelOneRegOneSimm12Scalar
 	(AssemblerGrammarParser::PseudoInstrPcrelOneRegOneSimm12ScalarContext
 	*ctx)
@@ -811,6 +879,37 @@ antlrcpp::Any Assembler::visitPseudoInstrPcrelOneRegOneSimm12Vector
 
 	encode_group_0_instr(1, one_reg_encoding, 0, 0, opcode,
 		pc_relative_offset);
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitPseudoInstrCpysTwoRegs
+	(AssemblerGrammarParser::PseudoInstrCpysTwoRegsContext *ctx)
+{
+	const auto opcode = __encoding_stuff.iog0_three_regs_scalar_map()
+		.at(cstm_strdup("adds"));
+
+	auto&& reg_encodings = get_reg_encodings(ctx);
+
+	encode_group_0_instr(0, reg_encodings.at(0), 0, reg_encodings.at(1),
+		opcode, 0);
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitPseudoInstrCpyisOneRegOneSimm12
+	(AssemblerGrammarParser::PseudoInstrCpyisOneRegOneSimm12Context
+	*ctx)
+{
+	const auto opcode = __encoding_stuff
+		.iog0_two_regs_one_simm12_scalar_map().at(cstm_strdup("addis"));
+
+	auto one_reg_encoding = get_one_reg_encoding(ctx);
+
+	ANY_JUST_ACCEPT_BASIC(ctx->expr());
+	const auto simm12 = pop_num();
+
+	__warn_if_simm12_out_of_range(ctx, simm12);
+
+	encode_group_0_instr(0, one_reg_encoding, 0, 0, opcode, simm12);
 
 	return nullptr;
 }
@@ -1528,8 +1627,12 @@ antlrcpp::Any Assembler::visitPseudoInstrName
 	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameInc())
 	//else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameDec())
 	ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameBra())
+	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameBl())
+	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameJl())
 	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNamePcrels())
 	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNamePcrelv())
+	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCpys())
+	else ANY_PUSH_TOK_IF(ctx->TokPseudoInstrNameCpyis())
 	else
 	{
 		err(ctx, "visitPseudoInstrName():  Eek!");

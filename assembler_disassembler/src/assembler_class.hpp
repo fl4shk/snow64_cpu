@@ -22,6 +22,8 @@ class Assembler : public AssemblerGrammarVisitor,
 {
 public:		// typedefs
 	typedef antlr4::ParserRuleContext ParserRuleContext;
+public:		// constants
+	static constexpr s64 call_return_offset = 2 * sizeof(u32);
 
 private:		// variables
 	SymbolTable __sym_tbl;
@@ -257,12 +259,21 @@ private:		// visitor functions
 	// pseudoInstruction:
 	antlrcpp::Any visitPseudoInstrBraOneSimm20
 		(AssemblerGrammarParser::PseudoInstrBraOneSimm20Context *ctx);
+	antlrcpp::Any visitPseudoInstrBlOneSimm20
+		(AssemblerGrammarParser::PseudoInstrBlOneSimm20Context *ctx);
+	antlrcpp::Any visitPseudoInstrJlOneReg
+		(AssemblerGrammarParser::PseudoInstrJlOneRegContext *ctx);
 	antlrcpp::Any visitPseudoInstrPcrelOneRegOneSimm12Scalar
 		(AssemblerGrammarParser
 		::PseudoInstrPcrelOneRegOneSimm12ScalarContext *ctx);
 	antlrcpp::Any visitPseudoInstrPcrelOneRegOneSimm12Vector
 		(AssemblerGrammarParser
 		::PseudoInstrPcrelOneRegOneSimm12VectorContext *ctx);
+	antlrcpp::Any visitPseudoInstrCpysTwoRegs
+		(AssemblerGrammarParser::PseudoInstrCpysTwoRegsContext *ctx);
+	antlrcpp::Any visitPseudoInstrCpyisOneRegOneSimm12
+		(AssemblerGrammarParser::PseudoInstrCpyisOneRegOneSimm12Context
+		*ctx);
 
 
 
