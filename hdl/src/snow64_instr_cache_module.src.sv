@@ -175,8 +175,8 @@ module Snow64InstrCache(input logic clk,
 
 			PkgSnow64InstrCache::StWaitForMem:
 			begin
-				$display("INSTR CACHE:  miss:  %h",
-					__effective_addr_for_miss);
+				//$display("INSTR CACHE:  miss:  %h",
+				//	__effective_addr_for_miss);
 
 				out_mem_access.req <= 1;
 				out_mem_access.addr <= __effective_addr_for_miss;
@@ -191,10 +191,10 @@ module Snow64InstrCache(input logic clk,
 
 			if (__next_state == PkgSnow64InstrCache::StIdle)
 			begin
-				$display("INSTR CACHE:  Done waiting for mem:  %h %h %h",
-					__captured_req_effective_addr,
-					in_mem_access.data,
-					__captured_req_effective_addr.tag);
+				//$display("INSTR CACHE:  Done waiting for mem:  %h %h %h",
+				//	__captured_req_effective_addr,
+				//	in_mem_access.data,
+				//	__captured_req_effective_addr.tag);
 				__lines_arr[__captured_req_effective_addr.arr_index]
 					<= in_mem_access.data;
 				__tags_arr[__captured_req_effective_addr.arr_index]

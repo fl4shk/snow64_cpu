@@ -62,6 +62,8 @@ start:
 	ldu64 dlr, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
 	//addis dlr, pc, OFFSET_PCREL__RIGHT_AFTER_CALL
 	//bra main
+	cpys dzero, dzero
+	cpys dzero, dzero
 	bl main
 
 
@@ -73,7 +75,8 @@ __after_call_main:
 	// Copy main()'s return value to outside the partial stack frame
 	ldu64 du3, dfp, dzero, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
 	ldu64 du1, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_VAL
-	adds du3, dzero, du1
+	//adds du3, dzero, du1
+	cpys du3, du1
 
 
 	// Restore dsp
@@ -125,11 +128,14 @@ main:
 	//ldu16 du6, dzero, du1, (1 * NUM_BYTES__SIZE_16)
 
 	// ret = ((9 << 3) * 57);
-	addis du3, dzero, 9
-	addis du2, dzero, 3
+	//addis du3, dzero, 9
+	//addis du2, dzero, 3
+	cpyis du3, 9
+	cpyis du2, 3
 	shls du1, du3, du2
 
-	addis du2, dzero, 57
+	//addis du2, dzero, 57
+	cpyis du2, 57
 	muls du0, du1, du2
 
 
