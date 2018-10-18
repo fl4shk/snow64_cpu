@@ -11,7 +11,7 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 
 
 	PkgSnow64InstrCache::PartialPortIn_InstrCache_ReqRead
-		__in_inst_fake_instr_cache__req_read;
+		__in_inst_instr_cache__req_read;
 
 	PkgSnow64LarFile::PartialPortIn_LarFile_Read
 		__in_inst_lar_file__rd_a, __in_inst_lar_file__rd_b,
@@ -23,7 +23,7 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 		__in_inst_mem_bus_guard;
 
 	PkgSnow64InstrCache::PartialPortOut_InstrCache_ReqRead
-		__out_inst_fake_instr_cache__req_read;
+		__out_inst_instr_cache__req_read;
 
 	PkgSnow64LarFile::PartialPortOut_LarFile_ReadMetadata
 		__out_inst_lar_file__rd_metadata_a,
@@ -41,15 +41,13 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 
 
 	Snow64MemoryAccessors __inst_mem_accessors(.clk(clk),
-		.in_fake_instr_cache__req_read
-			(__in_inst_fake_instr_cache__req_read),
+		.in_instr_cache__req_read(__in_inst_instr_cache__req_read),
 		.in_lar_file__rd_a(__in_inst_lar_file__rd_a),
 		.in_lar_file__rd_b(__in_inst_lar_file__rd_b),
 		.in_lar_file__rd_c(__in_inst_lar_file__rd_c),
 		.in_lar_file__wr(__in_inst_lar_file__wr),
 		.in_mem_bus_guard(__in_inst_mem_bus_guard),
-		.out_fake_instr_cache__req_read
-			(__out_inst_fake_instr_cache__req_read),
+		.out_instr_cache__req_read(__out_inst_instr_cache__req_read),
 		.out_lar_file__rd_metadata_a(__out_inst_lar_file__rd_metadata_a),
 		.out_lar_file__rd_metadata_b(__out_inst_lar_file__rd_metadata_b),
 		.out_lar_file__rd_metadata_c(__out_inst_lar_file__rd_metadata_c),
@@ -158,8 +156,8 @@ module Snow64Cpu(input logic clk, input PkgSnow64Cpu::PortIn_Cpu in,
 
 	// Connect pipeline stage IF/ID to the instruction cache
 	assign __in_inst_pipe_stage_if_id__from_instr_cache
-		= __out_inst_fake_instr_cache__req_read;
-	assign __in_inst_fake_instr_cache__req_read
+		= __out_inst_instr_cache__req_read;
+	assign __in_inst_instr_cache__req_read
 		= __out_inst_pipe_stage_if_id__to_instr_cache;
 
 	// Connect pipeline stage IF/ID to the LAR file

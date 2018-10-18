@@ -122,17 +122,18 @@ main:
 	ldu64 du4, dsp, dzero, __LOCAL_SP_OFFSET__TEMP_3
 
 
-	//pcrels du1, __pool
-	//ldu16 du5, dzero, du1, (0 * NUM_BYTES__SIZE_16)
-	//ldu16 du6, dzero, du1, (1 * NUM_BYTES__SIZE_16)
+	pcrels du1, __pool
+	ldu16 du5, dzero, du1, (0 * NUM_BYTES__SIZE_16)
+	ldu16 du6, dzero, du1, (1 * NUM_BYTES__SIZE_16)
 
-	// ret = ((9 << 3) * 57);
-	addis du3, dzero, 9
-	addis du2, dzero, 3
-	shls du1, du3, du2
 
-	addis du2, dzero, 57
-	muls du0, du1, du2
+	// Cast to 64-bit
+	adds du1, dzero, du5
+	adds du2, dzero, du6
+
+	shls du0, du2, du3
+
+	addis du0, du0, 3
 
 
 __finish:
@@ -140,4 +141,6 @@ __finish:
 	jmp dlr
 
 __pool:
+	.db16 0x9000
+	.db16 0x0015
 }
