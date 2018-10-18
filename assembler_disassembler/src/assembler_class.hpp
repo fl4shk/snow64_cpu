@@ -281,6 +281,10 @@ private:		// visitor functions
 		(AssemblerGrammarParser::DotDb16DirectiveContext *ctx);
 	antlrcpp::Any visitDotDb8Directive
 		(AssemblerGrammarParser::DotDb8DirectiveContext *ctx);
+	antlrcpp::Any visitDotCodeAlignDirective
+		(AssemblerGrammarParser::DotCodeAlignDirectiveContext *ctx);
+	antlrcpp::Any visitDotDataAlignDirective
+		(AssemblerGrammarParser::DotDataAlignDirectiveContext *ctx);
 
 	// Expression parsing
 	antlrcpp::Any visitExpr
@@ -292,10 +296,6 @@ private:		// visitor functions
 		(AssemblerGrammarParser::ExprCompareContext *ctx);
 	antlrcpp::Any visitExprAddSub
 		(AssemblerGrammarParser::ExprAddSubContext *ctx);
-	//antlrcpp::Any visitExprJustAdd
-	//	(AssemblerGrammarParser::ExprJustAddContext *ctx);
-	//antlrcpp::Any visitExprJustSub
-	//	(AssemblerGrammarParser::ExprJustSubContext *ctx);
 	antlrcpp::Any visitExprMulDivModEtc
 		(AssemblerGrammarParser::ExprMulDivModEtcContext *ctx);
 
@@ -588,6 +588,18 @@ private:		// functions
 				push_num(0);
 			}
 		}
+	}
+
+	inline s64 get_aligned_to_next(s64 to_align, u64 align_amount)
+	{
+		if ((align_amount != 0)
+			&& (get_bits_with_range(to_align, align_amount - 1, 0) != 0))
+		{
+			clear_bits_with_range(to_align, align_amount - 1, 0);
+			to_align += (1 << align_amount);
+		}
+
+		return to_align;
 	}
 
 };

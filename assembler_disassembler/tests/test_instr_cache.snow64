@@ -92,16 +92,13 @@ __const__addresses:
 	.db16 main
 }
 
-//.org .align2next(., DATA_ALIGN_AMOUNT)
-.dataalign
+.org .align2next(., DATA_ALIGN_AMOUNT)
 global_constants:
 
-//.org .align2next(., DATA_ALIGN_AMOUNT)
-.dataalign
+.org .align2next(., DATA_ALIGN_AMOUNT)
 global_vars:
 
 
-//.org .align2next(., CODE_ALIGN_AMOUNT)
 .codealign
 main:
 {
@@ -144,3 +141,5 @@ __finish:
 
 __pool:
 }
+
+.codealign

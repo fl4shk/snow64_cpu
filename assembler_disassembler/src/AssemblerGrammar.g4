@@ -157,6 +157,8 @@ directive:
 	| dotDb32Directive
 	| dotDb16Directive
 	| dotDb8Directive
+	| dotCodeAlignDirective
+	| dotDataAlignDirective
 	;
 
 
@@ -189,6 +191,14 @@ dotDb16Directive:
 // Raw 8-bit constants
 dotDb8Directive:
 	TokDotDb8 expr ((TokComma expr)*)
+	;
+
+
+dotCodeAlignDirective:
+	TokDotCodeAlign
+	;
+dotDataAlignDirective:
+	TokDotDataAlign
 	;
 
 dotEquDirective:
@@ -451,6 +461,8 @@ TokDotDb16: '.db16' ;
 TokDotDb8: '.db8' ;
 TokDotAlign2Curr: '.align2curr' ;
 TokDotAlign2Next: '.align2next' ;
+TokDotCodeAlign: '.codealign' ;
+TokDotDataAlign: '.dataalign' ;
 
 // Punctuation, etc.
 TokPeriod: '.' ;

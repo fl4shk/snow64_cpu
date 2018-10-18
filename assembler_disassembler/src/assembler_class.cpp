@@ -366,6 +366,8 @@ antlrcpp::Any Assembler::visitDirective
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb32Directive())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb16Directive())
 	else ANY_ACCEPT_IF_BASIC(ctx->dotDb8Directive())
+	else ANY_ACCEPT_IF_BASIC(ctx->dotCodeAlignDirective())
+	else ANY_ACCEPT_IF_BASIC(ctx->dotDataAlignDirective())
 	else
 	{
 		err(ctx, "visitDirective():  Eek!");
@@ -974,6 +976,22 @@ antlrcpp::Any Assembler::visitDotDb8Directive
 
 	return nullptr;
 }
+antlrcpp::Any Assembler::visitDotCodeAlignDirective
+	(AssemblerGrammarParser::DotCodeAlignDirectiveContext *ctx)
+{
+	static constexpr u64 align_amount = 2;
+	__pc.curr = get_aligned_to_next(__pc.curr, align_amount);
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitDotDataAlignDirective
+	(AssemblerGrammarParser::DotDataAlignDirectiveContext *ctx)
+{
+	static constexpr u64 align_amount = 5;
+	__pc.curr = get_aligned_to_next(__pc.curr, align_amount);
+
+	return nullptr;
+}
 
 // Expression parsing
 antlrcpp::Any Assembler::visitExpr
@@ -1341,14 +1359,7 @@ antlrcpp::Any Assembler::visitExprDotAlign2Next
 	ctx->expr().at(1)->accept(this);
 	const u64 align_amount = pop_num();
 
-	if ((align_amount != 0)
-		&& (get_bits_with_range(to_align, align_amount - 1, 0) != 0))
-	{
-		clear_bits_with_range(to_align, align_amount - 1, 0);
-		to_align += (1 << align_amount);
-	}
-
-	push_num(to_align);
+	push_num(get_aligned_to_next(to_align, align_amount));
 
 	return nullptr;
 }
