@@ -50,17 +50,15 @@ start:
 
 
 
-
 	.equ __CALL_MAIN_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
-	.equ __CALL_MAIN_SP_OFFSET__RETURN_VAL (-(0 * NUM_BYTES__SIZE_64))
-	.equ __CALL_MAIN_SP_OFFSET__RETURN_ADDR (-(1 * NUM_BYTES__SIZE_64))
+	.equ __CALL_MAIN_SP_OFFSET__RETURN_ADDR (3 * NUM_BYTES__SIZE_64)
+	.equ __CALL_MAIN_SP_OFFSET__RETURN_VAL (2 * NUM_BYTES__SIZE_64)
 
 
-	//ldu8 dsp, dsp, dzero, -__CALL_MAIN_STACK_SPACE
 	addis dsp, dsp, -__CALL_MAIN_STACK_SPACE
 
-
 	ldu64 dlr, dzero, dsp, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
+
 	bl main
 
 
@@ -87,11 +85,13 @@ __infin:
 
 __pool:
 
+.dataalign
 __vars:
 __var__stack_pointer:
 	.db64 0x10000
 __var__frame_pointer:
 	.db64 0
+	.db64 __vars
 }
 
 .dataalign
@@ -111,10 +111,11 @@ main:
 	.equ __LOCAL_SP_OFFSET__TEMP_3 (3 * NUM_BYTES__SIZE_64)
 
 
-	.equ __LOCAL_FP_OFFSET__RETURN_VAL (-(0 * NUM_BYTES__SIZE_64))
-	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (-(1 * NUM_BYTES__SIZE_64))
+	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (3 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_FP_OFFSET__RETURN_VAL (2 * NUM_BYTES__SIZE_64)
 	cpys dfp, dsp
 	addis dsp, dsp, -__LOCAL_STACK_SPACE
+
 
 
 	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
@@ -123,7 +124,17 @@ main:
 	ldu64 du3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
 	ldu64 du4, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
 
+	cpyis du0, 0x326
+	cpyis du4, 16
+	shls du0, du0, du4
 
+	cpyis du1, 0x19
+	cpyis du4, 8
+	shls du1, du1, du4
+
+	cpyis du2, 0x94
+	orrs du1, du1, du2
+	orrs du0, du0, du1
 
 __finish:
 	addis dsp, dsp, __LOCAL_STACK_SPACE

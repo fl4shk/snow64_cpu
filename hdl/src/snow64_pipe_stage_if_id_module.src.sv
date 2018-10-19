@@ -226,7 +226,7 @@ module Snow64PipeStageIfId(input logic clk,
 
 		StRegular:
 		begin
-			show_decoded_instr();
+			//show_decoded_instr();
 
 			if (in_from_instr_cache.valid)
 			begin

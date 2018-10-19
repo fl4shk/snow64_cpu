@@ -977,8 +977,9 @@ antlrcpp::Any Assembler::visitDotDb64Directive
 	{
 		expr->accept(this);
 		const auto temp = pop_num();
-		gen_32(get_bits_with_range(temp, 63, 32));
+		//gen_32(get_bits_with_range(temp, 63, 32));
 		gen_32(get_bits_with_range(temp, 31, 0));
+		gen_32(get_bits_with_range(temp, 63, 32));
 	}
 
 	return nullptr;

@@ -768,34 +768,34 @@ module Snow64VectorMul(input logic clk,
 	assign out.valid = __real_out_valid;
 	assign out.data = __real_out_data;
 
-	assign __in_inst_mul_0.enable = in.enable;
-	assign __in_inst_mul_1.enable = in.enable;
-	assign __in_inst_mul_2.enable = in.enable;
-	assign __in_inst_mul_3.enable = in.enable;
+	always @(*) __in_inst_mul_0.enable = in.enable;
+	always @(*) __in_inst_mul_1.enable = in.enable;
+	always @(*) __in_inst_mul_2.enable = in.enable;
+	always @(*) __in_inst_mul_3.enable = in.enable;
 
-	assign __in_inst_mul_0.int_type_size = in.int_type_size;
-	assign __in_inst_mul_1.int_type_size = in.int_type_size;
-	assign __in_inst_mul_2.int_type_size = in.int_type_size;
-	assign __in_inst_mul_3.int_type_size = in.int_type_size;
+	always @(*) __in_inst_mul_0.int_type_size = in.int_type_size;
+	always @(*) __in_inst_mul_1.int_type_size = in.int_type_size;
+	always @(*) __in_inst_mul_2.int_type_size = in.int_type_size;
+	always @(*) __in_inst_mul_3.int_type_size = in.int_type_size;
 
-	assign __in_inst_mul_0.a = in.a[0 * 64 +: 64];
-	assign __in_inst_mul_1.a = in.a[1 * 64 +: 64];
-	assign __in_inst_mul_2.a = in.a[2 * 64 +: 64];
-	assign __in_inst_mul_3.a = in.a[3 * 64 +: 64];
+	always @(*) __in_inst_mul_0.a = in.a[0 * 64 +: 64];
+	always @(*) __in_inst_mul_1.a = in.a[1 * 64 +: 64];
+	always @(*) __in_inst_mul_2.a = in.a[2 * 64 +: 64];
+	always @(*) __in_inst_mul_3.a = in.a[3 * 64 +: 64];
 
-	assign __in_inst_mul_0.b = in.b[0 * 64 +: 64];
-	assign __in_inst_mul_1.b = in.b[1 * 64 +: 64];
-	assign __in_inst_mul_2.b = in.b[2 * 64 +: 64];
-	assign __in_inst_mul_3.b = in.b[3 * 64 +: 64];
+	always @(*) __in_inst_mul_0.b = in.b[0 * 64 +: 64];
+	always @(*) __in_inst_mul_1.b = in.b[1 * 64 +: 64];
+	always @(*) __in_inst_mul_2.b = in.b[2 * 64 +: 64];
+	always @(*) __in_inst_mul_3.b = in.b[3 * 64 +: 64];
 
-	assign __real_out_valid = __out_inst_mul_0.valid;
-	assign __real_out_data[0 * 64 +: 64]
+	always @(*) __real_out_valid = __out_inst_mul_0.valid;
+	always @(*) __real_out_data[0 * 64 +: 64]
 		= {__out_inst_mul_0.data_1, __out_inst_mul_0.data_0};
-	assign __real_out_data[1 * 64 +: 64]
+	always @(*) __real_out_data[1 * 64 +: 64]
 		= {__out_inst_mul_1.data_1, __out_inst_mul_1.data_0};
-	assign __real_out_data[2 * 64 +: 64]
+	always @(*) __real_out_data[2 * 64 +: 64]
 		= {__out_inst_mul_2.data_1, __out_inst_mul_2.data_0};
-	assign __real_out_data[3 * 64 +: 64]
+	always @(*) __real_out_data[3 * 64 +: 64]
 		= {__out_inst_mul_3.data_1, __out_inst_mul_3.data_0};
 
 	//initial
