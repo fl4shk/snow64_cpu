@@ -1312,7 +1312,7 @@ module Snow64PsExUseVectorDiv(input logic clk,
 	// {
 	// 	logic enable;
 
-	// 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	// 	//logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	// 	logic type_signedness;
 
 	// 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;
@@ -1320,7 +1320,7 @@ module Snow64PsExUseVectorDiv(input logic clk,
 
 	assign __in_inst_vector_div
 		= {in_start,
-		in_true_ra_data.int_type_size,
+		//in_true_ra_data.int_type_size,
 		(in_true_ra_data.data_type == PkgSnow64Cpu::DataTypSgnInt),
 		in_any_dsrc0_data,
 		in_any_dsrc1_data};

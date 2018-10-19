@@ -196,7 +196,7 @@ typedef struct packed
 {
 	logic enable;
 
-	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
+	//logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
 	logic type_signedness;
 
 	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] a, b;

@@ -29,7 +29,8 @@ module Snow64InstrDecoder
 
 	always @(*) out.forced_64_bit_integers
 		= ((__iog0_instr.group == 0)
-		&& ((__iog0_instr.oper == PkgSnow64InstrDecoder::Shl_ThreeRegs)
+		&& ((__iog0_instr.oper == PkgSnow64InstrDecoder::Div_ThreeRegs)
+		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Shl_ThreeRegs)
 		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Shr_ThreeRegs)
 		|| (__iog0_instr.oper == PkgSnow64InstrDecoder::Not_TwoRegs)));
 

@@ -872,305 +872,371 @@ module Snow64VectorMul(input logic clk,
 endmodule
 
 
+//module Snow64VectorDiv(input logic clk,
+//	input PkgSnow64ArithLog::PortIn_VectorDiv in,
+//	output PkgSnow64ArithLog::PortOut_VectorDiv out);
+//
+//	enum logic
+//	{
+//		StIdle,
+//		StWaitForSubDiv
+//	} __state;
+//
+//	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
+//		__captured_in_int_type_size;
+//	logic __real_out_valid;
+//	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __real_out_data;
+//
+//	`define IN_INST_SUB_DIV(width, inst_num) \
+//		__in_inst_sub_div_``width``_``inst_num
+//	`define OUT_INST_SUB_DIV__QUOT(width, inst_num) \
+//		__out_inst_sub_div_``width``_``inst_num``__quot
+//	`define OUT_INST_SUB_DIV__REM(width, inst_num) \
+//		__out_inst_sub_div_``width``_``inst_num``__rem
+//	`define OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(width, inst_num) \
+//		__out_inst_sub_div_``width``_``inst_num``__can_accept_cmd
+//	`define OUT_INST_SUB_DIV__DATA_READY(width, inst_num) \
+//		__out_inst_sub_div_``width``_``inst_num``__data_ready
+//	`define MAKE_INST_SUB_DIV(width, inst_num) \
+//		Snow64NonRestoringDivider #(.WIDTH__ARGS(width)) \
+//			__inst_sub_div_``width``_``inst_num(.clk(clk), \
+//			.in_enable(`IN_INST_SUB_DIV(width, inst_num).enable), \
+//			.in_signedness(`IN_INST_SUB_DIV(width, inst_num) \
+//			.type_signedness), \
+//			.in_num(`IN_INST_SUB_DIV(width, inst_num).num), \
+//			.in_denom(`IN_INST_SUB_DIV(width, inst_num).denom), \
+//			.out_quot(`OUT_INST_SUB_DIV__QUOT(width, inst_num)), \
+//			.out_rem(`OUT_INST_SUB_DIV__REM(width, inst_num)), \
+//			.out_can_accept_cmd \
+//			(`OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(width, inst_num)), \
+//			.out_data_ready(`OUT_INST_SUB_DIV__DATA_READY(width, \
+//			inst_num)));
+//
+//	`define OPERATE_ON_SUB_DIV_64 \
+//		`X(0) `X(1) `X(2) `X(3)
+//	`define OPERATE_ON_SUB_DIV_32 \
+//		`X(0) `X(1) `X(2) `X(3) \
+//		`X(4) `X(5) `X(6) `X(7)
+//	`define OPERATE_ON_SUB_DIV_16 \
+//		`X(0) `X(1) `X(2) `X(3) \
+//		`X(4) `X(5) `X(6) `X(7) \
+//		`X(8) `X(9) `X(10) `X(11) \
+//		`X(12) `X(13) `X(14) `X(15)
+//	`define OPERATE_ON_SUB_DIV_8 \
+//		`X(0) `X(1) `X(2) `X(3) \
+//		`X(4) `X(5) `X(6) `X(7) \
+//		`X(8) `X(9) `X(10) `X(11) \
+//		`X(12) `X(13) `X(14) `X(15) \
+//		`X(16) `X(17) `X(18) `X(19) \
+//		`X(20) `X(21) `X(22) `X(23) \
+//		`X(24) `X(25) `X(26) `X(27) \
+//		`X(28) `X(29) `X(30) `X(31)
+//
+//	struct packed
+//	{
+//		logic enable, type_signedness;
+//		logic [`MSB_POS__SNOW64_SIZE_64:0] num, denom;
+//	} __in_inst_sub_div_64_0, __in_inst_sub_div_64_1,
+//		__in_inst_sub_div_64_2, __in_inst_sub_div_64_3;
+//
+//	`define X(inst_num) \
+//	logic [`MSB_POS__SNOW64_SIZE_64:0] \
+//		`OUT_INST_SUB_DIV__QUOT(64, inst_num), \
+//		`OUT_INST_SUB_DIV__REM(64, inst_num); \
+//	logic `OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(64, inst_num), \
+//		`OUT_INST_SUB_DIV__DATA_READY(64, inst_num);
+//	`OPERATE_ON_SUB_DIV_64
+//	`undef X
+//
+//
+//	//Snow64NonRestoringDivider
+//
+//	`define MAKE_SUB_DIV_PORTS(width, inst_num) \
+//	struct packed \
+//	{ \
+//		logic enable, type_signedness; \
+//		logic [`WIDTH2MP(width):0] num, denom; \
+//	} `IN_INST_SUB_DIV(width, inst_num); \
+//	\
+//	logic [`WIDTH2MP(width):0] \
+//		`OUT_INST_SUB_DIV__QUOT(width, inst_num), \
+//		`OUT_INST_SUB_DIV__REM(width, inst_num); \
+//	logic `OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(width, inst_num), \
+//		`OUT_INST_SUB_DIV__DATA_READY(width, inst_num);
+//
+//	`define X(inst_num) `MAKE_SUB_DIV_PORTS(32, inst_num)
+//	`OPERATE_ON_SUB_DIV_32
+//	`undef X
+//	`define X(inst_num) `MAKE_SUB_DIV_PORTS(16, inst_num)
+//	`OPERATE_ON_SUB_DIV_16
+//	`undef X
+//	`define X(inst_num) `MAKE_SUB_DIV_PORTS(8, inst_num)
+//	`OPERATE_ON_SUB_DIV_8
+//	`undef X
+//
+//	`undef MAKE_SUB_DIV_PORTS
+//
+//
+//	`define X(inst_num) `MAKE_INST_SUB_DIV(64, inst_num)
+//	`OPERATE_ON_SUB_DIV_64
+//	`undef X
+//
+//	`define X(inst_num) `MAKE_INST_SUB_DIV(32, inst_num)
+//	`OPERATE_ON_SUB_DIV_32
+//	`undef X
+//
+//	`define X(inst_num) `MAKE_INST_SUB_DIV(16, inst_num)
+//	`OPERATE_ON_SUB_DIV_16
+//	`undef X
+//
+//	`define X(inst_num) `MAKE_INST_SUB_DIV(8, inst_num)
+//	`OPERATE_ON_SUB_DIV_8
+//	`undef X
+//
+//
+//	`undef MAKE_INST_SUB_DIV
+//
+//	initial
+//	begin
+//		__state = StIdle;
+//		__captured_in_int_type_size = 0;
+//		__real_out_valid = 0;
+//		__real_out_data = 0;
+//
+//		`define X(inst_num) `IN_INST_SUB_DIV(64, inst_num) = 0;
+//		`OPERATE_ON_SUB_DIV_64
+//		`undef X
+//
+//		`define X(inst_num) `IN_INST_SUB_DIV(32, inst_num) = 0;
+//		`OPERATE_ON_SUB_DIV_32
+//		`undef X
+//
+//		`define X(inst_num) `IN_INST_SUB_DIV(16, inst_num) = 0;
+//		`OPERATE_ON_SUB_DIV_16
+//		`undef X
+//
+//		`define X(inst_num) `IN_INST_SUB_DIV(8, inst_num) = 0;
+//		`OPERATE_ON_SUB_DIV_8
+//		`undef X
+//	end
+//
+//	assign out.valid = __real_out_valid;
+//	assign out.data = __real_out_data;
+//
+//	always_ff @(posedge clk)
+//	begin
+//		case (__state)
+//		StIdle:
+//		begin
+//			__captured_in_int_type_size <= in.int_type_size;
+//			__real_out_valid <= 0;
+//
+//
+//			if (in.enable)
+//			begin
+//				__state <= StWaitForSubDiv;
+//
+//				`define START_SUB_DIV(width, inst_num) \
+//					`IN_INST_SUB_DIV(width, inst_num).enable <= 1; \
+//					`IN_INST_SUB_DIV(width, inst_num).type_signedness \
+//						<= in.type_signedness; \
+//					`IN_INST_SUB_DIV(width, inst_num).num \
+//						<= in.a[inst_num * width +: width]; \
+//					`IN_INST_SUB_DIV(width, inst_num).denom \
+//						<= in.b[inst_num * width +: width];
+//				case (in.int_type_size)
+//				PkgSnow64Cpu::IntTypSz8:
+//				begin
+//					`define X(inst_num) `START_SUB_DIV(8, inst_num)
+//					`OPERATE_ON_SUB_DIV_8
+//					`undef X
+//				end
+//
+//				PkgSnow64Cpu::IntTypSz16:
+//				begin
+//					`define X(inst_num) `START_SUB_DIV(16, inst_num)
+//					`OPERATE_ON_SUB_DIV_16
+//					`undef X
+//				end
+//
+//				PkgSnow64Cpu::IntTypSz32:
+//				begin
+//					`define X(inst_num) `START_SUB_DIV(32, inst_num)
+//					`OPERATE_ON_SUB_DIV_32
+//					`undef X
+//				end
+//
+//				PkgSnow64Cpu::IntTypSz64:
+//				begin
+//					`define X(inst_num) `START_SUB_DIV(64, inst_num)
+//					`OPERATE_ON_SUB_DIV_64
+//					`undef X
+//				end
+//				endcase
+//
+//				`undef START_SUB_DIV
+//			end
+//		end
+//
+//		StWaitForSubDiv:
+//		begin
+//			`define DISABLE_SUB_DIV(which, inst_num) \
+//				`IN_INST_SUB_DIV(which, inst_num).enable <= 0;
+//
+//			`define X(inst_num) `DISABLE_SUB_DIV(64, inst_num)
+//			`OPERATE_ON_SUB_DIV_64
+//			`undef X
+//			`define X(inst_num) `DISABLE_SUB_DIV(32, inst_num)
+//			`OPERATE_ON_SUB_DIV_32
+//			`undef X
+//			`define X(inst_num) `DISABLE_SUB_DIV(16, inst_num)
+//			`OPERATE_ON_SUB_DIV_16
+//			`undef X
+//			`define X(inst_num) `DISABLE_SUB_DIV(8, inst_num)
+//			`OPERATE_ON_SUB_DIV_8
+//			`undef X
+//			`undef DISABLE_SUB_DIV
+//
+//
+//			case (__captured_in_int_type_size)
+//			PkgSnow64Cpu::IntTypSz8:
+//			begin
+//				if (`OUT_INST_SUB_DIV__DATA_READY(8, 0))
+//				begin
+//					__state <= StIdle;
+//					__real_out_valid <= 1;
+//					`define X(inst_num) \
+//						__real_out_data[inst_num * 8 +: 8] \
+//							<= `OUT_INST_SUB_DIV__QUOT(8, inst_num);
+//					`OPERATE_ON_SUB_DIV_8
+//					`undef X
+//				end
+//			end
+//
+//			PkgSnow64Cpu::IntTypSz16:
+//			begin
+//				if (`OUT_INST_SUB_DIV__DATA_READY(16, 0))
+//				begin
+//					__state <= StIdle;
+//					__real_out_valid <= 1;
+//					`define X(inst_num) \
+//						__real_out_data[inst_num * 16 +: 16] \
+//							<= `OUT_INST_SUB_DIV__QUOT(16, inst_num);
+//					`OPERATE_ON_SUB_DIV_16
+//					`undef X
+//				end
+//			end
+//
+//			PkgSnow64Cpu::IntTypSz32:
+//			begin
+//				if (`OUT_INST_SUB_DIV__DATA_READY(32, 0))
+//				begin
+//					__state <= StIdle;
+//					__real_out_valid <= 1;
+//					`define X(inst_num) \
+//						__real_out_data[inst_num * 32 +: 32] \
+//							<= `OUT_INST_SUB_DIV__QUOT(32, inst_num);
+//					`OPERATE_ON_SUB_DIV_32
+//					`undef X
+//				end
+//			end
+//
+//			PkgSnow64Cpu::IntTypSz64:
+//			begin
+//				if (`OUT_INST_SUB_DIV__DATA_READY(64, 0))
+//				begin
+//					__state <= StIdle;
+//					__real_out_valid <= 1;
+//					`define X(inst_num) \
+//						__real_out_data[inst_num * 64 +: 64] \
+//							<= `OUT_INST_SUB_DIV__QUOT(64, inst_num);
+//					`OPERATE_ON_SUB_DIV_64
+//					`undef X
+//				end
+//			end
+//			endcase
+//		end
+//		endcase
+//	end
+//
+//
+//
+//
+//	`undef IN_INST_SUB_DIV
+//	`undef OUT_INST_SUB_DIV__QUOT
+//	`undef OUT_INST_SUB_DIV__REM
+//	`undef OUT_INST_SUB_DIV__CAN_ACCEPT_CMD
+//	`undef OUT_INST_SUB_DIV__DATA_READY
+//	`undef OPERATE_ON_SUB_DIV_64
+//	`undef OPERATE_ON_SUB_DIV_32
+//	`undef OPERATE_ON_SUB_DIV_16
+//	`undef OPERATE_ON_SUB_DIV_8
+//
+//endmodule
+
+
+// This only does 64-bit divides
 module Snow64VectorDiv(input logic clk,
 	input PkgSnow64ArithLog::PortIn_VectorDiv in,
 	output PkgSnow64ArithLog::PortOut_VectorDiv out);
 
-	enum logic
-	{
-		StIdle,
-		StWaitForSubDiv
-	} __state;
 
-	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0]
-		__captured_in_int_type_size;
-	logic __real_out_valid;
-	logic [`MSB_POS__SNOW64_LAR_FILE_DATA:0] __real_out_data;
+	wire [`MSB_POS__SNOW64_SIZE_64:0]
+		__out_inst_sub_div_0__quot,
+		__out_inst_sub_div_1__quot,
+		__out_inst_sub_div_2__quot,
+		__out_inst_sub_div_3__quot,
+		__out_inst_sub_div_0__rem,
+		__out_inst_sub_div_1__rem,
+		__out_inst_sub_div_2__rem,
+		__out_inst_sub_div_3__rem;
+	wire
+		__out_inst_sub_div_0__can_accept_cmd,
+		__out_inst_sub_div_1__can_accept_cmd,
+		__out_inst_sub_div_2__can_accept_cmd,
+		__out_inst_sub_div_3__can_accept_cmd,
+		__out_inst_sub_div_0__data_ready,
+		__out_inst_sub_div_1__data_ready,
+		__out_inst_sub_div_2__data_ready,
+		__out_inst_sub_div_3__data_ready;
 
-	`define IN_INST_SUB_DIV(width, inst_num) \
-		__in_inst_sub_div_``width``_``inst_num
-	`define OUT_INST_SUB_DIV__QUOT(width, inst_num) \
-		__out_inst_sub_div_``width``_``inst_num``__quot
-	`define OUT_INST_SUB_DIV__REM(width, inst_num) \
-		__out_inst_sub_div_``width``_``inst_num``__rem
-	`define OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(width, inst_num) \
-		__out_inst_sub_div_``width``_``inst_num``__can_accept_cmd
-	`define OUT_INST_SUB_DIV__DATA_READY(width, inst_num) \
-		__out_inst_sub_div_``width``_``inst_num``__data_ready
-	`define MAKE_INST_SUB_DIV(width, inst_num) \
-		Snow64NonRestoringDivider #(.WIDTH__ARGS(width)) \
-			__inst_sub_div_``width``_``inst_num(.clk(clk), \
-			.in_enable(`IN_INST_SUB_DIV(width, inst_num).enable), \
-			.in_signedness(`IN_INST_SUB_DIV(width, inst_num) \
-			.type_signedness), \
-			.in_num(`IN_INST_SUB_DIV(width, inst_num).num), \
-			.in_denom(`IN_INST_SUB_DIV(width, inst_num).denom), \
-			.out_quot(`OUT_INST_SUB_DIV__QUOT(width, inst_num)), \
-			.out_rem(`OUT_INST_SUB_DIV__REM(width, inst_num)), \
-			.out_can_accept_cmd \
-			(`OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(width, inst_num)), \
-			.out_data_ready(`OUT_INST_SUB_DIV__DATA_READY(width, \
-			inst_num)));
+	Snow64NonRestoringDivider #(.WIDTH__ARGS(64)) __inst_sub_div_0
+		(.clk(clk), .in_enable(in.enable),
+		.in_signedness(in.type_signedness),
+		.in_num(in.a[0 * 64 +: 64]), .in_denom(in.b[0 * 64 +: 64]),
+		.out_quot(__out_inst_sub_div_0__quot),
+		.out_rem(__out_inst_sub_div_0__rem),
+		.out_can_accept_cmd(__out_inst_sub_div_0__can_accept_cmd),
+		.out_data_ready(__out_inst_sub_div_0__data_ready));
+	Snow64NonRestoringDivider #(.WIDTH__ARGS(64)) __inst_sub_div_1
+		(.clk(clk), .in_enable(in.enable),
+		.in_signedness(in.type_signedness),
+		.in_num(in.a[1 * 64 +: 64]), .in_denom(in.b[1 * 64 +: 64]),
+		.out_quot(__out_inst_sub_div_1__quot),
+		.out_rem(__out_inst_sub_div_1__rem),
+		.out_can_accept_cmd(__out_inst_sub_div_1__can_accept_cmd),
+		.out_data_ready(__out_inst_sub_div_1__data_ready));
+	Snow64NonRestoringDivider #(.WIDTH__ARGS(64)) __inst_sub_div_2
+		(.clk(clk), .in_enable(in.enable),
+		.in_signedness(in.type_signedness),
+		.in_num(in.a[2 * 64 +: 64]), .in_denom(in.b[2 * 64 +: 64]),
+		.out_quot(__out_inst_sub_div_2__quot),
+		.out_rem(__out_inst_sub_div_2__rem),
+		.out_can_accept_cmd(__out_inst_sub_div_2__can_accept_cmd),
+		.out_data_ready(__out_inst_sub_div_2__data_ready));
+	Snow64NonRestoringDivider #(.WIDTH__ARGS(64)) __inst_sub_div_3
+		(.clk(clk), .in_enable(in.enable),
+		.in_signedness(in.type_signedness),
+		.in_num(in.a[3 * 64 +: 64]), .in_denom(in.b[3 * 64 +: 64]),
+		.out_quot(__out_inst_sub_div_3__quot),
+		.out_rem(__out_inst_sub_div_3__rem),
+		.out_can_accept_cmd(__out_inst_sub_div_3__can_accept_cmd),
+		.out_data_ready(__out_inst_sub_div_3__data_ready));
 
-	`define OPERATE_ON_SUB_DIV_64 \
-		`X(0) `X(1) `X(2) `X(3)
-	`define OPERATE_ON_SUB_DIV_32 \
-		`X(0) `X(1) `X(2) `X(3) \
-		`X(4) `X(5) `X(6) `X(7)
-	`define OPERATE_ON_SUB_DIV_16 \
-		`X(0) `X(1) `X(2) `X(3) \
-		`X(4) `X(5) `X(6) `X(7) \
-		`X(8) `X(9) `X(10) `X(11) \
-		`X(12) `X(13) `X(14) `X(15)
-	`define OPERATE_ON_SUB_DIV_8 \
-		`X(0) `X(1) `X(2) `X(3) \
-		`X(4) `X(5) `X(6) `X(7) \
-		`X(8) `X(9) `X(10) `X(11) \
-		`X(12) `X(13) `X(14) `X(15) \
-		`X(16) `X(17) `X(18) `X(19) \
-		`X(20) `X(21) `X(22) `X(23) \
-		`X(24) `X(25) `X(26) `X(27) \
-		`X(28) `X(29) `X(30) `X(31)
-
-	struct packed
-	{
-		logic enable, type_signedness;
-		logic [`MSB_POS__SNOW64_SIZE_64:0] num, denom;
-	} __in_inst_sub_div_64_0, __in_inst_sub_div_64_1,
-		__in_inst_sub_div_64_2, __in_inst_sub_div_64_3;
-
-	`define X(inst_num) \
-	logic [`MSB_POS__SNOW64_SIZE_64:0] \
-		`OUT_INST_SUB_DIV__QUOT(64, inst_num), \
-		`OUT_INST_SUB_DIV__REM(64, inst_num); \
-	logic `OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(64, inst_num), \
-		`OUT_INST_SUB_DIV__DATA_READY(64, inst_num);
-	`OPERATE_ON_SUB_DIV_64
-	`undef X
-
-
-	//Snow64NonRestoringDivider
-
-	`define MAKE_SUB_DIV_PORTS(width, inst_num) \
-	struct packed \
-	{ \
-		logic enable, type_signedness; \
-		logic [`WIDTH2MP(width):0] num, denom; \
-	} `IN_INST_SUB_DIV(width, inst_num); \
-	\
-	logic [`WIDTH2MP(width):0] \
-		`OUT_INST_SUB_DIV__QUOT(width, inst_num), \
-		`OUT_INST_SUB_DIV__REM(width, inst_num); \
-	logic `OUT_INST_SUB_DIV__CAN_ACCEPT_CMD(width, inst_num), \
-		`OUT_INST_SUB_DIV__DATA_READY(width, inst_num);
-
-	`define X(inst_num) `MAKE_SUB_DIV_PORTS(32, inst_num)
-	`OPERATE_ON_SUB_DIV_32
-	`undef X
-	`define X(inst_num) `MAKE_SUB_DIV_PORTS(16, inst_num)
-	`OPERATE_ON_SUB_DIV_16
-	`undef X
-	`define X(inst_num) `MAKE_SUB_DIV_PORTS(8, inst_num)
-	`OPERATE_ON_SUB_DIV_8
-	`undef X
-
-	`undef MAKE_SUB_DIV_PORTS
-
-
-	`define X(inst_num) `MAKE_INST_SUB_DIV(64, inst_num)
-	`OPERATE_ON_SUB_DIV_64
-	`undef X
-
-	`define X(inst_num) `MAKE_INST_SUB_DIV(32, inst_num)
-	`OPERATE_ON_SUB_DIV_32
-	`undef X
-
-	`define X(inst_num) `MAKE_INST_SUB_DIV(16, inst_num)
-	`OPERATE_ON_SUB_DIV_16
-	`undef X
-
-	`define X(inst_num) `MAKE_INST_SUB_DIV(8, inst_num)
-	`OPERATE_ON_SUB_DIV_8
-	`undef X
-
-
-	`undef MAKE_INST_SUB_DIV
-
-	initial
-	begin
-		__state = StIdle;
-		__captured_in_int_type_size = 0;
-		__real_out_valid = 0;
-		__real_out_data = 0;
-
-		`define X(inst_num) `IN_INST_SUB_DIV(64, inst_num) = 0;
-		`OPERATE_ON_SUB_DIV_64
-		`undef X
-
-		`define X(inst_num) `IN_INST_SUB_DIV(32, inst_num) = 0;
-		`OPERATE_ON_SUB_DIV_32
-		`undef X
-
-		`define X(inst_num) `IN_INST_SUB_DIV(16, inst_num) = 0;
-		`OPERATE_ON_SUB_DIV_16
-		`undef X
-
-		`define X(inst_num) `IN_INST_SUB_DIV(8, inst_num) = 0;
-		`OPERATE_ON_SUB_DIV_8
-		`undef X
-	end
-
-	assign out.valid = __real_out_valid;
-	assign out.data = __real_out_data;
-
-	always_ff @(posedge clk)
-	begin
-		case (__state)
-		StIdle:
-		begin
-			__captured_in_int_type_size <= in.int_type_size;
-			__real_out_valid <= 0;
-
-
-			if (in.enable)
-			begin
-				__state <= StWaitForSubDiv;
-
-				`define START_SUB_DIV(width, inst_num) \
-					`IN_INST_SUB_DIV(width, inst_num).enable <= 1; \
-					`IN_INST_SUB_DIV(width, inst_num).type_signedness \
-						<= in.type_signedness; \
-					`IN_INST_SUB_DIV(width, inst_num).num \
-						<= in.a[inst_num * width +: width]; \
-					`IN_INST_SUB_DIV(width, inst_num).denom \
-						<= in.b[inst_num * width +: width];
-				case (in.int_type_size)
-				PkgSnow64Cpu::IntTypSz8:
-				begin
-					`define X(inst_num) `START_SUB_DIV(8, inst_num)
-					`OPERATE_ON_SUB_DIV_8
-					`undef X
-				end
-
-				PkgSnow64Cpu::IntTypSz16:
-				begin
-					`define X(inst_num) `START_SUB_DIV(16, inst_num)
-					`OPERATE_ON_SUB_DIV_16
-					`undef X
-				end
-
-				PkgSnow64Cpu::IntTypSz32:
-				begin
-					`define X(inst_num) `START_SUB_DIV(32, inst_num)
-					`OPERATE_ON_SUB_DIV_32
-					`undef X
-				end
-
-				PkgSnow64Cpu::IntTypSz64:
-				begin
-					`define X(inst_num) `START_SUB_DIV(64, inst_num)
-					`OPERATE_ON_SUB_DIV_64
-					`undef X
-				end
-				endcase
-
-				`undef START_SUB_DIV
-			end
-		end
-
-		StWaitForSubDiv:
-		begin
-			`define DISABLE_SUB_DIV(which, inst_num) \
-				`IN_INST_SUB_DIV(which, inst_num).enable <= 0;
-
-			`define X(inst_num) `DISABLE_SUB_DIV(64, inst_num)
-			`OPERATE_ON_SUB_DIV_64
-			`undef X
-			`define X(inst_num) `DISABLE_SUB_DIV(32, inst_num)
-			`OPERATE_ON_SUB_DIV_32
-			`undef X
-			`define X(inst_num) `DISABLE_SUB_DIV(16, inst_num)
-			`OPERATE_ON_SUB_DIV_16
-			`undef X
-			`define X(inst_num) `DISABLE_SUB_DIV(8, inst_num)
-			`OPERATE_ON_SUB_DIV_8
-			`undef X
-			`undef DISABLE_SUB_DIV
-
-
-			case (__captured_in_int_type_size)
-			PkgSnow64Cpu::IntTypSz8:
-			begin
-				if (`OUT_INST_SUB_DIV__DATA_READY(8, 0))
-				begin
-					__state <= StIdle;
-					__real_out_valid <= 1;
-					`define X(inst_num) \
-						__real_out_data[inst_num * 8 +: 8] \
-							<= `OUT_INST_SUB_DIV__QUOT(8, inst_num);
-					`OPERATE_ON_SUB_DIV_8
-					`undef X
-				end
-			end
-
-			PkgSnow64Cpu::IntTypSz16:
-			begin
-				if (`OUT_INST_SUB_DIV__DATA_READY(16, 0))
-				begin
-					__state <= StIdle;
-					__real_out_valid <= 1;
-					`define X(inst_num) \
-						__real_out_data[inst_num * 16 +: 16] \
-							<= `OUT_INST_SUB_DIV__QUOT(16, inst_num);
-					`OPERATE_ON_SUB_DIV_16
-					`undef X
-				end
-			end
-
-			PkgSnow64Cpu::IntTypSz32:
-			begin
-				if (`OUT_INST_SUB_DIV__DATA_READY(32, 0))
-				begin
-					__state <= StIdle;
-					__real_out_valid <= 1;
-					`define X(inst_num) \
-						__real_out_data[inst_num * 32 +: 32] \
-							<= `OUT_INST_SUB_DIV__QUOT(32, inst_num);
-					`OPERATE_ON_SUB_DIV_32
-					`undef X
-				end
-			end
-
-			PkgSnow64Cpu::IntTypSz64:
-			begin
-				if (`OUT_INST_SUB_DIV__DATA_READY(64, 0))
-				begin
-					__state <= StIdle;
-					__real_out_valid <= 1;
-					`define X(inst_num) \
-						__real_out_data[inst_num * 64 +: 64] \
-							<= `OUT_INST_SUB_DIV__QUOT(64, inst_num);
-					`OPERATE_ON_SUB_DIV_64
-					`undef X
-				end
-			end
-			endcase
-		end
-		endcase
-	end
-
-
-
-
-	`undef IN_INST_SUB_DIV
-	`undef OUT_INST_SUB_DIV__QUOT
-	`undef OUT_INST_SUB_DIV__REM
-	`undef OUT_INST_SUB_DIV__CAN_ACCEPT_CMD
-	`undef OUT_INST_SUB_DIV__DATA_READY
-	`undef OPERATE_ON_SUB_DIV_64
-	`undef OPERATE_ON_SUB_DIV_32
-	`undef OPERATE_ON_SUB_DIV_16
-	`undef OPERATE_ON_SUB_DIV_8
+	assign out.valid = __out_inst_sub_div_0__data_ready;
+	assign out.data
+		= {__out_inst_sub_div_3__quot, __out_inst_sub_div_2__quot,
+		__out_inst_sub_div_1__quot, __out_inst_sub_div_0__quot};
 
 endmodule
 
