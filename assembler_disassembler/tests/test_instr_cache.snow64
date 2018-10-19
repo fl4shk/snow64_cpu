@@ -28,8 +28,6 @@
 
 .equ NUM_BYTES__LAR_DATA (4 * NUM_BYTES__SIZE_64)
 
-.equ OFFSET_PCREL__RIGHT_AFTER_CALL (2 * NUM_BYTES__SIZE_32)
-
 start:
 {
 	// We don't need a pc-relative load in this case.
@@ -55,15 +53,10 @@ start:
 	.equ __CALL_MAIN_SP_OFFSET__RETURN_VAL (-(0 * NUM_BYTES__SIZE_64))
 	.equ __CALL_MAIN_SP_OFFSET__RETURN_ADDR (-(1 * NUM_BYTES__SIZE_64))
 
-
 	ldu8 dsp, dsp, dzero, -__CALL_MAIN_STACK_SPACE
 
 
 	ldu64 dlr, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
-	//addis dlr, pc, OFFSET_PCREL__RIGHT_AFTER_CALL
-	//bra main
-	cpys dzero, dzero
-	cpys dzero, dzero
 	bl main
 
 
@@ -75,7 +68,6 @@ __after_call_main:
 	// Copy main()'s return value to outside the partial stack frame
 	ldu64 du3, dfp, dzero, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
 	ldu64 du1, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_VAL
-	//adds du3, dzero, du1
 	cpys du3, du1
 
 
@@ -103,11 +95,15 @@ global_vars:
 .codealign
 main:
 {
-	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
+	.equ __LOCAL_STACK_SPACE (2 * NUM_BYTES__LAR_DATA)
 	.equ __LOCAL_SP_OFFSET__TEMP_0 (0 * NUM_BYTES__SIZE_64)
 	.equ __LOCAL_SP_OFFSET__TEMP_1 (1 * NUM_BYTES__SIZE_64)
 	.equ __LOCAL_SP_OFFSET__TEMP_2 (2 * NUM_BYTES__SIZE_64)
 	.equ __LOCAL_SP_OFFSET__TEMP_3 (3 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_4 (4 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_5 (5 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_6 (6 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_7 (7 * NUM_BYTES__SIZE_64)
 
 
 	.equ __LOCAL_FP_OFFSET__RETURN_VAL (-(0 * NUM_BYTES__SIZE_64))
@@ -122,21 +118,6 @@ main:
 	ldu64 du3, dsp, dzero, __LOCAL_SP_OFFSET__TEMP_2
 	ldu64 du4, dsp, dzero, __LOCAL_SP_OFFSET__TEMP_3
 
-
-	//pcrels du1, __pool
-	//ldu16 du5, dzero, du1, (0 * NUM_BYTES__SIZE_16)
-	//ldu16 du6, dzero, du1, (1 * NUM_BYTES__SIZE_16)
-
-	// ret = ((9 << 3) * 57);
-	//addis du3, dzero, 9
-	//addis du2, dzero, 3
-	cpyis du3, 9
-	cpyis du2, 3
-	shls du1, du3, du2
-
-	//addis du2, dzero, 57
-	cpyis du2, 57
-	muls du0, du1, du2
 
 
 __finish:

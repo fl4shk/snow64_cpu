@@ -1,4 +1,4 @@
-.equ reg_dzero 0
+.equ REG_DZERO 0
 .equ REG_DU0 1
 .equ REG_DU1 2
 .equ REG_DU2 3
@@ -26,100 +26,251 @@
 .equ NUM_BYTES__SIZE_32 (32 / 8)
 .equ NUM_BYTES__SIZE_64 (64 / 8)
 
-.equ CODE_ALIGN_AMOUNT 2
-
+// 32 bytes
 .equ NUM_BYTES__LAR_DATA (4 * NUM_BYTES__SIZE_64)
-
-.equ OFFSET_PCREL__RIGHT_AFTER_CALL (2 * NUM_BYTES__SIZE_32)
 
 start:
 {
-	// We don't need a pc-relative load in this case.
-	ldu32 du0, dzero, dzero, __const__above_top_of_stack
-	ldu8 dsp, dzero, du0, 0
+	// We can't use pc-relative loads in this case.
+	ldu64 dsp, dzero, dzero, __var__stack_pointer
+	ldu64 dfp, dzero, dzero, __var__frame_pointer
 
 
+	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
+	.equ __LOCAL_SP_OFFSET__TEMP (3 * NUM_BYTES__SIZE_64)
 
-	.equ __LOCAL_STACK_SPACE NUM_BYTES__LAR_DATA
-	.equ __LOCAL_SP_OFFSET__TEMP (0 * NUM_BYTES__SIZE_64)
-
+	// First element of the start()'s stack frame
 	.equ __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL \
 		(-(1 * NUM_BYTES__SIZE_64))
 
 
-	ldu8 dfp, dsp, dzero, 0
-	ldu8 dsp, dsp, dzero, -__LOCAL_STACK_SPACE
+	cpys dfp, dsp
+	addis dsp, dsp, -__LOCAL_STACK_SPACE
 
+
+	ldu64 du0, dzero, dsp, __LOCAL_SP_OFFSET__TEMP
+	sim_syscall du0, dzero, dzero, SYSC_DISP_DDEST_ADDR
+	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
+	sim_syscall du0, dzero, dzero, SYSC_DISP_DDEST_ADDR
 
 
 
 	.equ __CALL_MAIN_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
-	.equ __CALL_MAIN_SP_OFFSET__RETURN_VAL (0 * NUM_BYTES__SIZE_64)
-	.equ __CALL_MAIN_SP_OFFSET__RETURN_ADDR (1 * NUM_BYTES__SIZE_64)
+	.equ __CALL_MAIN_SP_OFFSET__RETURN_ADDR (3 * NUM_BYTES__SIZE_64)
+	.equ __CALL_MAIN_SP_OFFSET__RETURN_VAL (2 * NUM_BYTES__SIZE_64)
 
+	addis dsp, dsp, -__CALL_MAIN_STACK_SPACE
 
-	ldu8 dsp, dsp, dzero, -__CALL_MAIN_STACK_SPACE
-
-
-	ldu64 dlr, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
-	addis dlr, pc, OFFSET_PCREL__RIGHT_AFTER_CALL
-	bra main
+	ldu64 dlr, dzero, dsp, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
+	bl main
 
 
 __after_call_main:
 	// Restore dfp
-	ldu8 dfp, dsp, dzero, (__CALL_MAIN_STACK_SPACE + __LOCAL_STACK_SPACE)
+	addis dfp, dfp, (__CALL_MAIN_STACK_SPACE + __LOCAL_STACK_SPACE)
 
 
 	// Copy main()'s return value to outside the partial stack frame
-	ldu64 du3, dfp, dzero, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
-	ldu64 du1, dsp, dzero, __CALL_MAIN_SP_OFFSET__RETURN_VAL
-	adds du3, dzero, du1
+	ldu64 du3, dzero, dfp, __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL
+	ldu64 du1, dzero, dsp, __CALL_MAIN_SP_OFFSET__RETURN_VAL
+	cpys du3, du1
 
 
 	// Restore dsp
-	ldu8 dsp, dsp, dzero, __CALL_MAIN_STACK_SPACE
+	addis dsp, dsp, __CALL_MAIN_STACK_SPACE
 
 __finish:
 	sim_syscall du3, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
 	sim_syscall dzero, dzero, dzero, SYSC_FINISH
 
-__pool:
-__const__above_top_of_stack:
-	.db32 0x10000
-__const__addr_of_main:
-	.db16 main
-	//.db16 main
-	//.db16 main
-}
+__infin:
+	// Just in case
+	bra __infin
 
+
+__pool:
 
 __vars:
+// To be able to use pointers to things on the stack, it is necessary to
+// have the stack pointer itself be allocated in memory.
+__var__stack_pointer:
+	.db64 0x10000
+__var__frame_pointer:
+	.db64 0
+}
 
-.org .align2next(., CODE_ALIGN_AMOUNT)
-//.org .align2next(., 2)
+.dataalign
+global_constants:
+
+.dataalign
+global_vars:
+
+
+.codealign
 main:
 {
 	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
-	.equ __LOCAL_SP_OFFSET__TEMP (0 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_0 (0 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_1 (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_2 (2 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_3 (3 * NUM_BYTES__SIZE_64)
 
 
-	.equ __LOCAL_FP_OFFSET__RETURN_VAL (0 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (1 * NUM_BYTES__SIZE_64)
-	ldu8 dfp, dsp, dzero, 0
-	ldu8 dsp, dsp, dzero, -__LOCAL_STACK_SPACE
+	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (-(1 * NUM_BYTES__SIZE_64))
+	.equ __LOCAL_FP_OFFSET__RETURN_VAL (-(2 * NUM_BYTES__SIZE_64))
+	cpys dfp, dsp
+	addis dsp, dsp, -__LOCAL_STACK_SPACE
 
 
-	ldu64 du0, dfp, dzero, __LOCAL_FP_OFFSET__RETURN_VAL
-	adds du0, dzero, dzero
+	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_ADDR
+	sim_syscall du0, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
+	sim_syscall du0, dzero, dzero, SYSC_DISP_DDEST_ADDR
 
-	//ldu64 du1, dsp, dzero, __LOCAL_SP_OFFSET__TEMP
 
-	//pcrels du1, __pool
+
+	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
+
+	ldu64 du1, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
+	ldu64 du2, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
+	ldu64 du3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
+	ldu64 du4, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
+
+
+	cpyis du0, 0x326
+	cpyis du4, 16
+	shls du0, du0, du4
+
+	cpyis du1, 0x19
+	cpyis du4, 8
+	shls du1, du1, du4
+
+	cpyis du2, 0x94
+	orrs du1, du1, du2
+	orrs du0, du0, du1
+
+__finish:
+	addis dsp, dsp, __LOCAL_STACK_SPACE
+
+	jmp dlr
+
+__pool:
+}
+
+
+.codealign
+
+// void insertion_sort_u8(u8* A, u64 A_size)
+insertion_sort_u8:
+{
+	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
+	.equ __LOCAL_SP_OFFSET__I (0 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__J (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__CMP_TEMP (2 * NUM_BYTES__SIZE_64)
+
+
+	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (-(0 * NUM_BYTES__SIZE_64))
+	.equ __LOCAL_FP_OFFSET__RETURN_VAL (-(1 * NUM_BYTES__SIZE_64))
+	.equ __LOCAL_FP_OFFSET__A (-(2 * NUM_BYTES__SIZE_64))
+	.equ __LOCAL_FP_OFFSET__A_SIZE (-(3 * NUM_BYTES__SIZE_64))
+
+	.equ __ARG__A REG_DU0
+	.equ __ARG__A_SIZE REG_DU1
+	.equ __ACC__A_OF_J_MINUS_1 REG_DU2
+	.equ __ACC__A_OF_J REG_DU3
+	.equ __VAR__I REG_DU4
+	.equ __VAR__J REG_DU5
+	.equ __VAR__CMP_TEMP REG_DU6
+
+	cpys dfp, dsp
+	addis dsp, dsp, -__LOCAL_STACK_SPACE
+
+
+	// Just clear the return value
+	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
+	cpys du0, dzero
+
+
+
+	// __ARG__A.addr = A;
+	ldu64 __ARG__A, dzero, dfp, __LOCAL_FP_OFFSET__A
+	ldu8 __ARG__A, dzero, __ARG__A, 0
+
+
+	// __ARG__A_SIZE.data = A_size;
+	ldu64 __ARG__A_SIZE, dzero, dfp, __LOCAL_FP_OFFSET__A_SIZE
+
+
+
+	// __VAR__I.addr = &i;
+	ldu64 __VAR__I, dzero, dsp, __LOCAL_SP_OFFSET__I
+
+	// __VAR__J.addr = &j;
+	ldu64 __VAR__J, dzero, dsp, __LOCAL_SP_OFFSET__J
+
+	// __VAR__CMP_TEMP = &cmp_temp;
+	ldu64 __VAR__CMP_TEMP, dzero, dsp, __LOCAL_SP_OFFSET__CMP_TEMP
+
+
+
+	// i = 1;
+	cpyis __VAR__I, 1
+
+	// while (i < A_size)
+__outer_loop:
+	{
+		// if (i >= A_size) goto __after_outer_loop
+		slts __VAR__CMP_TEMP,  __VAR__I, __ARG__A_SIZE
+		bfal __VAR__CMP_TEMP, __after_outer_loop
+
+		// j = i;
+		cpys __VAR__J, __VAR__I
+
+		// while ((j > 0) && (A[j - 1] > A[j]))
+	__inner_loop:
+		{
+			// if (j != 0) goto __after_inner_loop
+			btru __VAR__J, __after_inner_loop
+
+			// __ACC__A_OF_J.addr = A[j + 0];
+			ldu8 __ACC__A_OF_J, __ARG__A, __VAR__J, 0
+
+			// __ACC__A_OF_J_MINUS_1.addr = 
+			ldu8 __ACC__A_OF_J_MINUS_1, __ARG__A, __VAR__J, -1
+
+			// if (A[j - 1] == A[j]) goto __after_inner_loop
+			subs __VAR__CMP_TEMP, __ACC__A_OF_J_MINUS_1, __ACC__A_OF_J
+			bfal __VAR__CMP_TEMP, __after_inner_loop
+
+			// if (A[j - 1] < A[j]) goto __after_inner_loop
+			slts __VAR__CMP_TEMP, __ACC__A_OF_J_MINUS_1, __ACC__A_OF_J
+			btru __VAR__CMP_TEMP, __after_inner_loop
+
+
+			// swap A[j] and A[j - 1]
+			xors __ACC__A_OF_J, __ACC__A_OF_J, __ACC__A_OF_J_MINUS_1
+			xors __ACC__A_OF_J_MINUS_1, __ACC__A_OF_J_MINUS_1, \
+				__ACC__A_OF_J
+			xors __ACC__A_OF_J, __ACC__A_OF_J, __ACC__A_OF_J_MINUS_1
+
+			// --j;
+			addis __VAR__J, __VAR__J, -1
+
+			bra __inner_loop
+		}
+	__after_inner_loop:
+
+	// ++i;
+	addis __VAR__I, __VAR__I, 1
+
+
+	bra __outer_loop
+	}
+
+__after_outer_loop:
 
 
 __finish:
-	ldu8 dsp, dsp, dzero, __LOCAL_STACK_SPACE
+	addis dsp, dsp, __LOCAL_STACK_SPACE
 	jmp dlr
 
 __pool:
