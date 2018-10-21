@@ -72,9 +72,9 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 	logic [__MSB_POS__ARR_INDEX:0]
 		__search_result_0_to_7, __search_result_8_to_15;
 
-	assign out.data = __almost_out_data;
-	assign out.valid = __temp_out_valid;
-	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
+	always @(*) out.data = __almost_out_data;
+	always @(*) out.valid = __temp_out_valid;
+	always @(*) out.can_accept_cmd = __temp_out_can_accept_cmd;
 
 	task iteration_end;
 		input [__MSB_POS__ARR_INDEX:0] some_index;
@@ -399,6 +399,8 @@ module Snow64LongDivU16ByU8Radix16(input logic clk,
 					__state <= StIdle;
 					__temp_out_valid <= 1;
 					__temp_out_can_accept_cmd <= 1;
+					//$display("Snow64LongDivU16ByU8Radix16:  stuff:  %h",
+					//	__almost_out_data);
 				end
 			end
 		endcase

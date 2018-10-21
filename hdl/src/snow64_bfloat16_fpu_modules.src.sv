@@ -192,12 +192,18 @@ module Snow64BFloat16Fpu(input logic clk,
 		end
 	end
 
-	always_ff @(posedge clk)
+	always @(posedge clk)
 	begin
 		if (in.start && out.can_accept_cmd)
 		begin
+			//$display("FPU starting:  %h %h %h", in.oper, in.a, in.b);
 			__captured_in_oper <= in.oper;
 		end
+
+		//if (out.valid)
+		//begin
+		//	$display("FPU out.valid:  %h", out.data);
+		//end
 	end
 endmodule
 
@@ -251,4 +257,18 @@ module Snow64BFloat16VectorFpu(input logic clk,
 	`undef IN_INST_SUB_FPU
 	`undef OUT_INST_SUB_FPU
 	`undef OPERATE_ON_SUB_FPU
+
+	//always @(posedge clk)
+	//begin
+	//	if (in.start)
+	//	begin
+	//		$display("Snow64BFloat16VectorFpu:  in.start:  %h %h %h",
+	//			in.oper, in.a, in.b);
+	//	end
+	//	if (out.valid)
+	//	begin
+	//		$display("Snow64BFloat16VectorFpu:  out.valid:  %h",
+	//			out.data);
+	//	end
+	//end
 endmodule

@@ -15,9 +15,9 @@ module Snow64BFloat16CastFromInt(input logic clk,
 	PkgSnow64BFloat16::BFloat16 __temp_out_data;
 	logic [`MSB_POS__SNOW64_SIZE_64:0] __temp_ret_enc_exp;
 
-	assign out.valid = __temp_out_valid;
-	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
-	assign out.data = __temp_out_data;
+	always @(*) out.valid = __temp_out_valid;
+	always @(*) out.can_accept_cmd = __temp_out_can_accept_cmd;
+	always @(*) out.data = __temp_out_data;
 
 	logic [`MSB_POS__SNOW64_SIZE_64:0] __width;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __captured_in_type_size;
@@ -215,9 +215,9 @@ module Snow64BFloat16CastToInt(input logic clk,
 	logic __temp_out_valid, __temp_out_can_accept_cmd;
 	logic [`MSB_POS__SNOW64_SIZE_64:0] __temp_out_data, __temp_for_sticky;
 
-	assign out.valid = __temp_out_valid;
-	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
-	assign out.data = __temp_out_data;
+	always @(*) out.valid = __temp_out_valid;
+	always @(*) out.can_accept_cmd = __temp_out_can_accept_cmd;
+	always @(*) out.data = __temp_out_data;
 
 
 	//logic [`MSB_POS__SNOW64_BFLOAT16_ITSELF:0] __captured_in_to_cast;
@@ -304,6 +304,8 @@ module Snow64BFloat16CastToInt(input logic clk,
 		begin
 			if (in.start)
 			begin
+				//$display("__curr_in_to_cast:  %h",
+				//	__curr_in_to_cast);
 				__temp_out_data = `SNOW64_BFLOAT16_FRAC(__curr_in_to_cast);
 
 				//__curr_exp = `SIGN_EXTEND(`WIDTH__SNOW64_SIZE_64,

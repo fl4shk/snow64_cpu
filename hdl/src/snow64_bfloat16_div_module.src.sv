@@ -66,15 +66,25 @@ module Snow64BFloat16Div(input logic clk,
 
 
 
-	always_ff @(posedge clk)
+	always @(posedge clk)
 	begin
 		//__prev_state <= __state;
+
+		//if (__state != PkgSnow64BFloat16::StDivIdle)
+		//begin
+		//	$display("Snow64BFloat16Div non-idle stuff:  %h %h; %h %h",
+		//		{__captured_in_a, __captured_in_b},
+		//		{__captured_in_a.sign ^ __captured_in_b.sign},
+		//		__state, __temp_out_data);
+		//end
 
 		case (__state)
 		PkgSnow64BFloat16::StDivIdle:
 		begin
 			if (in.start)
 			begin
+				//$display("Snow64BFloat16Div in.start:  %h %h",
+				//	__curr_in_a, __curr_in_b);
 				__state <= PkgSnow64BFloat16::StDivStartingLongDiv;
 				__captured_in_a <= __curr_in_a;
 				__captured_in_b <= __curr_in_b;

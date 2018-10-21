@@ -257,11 +257,16 @@ module Snow64PsExRotateLarData(input logic in_forced_64_bit_integers,
 
 	// We don't care about PkgSnow64Cpu::DataTypReserved, so we'll pretend
 	// it doesn't exist.
+	//wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __ddest_type_size
+	//	= in_forced_64_bit_integers
+	//	? PkgSnow64Cpu::IntTypSz64
+	//	: ((in_true_ra_data.data_type == PkgSnow64Cpu::DataTypBFloat16)
+	//	? PkgSnow64Cpu::IntTypSz16 : in_true_ra_data.int_type_size);
 	wire [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] __ddest_type_size
-		= in_forced_64_bit_integers
-		? PkgSnow64Cpu::IntTypSz64
-		: ((in_true_ra_data.data_type == PkgSnow64Cpu::DataTypBFloat16)
-		? PkgSnow64Cpu::IntTypSz16 : in_true_ra_data.int_type_size);
+		= (in_true_ra_data.data_type == PkgSnow64Cpu::DataTypBFloat16)
+		? PkgSnow64Cpu::IntTypSz16
+		: (in_forced_64_bit_integers
+		? PkgSnow64Cpu::IntTypSz64 : in_true_ra_data.int_type_size);
 
 
 	wire [__MSB_POS__DATA:0]
@@ -569,12 +574,12 @@ module Snow64PsExCastScalars(input logic clk,
 	// } PortIn_CastToInt;
 	assign __in_inst_dsrc0_bfloat16_cast_to_int
 		= {__dsrc0_start_bfloat16_cast_to_int,
-		__dsrc0__uncasted_scalar_data,
+		__dsrc0__uncasted_scalar_data[`MSB_POS__SNOW64_BFLOAT16_ITSELF:0],
 		__dsrc0__int_type_size,
 		__dsrc0__is_signed_int};
 	assign __in_inst_dsrc1_bfloat16_cast_to_int
 		= {__dsrc1_start_bfloat16_cast_to_int,
-		__dsrc1__uncasted_scalar_data,
+		__dsrc1__uncasted_scalar_data[`MSB_POS__SNOW64_BFLOAT16_ITSELF:0],
 		__dsrc1__int_type_size,
 		__dsrc1__is_signed_int};
 
@@ -641,6 +646,18 @@ module Snow64PsExCastScalars(input logic clk,
 
 	always @(posedge clk)
 	begin
+		//if (__starting_any_cast)
+		//begin
+		//	$display("Snow64PsExCastScalars:  %h %h; %h %h; %h %h",
+		//		__dsrc0_start_bfloat16_cast_from_int,
+		//		__dsrc1_start_bfloat16_cast_from_int,
+		//		__dsrc0_start_bfloat16_cast_to_int,
+		//		__dsrc1_start_bfloat16_cast_to_int,
+		//		__dsrc0__uncasted_scalar_data,
+		//		__dsrc1__uncasted_scalar_data);
+		//end
+
+
 		//$display("Snow64PsExCastScalars:  %h %h; %h",
 		//	out_casted_rb_scalar_data, out_casted_rc_scalar_data,
 		//	__starting_any_cast);
@@ -2271,6 +2288,19 @@ module Snow64PipeStageEx(input logic clk,
 		//		__dsrc1_data_to_use,
 		//		__curr_results.computed_data,
 		//		__true_ra_data.data);
+		//end
+		//endcase
+		//case (__next_state)
+		//PkgSnow64PsEx::StWaitForMultiCycleOp:
+		//begin
+		//	$display("EX __next_state WaitFMCO:  %h %h %h; %h %h; %h %h",
+		//		__in_inst_use_vector_mul__start,
+		//		__in_inst_use_vector_div__start,
+		//		__in_inst_use_vector_bfloat16_fpu__start,
+		//		__dsrc0_data_to_use,
+		//		__dsrc1_data_to_use,
+		//		__rotated_dsrc0_data,
+		//		__rotated_dsrc1_data);
 		//end
 		//endcase
 

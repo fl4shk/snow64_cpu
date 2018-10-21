@@ -69,9 +69,9 @@ module Snow64LongDivU16ByU8Radix8(input logic clk,
 	logic [__MSB_POS__ARR_INDEX:0] 
 		__search_result_0_1_2_3, __search_result_4_5_6_7;
 
-	assign out.data = __almost_out_data;
-	assign out.valid = __temp_out_valid;
-	assign out.can_accept_cmd = __temp_out_can_accept_cmd;
+	always @(*) out.data = __almost_out_data;
+	always @(*) out.valid = __temp_out_valid;
+	always @(*) out.can_accept_cmd = __temp_out_can_accept_cmd;
 	//always @(*) out.data = __almost_out_data;
 
 	task iteration_end;

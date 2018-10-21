@@ -58,7 +58,6 @@ start:
 	addis dsp, dsp, -__CALL_MAIN_STACK_SPACE
 
 	ldu64 dlr, dzero, dsp, __CALL_MAIN_SP_OFFSET__RETURN_ADDR
-
 	bl main
 
 
@@ -101,11 +100,19 @@ gvar__frame_pointer:
 .codealign
 main:
 {
-	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
+	.equ __LOCAL_STACK_SPACE (2 * NUM_BYTES__LAR_DATA)
 	.equ __LOCAL_SP_OFFSET__TEMP_0 (0 * NUM_BYTES__SIZE_64)
 	.equ __LOCAL_SP_OFFSET__TEMP_1 (1 * NUM_BYTES__SIZE_64)
 	.equ __LOCAL_SP_OFFSET__TEMP_2 (2 * NUM_BYTES__SIZE_64)
 	.equ __LOCAL_SP_OFFSET__TEMP_3 (3 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__FLOAT_TEMP_0 \
+		((4 * NUM_BYTES__SIZE_64) + (0 * NUM_BYTES__SIZE_16))
+	.equ __LOCAL_SP_OFFSET__FLOAT_TEMP_1 \
+		((4 * NUM_BYTES__SIZE_64) + (1 * NUM_BYTES__SIZE_16))
+	.equ __LOCAL_SP_OFFSET__FLOAT_TEMP_2 \
+		((4 * NUM_BYTES__SIZE_64) + (2 * NUM_BYTES__SIZE_16))
+	.equ __LOCAL_SP_OFFSET__FLOAT_TEMP_3 \
+		((4 * NUM_BYTES__SIZE_64) + (2 * NUM_BYTES__SIZE_16))
 
 
 	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (3 * NUM_BYTES__SIZE_64)
@@ -119,24 +126,34 @@ main:
 	.equ V__TEMP_1 REG_DU2
 	.equ V__TEMP_2 REG_DU3
 	.equ V__TEMP_3 REG_DU4
+	.equ V__FLOAT_TEMP_0 REG_DU5
+	.equ V__FLOAT_TEMP_1 REG_DU6
+	.equ V__FLOAT_TEMP_2 REG_DU7
+	.equ V__FLOAT_TEMP_3 REG_DU8
 
 	ldu64 V__RET_VAL, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
 	ldu64 V__TEMP_0, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
 	ldu64 V__TEMP_1, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
 	ldu64 V__TEMP_2, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
 	ldu64 V__TEMP_3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
+	ldf16 V__FLOAT_TEMP_0, dzero, dsp, __LOCAL_SP_OFFSET__FLOAT_TEMP_0
+	ldf16 V__FLOAT_TEMP_1, dzero, dsp, __LOCAL_SP_OFFSET__FLOAT_TEMP_1
+	ldf16 V__FLOAT_TEMP_2, dzero, dsp, __LOCAL_SP_OFFSET__FLOAT_TEMP_2
+	ldf16 V__FLOAT_TEMP_3, dzero, dsp, __LOCAL_SP_OFFSET__FLOAT_TEMP_3
 
-	cpyis V__RET_VAL, 0x326
-	cpyis V__TEMP_3, 16
-	shls V__RET_VAL, V__RET_VAL, V__TEMP_3
 
-	cpyis V__TEMP_0, 0x19
-	cpyis V__TEMP_3, 8
-	shls V__TEMP_0, V__TEMP_0, V__TEMP_3
+	cpyis V__TEMP_0, 32
+	cpyis V__TEMP_1, 100
+	muls V__TEMP_0, V__TEMP_0, V__TEMP_1
+	cpyis V__TEMP_1, 10
+	sim_syscall V__TEMP_0, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
 
-	cpyis V__TEMP_1, 0x94
-	orrs V__TEMP_0, V__TEMP_0, V__TEMP_1
-	orrs V__RET_VAL, V__RET_VAL, V__TEMP_0
+
+	cpys V__FLOAT_TEMP_0, V__TEMP_0
+	cpys V__FLOAT_TEMP_1, V__TEMP_1
+	divs V__FLOAT_TEMP_0, V__FLOAT_TEMP_0, V__FLOAT_TEMP_1
+
+	cpys V__RET_VAL, V__FLOAT_TEMP_0
 
 __finish:
 	addis dsp, dsp, __LOCAL_STACK_SPACE
