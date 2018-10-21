@@ -228,7 +228,7 @@ void MainMemWordsGenerator::gen(antlr4::ParserRuleContext* ctx,
 						to_gen, 31, 24);
 					break;
 			}
-			__curr_instr_addr += sizeof(8);
+			__curr_instr_addr += sizeof(u8);
 			break;
 
 		default:
