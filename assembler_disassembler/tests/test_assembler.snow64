@@ -28,12 +28,15 @@
 
 .equ NUM_BYTES__LAR_DATA (4 * NUM_BYTES__SIZE_64)
 
-.db8 9
-//.db64 0x3261994
+//.db8 9
+.db64 0x3261994 << 8
 .db8 0x94
 .db8 0x19
 .db8 0x26
 .db8 0x03
+
+.org 0x900
+.db64 0x333222666
 
 //start:
 //{
