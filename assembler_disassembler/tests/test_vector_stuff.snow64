@@ -33,6 +33,7 @@
 .equ LOG2_OF_NUM_BYTES__SIZE_64 3
 .equ LOG2_OF_NUM_BYTES__LAR_DATA 5
 
+
 start:
 {
 	// We don't need a pc-relative load in this case.
@@ -97,8 +98,15 @@ __pool:
 
 }
 
+.equ ARR_SIZE__TO_ADD 10
+.equ NUM_BYTES__TO_ADD (ARR_SIZE__TO_ADD * NUM_BYTES__SIZE_64)
+
 .dataalign
 global_constants:
+gconst_to_add_arr_a:
+	.db64 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9
+gconst_to_add_arr_b:
+	.db64 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19
 
 .dataalign
 global_vars:
@@ -106,6 +114,11 @@ gvar__stack_pointer:
 	.db64 0x10000
 gvar__frame_pointer:
 	.db64 0
+
+gvar_to_scalar_add_arr_c:
+	.space (TO_ADD_ARR_SIZE * NUM_BYTES__SIZE_64)
+gvar_to_vector_add_arr_c:
+	.space (TO_ADD_ARR_SIZE * NUM_BYTES__SIZE_64)
 
 
 .codealign
@@ -130,27 +143,53 @@ main:
 	.equ V__TEMP_2 REG_DU3
 	.equ V__TEMP_3 REG_DU4
 
+	.equ GC__TO_ADD_ARR_A REG_DU5
+	.equ GC__TO_ADD_ARR_B REG_DU6
+	.equ GV__TO_SCALAR_ADD_ARR_C REG_DU7
+	.equ GV__TO_VECTOR_ADD_ARR_C REG_DU8
+
+
 	ldu64 V__RET_VAL, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
 	ldu64 V__TEMP_0, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
 	ldu64 V__TEMP_1, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
 	ldu64 V__TEMP_2, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
 	ldu64 V__TEMP_3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
 
-	cpyis V__RET_VAL, 0x326
-	cpyis V__TEMP_3, 16
-	shls V__RET_VAL, V__RET_VAL, V__TEMP_3
 
-	cpyis V__TEMP_0, 0x19
-	cpyis V__TEMP_3, 8
-	shls V__TEMP_0, V__TEMP_0, V__TEMP_3
+	.equ __LOCAL_POOL_OFFSET__TO_ADD_ARR_A (0 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_POOL_OFFSET__TO_ADD_ARR_B (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_POOL_OFFSET__TO_SCALAR_ADD_ARR_C (2 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_POOL_OFFSET__TO_VECTOR_ADD_ARR_C (3 * NUM_BYTES__SIZE_64)
 
-	cpyis V__TEMP_1, 0x94
-	orrs V__TEMP_0, V__TEMP_0, V__TEMP_1
-	orrs V__RET_VAL, V__RET_VAL, V__TEMP_0
+
+	pcrels V__TEMP_0, __pool
+	ldu64 GC__TO_ADD_ARR_A, dzero, V__TEMP_0, \
+		__LOCAL_POOL_OFFSET__TO_ADD_ARR_A
+	ldu64 GC__TO_ADD_ARR_B, dzero, V__TEMP_0, \
+		__LOCAL_POOL_OFFSET__TO_ADD_ARR_B
+	ldu64 GV__TO_SCALAR_ADD_ARR_C, dzero, V__TEMP_0, \
+		__LOCAL_POOL_OFFSET__TO_SCALAR_ADD_ARR_C
+	ldu64 GV__TO_VECTOR_ADD_ARR_C, dzero, V__TEMP_0, \
+		__LOCAL_POOL_OFFSET__TO_VECTOR_ADD_ARR_C
+
+	.equ NUM_BYTES__TO_PURE_VECTOR_ADD_ARR_SIZE \
+		.align2curr(NUM_BYTES__TO_ADD, LOG2_OF_NUM_BYTES__LAR_DATA)
+	.equ NUM_BYTES__CAN_NOT_PURE_VECTOR_ADD \
+		(NUM_BYTES__TO_ADD - NUM_BYTES__TO_PURE_VECTOR_ADD_ARR_SIZE)
+
+
 
 __finish:
 	addis dsp, dsp, __LOCAL_STACK_SPACE
 	jmp dlr
 
+
 __pool:
+	.db64 gconst_to_add_arr_a
+	.db64 gconst_to_add_arr_b
+	.db64 gvar_to_scalar_add_arr_c
+	.db64 gvar_to_vector_add_arr_c
+	.db64 0xaaaabbbbccccdddd
+	.db64 TO_PURE_VECTOR_ADD_ARR_SIZE
+	.db64 CAN_NOT_PURE_VECTOR_ADD_ARR_SIZE
 }

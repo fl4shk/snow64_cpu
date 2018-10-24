@@ -583,7 +583,7 @@ private:		// functions
 
 			if (__pass)
 			{
-				if (!sym->found_as_label())
+				if ((sym == nullptr) || !sym->found_as_label())
 				{
 					err(ctx, sconcat("Error:  Unknown symbol called \"",
 						*name, "\"."));

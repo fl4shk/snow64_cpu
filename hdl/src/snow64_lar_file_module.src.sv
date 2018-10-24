@@ -1462,7 +1462,7 @@ module Snow64LarFile(input logic clk,
 					case (__captured_in_wr.write_type)
 					PkgSnow64LarFile::WriteTypLd:
 					begin
-						// Because at laest one other LAR has our previous
+						// Because at least one other LAR has our previous
 						// data, we do not need to store it back to memory
 						// yet, but since nobody has our new address, we
 						// need to load that address's data from memory.
