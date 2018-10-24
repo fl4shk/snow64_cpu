@@ -94,17 +94,18 @@ __finish:
 __infin:
 	bra __infin
 
+.dataalign
 __pool:
 
 }
 
 .equ ARR_SIZE__TO_ADD 10
-.equ NUM_BYTES__TO_ADD (ARR_SIZE__TO_ADD * NUM_BYTES__SIZE_64)
 
 .dataalign
 global_constants:
 gconst_to_add_arr_a:
 	.db64 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9
+.dataalign
 gconst_to_add_arr_b:
 	.db64 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19
 
@@ -115,10 +116,12 @@ gvar__stack_pointer:
 gvar__frame_pointer:
 	.db64 0
 
+.dataalign
 gvar_to_scalar_add_arr_c:
-	.space (TO_ADD_ARR_SIZE * NUM_BYTES__SIZE_64)
+	.space (ARR_SIZE__TO_ADD * NUM_BYTES__SIZE_64)
+.dataalign
 gvar_to_vector_add_arr_c:
-	.space (TO_ADD_ARR_SIZE * NUM_BYTES__SIZE_64)
+	.space (ARR_SIZE__TO_ADD * NUM_BYTES__SIZE_64)
 
 
 .codealign
@@ -137,23 +140,18 @@ main:
 	addis dsp, dsp, -__LOCAL_STACK_SPACE
 
 
-	.equ V__RET_VAL REG_DU0
-	.equ V__TEMP_0 REG_DU1
-	.equ V__TEMP_1 REG_DU2
-	.equ V__TEMP_2 REG_DU3
-	.equ V__TEMP_3 REG_DU4
 
-	.equ GC__TO_ADD_ARR_A REG_DU5
-	.equ GC__TO_ADD_ARR_B REG_DU6
-	.equ GV__TO_SCALAR_ADD_ARR_C REG_DU7
-	.equ GV__TO_VECTOR_ADD_ARR_C REG_DU8
+	.equ GC__TO_ADD_ARR_A REG_DU8
+	.equ GC__TO_ADD_ARR_B REG_DU9
+	.equ GV__TO_SCALAR_ADD_ARR_C REG_DU10
+	.equ GV__TO_VECTOR_ADD_ARR_C REG_DU11
 
 
-	ldu64 V__RET_VAL, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
-	ldu64 V__TEMP_0, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
-	ldu64 V__TEMP_1, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
-	ldu64 V__TEMP_2, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
-	ldu64 V__TEMP_3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
+	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
+	ldu64 du1, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
+	ldu64 du2, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
+	ldu64 du3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
+	ldu64 du4, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
 
 
 	.equ __LOCAL_POOL_OFFSET__TO_ADD_ARR_A (0 * NUM_BYTES__SIZE_64)
@@ -162,20 +160,104 @@ main:
 	.equ __LOCAL_POOL_OFFSET__TO_VECTOR_ADD_ARR_C (3 * NUM_BYTES__SIZE_64)
 
 
-	pcrels V__TEMP_0, __pool
-	ldu64 GC__TO_ADD_ARR_A, dzero, V__TEMP_0, \
-		__LOCAL_POOL_OFFSET__TO_ADD_ARR_A
-	ldu64 GC__TO_ADD_ARR_B, dzero, V__TEMP_0, \
-		__LOCAL_POOL_OFFSET__TO_ADD_ARR_B
-	ldu64 GV__TO_SCALAR_ADD_ARR_C, dzero, V__TEMP_0, \
-		__LOCAL_POOL_OFFSET__TO_SCALAR_ADD_ARR_C
-	ldu64 GV__TO_VECTOR_ADD_ARR_C, dzero, V__TEMP_0, \
-		__LOCAL_POOL_OFFSET__TO_VECTOR_ADD_ARR_C
 
-	.equ NUM_BYTES__TO_PURE_VECTOR_ADD_ARR_SIZE \
-		.align2curr(NUM_BYTES__TO_ADD, LOG2_OF_NUM_BYTES__LAR_DATA)
-	.equ NUM_BYTES__CAN_NOT_PURE_VECTOR_ADD \
-		(NUM_BYTES__TO_ADD - NUM_BYTES__TO_PURE_VECTOR_ADD_ARR_SIZE)
+
+
+
+	pcrels du0, __pool
+
+	//sim_syscall du0, dzero, dzero, SYSC_DISP_DDEST_SCALAR_DATA
+
+	// Scalar add
+	{
+		ldu64 GC__TO_ADD_ARR_A, dzero, du0, \
+			__LOCAL_POOL_OFFSET__TO_ADD_ARR_A
+		ldu64 GC__TO_ADD_ARR_B, dzero, du0, \
+			__LOCAL_POOL_OFFSET__TO_ADD_ARR_B
+		ldu64 GV__TO_SCALAR_ADD_ARR_C, dzero, du0, \
+			__LOCAL_POOL_OFFSET__TO_SCALAR_ADD_ARR_C
+
+		ldu64 GC__TO_ADD_ARR_A, dzero, GC__TO_ADD_ARR_A, 0
+		ldu64 GC__TO_ADD_ARR_B, dzero, GC__TO_ADD_ARR_B, 0
+		ldu64 GV__TO_SCALAR_ADD_ARR_C, dzero, GV__TO_SCALAR_ADD_ARR_C, 0
+
+
+		.equ V__I REG_DU1
+		.equ V__CMP_TEMP REG_DU2
+
+
+		// for (i=0; i<ARR_SIZE__TO_ADD; ++i)
+		// i = 0;
+		cpyis V__I, 0
+		__loop:
+		{
+			// if (i == ARR_SIZE__TO_ADD) goto __after_loop
+			addis V__CMP_TEMP, V__I, -ARR_SIZE__TO_ADD
+			bfal V__CMP_TEMP, __after_loop
+
+			adds GV__TO_SCALAR_ADD_ARR_C, GC__TO_ADD_ARR_A, \
+				GC__TO_ADD_ARR_B
+			ldu64 GV__TO_SCALAR_ADD_ARR_C, GV__TO_SCALAR_ADD_ARR_C, \
+				dzero, NUM_BYTES__SIZE_64
+			ldu64 GC__TO_ADD_ARR_A, GC__TO_ADD_ARR_A, \
+				dzero, NUM_BYTES__SIZE_64
+			ldu64 GC__TO_ADD_ARR_B, GC__TO_ADD_ARR_B, \
+				dzero, NUM_BYTES__SIZE_64
+
+			// ++i;
+			addis V__I, V__I, 1
+
+			// goto __loop
+			bra __loop
+		}
+		__after_loop:
+	}
+
+	// Display scalar retuls
+	{
+		ldu64 GV__TO_SCALAR_ADD_ARR_C, dzero, du0, \
+			__LOCAL_POOL_OFFSET__TO_SCALAR_ADD_ARR_C
+		ldu64 GV__TO_SCALAR_ADD_ARR_C, dzero, GV__TO_SCALAR_ADD_ARR_C, 0
+
+
+		.equ V__I REG_DU1
+		.equ V__CMP_TEMP REG_DU2
+
+
+		// for (i=0; i<ARR_SIZE__TO_ADD; ++i)
+		// i = 0;
+		cpyis V__I, 0
+		__loop:
+		{
+			addis V__CMP_TEMP, V__I, -ARR_SIZE__TO_ADD
+			bfal V__CMP_TEMP, __after_loop
+
+			sim_syscall GV__TO_SCALAR_ADD_ARR_C, dzero, dzero, \
+				SYSC_DISP_DDEST_SCALAR_DATA
+			ldu64 GV__TO_SCALAR_ADD_ARR_C, GV__TO_SCALAR_ADD_ARR_C, \
+				dzero, NUM_BYTES__SIZE_64
+
+
+			addis V__I, V__I, 1
+			bra __loop
+		}
+		__after_loop:
+	}
+
+	//// Vector add
+	//{
+	//	.equ NUM_BYTES__TO_ADD (ARR_SIZE__TO_ADD * NUM_BYTES__SIZE_64)
+
+	//	.equ NUM_BYTES__TO_PURE_VECTOR_ADD \
+	//		.align2curr(NUM_BYTES__TO_ADD, LOG2_OF_NUM_BYTES__LAR_DATA)
+	//	.equ NUM_BYTES__CAN_NOT_PURE_VECTOR_ADD \
+	//		(NUM_BYTES__TO_ADD - NUM_BYTES__TO_PURE_VECTOR_ADD)
+	//	.equ ARR_SIZE__TO_PURE_VECTOR_ADD \
+	//		(NUM_BYTES__TO_PURE_VECTOR_ADD / NUM_BYTES__SIZE_64)
+	//	.equ ARR_SIZE__CAN_NOT_PURE_VECTOR_ADD \
+	//		(ARR_SIZE__TO_ADD - ARR_SIZE__TO_PURE_VECTOR_ADD)
+	//}
+
 
 
 
@@ -184,12 +266,10 @@ __finish:
 	jmp dlr
 
 
+.dataalign
 __pool:
 	.db64 gconst_to_add_arr_a
 	.db64 gconst_to_add_arr_b
 	.db64 gvar_to_scalar_add_arr_c
 	.db64 gvar_to_vector_add_arr_c
-	.db64 0xaaaabbbbccccdddd
-	.db64 TO_PURE_VECTOR_ADD_ARR_SIZE
-	.db64 CAN_NOT_PURE_VECTOR_ADD_ARR_SIZE
 }
