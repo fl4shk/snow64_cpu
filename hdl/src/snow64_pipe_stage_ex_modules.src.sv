@@ -211,19 +211,26 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 	always @(posedge clk)
 	begin
-		//$display("Snow64PsExOperandForwarder valid:  %h:  %h %h %h",
-		//	in_curr_results.valid,
-		//	__past_results_0.valid,
-		//	__past_results_1.valid,
-		//	__past_results_2.valid);
-		//$display("Snow64PsExOperandForwarder base_addr:  %h %h %h",
-		//	__past_results_0.base_addr,
-		//	__past_results_1.base_addr,
-		//	__past_results_2.base_addr);
-		//$display("Snow64PsExOperandForwarder computed_data:  %h %h %h",
-		//	__past_results_0.computed_data,
-		//	__past_results_1.computed_data,
-		//	__past_results_2.computed_data);
+		////if (in_curr_decoded_instr.ra_index == 'hb)
+		//begin
+		//	$display("Snow64PsExOperandForwarder input ddest data:  %h",
+		//		__from_lar_file__rd_shareddata_a.data);
+		//	$display("Snow64PsExOperandForwarder valid:  %h:  %h %h %h",
+		//		in_curr_results.valid,
+		//		__past_results_0.valid,
+		//		__past_results_1.valid,
+		//		__past_results_2.valid);
+		//	$display("Snow64PsExOperandForwarder base_addr:  %h:  %h %h %h",
+		//		in_curr_results.base_addr,
+		//		__past_results_0.base_addr,
+		//		__past_results_1.base_addr,
+		//		__past_results_2.base_addr);
+		//	$display("Snow64PsExOperandForwarder computed_data:  %h:  %h %h %h",
+		//		in_curr_results.computed_data,
+		//		__past_results_0.computed_data,
+		//		__past_results_1.computed_data,
+		//		__past_results_2.computed_data);
+		//end
 
 		__past_results_0 <= in_curr_results;
 		__past_results_1 <= __past_results_0;
@@ -2006,6 +2013,14 @@ module Snow64PipeStageEx(input logic clk,
 	end
 
 	// ONLY ALU/FPU instructions can produce (__curr_results.valid == 1'b1)
+	//always @(*) __curr_results.valid
+	//	= ((__from_lar_file__rd_metadata_a.tag != 0)
+	//	&& (__decoded_instr_to_use != 0)
+	//	&& (__decoded_instr_to_use.ra_index != 0)
+	//	&& (__decoded_instr_to_use.group == 0)
+	//	&& (__decoded_instr_to_use.oper
+	//	!= PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12)
+	//	&& (!__stall));
 	always @(*) __curr_results.valid
 		= ((__from_lar_file__rd_metadata_a.tag != 0)
 		&& (__decoded_instr_to_use != 0)
@@ -2225,6 +2240,21 @@ module Snow64PipeStageEx(input logic clk,
 			+ __decoded_instr_to_use.signext_imm;
 		out_to_pipe_stage_wb.computed_data
 			<= __curr_results.computed_data;
+
+		//if (__decoded_instr_to_use.ra_index == 'hb)
+		//begin
+		//	//$display("computed data stuff:  %h",
+		//	//	__curr_results.computed_data);
+		//	$display("EX stage stuffs:  %h %h %h; %h %h %h; %h",
+		//		__curr_ddest_scalar_data,
+		//		__curr_dsrc0_scalar_data,
+		//		__curr_dsrc1_scalar_data,
+		//		__curr_results.valid,
+		//		__curr_results.base_addr,
+		//		__curr_results.computed_data,
+		//		__from_lar_file__rd_metadata_a.tag);
+		//	//$display("EX stage computed data stuff:  %h");
+		//end
 
 		//$display("EX stage stuff:  %h, %h:  %h %h %h %h; %h %h %h; %h",
 		//	__state, __next_state,

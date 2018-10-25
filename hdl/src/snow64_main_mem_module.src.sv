@@ -51,13 +51,18 @@ module Snow64MainMem(input logic clk,
 		//$display("Snow64MainMem clocked logic");
 		if (in_req_wr)
 		begin
+			//$display("Snow64MainMem data write:  %h %h", in_addr,
+			//	in_data);
 			__mem[in_addr] <= in_data;
 		end
 
 		//else // if (!in_req_wr)
 		begin
-			//$display("Snow64MainMem data read:  %h %h", in_addr,
-			//	__mem[in_addr]);
+			//if (!in_req_wr)
+			//begin
+			//	$display("Snow64MainMem data read:  %h %h", in_addr,
+			//		__mem[in_addr]);
+			//end
 			out_data <= __mem[in_addr];
 		end
 	end

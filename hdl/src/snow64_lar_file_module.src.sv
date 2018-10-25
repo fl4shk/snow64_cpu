@@ -1591,6 +1591,11 @@ module Snow64LarFile(input logic clk,
 		endcase
 	end
 
+	//always @(posedge clk)
+	//begin
+	//	$display("LarFile __wr_state:  %h", __wr_state);
+	//end
+
 	`undef BEFORE_LDST_IN_WR_METADATA_TAG
 	`undef __IN_LDST_CAPTURED_CURR_METADATA_TAG
 	`undef __IN_LDST_CAPTURED_TOP_METADATA_TAG

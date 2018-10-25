@@ -7,20 +7,29 @@ module Snow64PipeStageWb(input logic clk,
 		out_to_pipe_stage_if_id,
 	output PortOut_Snow64PipeStageWb_ToCtrlUnit out_to_ctrl_unit);
 
-	typedef enum logic
+	localparam __WIDTH__STATE = 2;
+	localparam __MSB_POS__STATE = `WIDTH2MP(__WIDTH__STATE);
+
+	typedef enum logic [__MSB_POS__STATE:0]
 	{
 		StRegular,
-		StWaitForLarFileValid
+		StPrepLdSt,
+		StWaitForLarFileValid,
+		StBad
 	} State;
 	
-	logic __state = StRegular, __next_state = StRegular;
+	logic [__MSB_POS__STATE:0] __state = StRegular,
+		__next_state = StRegular;
 
 	wire __from_out_lar_file__wr__valid
 		= in_from_ctrl_unit.out_inst_lar_file__wr__valid;
 
 
-	PkgSnow64InstrDecoder::PortOut_InstrDecoder __curr_decoded_instr;
-	assign __curr_decoded_instr = in_from_pipe_stage_ex.decoded_instr;
+	PkgSnow64InstrDecoder::PortOut_InstrDecoder __curr_decoded_instr,
+		__captured_decoded_instr = 0;
+	assign __curr_decoded_instr = (__state == StRegular)
+		? in_from_pipe_stage_ex.decoded_instr : __captured_decoded_instr;
+	logic [`MSB_POS__SNOW64_CPU_ADDR:0] __captured_ldst_addr = 0;
 
 	assign out_to_pipe_stage_if_id.stall
 		= (__next_state != StRegular);
@@ -31,13 +40,19 @@ module Snow64PipeStageWb(input logic clk,
 		//	__curr_decoded_instr.ra_index,
 		//	in_from_pipe_stage_ex.ldst_addr,
 		//	some_write_type);
+		//$display("WB:  prep_ldst():  %h %h; %h",
+		//	__curr_decoded_instr.ra_index,
+		//	__captured_ldst_addr,
+		//	some_write_type);
 		out_to_ctrl_unit.in_inst_lar_file__wr__req <= 1;
 		out_to_ctrl_unit.in_inst_lar_file__wr__write_type
 			<= some_write_type;
 		out_to_ctrl_unit.in_inst_lar_file__wr__index
 			<= __curr_decoded_instr.ra_index;
+		//out_to_ctrl_unit.in_inst_lar_file__wr__ldst_addr
+		//	<= in_from_pipe_stage_ex.ldst_addr;
 		out_to_ctrl_unit.in_inst_lar_file__wr__ldst_addr
-			<= in_from_pipe_stage_ex.ldst_addr;
+			<= __captured_ldst_addr;
 
 		// Make use of the symmetry in the encoding of loads and stores
 		case (__curr_decoded_instr.oper)
@@ -137,10 +152,19 @@ module Snow64PipeStageWb(input logic clk,
 		case (__state)
 		StRegular:
 		begin
+			//__next_state = ((__curr_decoded_instr.group == 2)
+			//	|| (__curr_decoded_instr.group == 3))
+			//	? StWaitForLarFileValid
+			//	: StRegular;
 			__next_state = ((__curr_decoded_instr.group == 2)
 				|| (__curr_decoded_instr.group == 3))
-				? StWaitForLarFileValid
+				? StPrepLdSt
 				: StRegular;
+		end
+
+		StPrepLdSt:
+		begin
+			__next_state = StWaitForLarFileValid;
 		end
 
 		StWaitForLarFileValid:
@@ -148,6 +172,11 @@ module Snow64PipeStageWb(input logic clk,
 			__next_state = __from_out_lar_file__wr__valid
 				? StRegular
 				: StWaitForLarFileValid;
+		end
+
+		StBad:
+		begin
+			__next_state = StBad;
 		end
 		endcase
 	end
@@ -168,6 +197,10 @@ module Snow64PipeStageWb(input logic clk,
 		//$display("WB stuff:  %h %h;  %h, %h;  %h", __state, __next_state,
 		//	__curr_decoded_instr.group, __curr_decoded_instr.oper,
 		//	__from_out_lar_file__wr__valid);
+		//$display("WB stuff:  %h %h:  %h %h",
+		//	__state, __next_state,
+		//	__from_out_lar_file__wr__valid,
+		//	out_to_pipe_stage_if_id.stall);
 		__state <= __next_state;
 
 		case (__state)
@@ -186,6 +219,7 @@ module Snow64PipeStageWb(input logic clk,
 				default:
 				begin
 					//if (__curr_decoded_instr.ra_index != 0)
+					//if (__curr_decoded_instr.ra_index == 'hb)
 					//begin
 					//$display("WB group 0 instr (non-dzero dDest):  %h, %h",
 					//		__curr_decoded_instr.ra_index,
@@ -205,18 +239,37 @@ module Snow64PipeStageWb(input logic clk,
 			// Loads
 			2:
 			begin
-				prep_ldst(PkgSnow64LarFile::WriteTypLd);
+				//prep_ldst(PkgSnow64LarFile::WriteTypLd);
+				__captured_decoded_instr <= __curr_decoded_instr;
+				__captured_ldst_addr <= in_from_pipe_stage_ex.ldst_addr;
 			end
 
 			// Stores
 			3:
 			begin
-				prep_ldst(PkgSnow64LarFile::WriteTypSt);
+				//prep_ldst(PkgSnow64LarFile::WriteTypSt);
+				__captured_decoded_instr <= __curr_decoded_instr;
+				__captured_ldst_addr <= in_from_pipe_stage_ex.ldst_addr;
 			end
 
 			default:
 			begin
 				out_to_ctrl_unit.in_inst_lar_file__wr__req <= 0;
+			end
+			endcase
+		end
+
+		StPrepLdSt:
+		begin
+			case (__curr_decoded_instr.group)
+			2:
+			begin
+				prep_ldst(PkgSnow64LarFile::WriteTypLd);
+			end
+
+			3:
+			begin
+				prep_ldst(PkgSnow64LarFile::WriteTypSt);
 			end
 			endcase
 		end

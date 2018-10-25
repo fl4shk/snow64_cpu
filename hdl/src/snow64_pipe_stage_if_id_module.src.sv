@@ -89,6 +89,12 @@ module Snow64PipeStageIfId(input logic clk,
 		out_to_instr_cache = 0;
 	end
 
+	//initial
+	//begin
+	//	#2000
+	//	$finish;
+	//end
+
 
 	always @(*)
 	begin
@@ -320,12 +326,15 @@ module Snow64PipeStageIfId(input logic clk,
 
 		StWaitForLdStPart0:
 		begin
+			//$display("IF/ID:  StWaitForLdStPart0");
 			__state <= StWaitForLdStPart1;
 			send_bubble();
 		end
 
 		StWaitForLdStPart1:
 		begin
+			//$display("IF/ID:  StWaitForLdStPart1:  %h",
+			//	__from_pipe_stage_wb__stall);
 			if (!__from_pipe_stage_wb__stall)
 			begin
 				__state <= StRegular;
