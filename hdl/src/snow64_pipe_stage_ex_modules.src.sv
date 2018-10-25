@@ -101,7 +101,7 @@ module Snow64PsExOperandForwarder(input logic clk,
 		out_true_ra_data, out_true_rb_data, out_true_rc_data);
 
 
-	localparam __WIDTH__OPERAND_FORWARDING_CHECK = 3;
+	localparam __WIDTH__OPERAND_FORWARDING_CHECK = 4;
 	localparam __MSB_POS__OPERAND_FORWARDING_CHECK
 		= `WIDTH2MP(__WIDTH__OPERAND_FORWARDING_CHECK);
 
@@ -139,7 +139,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 	assign __operand_forwarding_check__r``reg_letter \
 		= {`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 0), \
 		`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 1), \
-		`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 2)};
+		`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 2), \
+		`PARTIAL_OP_FORWARDING_CHECK(reg_letter, 3)};
 
 	`ASSIGN_OPERAND_FORWARDING_CHECK(a)
 	`ASSIGN_OPERAND_FORWARDING_CHECK(b)
@@ -150,7 +151,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 
 	PkgSnow64PsEx::Results
-		__past_results_0 = 0, __past_results_1 = 0, __past_results_2 = 0;
+		__past_results_0 = 0, __past_results_1 = 0, __past_results_2 = 0,
+		__past_results_3 = 0;
 
 
 	// These two defines exist so that the PERF_OPERAND_FORWARDING `define
@@ -169,15 +171,12 @@ module Snow64PsExOperandForwarder(input logic clk,
 	`define PERF_OPERAND_FORWARDING(reg_letter) \
 	always @(*) \
 	begin \
-		case (__operand_forwarding_check__r``reg_letter) \
-		3'b111: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
-		3'b110: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
-		3'b101: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
-		3'b100: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
-		3'b011: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
-		3'b010: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
-		3'b001: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
-		3'b000: `FORWARD_FROM_LAR_FILE(reg_letter) \
+		casez (__operand_forwarding_check__r``reg_letter) \
+		4'b1???: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b01??: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		4'b001?: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
+		4'b0001: `FORWARD_FROM_PAST_RESULTS(reg_letter, 3) \
+		4'b0000: `FORWARD_FROM_LAR_FILE(reg_letter) \
 		endcase \
 	end
 
@@ -211,7 +210,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 
 	always @(posedge clk)
 	begin
-		////if (in_curr_decoded_instr.ra_index == 'hb)
+		//if (in_curr_decoded_instr.ra_index == 'hb)
+		//if (in_curr_decoded_instr != 0)
 		//begin
 		//	$display("Snow64PsExOperandForwarder input ddest data:  %h",
 		//		__from_lar_file__rd_shareddata_a.data);
@@ -235,6 +235,7 @@ module Snow64PsExOperandForwarder(input logic clk,
 		__past_results_0 <= in_curr_results;
 		__past_results_1 <= __past_results_0;
 		__past_results_2 <= __past_results_1;
+		__past_results_3 <= __past_results_2;
 	end
 
 endmodule
@@ -2241,6 +2242,7 @@ module Snow64PipeStageEx(input logic clk,
 		out_to_pipe_stage_wb.computed_data
 			<= __curr_results.computed_data;
 
+
 		//if (__decoded_instr_to_use.ra_index == 'hb)
 		//begin
 		//	//$display("computed data stuff:  %h",
@@ -2254,6 +2256,32 @@ module Snow64PipeStageEx(input logic clk,
 		//		__curr_results.computed_data,
 		//		__from_lar_file__rd_metadata_a.tag);
 		//	//$display("EX stage computed data stuff:  %h");
+		//end
+
+		//$display("EX stage stuffs:  %h %h %h; %h %h; %h %h; %h %h %h",
+		//	__curr_ddest_scalar_data,
+		//	__curr_dsrc0_scalar_data,
+		//	__curr_dsrc1_scalar_data,
+		//	__dsrc0_data_to_use,
+		//	__dsrc1_data_to_use,
+		//	__rotated_dsrc0_data,
+		//	__rotated_dsrc1_data,
+		//	__curr_results.valid,
+		//	__curr_results.base_addr,
+		//	__curr_results.computed_data);
+		//if (__curr_decoded_instr != 0)
+		//begin
+		//	$display("EX stage curr scalar data:  %h %h %h",
+		//		__curr_ddest_scalar_data, __curr_dsrc0_scalar_data,
+		//		__curr_dsrc1_scalar_data);
+		//	$display("EX stage dsrc0 data to use:  %h %h",
+		//		__dsrc0_data_to_use, __dsrc1_data_to_use);
+		//	//$display("EX stage rotated dsrc data:  %h %h",
+		//	//	__rotated_dsrc0_data, __rotated_dsrc1_data);
+		//	$display("EX stage curr results:  %h %h %h",
+		//		__curr_results.valid,
+		//		__curr_results.base_addr,
+		//		__curr_results.computed_data);
 		//end
 
 		//$display("EX stage stuff:  %h, %h:  %h %h %h %h; %h %h %h; %h",

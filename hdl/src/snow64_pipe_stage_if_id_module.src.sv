@@ -91,7 +91,8 @@ module Snow64PipeStageIfId(input logic clk,
 
 	//initial
 	//begin
-	//	#2000
+	//	#500
+	//	$display("IF/ID forced $finish.");
 	//	$finish;
 	//end
 

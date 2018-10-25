@@ -253,122 +253,13 @@ main:
 		__after_loop:
 	}
 
-	//// Vector add
-	//{
-	//	.equ NUM_BYTES__TO_ADD (ARR_SIZE__TO_ADD * NUM_BYTES__SIZE_64)
+	// Vector add
+	{
+	}
 
-	//	.equ NUM_BYTES__TO_PURE_VECTOR_ADD \
-	//		.align2curr(NUM_BYTES__TO_ADD, LOG2_OF_NUM_BYTES__LAR_DATA)
-	//	.equ NUM_BYTES__CAN_NOT_PURE_VECTOR_ADD \
-	//		(NUM_BYTES__TO_ADD - NUM_BYTES__TO_PURE_VECTOR_ADD)
-	//	.equ ARR_SIZE__TO_PURE_VECTOR_ADD \
-	//		(NUM_BYTES__TO_PURE_VECTOR_ADD / NUM_BYTES__SIZE_64)
-	//	.equ ARR_SIZE__CAN_NOT_PURE_VECTOR_ADD \
-	//		(ARR_SIZE__TO_ADD - ARR_SIZE__TO_PURE_VECTOR_ADD)
-
-	//	.equ FIRST_LOOP_INC_AMOUNT (NUM_BYTES__LAR_DATA \
-	//		/ NUM_BYTES__SIZE_64)
-
-	//	ldu64 GC__TO_ADD_ARR_A, dzero, du0, \
-	//		__LOCAL_POOL_OFFSET__TO_ADD_ARR_A
-	//	ldu64 GC__TO_ADD_ARR_B, dzero, du0, \
-	//		__LOCAL_POOL_OFFSET__TO_ADD_ARR_B
-	//	ldu64 GV__TO_VECTOR_ADD_ARR_C, dzero, du0, \
-	//		__LOCAL_POOL_OFFSET__TO_VECTOR_ADD_ARR_C
-
-	//	ldu64 GC__TO_ADD_ARR_A, dzero, GC__TO_ADD_ARR_A, 0
-	//	ldu64 GC__TO_ADD_ARR_B, dzero, GC__TO_ADD_ARR_B, 0
-	//	ldu64 GV__TO_VECTOR_ADD_ARR_C, dzero, GV__TO_VECTOR_ADD_ARR_C, 0
-
-	//	.equ V__I REG_DU1
-	//	.equ V__CMP_TEMP REG_DU2
-
-	//	// for (i=0; i<ARR_SIZE__TO_PURE_VECTOR_ADD; i+=4)
-
-	//	// i = 0;
-	//	cpyis V__I, 0
-
-	//	__loop_0:
-	//	{
-	//		// if (i == ARR_SIZE__TO_PURE_VECTOR_ADD)
-	//		// { goto __after_loop_0 }
-	//		addis V__CMP_TEMP, V__I, -ARR_SIZE__TO_PURE_VECTOR_ADD
-	//		bfal V__CMP_TEMP, __after_loop_0
-
-	//		addv GV__TO_VECTOR_ADD_ARR_C, GC__TO_ADD_ARR_A, \
-	//			GC__TO_ADD_ARR_B
-	//		ldu64 GV__TO_VECTOR_ADD_ARR_C, GV__TO_VECTOR_ADD_ARR_C, \
-	//			dzero, NUM_BYTES__LAR_DATA
-	//		ldu64 GC__TO_ADD_ARR_A, GC__TO_ADD_ARR_A, dzero, \
-	//			NUM_BYTES__LAR_DATA
-	//		ldu64 GC__TO_ADD_ARR_B, GC__TO_ADD_ARR_B, dzero, \
-	//			NUM_BYTES__LAR_DATA
-
-	//		// i+=4;
-	//		addis V__I, V__I, FIRST_LOOP_INC_AMOUNT
-
-	//		// goto __loop_0
-	//		bra __loop_0
-	//	}
-	//	__after_loop_0:
-
-	//	__loop_1:
-	//	{
-	//		// if (i == ARR_SIZE__TO_ADD)
-	//		// { goto __after_loop_1 }
-	//		addis V__CMP_TEMP, V__I, -ARR_SIZE__TO_ADD
-	//		bfal V__CMP_TEMP, __after_loop_1
-
-	//		adds GV__TO_VECTOR_ADD_ARR_C, GC__TO_ADD_ARR_A, \
-	//			GC__TO_ADD_ARR_B
-	//		ldu64 GV__TO_VECTOR_ADD_ARR_C, GV__TO_VECTOR_ADD_ARR_C, \
-	//			dzero, NUM_BYTES__SIZE_64
-	//		ldu64 GC__TO_ADD_ARR_A, GC__TO_ADD_ARR_A, dzero, \
-	//			NUM_BYTES__SIZE_64
-	//		ldu64 GC__TO_ADD_ARR_B, GC__TO_ADD_ARR_B, dzero, \
-	//			NUM_BYTES__SIZE_64
-
-	//		// ++i;
-	//		addis V__I, V__I, 1
-
-	//		// goto __loop_1
-	//		bra __loop_1
-	//	}
-	//	__after_loop_1:
-	//}
-
-	//// Display vector results
-	//{
-	//	ldu64 GV__TO_VECTOR_ADD_ARR_C, dzero, du0, \
-	//		__LOCAL_POOL_OFFSET__TO_VECTOR_ADD_ARR_C
-	//	ldu64 GV__TO_VECTOR_ADD_ARR_C, dzero, GV__TO_VECTOR_ADD_ARR_C, 0
-
-
-	//	.equ V__I REG_DU1
-	//	.equ V__CMP_TEMP REG_DU2
-
-
-	//	// for (i=0; i<ARR_SIZE__TO_ADD; ++i)
-	//	// i = 0;
-	//	cpyis V__I, 0
-	//	__loop:
-	//	{
-	//		addis V__CMP_TEMP, V__I, -ARR_SIZE__TO_ADD
-	//		bfal V__CMP_TEMP, __after_loop
-
-	//		sim_syscall GV__TO_VECTOR_ADD_ARR_C, dzero, dzero, \
-	//			SYSC_DISP_DDEST_SCALAR_DATA
-	//		ldu64 GV__TO_VECTOR_ADD_ARR_C, GV__TO_VECTOR_ADD_ARR_C, \
-	//			dzero, NUM_BYTES__SIZE_64
-
-
-	//		addis V__I, V__I, 1
-	//		bra __loop
-	//	}
-	//	__after_loop:
-	//}
-
-
+	// Display vector results
+	{
+	}
 
 
 __finish:
