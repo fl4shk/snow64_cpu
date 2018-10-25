@@ -171,10 +171,21 @@ module Snow64PsExOperandForwarder(input logic clk,
 	`define PERF_OPERAND_FORWARDING(reg_letter) \
 	always @(*) \
 	begin \
-		casez (__operand_forwarding_check__r``reg_letter) \
-		4'b1zzz: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
-		4'b01zz: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
-		4'b001z: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
+		case (__operand_forwarding_check__r``reg_letter) \
+		4'b1111: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b1110: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b1101: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b1100: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b1011: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b1010: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b1001: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b1000: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b0111: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		4'b0110: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		4'b0101: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		4'b0100: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		4'b0011: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
+		4'b0010: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
 		4'b0001: `FORWARD_FROM_PAST_RESULTS(reg_letter, 3) \
 		4'b0000: `FORWARD_FROM_LAR_FILE(reg_letter) \
 		endcase \
