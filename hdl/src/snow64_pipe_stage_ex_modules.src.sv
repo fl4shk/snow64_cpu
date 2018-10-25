@@ -172,9 +172,9 @@ module Snow64PsExOperandForwarder(input logic clk,
 	always @(*) \
 	begin \
 		casez (__operand_forwarding_check__r``reg_letter) \
-		4'b1???: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
-		4'b01??: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
-		4'b001?: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
+		4'b1zzz: `FORWARD_FROM_PAST_RESULTS(reg_letter, 0) \
+		4'b01zz: `FORWARD_FROM_PAST_RESULTS(reg_letter, 1) \
+		4'b001z: `FORWARD_FROM_PAST_RESULTS(reg_letter, 2) \
 		4'b0001: `FORWARD_FROM_PAST_RESULTS(reg_letter, 3) \
 		4'b0000: `FORWARD_FROM_LAR_FILE(reg_letter) \
 		endcase \
