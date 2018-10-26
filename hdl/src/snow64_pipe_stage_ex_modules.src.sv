@@ -2323,19 +2323,21 @@ module Snow64PipeStageEx(input logic clk,
 		//	__curr_results.valid, __curr_results.computed_data,
 		//	__mask_for_scalar_op, __inv_mask_for_scalar_op);
 
-		if (__in_inst_use_vector_mul__start)
-		begin
-			$display("EX stage start vector mul:  %h %h; %h %h",
-				__state, __next_state,
-				__dsrc0_data_to_use, __dsrc1_data_to_use);
-		end
-		//if (__out_inst_use_vector_mul__valid)
-		begin
-			$display("EX stage stuffs:  %h %h; %h %h",
-				__state, __next_state,
-				__out_inst_use_vector_mul__valid,
-				__out_inst_use_vector_mul__data);
-		end
+		//if (__in_inst_use_vector_mul__start)
+		//begin
+		//	$display("EX stage start vector mul:  %h %h; %h %h",
+		//		__state, __next_state,
+		//		__dsrc0_data_to_use, __dsrc1_data_to_use);
+		//end
+		////if (__out_inst_use_vector_mul__valid)
+		//begin
+		//	//$display("EX stage stuffs:  %h %h; %h %h",
+		//	//	__state, __next_state,
+		//	//	__out_inst_use_vector_mul__valid,
+		//	//	__out_inst_use_vector_mul__data);
+		//	$display("EX stage stuffs:  %h %h",
+		//		__state, __next_state);
+		//end
 		//$display("EX stage stuffs:  %h %h %h; %h; %h %h; %h %h",
 		//	__curr_ddest_scalar_data,
 		//	__curr_dsrc0_scalar_data,
