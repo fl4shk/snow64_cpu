@@ -36,6 +36,7 @@ instruction:
 	| instrOpGrp0TwoRegsOneSimm12Vector
 
 	| instrOpGrp0ThreeRegsOneSimm12
+	| instrOpGrp0SimSyscall
 
 	| instrOpGrp1RelBranch
 	| instrOpGrp1Jump
@@ -98,6 +99,16 @@ instrOpGrp0ThreeRegsOneSimm12:
 	regOrIdentName TokComma regOrIdentName TokComma regOrIdentName TokComma
 	expr
 	;
+
+instrOpGrp0SimSyscall:
+	TokInstrNameSyscDispRegs regOrIdentName TokComma regOrIdentName
+	TokComma regOrIdentName
+	| TokInstrNameSyscDispDdestVectorData regOrIdentName
+	| TokInstrNameSyscDispDdestScalarData regOrIdentName
+	| TokInstrNameSyscDispDdestAddr regOrIdentName
+	| TokInstrNameSyscFinish
+	;
+
 
 instrOpGrp1RelBranch:
 	(TokInstrNameBtru | TokInstrNameBfal)
@@ -335,6 +346,11 @@ instrName:
 
 	| TokInstrNameSimSyscall
 
+	| TokInstrNameSyscDispRegs
+	| TokInstrNameSyscDispDdestVectorData
+	| TokInstrNameSyscDispDdestScalarData
+	| TokInstrNameSyscDispDdestAddr
+	| TokInstrNameSyscFinish
 
 	// Group 1 Instructions
 	| TokInstrNameBtru
@@ -439,6 +455,12 @@ TokInstrNameAddis: 'addis' ;
 TokInstrNameAddiv: 'addiv' ;
 
 TokInstrNameSimSyscall: 'sim_syscall' ;
+
+TokInstrNameSyscDispRegs: 'sysc_disp_regs' ;
+TokInstrNameSyscDispDdestVectorData: 'sysc_disp_ddest_vector_data' ;
+TokInstrNameSyscDispDdestScalarData: 'sysc_disp_ddest_scalar_data' ;
+TokInstrNameSyscDispDdestAddr: 'sysc_disp_ddest_addr' ;
+TokInstrNameSyscFinish: 'sysc_finish' ;
 
 // Group 1 Instructions
 TokInstrNameBtru: 'btru' ;

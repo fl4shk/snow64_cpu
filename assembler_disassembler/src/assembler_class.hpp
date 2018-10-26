@@ -20,6 +20,16 @@
 class Assembler : public AssemblerGrammarVisitor,
 	public AsmDisasmVisitorBase
 {
+public:		// enums
+	enum class SyscallType
+	{
+		DispRegs,
+		DispDdestVectorData,
+		DispDdestScalarData,
+		DispDdestAddr,
+		Finish,
+	};
+
 public:		// typedefs
 	typedef antlr4::ParserRuleContext ParserRuleContext;
 public:		// constants
@@ -242,6 +252,8 @@ private:		// visitor functions
 	antlrcpp::Any visitInstrOpGrp0ThreeRegsOneSimm12
 		(AssemblerGrammarParser::InstrOpGrp0ThreeRegsOneSimm12Context
 		*ctx);
+	antlrcpp::Any visitInstrOpGrp0SimSyscall
+		(AssemblerGrammarParser::InstrOpGrp0SimSyscallContext *ctx);
 
 	antlrcpp::Any visitInstrOpGrp1RelBranch
 		(AssemblerGrammarParser::InstrOpGrp1RelBranchContext *ctx);

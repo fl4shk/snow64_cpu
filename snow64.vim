@@ -18,7 +18,7 @@ syn match snow64_comment	"//.*"
 syn match snow64_comment	";.*"
 
 " Instructions
-syn keyword snow64_iog0_instr	adds subs slts muls divs ands orrs xors shls shrs invs nots addis addv subv sltv mulv divv andv orrv xorv shlv shrv invv notv addiv sim_syscall
+syn keyword snow64_iog0_instr	adds subs slts muls divs ands orrs xors shls shrs invs nots addis addv subv sltv mulv divv andv orrv xorv shlv shrv invv notv addiv sim_syscall sysc_disp_regs sysc_disp_ddest_vector_data sysc_disp_ddest_scalar_data sysc_disp_ddest_addr sysc_finish
 syn keyword snow64_iog1_instr	btru bfal jmp
 syn keyword snow64_iog2_instr	ldu8 lds8 ldu16 lds16 ldu32 lds32 ldu64 lds64 ldf16
 syn keyword snow64_iog3_instr	stu8 sts8 stu16 sts16 stu32 sts32 stu64 sts64 stf16

@@ -1319,9 +1319,15 @@ module Snow64PsExUseVectorMul(input logic clk,
 	always @(*) out_valid = __out_inst_vector_mul.valid;
 	`GET_OUT_DDEST_DATA(__out_inst_vector_mul.data)
 
+	initial
+	begin
+		out_ddest_data = 0;
+		out_valid = 0;
+	end
+
 	//always @(posedge clk)
 	//begin
-	//	//if (out_valid)
+	//	if (out_valid)
 	//	begin
 	//		$display("UseVectorMul:  %h",
 	//			__out_inst_vector_mul.data);
@@ -2316,6 +2322,20 @@ module Snow64PipeStageEx(input logic clk,
 		//	__curr_dsrc1_scalar_data,
 		//	__curr_results.valid, __curr_results.computed_data,
 		//	__mask_for_scalar_op, __inv_mask_for_scalar_op);
+
+		if (__in_inst_use_vector_mul__start)
+		begin
+			$display("EX stage start vector mul:  %h %h; %h %h",
+				__state, __next_state,
+				__dsrc0_data_to_use, __dsrc1_data_to_use);
+		end
+		//if (__out_inst_use_vector_mul__valid)
+		begin
+			$display("EX stage stuffs:  %h %h; %h %h",
+				__state, __next_state,
+				__out_inst_use_vector_mul__valid,
+				__out_inst_use_vector_mul__data);
+		end
 		//$display("EX stage stuffs:  %h %h %h; %h; %h %h; %h %h",
 		//	__curr_ddest_scalar_data,
 		//	__curr_dsrc0_scalar_data,

@@ -322,21 +322,21 @@ module Snow64Mul(input logic clk,
 		__in_a_sliced_mini, __in_b_sliced_mini, __out_mul_mini;
 
 	assign {__in_a_sliced_mini, __in_b_sliced_mini} = {in.a, in.b};
-	assign __out_mul_mini.data_7
+	always @(*) __out_mul_mini.data_7
 		= __in_a_sliced_mini.data_7 * __in_b_sliced_mini.data_7;
-	assign __out_mul_mini.data_6
+	always @(*) __out_mul_mini.data_6
 		= __in_a_sliced_mini.data_6 * __in_b_sliced_mini.data_6;
-	assign __out_mul_mini.data_5
+	always @(*) __out_mul_mini.data_5
 		= __in_a_sliced_mini.data_5 * __in_b_sliced_mini.data_5;
-	assign __out_mul_mini.data_4
+	always @(*) __out_mul_mini.data_4
 		= __in_a_sliced_mini.data_4 * __in_b_sliced_mini.data_4;
-	assign __out_mul_mini.data_3
+	always @(*) __out_mul_mini.data_3
 		= __in_a_sliced_mini.data_3 * __in_b_sliced_mini.data_3;
-	assign __out_mul_mini.data_2
+	always @(*) __out_mul_mini.data_2
 		= __in_a_sliced_mini.data_2 * __in_b_sliced_mini.data_2;
-	assign __out_mul_mini.data_1
+	always @(*) __out_mul_mini.data_1
 		= __in_a_sliced_mini.data_1 * __in_b_sliced_mini.data_1;
-	assign __out_mul_mini.data_0
+	always @(*) __out_mul_mini.data_0
 		= __in_a_sliced_mini.data_0 * __in_b_sliced_mini.data_0;
 
 	`ifdef FORMAL_TINY_MUL
@@ -349,13 +349,13 @@ module Snow64Mul(input logic clk,
 	assign {__in_a_sliced_small, __in_b_sliced_small} = {in.a, in.b};
 
 
-	assign __out_mul_small.data_3
+	always @(*) __out_mul_small.data_3
 		= __in_a_sliced_small.data_3 * __in_b_sliced_small.data_3;
-	assign __out_mul_small.data_2
+	always @(*) __out_mul_small.data_2
 		= __in_a_sliced_small.data_2 * __in_b_sliced_small.data_2;
-	assign __out_mul_small.data_1
+	always @(*) __out_mul_small.data_1
 		= __in_a_sliced_small.data_1 * __in_b_sliced_small.data_1;
-	assign __out_mul_small.data_0
+	always @(*) __out_mul_small.data_0
 		= __in_a_sliced_small.data_0 * __in_b_sliced_small.data_0;
 
 
@@ -405,6 +405,7 @@ module Snow64Mul(input logic clk,
 	begin
 		__state = StIdle;
 		__in_sub_mul = 0;
+		out = 0;
 	end
 
 
@@ -765,8 +766,8 @@ module Snow64VectorMul(input logic clk,
 		.out(__out_inst_mul_3));
 
 
-	assign out.valid = __real_out_valid;
-	assign out.data = __real_out_data;
+	always @(*) out.valid = __real_out_valid;
+	always @(*) out.data = __real_out_data;
 
 	always @(*) __in_inst_mul_0.enable = in.enable;
 	always @(*) __in_inst_mul_1.enable = in.enable;
@@ -797,6 +798,18 @@ module Snow64VectorMul(input logic clk,
 		= {__out_inst_mul_2.data_1, __out_inst_mul_2.data_0};
 	always @(*) __real_out_data[3 * 64 +: 64]
 		= {__out_inst_mul_3.data_1, __out_inst_mul_3.data_0};
+
+	//always @(posedge clk)
+	//begin
+	//	if (out.valid)
+	//	begin
+	//		$display("Snow64VectorMul:  %h %h %h %h",
+	//			__real_out_data[0 * 64 +: 64],
+	//			__real_out_data[1 * 64 +: 64],
+	//			__real_out_data[2 * 64 +: 64],
+	//			__real_out_data[3 * 64 +: 64]);
+	//	end
+	//end
 
 	//initial
 	//begin

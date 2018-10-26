@@ -330,6 +330,7 @@ antlrcpp::Any Assembler::visitInstruction
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp0TwoRegsOneSimm12Vector())
 
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp0ThreeRegsOneSimm12())
+	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp0SimSyscall())
 
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp1RelBranch())
 	else ANY_ACCEPT_IF_BASIC(ctx->instrOpGrp1Jump())
@@ -636,6 +637,43 @@ antlrcpp::Any Assembler::visitInstrOpGrp0ThreeRegsOneSimm12
 
 	encode_group_0_instr(0, reg_encodings.at(0), reg_encodings.at(1),
 		reg_encodings.at(2), opcode, simm12);
+
+	return nullptr;
+}
+antlrcpp::Any Assembler::visitInstrOpGrp0SimSyscall
+	(AssemblerGrammarParser::InstrOpGrp0SimSyscallContext *ctx)
+{
+	const auto opcode = __encoding_stuff.iog0_three_regs_one_simm12_map()
+		.at(cstm_strdup("sim_syscall"));
+
+	auto&& reg_encodings = get_reg_encodings(ctx);
+
+	if (ctx->TokInstrNameSyscDispRegs())
+	{
+		encode_group_0_instr(0, reg_encodings.at(0), reg_encodings.at(1),
+			reg_encodings.at(2), opcode,
+			static_cast<s64>(SyscallType::DispRegs));
+	}
+	else if (ctx->TokInstrNameSyscDispDdestVectorData())
+	{
+		encode_group_0_instr(0, reg_encodings.at(0), 0, 0, opcode,
+			static_cast<s64>(SyscallType::DispDdestVectorData));
+	}
+	else if (ctx->TokInstrNameSyscDispDdestScalarData())
+	{
+		encode_group_0_instr(0, reg_encodings.at(0), 0, 0, opcode,
+			static_cast<s64>(SyscallType::DispDdestScalarData));
+	}
+	else if (ctx->TokInstrNameSyscDispDdestAddr())
+	{
+		encode_group_0_instr(0, reg_encodings.at(0), 0, 0, opcode,
+			static_cast<s64>(SyscallType::DispDdestAddr));
+	}
+	else if (ctx->TokInstrNameSyscFinish())
+	{
+		encode_group_0_instr(0, 0, 0, 0, opcode,
+			static_cast<s64>(SyscallType::Finish));
+	}
 
 	return nullptr;
 }
@@ -1583,6 +1621,12 @@ antlrcpp::Any Assembler::visitInstrName
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameAddiv())
 
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSimSyscall())
+
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSyscDispRegs())
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSyscDispDdestVectorData())
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSyscDispDdestScalarData())
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSyscDispDdestAddr())
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSyscFinish())
 
 	// Group 1 Instructions
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBtru())
