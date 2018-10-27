@@ -46,8 +46,11 @@ start:
 	ldu64 dfp, dzero, dzero, gvar__frame_pointer
 
 
-	.equ __LOCAL_STACK_SPACE NUM_BYTES__LAR_DATA
-	.equ __LOCAL_SP_OFFSET__TEMP (0 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_STACK_SPACE (1 * NUM_BYTES__LAR_DATA)
+	.equ __LOCAL_SP_OFFSET__TEMP_0 (0 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_1 (1 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_2 (2 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_SP_OFFSET__TEMP_3 (3 * NUM_BYTES__SIZE_64)
 
 	.equ __LOCAL_FP_OFFSET__COPY_OF_MAIN_RET_VAL \
 		(-(1 * NUM_BYTES__SIZE_64))
@@ -132,45 +135,43 @@ main:
 
 	ldu64 du0, dzero, dfp, __LOCAL_FP_OFFSET__RETURN_VAL
 
-
-	ldu64 du1, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
-	ldu64 du2, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
-	ldu64 du3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
-	ldu64 du4, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
-
-	lds32 du5, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_4
-	ldf16 du6, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_5
+	//ldf16 du1, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
+	//ldf16 du2, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
+	//ldf16 du3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
+	//ldf16 du4, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_3
 
 
-	.equ __DATA_A 0x9325aabb
-
-	cpyis du3, ((__DATA_A >> 24) & 0xff)
-	cpyis du2, 24
-	shls du1, du3, du2
-
-	cpyis du3, ((__DATA_A >> 16) & 0xff)
-	cpyis du2, 16
-	shls du4, du3, du2
-	orrs du1, du1, du4
-
-	cpyis du3, ((__DATA_A >> 8) & 0xff)
-	cpyis du2, 8
-	shls du4, du3, du2
-	orrs du1, du1, du4
-
-	cpyis du3, (__DATA_A & 0xff)
-	orrs du1, du1, du3
+	pcrels du0, __pool
+	ldu16 du1, dzero, du0, (__data_a - __pool) + (0 * NUM_BYTES__SIZE_16)
+	ldu16 du2, dzero, du0, (__data_a - __pool) + (1 * NUM_BYTES__SIZE_16)
 
 	sysc_disp_ddest_scalar_data du1
+	sysc_disp_ddest_scalar_data du2
 
 
-	cpys du6, du1
-	sysc_disp_ddest_scalar_data du6
+	ldf16 du3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
+	ldf16 du4, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
+	ldf16 du5, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
 
 
-	//adds du0, du5, du6
-	cpys du0, du6
-	sysc_disp_ddest_scalar_data du0
+
+	cpys du3, du1
+	sysc_disp_ddest_scalar_data du3
+
+	cpys du4, du2
+	sysc_disp_ddest_scalar_data du4
+
+	adds du5, du1, du2
+	sysc_disp_ddest_scalar_data du5
+
+
+	//cpys du6, du1
+	//sysc_disp_ddest_scalar_data du6
+
+
+	////adds du0, du5, du6
+	cpys du0, du5
+	//sysc_disp_ddest_scalar_data du0
 
 
 
@@ -184,6 +185,11 @@ __finish:
 .dataalign
 __pool:
 
+__data_a:
+	.db16 0x9325,0xaabb
+
+__data_b:
+	.db16 0x0326,0x0094
 
 //.dataalign
 //__data_for_div_0:

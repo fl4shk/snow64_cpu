@@ -78,6 +78,7 @@ typedef struct packed
 typedef struct packed
 {
 	logic [`MSB_POS__SNOW64_IENC_REG_INDEX:0] index;
+	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_TAG:0] tag;
 	logic [`MSB_POS__SNOW64_LAR_FILE_METADATA_DATA_OFFSET:0] data_offset;
 	logic [`MSB_POS__SNOW64_CPU_DATA_TYPE:0] data_type;
 	logic [`MSB_POS__SNOW64_CPU_INT_TYPE_SIZE:0] int_type_size;
@@ -211,6 +212,8 @@ module Snow64PsExOperandForwarder(input logic clk,
 	`define ASSIGN_NON_FORWARDED_TRUE_REG_DATA(which_reg) \
 		always @(*) out_true_r``which_reg``_data.index \
 			= in_curr_decoded_instr.r``which_reg``_index; \
+		always @(*) out_true_r``which_reg``_data.tag \
+			= __from_lar_file__rd_metadata_``which_reg.tag; \
 		always @(*) out_true_r``which_reg``_data.data_offset \
 			= __from_lar_file__rd_metadata_``which_reg.data_offset; \
 		always @(*) out_true_r``which_reg``_data.data_type \
@@ -1678,9 +1681,9 @@ module Snow64PipeStageEx(input logic clk,
 	//Snow64Pipeline_LarFileReadShareddata
 	//	__from_lar_file__rd_shareddata_a, __from_lar_file__rd_shareddata_b,
 	//	__from_lar_file__rd_shareddata_c;
-	Snow64Pipeline_LarFileReadMetadata __from_lar_file__rd_metadata_a;
-	assign __from_lar_file__rd_metadata_a
-		= in_from_ctrl_unit.out_inst_lar_file__rd_metadata_a;
+	//Snow64Pipeline_LarFileReadMetadata __from_lar_file__rd_metadata_a;
+	//assign __from_lar_file__rd_metadata_a
+	//	= in_from_ctrl_unit.out_inst_lar_file__rd_metadata_a;
 	PkgSnow64PsEx::TrueLarData
 		__curr_true_ra_data, __curr_true_rb_data, __curr_true_rc_data,
 		__captured_true_ra_data = 0, __captured_true_rb_data = 0,
@@ -2135,8 +2138,16 @@ module Snow64PipeStageEx(input logic clk,
 	//	&& (__decoded_instr_to_use.oper
 	//	!= PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12)
 	//	&& (!__stall));
+	//always @(*) __curr_results.valid
+	//	= ((__from_lar_file__rd_metadata_a.tag != 0)
+	//	&& (__decoded_instr_to_use != 0)
+	//	&& (__decoded_instr_to_use.ra_index != 0)
+	//	&& (__decoded_instr_to_use.group == 0)
+	//	&& (__decoded_instr_to_use.oper
+	//	!= PkgSnow64InstrDecoder::SimSyscall_ThreeRegsOneSimm12)
+	//	&& (!__stall));
 	always @(*) __curr_results.valid
-		= ((__from_lar_file__rd_metadata_a.tag != 0)
+		= ((__true_ra_data.tag != 0)
 		&& (__decoded_instr_to_use != 0)
 		&& (__decoded_instr_to_use.ra_index != 0)
 		&& (__decoded_instr_to_use.group == 0)
@@ -2392,6 +2403,12 @@ module Snow64PipeStageEx(input logic clk,
 		PkgSnow64PsEx::StRegular:
 		begin
 			out_to_pipe_stage_wb.decoded_instr <= __decoded_instr_to_use;
+			//$display("EX stage start next instr:  %h %h %h",
+			//	__curr_results.valid,
+			//	__curr_results.base_addr,
+			//	__curr_results.computed_data);
+			//$display("...continued:  %h",
+			//	(__from_lar_file__rd_metadata_a.tag != 0));
 		end
 
 		default:
