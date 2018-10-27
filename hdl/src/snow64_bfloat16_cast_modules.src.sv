@@ -520,12 +520,16 @@ module Snow64BFloat16CastToInt(input logic clk,
 
 			PkgSnow64Cpu::IntTypSz16:
 			begin
+				//$display("Shrinking things:  %h", __temp_out_data);
 				__temp_out_data = __temp_out_data[15:0];
+				//$display("Shrinking things:  %h", __temp_out_data);
 			end
 
 			PkgSnow64Cpu::IntTypSz32:
 			begin
+				//$display("Shrinking things:  %h", __temp_out_data);
 				__temp_out_data = __temp_out_data[31:0];
+				//$display("Shrinking things:  %h", __temp_out_data);
 			end
 
 			PkgSnow64Cpu::IntTypSz64:
@@ -544,6 +548,8 @@ module Snow64BFloat16CastToInt(input logic clk,
 		begin
 			if (in.start)
 			begin
+				//$display("Snow64BFloat16CastToInt starting:  %h %h %h",
+				//	in.to_cast, in.int_type_size, in.type_signedness);
 				__state <= StInner;
 				__temp_out_valid <= 0;
 				__temp_out_can_accept_cmd <= 0;
@@ -556,14 +562,21 @@ module Snow64BFloat16CastToInt(input logic clk,
 
 		StInner:
 		begin
+			//$display("Snow64BFloat16CastToInt StInner:  %h",
+			//	__temp_out_data);
+
 			__state <= StFinishing;
 		end
 
 		StFinishing:
 		begin
+			//$display("Snow64BFloat16CastToInt StFinishing:  %h",
+			//	__temp_out_data);
+
 			__state <= StIdle;
 			__temp_out_valid <= 1;
 			__temp_out_can_accept_cmd <= 1;
+
 		end
 		endcase
 	end

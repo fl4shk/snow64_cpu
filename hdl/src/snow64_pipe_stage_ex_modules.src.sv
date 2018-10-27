@@ -530,8 +530,8 @@ module Snow64PsExCastScalars(input logic clk,
 		__dsrc0__data_type = in_true_rb_data.data_type,
 		__dsrc1__data_type = in_true_rc_data.data_type;
 
-	//wire __ddest__is_signed_int
-	//	= (__ddest__data_type == PkgSnow64Cpu::DataTypSgnInt);
+	wire __ddest__is_signed_int
+		= (__ddest__data_type == PkgSnow64Cpu::DataTypSgnInt);
 	wire __dsrc0__is_signed_int
 		= (__dsrc0__data_type == PkgSnow64Cpu::DataTypSgnInt);
 	wire __dsrc1__is_signed_int
@@ -543,6 +543,10 @@ module Snow64PsExCastScalars(input logic clk,
 		__dsrc1_start_bfloat16_cast_from_int,
 		__dsrc0_start_bfloat16_cast_to_int,
 		__dsrc1_start_bfloat16_cast_to_int;
+	logic __captured_dsrc0_start_bfloat16_cast_from_int = 0,
+		__captured_dsrc1_start_bfloat16_cast_from_int = 0,
+		__captured_dsrc0_start_bfloat16_cast_to_int = 0,
+		__captured_dsrc1_start_bfloat16_cast_to_int = 0;
 
 	wire __starting_any_cast = (in_start
 		&& (__state == PkgSnow64PsEx::CastStNoWait));
@@ -657,13 +661,13 @@ module Snow64PsExCastScalars(input logic clk,
 	assign __in_inst_dsrc0_bfloat16_cast_to_int
 		= {__dsrc0_start_bfloat16_cast_to_int,
 		__dsrc0__uncasted_scalar_data[`MSB_POS__SNOW64_BFLOAT16_ITSELF:0],
-		__dsrc0__int_type_size,
-		__dsrc0__is_signed_int};
+		__ddest__int_type_size,
+		__ddest__is_signed_int};
 	assign __in_inst_dsrc1_bfloat16_cast_to_int
 		= {__dsrc1_start_bfloat16_cast_to_int,
 		__dsrc1__uncasted_scalar_data[`MSB_POS__SNOW64_BFLOAT16_ITSELF:0],
-		__dsrc1__int_type_size,
-		__dsrc1__is_signed_int};
+		__ddest__int_type_size,
+		__ddest__is_signed_int};
 
 
 
@@ -671,7 +675,6 @@ module Snow64PsExCastScalars(input logic clk,
 	initial
 	begin
 		__state = PkgSnow64PsEx::CastStNoWait;
-
 
 		{out_casted_rb_scalar_data, out_casted_rc_scalar_data} = 0;
 		out_valid = 0;
@@ -728,15 +731,34 @@ module Snow64PsExCastScalars(input logic clk,
 
 	always @(posedge clk)
 	begin
-		//if (__starting_any_cast)
+		if (__starting_any_cast)
+		begin
+			//$display("Snow64PsExCastScalars start:  %b; %h %h",
+			//	{__dsrc0_start_bfloat16_cast_from_int,
+			//	__dsrc1_start_bfloat16_cast_from_int,
+			//	__dsrc0_start_bfloat16_cast_to_int,
+			//	__dsrc1_start_bfloat16_cast_to_int},
+			//	__dsrc0__uncasted_scalar_data,
+			//	__dsrc1__uncasted_scalar_data);
+			{__captured_dsrc0_start_bfloat16_cast_from_int,
+				__captured_dsrc1_start_bfloat16_cast_from_int,
+				__captured_dsrc0_start_bfloat16_cast_to_int,
+				__captured_dsrc1_start_bfloat16_cast_to_int}
+				<= {__dsrc0_start_bfloat16_cast_from_int,
+				__dsrc1_start_bfloat16_cast_from_int,
+				__dsrc0_start_bfloat16_cast_to_int,
+				__dsrc1_start_bfloat16_cast_to_int};
+		end
+
+		//if (out_valid)
 		//begin
-		//	$display("Snow64PsExCastScalars:  %h %h; %h %h; %h %h",
-		//		__dsrc0_start_bfloat16_cast_from_int,
-		//		__dsrc1_start_bfloat16_cast_from_int,
-		//		__dsrc0_start_bfloat16_cast_to_int,
-		//		__dsrc1_start_bfloat16_cast_to_int,
-		//		__dsrc0__uncasted_scalar_data,
-		//		__dsrc1__uncasted_scalar_data);
+		//	//$display("Snow64PsExCastScalars outputs:  %h %h",
+		//	//	out_casted_rb_scalar_data, out_casted_rc_scalar_data);
+		//	$display("Snow64PsExCastScalars out_valid:  %h %h; %h %h",
+		//		__out_inst_dsrc0_bfloat16_cast_from_int.data,
+		//		__out_inst_dsrc1_bfloat16_cast_from_int.data,
+		//		__out_inst_dsrc0_bfloat16_cast_to_int.data,
+		//		__out_inst_dsrc1_bfloat16_cast_to_int.data);
 		//end
 
 
@@ -762,10 +784,22 @@ module Snow64PsExCastScalars(input logic clk,
 
 		PkgSnow64PsEx::CastStWaitForBFloat16Caster:
 		begin
-			if (__out_inst_dsrc0_bfloat16_cast_from_int.valid
-				|| __out_inst_dsrc1_bfloat16_cast_from_int.valid
-				|| __out_inst_dsrc0_bfloat16_cast_to_int.valid
-				|| __out_inst_dsrc1_bfloat16_cast_to_int.valid)
+			//if (__out_inst_dsrc0_bfloat16_cast_from_int.valid
+			//	|| __out_inst_dsrc1_bfloat16_cast_from_int.valid
+			//	|| __out_inst_dsrc0_bfloat16_cast_to_int.valid
+			//	|| __out_inst_dsrc1_bfloat16_cast_to_int.valid)
+			//begin
+			//	__state <= PkgSnow64PsEx::CastStNoWait;
+			//	out_valid <= 1'b1;
+			//end
+			if ((__captured_dsrc0_start_bfloat16_cast_from_int
+				&& __out_inst_dsrc0_bfloat16_cast_from_int)
+				|| (__captured_dsrc1_start_bfloat16_cast_from_int
+				&& __out_inst_dsrc1_bfloat16_cast_from_int)
+				|| (__captured_dsrc0_start_bfloat16_cast_to_int
+				&& __out_inst_dsrc0_bfloat16_cast_to_int)
+				|| (__captured_dsrc1_start_bfloat16_cast_to_int
+				&& __out_inst_dsrc1_bfloat16_cast_to_int))
 			begin
 				__state <= PkgSnow64PsEx::CastStNoWait;
 				out_valid <= 1'b1;
@@ -2323,13 +2357,19 @@ module Snow64PipeStageEx(input logic clk,
 		//	__state, __next_state, __stall,
 		//	__decoded_instr_to_use.group, __decoded_instr_to_use.oper,
 		//	out_to_pipe_stage_if_id.computed_pc);
-		//$display("EX:  %h, %h:  %h:  %h, %h, %h:  %h",
+		//$display("EX:  %h %h:  %h:  %h %h %h",
 		//	__state, __next_state,
 		//	__decoded_instr_to_use.group,
 		//	__true_ra_data.data,
 		//	__true_rb_data.data,
-		//	__true_rc_data.data,
-		//	out_to_pipe_stage_wb.ldst_addr);
+		//	__true_rc_data.data);
+		//$display("EX:  %h %h:  %h:  %h %h; %h %h",
+		//	__state, __next_state,
+		//	__decoded_instr_to_use.group,
+		//	__dsrc0_data_to_use,
+		//	__dsrc1_data_to_use,
+		//	__dsrc0_casted_scalar_data,
+		//	__dsrc1_casted_scalar_data);
 		//$display("EX extras:  %h, %h, %h",
 		//	(__true_ra_data.data != 0),
 		//	(__true_rb_data.data != 0),
@@ -2346,55 +2386,6 @@ module Snow64PipeStageEx(input logic clk,
 		out_to_pipe_stage_wb.computed_data
 			<= __curr_results.computed_data;
 
-		//if ((__state == PkgSnow64PsEx::StRegular)
-		//	&& (__curr_multi_cycle_op_type
-		//	!= PkgSnow64PsEx::MultiCycOpTypNone))
-		//begin
-		//	$display("EX stage start mco:  %h %h %h",
-		//		__in_inst_use_vector_mul__start,
-		//		__in_inst_use_vector_div__start,
-		//		__in_inst_use_vector_bfloat16_fpu__start);
-		//end
-
-		//if (((__decoded_instr_to_use.group == 0)
-		//	&& (__decoded_instr_to_use.oper
-		//	== PkgSnow64InstrDecoder::Add_ThreeRegs)
-		//	&& (__decoded_instr_to_use.ra_index == 6)
-		//	&& (__decoded_instr_to_use.rb_index == 0)
-		//	&& (__decoded_instr_to_use.rc_index == 8))
-		//	|| ((__decoded_instr_to_use.group == 0)
-		//	&& (__decoded_instr_to_use.oper
-		//	== PkgSnow64InstrDecoder::Mul_ThreeRegs)
-		//	&& (__decoded_instr_to_use.ra_index == 2)
-		//	&& (__decoded_instr_to_use.rb_index == 4)
-		//	&& (__decoded_instr_to_use.rc_index == 5)))
-		//begin
-		//	$display("EX debug 0:  %h %h; %h %h; %h %h",
-		//		__state, __next_state,
-		//		__dsrc0_data_to_use,
-		//		__dsrc1_data_to_use,
-		//		__multi_cycle_op_type,
-		//		__curr_multi_cycle_op_type);
-		//	$display("EX debug 1:  %h %h %h; %h %h %h",
-		//		__in_inst_use_vector_mul__start,
-		//		__in_inst_use_vector_div__start,
-		//		__in_inst_use_vector_bfloat16_fpu__start,
-
-		//		__out_inst_use_vector_mul__valid,
-		//		__out_inst_use_vector_div__valid,
-		//		__out_inst_use_vector_bfloat16_fpu__valid);
-		//end
-
-		//if (__going_to_perf_multi_cycle_op)
-		//begin
-		//	$display("EX mco:  %h %h; %h %h %h; %h %h",
-		//		__state, __next_state,
-		//		__in_inst_use_vector_mul__start,
-		//		__in_inst_use_vector_div__start,
-		//		__in_inst_use_vector_bfloat16_fpu__start,
-		//		__multi_cycle_op_type,
-		//		__curr_multi_cycle_op_type);
-		//end
 
 
 		case (__next_state)
