@@ -114,15 +114,24 @@ gvar__frame_pointer:
 .codealign
 main:
 {
-	.equ __LOCAL_STACK_SPACE (2 * NUM_BYTES__LAR_DATA)
-	.equ __LOCAL_SP_OFFSET__TEMP_0 (0 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_SP_OFFSET__TEMP_1 (1 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_SP_OFFSET__TEMP_2 (2 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_SP_OFFSET__TEMP_3 (3 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_SP_OFFSET__TEMP_4 (4 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_SP_OFFSET__TEMP_5 (5 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_SP_OFFSET__TEMP_6 (6 * NUM_BYTES__SIZE_64)
-	.equ __LOCAL_SP_OFFSET__TEMP_7 (7 * NUM_BYTES__SIZE_64)
+	.equ __LOCAL_STACK_SPACE (3 * NUM_BYTES__LAR_DATA)
+	.equ __LOCAL_SP_OFFSET__TEMP_0 \
+		((0 * NUM_BYTES__SIZE_64) + (0 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__TEMP_1 \
+		((1 * NUM_BYTES__SIZE_64) + (0 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__TEMP_2 \
+		((2 * NUM_BYTES__SIZE_64) + (0 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__TEMP_3 \
+		((3 * NUM_BYTES__SIZE_64) + (0 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__TEMP_4 \
+		((0 * NUM_BYTES__SIZE_64) + (1 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__TEMP_5 \
+		((1 * NUM_BYTES__SIZE_64) + (1 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__TEMP_6 \
+		((2 * NUM_BYTES__SIZE_64) + (1 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__TEMP_7 \
+		((3 * NUM_BYTES__SIZE_64) + (1 * NUM_BYTES__LAR_DATA))
+	.equ __LOCAL_SP_OFFSET__FLOAT_VEC_C (2 * NUM_BYTES__LAR_DATA)
 
 
 	.equ __LOCAL_FP_OFFSET__RETURN_ADDR (3 * NUM_BYTES__SIZE_64)
@@ -142,36 +151,29 @@ main:
 
 
 	pcrels du0, __pool
-	ldu16 du1, dzero, du0, (__data_a - __pool) + (0 * NUM_BYTES__SIZE_16)
-	ldu16 du2, dzero, du0, (__data_a - __pool) + (1 * NUM_BYTES__SIZE_16)
+	//ldu16 du1, dzero, du0, (__data_a - __pool) + (0 * NUM_BYTES__SIZE_16)
+	//ldu16 du2, dzero, du0, (__data_a - __pool) + (1 * NUM_BYTES__SIZE_16)
 
-	sysc_disp_ddest_scalar_data du1
-	sysc_disp_ddest_scalar_data du2
-
-
-	ldf16 du3, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
-	ldf16 du4, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_1
-	ldf16 du5, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_2
+	//.equ V__I REG_DU1
+	.equ V__FLOAT_VEC_A REG_DU2
+	.equ V__FLOAT_VEC_B REG_DU3
+	.equ V__FLOAT_VEC_C REG_DU4
+	.equ V__FLOAT_VEC_ORACLE REG_DU5
 
 
-
-	cpys du3, du1
-	sysc_disp_ddest_scalar_data du3
-
-	cpys du4, du2
-	sysc_disp_ddest_scalar_data du4
-
-	adds du5, du1, du2
-	sysc_disp_ddest_scalar_data du5
+	//ldu64 V__I, dzero, dsp, __LOCAL_SP_OFFSET__TEMP_0
+	ldf16 V__FLOAT_VEC_A, dzero, du0, (__float_data_a - __pool)
+	ldf16 V__FLOAT_VEC_B, dzero, du0, (__float_data_b - __pool)
+	ldf16 V__FLOAT_VEC_C, dzero, dsp, __LOCAL_SP_OFFSET__FLOAT_VEC_C
+	ldf16 V__FLOAT_VEC_ORACLE, dzero, du0, (__float_data_oracle - __pool)
 
 
-	//cpys du6, du1
-	//sysc_disp_ddest_scalar_data du6
+	// compute V__FLOAT_VEC_C
+	addv V__FLOAT_VEC_C, V__FLOAT_VEC_A, V__FLOAT_VEC_B
 
+	sysc_disp_ddest_vector_data V__FLOAT_VEC_C
+	sysc_disp_ddest_vector_data V__FLOAT_VEC_ORACLE
 
-	////adds du0, du5, du6
-	cpys du0, du5
-	//sysc_disp_ddest_scalar_data du0
 
 
 
@@ -180,16 +182,27 @@ __finish:
 	jmp dlr
 
 
-
-
 .dataalign
 __pool:
 
-__data_a:
-	.db16 0x9325,0xaabb
+__float_data_a:
+	.db16 0x9d6e, 0xe808, 0xebca, 0x41a
+	.db16 0x509e, 0xbf1c, 0x18ca, 0x20e8
+	.db16 0xd6c4, 0xdb72, 0x73a4, 0x40f0
+	.db16 0x3640, 0x9537, 0xa5e2, 0xf9f5
 
-__data_b:
-	.db16 0x0326,0x0094
+__float_data_b:
+	.db16 0xda11, 0xdc8e, 0x7246, 0x384b
+	.db16 0xcb8e, 0x44d7, 0xb3c1, 0x7e24
+	.db16 0x9192, 0x543e, 0x204b, 0xb0f9
+	.db16 0x74cf, 0xa669, 0xcb9c, 0x169d
+
+__float_data_oracle:
+	.db16 0xda11, 0xe808, 0x7245, 0x384b
+	.db16 0x509d, 0x44d6, 0xb3c0, 0x7e24
+	.db16 0xd6c4, 0xdb71, 0x73a4, 0x40ef
+	.db16 0x74cf, 0xa669, 0xcb9c, 0xf9f4
+
 
 //.dataalign
 //__data_for_div_0:
