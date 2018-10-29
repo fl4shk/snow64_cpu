@@ -15,7 +15,9 @@ module Snow64MemoryBusGuard(input logic clk,
 
 	logic [`MSB_POS__SNOW64_MEMORY_BUS_GUARD__REQUEST_TYPE:0]
 		__stage_0_to_1__req_type, __stage_1_to_2__req_type;
-
+	//logic __past_real_in_req_read_instr__req = 0,
+	//	__past_real_in_req_read_data__req = 0,
+	//	__past_real_in_req_write_data__req = 0;
 
 	`ifdef FORMAL
 	localparam __ENUM__REQUEST_TYPE__NONE
@@ -183,8 +185,10 @@ module Snow64MemoryBusGuard(input logic clk,
 		if (!__stall)
 		begin
 			// Instruction reader thing requested a block of instructions.
-			if (real_in_req_read_instr.req)
+			if (real_in_req_read_instr.req
+				&& (!real_out_req_read_instr.cmd_accepted))
 			begin
+				$display("MBG:  service instr read");
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
 				//$display("MBG:  preparing to read instructions:  %h",
@@ -197,8 +201,10 @@ module Snow64MemoryBusGuard(input logic clk,
 			end
 
 			// LAR file wants to read data.
-			else if (real_in_req_read_data.req)
+			else if (real_in_req_read_data.req
+				&& (!real_out_req_read_data.cmd_accepted))
 			begin
+				$display("MBG:  service data read");
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadData;
 				prep_mem_read(real_in_req_read_data.addr);
@@ -209,8 +215,10 @@ module Snow64MemoryBusGuard(input logic clk,
 			end
 
 			// LAR file wants to write data.
-			else if (real_in_req_write_data.req)
+			else if (real_in_req_write_data.req
+				&& (!real_out_req_write_data.cmd_accepted))
 			begin
+				$display("MBG:  service data write");
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypWriteData;
 				prep_mem_write();
