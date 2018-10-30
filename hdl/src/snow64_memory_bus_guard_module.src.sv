@@ -188,7 +188,7 @@ module Snow64MemoryBusGuard(input logic clk,
 			if (real_in_req_read_instr.req
 				&& (!real_out_req_read_instr.cmd_accepted))
 			begin
-				$display("MBG:  service instr read");
+				//$display("MBG:  service instr read");
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadInstr;
 				//$display("MBG:  preparing to read instructions:  %h",
@@ -204,7 +204,7 @@ module Snow64MemoryBusGuard(input logic clk,
 			else if (real_in_req_read_data.req
 				&& (!real_out_req_read_data.cmd_accepted))
 			begin
-				$display("MBG:  service data read");
+				//$display("MBG:  service data read");
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypReadData;
 				prep_mem_read(real_in_req_read_data.addr);
@@ -218,7 +218,7 @@ module Snow64MemoryBusGuard(input logic clk,
 			else if (real_in_req_write_data.req
 				&& (!real_out_req_write_data.cmd_accepted))
 			begin
-				$display("MBG:  service data write");
+				//$display("MBG:  service data write");
 				__stage_0_to_1__req_type
 					<= PkgSnow64MemoryBusGuard::ReqTypWriteData;
 				prep_mem_write();
