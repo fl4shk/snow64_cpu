@@ -56,9 +56,9 @@ module Snow64InstrDecoder
 			out.oper = __iog1_instr.oper;
 
 			out.nop = !((__iog1_instr.oper
-				== PkgSnow64InstrDecoder::Btru_OneRegOneSimm20)
+				== PkgSnow64InstrDecoder::Bnz_OneRegOneSimm20)
 				|| (__iog1_instr.oper
-				== PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20)
+				== PkgSnow64InstrDecoder::Bzo_OneRegOneSimm20)
 				|| (__iog1_instr.oper
 				== PkgSnow64InstrDecoder::Jmp_OneReg));
 

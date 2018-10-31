@@ -150,11 +150,11 @@ Opcode Group:  0b001
 	* Note:  `dX.sdata` is simply the current scalar portion of the
 	data LAR called `dX`
 	* Instructions:
-		* <b>btru</b> dA, simm20
+		* <b>bnz</b> dA, simm20
 			* Opcode:  0x0
 			* Effect:  <code>if (dA.sdata != 0) 
 				pc <= pc + sign\_extend\_to\_64(simm20);</code>
-		* <b>bfal</b> dA, simm20
+		* <b>bzo</b> dA, simm20
 			* Opcode:  0x1
 			* Effect:  <code>if (dA.sdata == 0) 
 				pc <= pc + sign\_extend\_to\_64(simm20);</code>

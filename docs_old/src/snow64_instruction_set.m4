@@ -170,11 +170,11 @@ OPCODE_GROUP(0b001)
 	* Note:  all instructions in group 0b001 are scalar operations.
 	* NOTE_SDATA()
 	* Instructions:
-		* _BOLD(btru) dA, simm20
+		* _BOLD(bnz) dA, simm20
 			* OPCODE(0x0)
 			* Effect:  _CODE(if (dA.sdata != 0) 
 				pc <= pc + _SIGN_EXTEND_TO_64(simm20);)
-		* _BOLD(bfal) dA, simm20
+		* _BOLD(bzo) dA, simm20
 			* OPCODE(0x1)
 			* Effect:  _CODE(if (dA.sdata == 0) 
 				pc <= pc + _SIGN_EXTEND_TO_64(simm20);)

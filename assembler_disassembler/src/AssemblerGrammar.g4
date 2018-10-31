@@ -111,7 +111,7 @@ instrOpGrp0SimSyscall:
 
 
 instrOpGrp1RelBranch:
-	(TokInstrNameBtru | TokInstrNameBfal)
+	(TokInstrNameBnz | TokInstrNameBzo)
 	regOrIdentName TokComma expr
 	;
 instrOpGrp1Jump:
@@ -353,8 +353,8 @@ instrName:
 	| TokInstrNameSyscFinish
 
 	// Group 1 Instructions
-	| TokInstrNameBtru
-	| TokInstrNameBfal
+	| TokInstrNameBnz
+	| TokInstrNameBzo
 	| TokInstrNameJmp
 
 	// Group 2 Instructions
@@ -463,8 +463,8 @@ TokInstrNameSyscDispDdestAddr: 'sysc_disp_ddest_addr' ;
 TokInstrNameSyscFinish: 'sysc_finish' ;
 
 // Group 1 Instructions
-TokInstrNameBtru: 'btru' ;
-TokInstrNameBfal: 'bfal' ;
+TokInstrNameBnz: 'bnz' ;
+TokInstrNameBzo: 'bzo' ;
 TokInstrNameJmp: 'jmp' ;
 
 

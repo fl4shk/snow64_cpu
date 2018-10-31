@@ -35,10 +35,10 @@
 	localparam __ENUM__IOG0OPER__BAD2_IOG0
 		= PkgSnow64InstrDecoder::Bad2_Iog0;
 
-	localparam __ENUM__IOG1OPER__BTRU_ONEREGONESIMM20
-		= PkgSnow64InstrDecoder::Btru_OneRegOneSimm20;
-	localparam __ENUM__IOG1OPER__BFAL_ONEREGONESIMM20
-		= PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20;
+	localparam __ENUM__IOG1OPER__BNZ_ONEREGONESIMM20
+		= PkgSnow64InstrDecoder::Bnz_OneRegOneSimm20;
+	localparam __ENUM__IOG1OPER__BZO_ONEREGONESIMM20
+		= PkgSnow64InstrDecoder::Bzo_OneRegOneSimm20;
 	localparam __ENUM__IOG1OPER__JMP_ONEREG
 		= PkgSnow64InstrDecoder::Jmp_OneReg;
 	localparam __ENUM__IOG1OPER__EI_NOARGS

@@ -88,8 +88,8 @@ EncodingStuff::EncodingStuff()
 
 	// Group 1 (control flow and interrupts stuff)
 	temp = 0;
-	insert_map_entry(__iog1_rel_branch_map, "btru", temp);
-	insert_map_entry(__iog1_rel_branch_map, "bfal", temp);
+	insert_map_entry(__iog1_rel_branch_map, "bnz", temp);
+	insert_map_entry(__iog1_rel_branch_map, "bzo", temp);
 
 	insert_map_entry(__iog1_jump_map, "jmp", temp);
 

@@ -233,7 +233,7 @@ main:
 	//		addis V__I, V__I, -1
 
 	//		// if (i != 0) goto __loop
-	//		btru V__I, __loop
+	//		bnz V__I, __loop
 	//	}
 	//}
 
@@ -258,7 +258,7 @@ main:
 	//		addis V__I, V__I, -1
 
 	//		// if (i != 0) goto __loop
-	//		btru V__I, __loop
+	//		bnz V__I, __loop
 	//	}
 	//}
 
@@ -284,7 +284,7 @@ main:
 	//		addis V__I, V__I, -1
 
 	//		// if (i != 0) goto __loop
-	//		btru V__I, __loop
+	//		bnz V__I, __loop
 	//	}
 	//}
 
@@ -317,7 +317,7 @@ main:
 			addis V__I, V__I, -NUM_LAR_ELEMS__SIZE_64
 
 			// if (i != 0) goto __loop
-			btru V__I, __loop
+			bnz V__I, __loop
 		}
 		
 	}
@@ -346,7 +346,7 @@ main:
 			addis V__I, V__I, -1
 
 			// if (i != 0) goto __loop
-			btru V__I, __loop
+			bnz V__I, __loop
 		}
 	}
 

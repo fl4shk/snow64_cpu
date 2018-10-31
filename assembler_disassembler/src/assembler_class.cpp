@@ -680,8 +680,8 @@ antlrcpp::Any Assembler::visitInstrOpGrp0SimSyscall
 antlrcpp::Any Assembler::visitInstrOpGrp1RelBranch
 	(AssemblerGrammarParser::InstrOpGrp1RelBranchContext *ctx)
 {
-	ANY_PUSH_TOK_IF(ctx->TokInstrNameBtru())
-	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBfal())
+	ANY_PUSH_TOK_IF(ctx->TokInstrNameBnz())
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBzo())
 	else
 	{
 		err(ctx, "visitInstrOpGrp1RelBranch():  Eek!");
@@ -799,7 +799,7 @@ antlrcpp::Any Assembler::visitPseudoInstrBraOneSimm20
 
 
 	const auto opcode = __encoding_stuff.iog1_rel_branch_map()
-		.at(cstm_strdup("bfal"));
+		.at(cstm_strdup("bzo"));
 
 	const auto one_reg_encoding = 0;
 
@@ -834,7 +834,7 @@ antlrcpp::Any Assembler::visitPseudoInstrBlOneSimm20
 
 	{
 	const auto opcode = __encoding_stuff.iog1_rel_branch_map()
-		.at(cstm_strdup("bfal"));
+		.at(cstm_strdup("bzo"));
 
 	const auto one_reg_encoding = 0;
 
@@ -1629,8 +1629,8 @@ antlrcpp::Any Assembler::visitInstrName
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameSyscFinish())
 
 	// Group 1 Instructions
-	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBtru())
-	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBfal())
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBnz())
+	else ANY_PUSH_TOK_IF(ctx->TokInstrNameBzo())
 	else ANY_PUSH_TOK_IF(ctx->TokInstrNameJmp())
 
 

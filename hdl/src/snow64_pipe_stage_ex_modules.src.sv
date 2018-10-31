@@ -2202,7 +2202,7 @@ module Snow64PipeStageEx(input logic clk,
 	always @(*)
 	begin
 		case (__decoded_instr_to_use.oper)
-		PkgSnow64InstrDecoder::Btru_OneRegOneSimm20:
+		PkgSnow64InstrDecoder::Bnz_OneRegOneSimm20:
 		begin
 			out_to_pipe_stage_if_id.computed_pc
 				= (__curr_ddest_scalar_data != 0)
@@ -2211,7 +2211,7 @@ module Snow64PipeStageEx(input logic clk,
 				: in_from_pipe_stage_if_id.pc_val;
 		end
 
-		PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20:
+		PkgSnow64InstrDecoder::Bzo_OneRegOneSimm20:
 		begin
 			out_to_pipe_stage_if_id.computed_pc
 				= (__curr_ddest_scalar_data == 0)

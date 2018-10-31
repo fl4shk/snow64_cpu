@@ -146,13 +146,13 @@
 		1:
 		begin
 			case (__out_inst_instr_decoder.oper)
-			PkgSnow64InstrDecoder::Btru_OneRegOneSimm20:
-				$display("%h, %h:  btru %s, %h",
+			PkgSnow64InstrDecoder::Bnz_OneRegOneSimm20:
+				$display("%h, %h:  bnz %s, %h",
 					__state, __spec_reg_pc,
 					get_reg_name_str(__out_inst_instr_decoder.ra_index),
 					__out_inst_instr_decoder.signext_imm);
-			PkgSnow64InstrDecoder::Bfal_OneRegOneSimm20:
-				$display("%h, %h:  bfal %s, %h",
+			PkgSnow64InstrDecoder::Bzo_OneRegOneSimm20:
+				$display("%h, %h:  bzo %s, %h",
 					__state, __spec_reg_pc,
 					get_reg_name_str(__out_inst_instr_decoder.ra_index),
 					__out_inst_instr_decoder.signext_imm);

@@ -142,7 +142,7 @@ __add_loop:
 	ldu32 du4, du4, dzero, NUM_BYTES__SIZE_32
 	addis du0, du0, 1
 	addis du1, du1, -1
-	btru du1, __add_loop
+	bnz du1, __add_loop
 
 
 
@@ -154,7 +154,7 @@ __print_loop:
 	ldu32 du5, du5, dzero, NUM_BYTES__SIZE_32
 	addis du0, du0, 1
 	addis du1, du1, -1
-	btru du1, __print_loop
+	bnz du1, __print_loop
 
 
 __finish:

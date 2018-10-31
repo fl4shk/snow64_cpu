@@ -36,8 +36,8 @@ typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 // Group 1 instructions:  control flow and interrupts stuff
 typedef enum logic [`MSB_POS__SNOW64_IENC_OPCODE:0]
 {
-	Btru_OneRegOneSimm20,
-	Bfal_OneRegOneSimm20,
+	Bnz_OneRegOneSimm20,
+	Bzo_OneRegOneSimm20,
 	Jmp_OneReg,
 	Bad0_Iog1,
 

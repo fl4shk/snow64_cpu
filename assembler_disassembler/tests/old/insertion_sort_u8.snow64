@@ -207,7 +207,7 @@ __outer_loop:
 	{
 		// if (i >= A_size) goto __after_outer_loop
 		slts __VAR__CMP_TEMP,  __VAR__I, __ARG__A_SIZE
-		bfal __VAR__CMP_TEMP, __after_outer_loop
+		bzo __VAR__CMP_TEMP, __after_outer_loop
 
 		// j = i;
 		cpys __VAR__J, __VAR__I
@@ -216,7 +216,7 @@ __outer_loop:
 	__inner_loop:
 		{
 			// if (j != 0) goto __after_inner_loop
-			btru __VAR__J, __after_inner_loop
+			bnz __VAR__J, __after_inner_loop
 
 			// __ACC__A_OF_J.addr = A[j + 0];
 			ldu8 __ACC__A_OF_J, __ARG__A, __VAR__J, 0
@@ -226,11 +226,11 @@ __outer_loop:
 
 			// if (A[j - 1] == A[j]) goto __after_inner_loop
 			subs __VAR__CMP_TEMP, __ACC__A_OF_J_MINUS_1, __ACC__A_OF_J
-			bfal __VAR__CMP_TEMP, __after_inner_loop
+			bzo __VAR__CMP_TEMP, __after_inner_loop
 
 			// if (A[j - 1] < A[j]) goto __after_inner_loop
 			slts __VAR__CMP_TEMP, __ACC__A_OF_J_MINUS_1, __ACC__A_OF_J
-			btru __VAR__CMP_TEMP, __after_inner_loop
+			bnz __VAR__CMP_TEMP, __after_inner_loop
 
 
 			// swap A[j] and A[j - 1]
