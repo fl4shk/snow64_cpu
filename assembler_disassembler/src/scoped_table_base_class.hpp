@@ -32,7 +32,7 @@ public:		// functions
 	}
 
 	std::vector<std::map<Ident, Type*>*> get_all_children_tables() const
-		___attribute___((noinline))
+		__attribute__((noinline))
 	{
 		std::vector<std::map<Ident, Type*>*> ret;
 
@@ -44,7 +44,7 @@ public:		// functions
 protected:		// functions
 	void ___inner_func_get_all_children_tables
 		(std::vector<std::map<Ident, Type*>*>& ret) const
-		___attribute___((noinline))
+		__attribute__((noinline))
 	{
 		// Find all the tables
 		for (auto iter : children)
@@ -115,7 +115,7 @@ public:		// functions
 		}
 	}
 
-	void mkscope(Node*& some_curr_node) ___attribute___((noinline))
+	void mkscope(Node*& some_curr_node) __attribute__((noinline))
 	{
 		//if (___curr_node == nullptr)
 		//{
@@ -141,7 +141,7 @@ public:		// functions
 
 		//some_curr_node->table = scope_num();
 	}
-	void rmscope(Node*& some_curr_node) ___attribute___((noinline))
+	void rmscope(Node*& some_curr_node) __attribute__((noinline))
 	{
 		if (some_curr_node != &___tree)
 		{
@@ -177,7 +177,7 @@ public:		// functions
 
 
 	Type* find(Node* some_curr_node, Ident some_name) 
-		___attribute___((noinline))
+		__attribute__((noinline))
 	{
 		//for (s64 i=scope_lev(); i>=builtin_scope_level; --i)
 		for (auto p=some_curr_node; p!=&___tree; p=p->parent)
