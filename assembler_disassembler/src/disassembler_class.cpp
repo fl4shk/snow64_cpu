@@ -2,12 +2,12 @@
 
 Disassembler::Disassembler(DisassemblerGrammarParser& parser)
 {
-	__program_ctx = parser.program();
+	___program_ctx = parser.program();
 }
 
 int Disassembler::run()
 {
-	visitProgram(__program_ctx);
+	visitProgram(___program_ctx);
 	return 0;
 }
 
@@ -87,27 +87,27 @@ antlrcpp::Any Disassembler::visitLine
 				case 0x0:
 					decode_group_0_instr(instruction, sv_bit, reg_a_index,
 						reg_b_index, reg_c_index, opcode, simm12);
-					//__encoding_stuff.get_iog0_instr_from_opcode(opcode,
+					//___encoding_stuff.get_iog0_instr_from_opcode(opcode,
 					//	instr_name, args_type);
-					__encoding_stuff.decode_iog0_instr_name_and_args_type
+					___encoding_stuff.decode_iog0_instr_name_and_args_type
 						(sv_bit, opcode, instr_name, args_type);
 					break;
 				case 0x1:
 					decode_group_1_instr(instruction, reg_a_index, opcode,
 						simm20);
-					__encoding_stuff.decode_iog1_instr_name_and_args_type
+					___encoding_stuff.decode_iog1_instr_name_and_args_type
 						(sv_bit, opcode, instr_name, args_type);
 					break;
 				case 0x2:
 					decode_group_2_instr(instruction, reg_a_index,
 						reg_b_index, reg_c_index, opcode, simm12);
-					__encoding_stuff.decode_iog2_instr_name_and_args_type
+					___encoding_stuff.decode_iog2_instr_name_and_args_type
 						(sv_bit, opcode, instr_name, args_type);
 					break;
 				case 0x3:
 					decode_group_3_instr(instruction, reg_a_index,
 						reg_b_index, reg_c_index, opcode, simm12);
-					__encoding_stuff.decode_iog3_instr_name_and_args_type
+					___encoding_stuff.decode_iog3_instr_name_and_args_type
 						(sv_bit, opcode, instr_name, args_type);
 					break;
 				default:
@@ -116,9 +116,9 @@ antlrcpp::Any Disassembler::visitLine
 					return nullptr;
 			}
 
-			reg_a_name = __encoding_stuff.decode_reg_name(reg_a_index);
-			reg_b_name = __encoding_stuff.decode_reg_name(reg_b_index);
-			reg_c_name = __encoding_stuff.decode_reg_name(reg_c_index);
+			reg_a_name = ___encoding_stuff.decode_reg_name(reg_a_index);
+			reg_b_name = ___encoding_stuff.decode_reg_name(reg_b_index);
+			reg_c_name = ___encoding_stuff.decode_reg_name(reg_c_index);
 
 			switch (args_type)
 			{
@@ -253,7 +253,7 @@ antlrcpp::Any Disassembler::visitLine
 //			auto tok = ctx->getStart();
 //			const size_t line = tok->getLine();
 //			const size_t pos_in_line = tok->getCharPositionInLine();
-//			//printerr("Error in file \"", *__file_name, "\", on line ",
+//			//printerr("Error in file \"", *___file_name, "\", on line ",
 //			//	line, ", position ", pos_in_line, ":  ", msg, "\n");
 //			printerr("Error on line ", line, ", position ", pos_in_line, 
 //				":  ", msg, "\n");

@@ -1,5 +1,5 @@
-#ifndef src__slash__disassembler_class_hpp
-#define src__slash__disassembler_class_hpp
+#ifndef src_disassembler_class_hpp
+#define src_disassembler_class_hpp
 
 // src/disassembler_class.hpp
 
@@ -18,8 +18,8 @@ class Disassembler : public DisassemblerGrammarVisitor,
 	public AsmDisasmVisitorBase
 {
 private:		// variables
-	EncodingStuff __encoding_stuff;
-	DisassemblerGrammarParser::ProgramContext* __program_ctx;
+	EncodingStuff ___encoding_stuff;
+	DisassemblerGrammarParser::ProgramContext* ___program_ctx;
 
 public:		// functions
 	Disassembler(DisassemblerGrammarParser& parser);
@@ -39,7 +39,7 @@ private:		// functions
 	//		auto tok = ctx->getStart();
 	//		const size_t line = tok->getLine();
 	//		const size_t pos_in_line = tok->getCharPositionInLine();
-	//		//printerr("Error in file \"", *__file_name, "\", on line ",
+	//		//printerr("Error in file \"", *___file_name, "\", on line ",
 	//		//	line, ", position ", pos_in_line, ":  ", msg, "\n");
 	//		printerr("Error on line ", line, ", position ", pos_in_line, 
 	//			":  ", msg, "\n");
@@ -48,7 +48,7 @@ private:		// functions
 	//}
 	//inline void err(const std::string& msg)
 	//{
-	//	//printerr("Error in file \"", *__file_name, "\":  ", msg, "\n");
+	//	//printerr("Error in file \"", *___file_name, "\":  ", msg, "\n");
 	//	printerr("Error:  ", msg, "\n");
 	//	exit(1);
 	//}
@@ -248,4 +248,4 @@ private:		// functions
 
 
 
-#endif		// src__slash__disassembler_class_hpp
+#endif		// src_disassembler_class_hpp

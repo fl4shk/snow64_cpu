@@ -1,5 +1,5 @@
-#ifndef src__slash__asm_disasm_error_listener_class_hpp
-#define src__slash__asm_disasm_error_listener_class_hpp
+#ifndef src_asm_disasm_error_listener_class_hpp
+#define src_asm_disasm_error_listener_class_hpp
 
 // src/asm_disasm_error_listener_class_hpp
 
@@ -31,4 +31,4 @@ public:		// functions
 		size_t prediction, antlr4::atn::ATNConfigSet *configs);
 };
 
-#endif		// src__slash__asm_disasm_error_listener_class_hpp
+#endif		// src_asm_disasm_error_listener_class_hpp

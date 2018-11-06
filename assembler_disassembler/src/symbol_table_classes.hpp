@@ -1,5 +1,5 @@
-#ifndef src__slash__symbol_table_classes_hpp
-#define src__slash__symbol_table_classes_hpp
+#ifndef src_symbol_table_classes_hpp
+#define src_symbol_table_classes_hpp
 
 // src/symbol_table_classes.hpp
 
@@ -11,10 +11,10 @@
 class Symbol
 {
 private:		// variables
-	Ident __name;
+	Ident ___name;
 
-	u64 __addr = 0;
-	bool __found_as_label = false;
+	u64 ___addr = 0;
+	bool ___found_as_label = false;
 
 
 public:		// functions
@@ -22,7 +22,7 @@ public:		// functions
 	{
 	}
 	inline Symbol(Ident s_name, u64 s_addr)
-		: __name(s_name), __addr(s_addr), __found_as_label(false)
+		: ___name(s_name), ___addr(s_addr), ___found_as_label(false)
 	{
 	}
 	inline Symbol(const Symbol& to_copy) = default;
@@ -49,4 +49,4 @@ public:		// functions
 
 
 
-#endif		// src__slash__symbol_table_classes_hpp
+#endif		// src_symbol_table_classes_hpp

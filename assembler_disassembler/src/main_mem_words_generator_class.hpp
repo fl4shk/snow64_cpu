@@ -1,5 +1,5 @@
-#ifndef src__slash__main_mem_words_generator_class_hpp
-#define src__slash__main_mem_words_generator_class_hpp
+#ifndef src_main_mem_words_generator_class_hpp
+#define src_main_mem_words_generator_class_hpp
 
 // src/main_mem_words_generator_class.hpp
 
@@ -55,10 +55,10 @@ public:		// classes
 		}
 	};
 private:		// variables
-	DisassemblerGrammarParser::ProgramContext* __program_ctx;
-	u64 __curr_instr_addr;
-	//std::vector<u64> __word_addresses_vec;
-	std::map<u64, MemWord> __mem_words_map;
+	DisassemblerGrammarParser::ProgramContext* ___program_ctx;
+	u64 ___curr_instr_addr;
+	//std::vector<u64> ___word_addresses_vec;
+	std::map<u64, MemWord> ___mem_words_map;
 
 public:		// functions
 	MainMemWordsGenerator(DisassemblerGrammarParser& parser);
@@ -81,4 +81,4 @@ private:		// functions
 };
 
 
-#endif		// src__slash__main_mem_words_generator_class_hpp
+#endif		// src_main_mem_words_generator_class_hpp

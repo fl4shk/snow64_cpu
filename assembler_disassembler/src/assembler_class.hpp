@@ -1,5 +1,5 @@
-#ifndef src__slash__assembler_class_hpp
-#define src__slash__assembler_class_hpp
+#ifndef src_assembler_class_hpp
+#define src_assembler_class_hpp
 
 // src/assembler_class.hpp
 
@@ -36,25 +36,25 @@ public:		// constants
 	static constexpr s64 call_return_offset = 2 * sizeof(u32);
 
 private:		// variables
-	SymbolTable __sym_tbl;
+	SymbolTable ___sym_tbl;
 
-	//u64 __pc;
+	//u64 ___pc;
 
-	liborangepower::containers::PrevCurrPair<u64> __pc;
+	liborangepower::containers::PrevCurrPair<u64> ___pc;
 
-	std::stack<s64> __num_stack;
-	//std::stack<bool> __enable_signed_expr_stack;
-	std::stack<s64> __scope_child_num_stack;
-	std::stack<std::string*> __str_stack;
+	std::stack<s64> ___num_stack;
+	//std::stack<bool> ___enable_signed_expr_stack;
+	std::stack<s64> ___scope_child_num_stack;
+	std::stack<std::string*> ___str_stack;
 
-	EncodingStuff __encoding_stuff;
+	EncodingStuff ___encoding_stuff;
 
-	AssemblerGrammarParser::ProgramContext* __program_ctx;
-	int __pass;
+	AssemblerGrammarParser::ProgramContext* ___program_ctx;
+	int ___pass;
 
-	bool __show_words;
+	bool ___show_words;
 
-	ScopedTableNode<Symbol>* __curr_scope_node = nullptr;
+	ScopedTableNode<Symbol>* ___curr_scope_node = nullptr;
 
 public:		// functions
 	Assembler(AssemblerGrammarParser& parser, bool s_show_words=false);
@@ -73,7 +73,7 @@ private:		// functions
 	//		auto tok = ctx->getStart();
 	//		const size_t line = tok->getLine();
 	//		const size_t pos_in_line = tok->getCharPositionInLine();
-	//		//printerr("Error in file \"", *__file_name, "\", on line ",
+	//		//printerr("Error in file \"", *___file_name, "\", on line ",
 	//		//	line, ", position ", pos_in_line, ":  ", msg, "\n");
 	//		printerr("Error on line ", line, ", position ", pos_in_line, 
 	//			":  ", msg, "\n");
@@ -82,7 +82,7 @@ private:		// functions
 	//}
 	//inline void err(const std::string& msg)
 	//{
-	//	//printerr("Error in file \"", *__file_name, "\":  ", msg, "\n");
+	//	//printerr("Error in file \"", *___file_name, "\":  ", msg, "\n");
 	//	printerr("Error:  ", msg, "\n");
 	//	exit(1);
 	//}
@@ -97,7 +97,7 @@ private:		// functions
 			auto tok = ctx->getStart();
 			const size_t line = tok->getLine();
 			const size_t pos_in_line = tok->getCharPositionInLine();
-			//printerr("Error in file \"", *__file_name, "\", on line ",
+			//printerr("Error in file \"", *___file_name, "\", on line ",
 			//	line, ", position ", pos_in_line, ":  ", msg, "\n");
 			printerr("Warning on line ", line, ", position ", pos_in_line, 
 				":  ", msg, "\n");
@@ -109,7 +109,7 @@ private:		// functions
 	}
 	//inline void print_words_if_allowed(const std::string some_words)
 	//{
-	//	if (__pass && __show_words)
+	//	if (___pass && ___show_words)
 	//	{
 	//		printout(some_words);
 	//	}
@@ -352,92 +352,92 @@ private:		// visitor functions
 private:		// functions
 	inline void push_num(s64 to_push)
 	{
-		__num_stack.push(to_push);
+		___num_stack.push(to_push);
 	}
 	inline auto get_top_num()
 	{
-		return __num_stack.top();
+		return ___num_stack.top();
 	}
 	inline auto pop_num()
 	{
-		auto ret = __num_stack.top();
-		__num_stack.pop();
+		auto ret = ___num_stack.top();
+		___num_stack.pop();
 		return ret;
 	}
 	inline void push_scope_child_num(s64 to_push)
 	{
-		__scope_child_num_stack.push(to_push);
+		___scope_child_num_stack.push(to_push);
 	}
 	inline auto get_top_scope_child_num()
 	{
-		return __scope_child_num_stack.top();
+		return ___scope_child_num_stack.top();
 	}
 	inline auto pop_scope_child_num()
 	{
-		auto ret = __scope_child_num_stack.top();
-		__scope_child_num_stack.pop();
+		auto ret = ___scope_child_num_stack.top();
+		___scope_child_num_stack.pop();
 		return ret;
 	}
 
 	inline void push_str(std::string* to_push)
 	{
-		__str_stack.push(to_push);
+		___str_stack.push(to_push);
 	}
 	inline auto get_top_str()
 	{
-		return __str_stack.top();
+		return ___str_stack.top();
 	}
 	inline auto pop_str()
 	{
-		auto ret = __str_stack.top();
-		__str_stack.pop();
+		auto ret = ___str_stack.top();
+		___str_stack.pop();
 		return ret;
 	}
 
 	gen_getter_and_setter_by_val(pc);
 	gen_getter_by_ref(sym_tbl);
 
-	void __encode_alu_op_three_regs(ParserRuleContext* ctx,
+	void ___encode_alu_op_three_regs(ParserRuleContext* ctx,
 		const std::string& instr_name, u32 reg_a_index, u32 reg_b_index, 
 		u32 reg_c_index);
-	void __encode_alu_op_two_regs_one_imm(ParserRuleContext* ctx,
+	void ___encode_alu_op_two_regs_one_imm(ParserRuleContext* ctx,
 		const std::string& instr_name, u32 reg_a_index, u32 reg_b_index, 
 		s64 immediate);
-	void __encode_inv(ParserRuleContext* ctx, u32 reg_a_index, u32 
+	void ___encode_inv(ParserRuleContext* ctx, u32 reg_a_index, u32 
 		reg_b_index);
-	void __encode_invi(ParserRuleContext* ctx, u32 reg_a_index, 
+	void ___encode_invi(ParserRuleContext* ctx, u32 reg_a_index, 
 		s64 immediate);
-	void __encode_cpy_ra_rb(ParserRuleContext* ctx, u32 reg_a_index, 
+	void ___encode_cpy_ra_rb(ParserRuleContext* ctx, u32 reg_a_index, 
 		u32 reg_b_index);
-	void __encode_cpy_ra_pc(ParserRuleContext* ctx, u32 reg_a_index);
-	void __encode_cpyi(ParserRuleContext* ctx, u32 reg_a_index, 
+	void ___encode_cpy_ra_pc(ParserRuleContext* ctx, u32 reg_a_index);
+	void ___encode_cpyi(ParserRuleContext* ctx, u32 reg_a_index, 
 		s64 immediate);
-	void __encode_cpya(ParserRuleContext* ctx, u32 reg_a_index, 
+	void ___encode_cpya(ParserRuleContext* ctx, u32 reg_a_index, 
 		s64 immediate);
 
 
-	void __encode_relative_branch(ParserRuleContext* ctx,
+	void ___encode_relative_branch(ParserRuleContext* ctx,
 		const std::string& instr_name, 
 		u32 reg_a_index, u32 reg_b_index, s64 raw_immediate);
-	void __encode_jump(ParserRuleContext* ctx,
+	void ___encode_jump(ParserRuleContext* ctx,
 		const std::string& instr_name, u32 reg_a_index, 
 		u32 reg_b_index, u32 reg_c_index);
-	void __encode_call(ParserRuleContext* ctx,
+	void ___encode_call(ParserRuleContext* ctx,
 		const std::string& instr_name, u32 reg_a_index, 
 		u32 reg_b_index, u32 reg_c_index);
-	void __encode_ldst_three_regs(ParserRuleContext* ctx,
+	void ___encode_ldst_three_regs(ParserRuleContext* ctx,
 		const std::string& instr_name,
 		u32 reg_a_index, u32 reg_b_index, u32 reg_c_index);
-	void __encode_ldst_two_regs_one_simm(ParserRuleContext* ctx,
+	void ___encode_ldst_two_regs_one_simm(ParserRuleContext* ctx,
 		const std::string& instr_name,
 		u32 reg_a_index, u32 reg_b_index, s64 immediate);
 
-	//u32 __get_reg_temp_index() const;
+	//u32 ___get_reg_temp_index() const;
 
-	inline void __warn_if_simm20_out_of_range(ParserRuleContext* ctx,
+	inline void ___warn_if_simm20_out_of_range(ParserRuleContext* ctx,
 		s64 immediate, bool is_for_pc_relative=false)
 	{
-		if (__pass)
+		if (___pass)
 		{
 			struct
 			{
@@ -468,10 +468,10 @@ private:		// functions
 		}
 	}
 
-	//inline void __warn_if_imm16_out_of_range(ParserRuleContext* ctx, 
+	//inline void ___warn_if_imm16_out_of_range(ParserRuleContext* ctx, 
 	//	s64 immediate)
 	//{
-	//	if (__pass)
+	//	if (___pass)
 	//	{
 	//		const u16 imm16 = static_cast<u16>(immediate);
 	//		const u64 imm64 = static_cast<u64>(immediate);
@@ -488,10 +488,10 @@ private:		// functions
 	//}
 
 
-	inline void __warn_if_simm16_out_of_range(ParserRuleContext* ctx, 
+	inline void ___warn_if_simm16_out_of_range(ParserRuleContext* ctx, 
 		s64 immediate, bool is_for_pc_relative=false)
 	{
-		if (__pass)
+		if (___pass)
 		{
 			s16 simm16 = static_cast<s16>(immediate);
 			//s16 simm16;
@@ -517,10 +517,10 @@ private:		// functions
 		}
 	}
 
-	inline void __warn_if_simm12_out_of_range(ParserRuleContext* ctx, 
+	inline void ___warn_if_simm12_out_of_range(ParserRuleContext* ctx, 
 		s64 immediate, bool is_for_pc_relative=false)
 	{
-		if (__pass)
+		if (___pass)
 		{
 			struct
 			{
@@ -554,7 +554,7 @@ private:		// functions
 	inline s64 get_pc_relative_offset(s64 raw_immediate) const
 	{
 		// sizeof(s32) is used because an instruction is encoded as 32-bit
-		return raw_immediate - __pc.curr - sizeof(s32);
+		return raw_immediate - ___pc.curr - sizeof(s32);
 	}
 
 
@@ -567,16 +567,16 @@ private:		// functions
 	template<typename CtxType>
 	inline void get_sym_address(CtxType* ctx)
 	{
-		//if (!__pass)
+		//if (!___pass)
 		//{
 		//	pop_str();
 		//	push_num(0);
 		//}
-		//else // if (__pass)
+		//else // if (___pass)
 		{
 			auto name = pop_str();
-			//auto sym = sym_tbl().find_or_insert(__curr_scope_node, name);
-			auto sym = sym_tbl().find(__curr_scope_node, name);
+			//auto sym = sym_tbl().find_or_insert(___curr_scope_node, name);
+			auto sym = sym_tbl().find(___curr_scope_node, name);
 
 			//if (*name == "CODE_ALIGN_AMOUNT")
 			//{
@@ -593,7 +593,7 @@ private:		// functions
 
 			// Only allow known symbols to be used.
 
-			if (__pass)
+			if (___pass)
 			{
 				if ((sym == nullptr) || !sym->found_as_label())
 				{
@@ -629,4 +629,4 @@ private:		// functions
 
 
 
-#endif		// src__slash__assembler_class_hpp
+#endif		// src_assembler_class_hpp
