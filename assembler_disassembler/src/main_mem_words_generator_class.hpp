@@ -55,10 +55,10 @@ public:		// classes
 		}
 	};
 private:		// variables
-	DisassemblerGrammarParser::ProgramContext* ___program_ctx;
-	u64 ___curr_instr_addr;
-	//std::vector<u64> ___word_addresses_vec;
-	std::map<u64, MemWord> ___mem_words_map;
+	DisassemblerGrammarParser::ProgramContext* __program_ctx;
+	u64 __curr_instr_addr;
+	//std::vector<u64> __word_addresses_vec;
+	std::map<u64, MemWord> __mem_words_map;
 
 public:		// functions
 	MainMemWordsGenerator(DisassemblerGrammarParser& parser);

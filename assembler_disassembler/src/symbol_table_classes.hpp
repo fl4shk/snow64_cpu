@@ -11,10 +11,10 @@
 class Symbol
 {
 private:		// variables
-	Ident ___name;
+	Ident __name;
 
-	u64 ___addr = 0;
-	bool ___found_as_label = false;
+	u64 __addr = 0;
+	bool __found_as_label = false;
 
 
 public:		// functions
@@ -22,7 +22,7 @@ public:		// functions
 	{
 	}
 	inline Symbol(Ident s_name, u64 s_addr)
-		: ___name(s_name), ___addr(s_addr), ___found_as_label(false)
+		: __name(s_name), __addr(s_addr), __found_as_label(false)
 	{
 	}
 	inline Symbol(const Symbol& to_copy) = default;

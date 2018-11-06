@@ -28,7 +28,7 @@ protected:		// functions
 			auto tok = ctx->getStart();
 			const size_t line = tok->getLine();
 			const size_t pos_in_line = tok->getCharPositionInLine();
-			//printerr("Error in file \"", *___file_name, "\", on line ",
+			//printerr("Error in file \"", *__file_name, "\", on line ",
 			//	line, ", position ", pos_in_line, ":  ", msg, "\n");
 			printerr("Error on line ", line, ", position ", pos_in_line, 
 				":  ", msg, "\n");
@@ -37,7 +37,7 @@ protected:		// functions
 	}
 	inline void err(const std::string& msg)
 	{
-		//printerr("Error in file \"", *___file_name, "\":  ", msg, "\n");
+		//printerr("Error in file \"", *__file_name, "\":  ", msg, "\n");
 		printerr("Error:  ", msg, "\n");
 		exit(1);
 	}

@@ -18,104 +18,104 @@ EncodingStuff::EncodingStuff()
 
 	// Registers
 	u16 temp = 0;
-	insert_map_entry(___reg_names_map, "dzero", temp);
-	insert_map_entry(___reg_names_map, "du0", temp);
-	insert_map_entry(___reg_names_map, "du1", temp);
-	insert_map_entry(___reg_names_map, "du2", temp);
-	insert_map_entry(___reg_names_map, "du3", temp);
-	insert_map_entry(___reg_names_map, "du4", temp);
-	insert_map_entry(___reg_names_map, "du5", temp);
-	insert_map_entry(___reg_names_map, "du6", temp);
-	insert_map_entry(___reg_names_map, "du7", temp);
-	insert_map_entry(___reg_names_map, "du8", temp);
-	insert_map_entry(___reg_names_map, "du9", temp);
-	insert_map_entry(___reg_names_map, "du10", temp);
-	insert_map_entry(___reg_names_map, "du11", temp);
-	insert_map_entry(___reg_names_map, "dlr", temp);
-	insert_map_entry(___reg_names_map, "dfp", temp);
-	insert_map_entry(___reg_names_map, "dsp", temp);
+	insert_map_entry(__reg_names_map, "dzero", temp);
+	insert_map_entry(__reg_names_map, "du0", temp);
+	insert_map_entry(__reg_names_map, "du1", temp);
+	insert_map_entry(__reg_names_map, "du2", temp);
+	insert_map_entry(__reg_names_map, "du3", temp);
+	insert_map_entry(__reg_names_map, "du4", temp);
+	insert_map_entry(__reg_names_map, "du5", temp);
+	insert_map_entry(__reg_names_map, "du6", temp);
+	insert_map_entry(__reg_names_map, "du7", temp);
+	insert_map_entry(__reg_names_map, "du8", temp);
+	insert_map_entry(__reg_names_map, "du9", temp);
+	insert_map_entry(__reg_names_map, "du10", temp);
+	insert_map_entry(__reg_names_map, "du11", temp);
+	insert_map_entry(__reg_names_map, "dlr", temp);
+	insert_map_entry(__reg_names_map, "dfp", temp);
+	insert_map_entry(__reg_names_map, "dsp", temp);
 
 	// Group 0 (scalar operations)
 	temp = 0;
-	insert_map_entry(___iog0_three_regs_scalar_map, "adds", temp);
-	insert_map_entry(___iog0_three_regs_scalar_map, "subs", temp);
-	insert_map_entry(___iog0_three_regs_scalar_map, "slts", temp);
-	insert_map_entry(___iog0_three_regs_scalar_map, "muls", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "adds", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "subs", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "slts", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "muls", temp);
 
-	insert_map_entry(___iog0_three_regs_scalar_map, "divs", temp);
-	insert_map_entry(___iog0_three_regs_scalar_map, "ands", temp);
-	insert_map_entry(___iog0_three_regs_scalar_map, "orrs", temp);
-	insert_map_entry(___iog0_three_regs_scalar_map, "xors", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "divs", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "ands", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "orrs", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "xors", temp);
 
-	insert_map_entry(___iog0_three_regs_scalar_map, "shls", temp);
-	insert_map_entry(___iog0_three_regs_scalar_map, "shrs", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "shls", temp);
+	insert_map_entry(__iog0_three_regs_scalar_map, "shrs", temp);
 
-	insert_map_entry(___iog0_two_regs_scalar_map, "invs", temp);
-	insert_map_entry(___iog0_two_regs_scalar_map, "nots", temp);
+	insert_map_entry(__iog0_two_regs_scalar_map, "invs", temp);
+	insert_map_entry(__iog0_two_regs_scalar_map, "nots", temp);
 
-	insert_map_entry(___iog0_one_reg_one_pc_one_simm12_scalar_map, "addis",
+	insert_map_entry(__iog0_one_reg_one_pc_one_simm12_scalar_map, "addis",
 		temp);
-	insert_map_entry(___iog0_two_regs_one_simm12_scalar_map, "addis",
+	insert_map_entry(__iog0_two_regs_one_simm12_scalar_map, "addis",
 		temp);
 
 	// Group 0 (vector operations)
 	temp = 0;
-	insert_map_entry(___iog0_three_regs_vector_map, "addv", temp);
-	insert_map_entry(___iog0_three_regs_vector_map, "subv", temp);
-	insert_map_entry(___iog0_three_regs_vector_map, "sltv", temp);
-	insert_map_entry(___iog0_three_regs_vector_map, "mulv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "addv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "subv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "sltv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "mulv", temp);
 
-	insert_map_entry(___iog0_three_regs_vector_map, "divv", temp);
-	insert_map_entry(___iog0_three_regs_vector_map, "andv", temp);
-	insert_map_entry(___iog0_three_regs_vector_map, "orrv", temp);
-	insert_map_entry(___iog0_three_regs_vector_map, "xorv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "divv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "andv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "orrv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "xorv", temp);
 
-	insert_map_entry(___iog0_three_regs_vector_map, "shlv", temp);
-	insert_map_entry(___iog0_three_regs_vector_map, "shrv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "shlv", temp);
+	insert_map_entry(__iog0_three_regs_vector_map, "shrv", temp);
 
-	insert_map_entry(___iog0_two_regs_vector_map, "invv", temp);
-	insert_map_entry(___iog0_two_regs_vector_map, "notv", temp);
+	insert_map_entry(__iog0_two_regs_vector_map, "invv", temp);
+	insert_map_entry(__iog0_two_regs_vector_map, "notv", temp);
 
-	insert_map_entry(___iog0_one_reg_one_pc_one_simm12_vector_map, "addiv",
+	insert_map_entry(__iog0_one_reg_one_pc_one_simm12_vector_map, "addiv",
 		temp);
-	insert_map_entry(___iog0_two_regs_one_simm12_vector_map, "addiv",
+	insert_map_entry(__iog0_two_regs_one_simm12_vector_map, "addiv",
 		temp);
 
 	// Group 0 (sim_syscall)
 	//temp = 0;
-	insert_map_entry(___iog0_three_regs_one_simm12_map, "sim_syscall",
+	insert_map_entry(__iog0_three_regs_one_simm12_map, "sim_syscall",
 		temp);
 
 	// Group 1 (control flow and interrupts stuff)
 	temp = 0;
-	insert_map_entry(___iog1_rel_branch_map, "bnz", temp);
-	insert_map_entry(___iog1_rel_branch_map, "bzo", temp);
+	insert_map_entry(__iog1_rel_branch_map, "bnz", temp);
+	insert_map_entry(__iog1_rel_branch_map, "bzo", temp);
 
-	insert_map_entry(___iog1_jump_map, "jmp", temp);
+	insert_map_entry(__iog1_jump_map, "jmp", temp);
 
 	// Group 2 (loads)
 	temp = 0;
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "ldu8", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "lds8", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "ldu16", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "lds16", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "ldu32", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "lds32", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "ldu64", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "lds64", temp);
-	insert_map_entry(___iog2_ld_three_regs_one_simm12_map, "ldf16", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "ldu8", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "lds8", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "ldu16", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "lds16", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "ldu32", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "lds32", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "ldu64", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "lds64", temp);
+	insert_map_entry(__iog2_ld_three_regs_one_simm12_map, "ldf16", temp);
 
 	// Group 3 (stores)
 	temp = 0;
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "stu8", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "sts8", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "stu16", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "sts16", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "stu32", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "sts32", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "stu64", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "sts64", temp);
-	insert_map_entry(___iog3_st_three_regs_one_simm12_map, "stf16", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "stu8", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "sts8", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "stu16", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "sts16", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "stu32", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "sts32", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "stu64", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "sts64", temp);
+	insert_map_entry(__iog3_st_three_regs_one_simm12_map, "stf16", temp);
 }
 
 

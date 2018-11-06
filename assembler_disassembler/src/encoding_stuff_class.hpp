@@ -49,34 +49,34 @@ public:		// typedefs
 	typedef std::map<std::string*, u16> MapType;
 
 private:		// variables
-	MapType ___reg_names_map;
+	MapType __reg_names_map;
 
 	// Group 0 (ALU operations)
 	// Scalar operations
-	MapType ___iog0_three_regs_scalar_map;
-	MapType ___iog0_two_regs_scalar_map;
-	MapType ___iog0_one_reg_one_pc_one_simm12_scalar_map;
-	MapType ___iog0_two_regs_one_simm12_scalar_map;
+	MapType __iog0_three_regs_scalar_map;
+	MapType __iog0_two_regs_scalar_map;
+	MapType __iog0_one_reg_one_pc_one_simm12_scalar_map;
+	MapType __iog0_two_regs_one_simm12_scalar_map;
 
 	// Vector operations
-	MapType ___iog0_three_regs_vector_map;
-	MapType ___iog0_two_regs_vector_map;
-	MapType ___iog0_one_reg_one_pc_one_simm12_vector_map;
-	MapType ___iog0_two_regs_one_simm12_vector_map;
+	MapType __iog0_three_regs_vector_map;
+	MapType __iog0_two_regs_vector_map;
+	MapType __iog0_one_reg_one_pc_one_simm12_vector_map;
+	MapType __iog0_two_regs_one_simm12_vector_map;
 
 	// sim_syscall
-	MapType ___iog0_three_regs_one_simm12_map;
+	MapType __iog0_three_regs_one_simm12_map;
 
 	// Group 1 (control flow stuff)
-	MapType ___iog1_rel_branch_map;
-	MapType ___iog1_jump_map;
+	MapType __iog1_rel_branch_map;
+	MapType __iog1_jump_map;
 
 
 	// Group 2 (loads)
-	MapType ___iog2_ld_three_regs_one_simm12_map;
+	MapType __iog2_ld_three_regs_one_simm12_map;
 
 	// Group 3 (stores)
-	MapType ___iog3_st_three_regs_one_simm12_map;
+	MapType __iog3_st_three_regs_one_simm12_map;
 
 
 private:		// functions

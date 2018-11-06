@@ -3,13 +3,13 @@
 MainMemWordsGenerator::MainMemWordsGenerator
 	(DisassemblerGrammarParser& parser)
 {
-	___program_ctx = parser.program();
-	___curr_instr_addr = 0;
+	__program_ctx = parser.program();
+	__curr_instr_addr = 0;
 }
 
 int MainMemWordsGenerator::run()
 {
-	visitProgram(___program_ctx);
+	visitProgram(__program_ctx);
 	return 0;
 }
 
@@ -17,21 +17,21 @@ antlrcpp::Any MainMemWordsGenerator::visitProgram
 	(DisassemblerGrammarParser::ProgramContext *ctx)
 {
 	//printout("`define INSTR_0(word_addr) ",
-	//	"___mem[word_addr][0 * 32 +: 32]\n");
+	//	"__mem[word_addr][0 * 32 +: 32]\n");
 	//printout("`define INSTR_1(word_addr) ",
-	//	"___mem[word_addr][1 * 32 +: 32]\n");
+	//	"__mem[word_addr][1 * 32 +: 32]\n");
 	//printout("`define INSTR_2(word_addr) ",
-	//	"___mem[word_addr][2 * 32 +: 32]\n");
+	//	"__mem[word_addr][2 * 32 +: 32]\n");
 	//printout("`define INSTR_3(word_addr) ",
-	//	"___mem[word_addr][3 * 32 +: 32]\n");
+	//	"__mem[word_addr][3 * 32 +: 32]\n");
 	//printout("`define INSTR_4(word_addr) ",
-	//	"___mem[word_addr][4 * 32 +: 32]\n");
+	//	"__mem[word_addr][4 * 32 +: 32]\n");
 	//printout("`define INSTR_5(word_addr) ",
-	//	"___mem[word_addr][5 * 32 +: 32]\n");
+	//	"__mem[word_addr][5 * 32 +: 32]\n");
 	//printout("`define INSTR_6(word_addr) ",
-	//	"___mem[word_addr][6 * 32 +: 32]\n");
+	//	"__mem[word_addr][6 * 32 +: 32]\n");
 	//printout("`define INSTR_7(word_addr) ",
-	//	"___mem[word_addr][7 * 32 +: 32]\n");
+	//	"__mem[word_addr][7 * 32 +: 32]\n");
 
 	auto&& lines = ctx->line();
 
@@ -41,8 +41,8 @@ antlrcpp::Any MainMemWordsGenerator::visitProgram
 	}
 
 	u64 mem_word_addr = 0;
-	//printout("___mem_words_map stuff:  \n");
-	for (const auto& iter : ___mem_words_map)
+	//printout("__mem_words_map stuff:  \n");
+	for (const auto& iter : __mem_words_map)
 	{
 		if ((mem_word_addr + 1) != iter.first)
 		{
@@ -124,7 +124,7 @@ antlrcpp::Any MainMemWordsGenerator::visitLine
 		//}
 
 		//printout("@", std::hex, addr, "\n");
-		___curr_instr_addr = addr;
+		__curr_instr_addr = addr;
 	}
 	else if (ctx->TokHexNum())
 	{
@@ -163,28 +163,28 @@ void MainMemWordsGenerator::gen(antlr4::ParserRuleContext* ctx,
 {
 	//static constexpr size_t num_bytes_per_instr = sizeof(u32);
 
-	const size_t mem_word_addr = get_bits_with_range(___curr_instr_addr,
+	const size_t mem_word_addr = get_bits_with_range(__curr_instr_addr,
 		((sizeof(u64) * 8) - 1), 5);
 	const size_t index_into_mem_word
-		= get_bits_with_range(___curr_instr_addr, 4, 2);
+		= get_bits_with_range(__curr_instr_addr, 4, 2);
 
 	const size_t index_into_data_element_8
-		= get_bits_with_range(___curr_instr_addr, 1, 0);
+		= get_bits_with_range(__curr_instr_addr, 1, 0);
 	const size_t index_into_data_element_16
-		= get_bits_with_range(___curr_instr_addr, 1, 1);
+		= get_bits_with_range(__curr_instr_addr, 1, 1);
 
-	if (___mem_words_map.find(mem_word_addr) == ___mem_words_map.end())
+	if (__mem_words_map.find(mem_word_addr) == __mem_words_map.end())
 	{
-		___mem_words_map[mem_word_addr] = MemWord();
+		__mem_words_map[mem_word_addr] = MemWord();
 	}
 
-	auto& some_mem_word = ___mem_words_map.at(mem_word_addr);
+	auto& some_mem_word = __mem_words_map.at(mem_word_addr);
 
 	switch (num_good_chars)
 	{
 		case 8:
 			some_mem_word.data[index_into_mem_word] = to_gen;
-			___curr_instr_addr += sizeof(u32);
+			__curr_instr_addr += sizeof(u32);
 			break;
 
 		case 4:
@@ -201,7 +201,7 @@ void MainMemWordsGenerator::gen(antlr4::ParserRuleContext* ctx,
 						to_gen, 31, 16);
 					break;
 			}
-			___curr_instr_addr += sizeof(u16);
+			__curr_instr_addr += sizeof(u16);
 			break;
 
 		case 2:
@@ -228,7 +228,7 @@ void MainMemWordsGenerator::gen(antlr4::ParserRuleContext* ctx,
 						to_gen, 31, 24);
 					break;
 			}
-			___curr_instr_addr += sizeof(u8);
+			__curr_instr_addr += sizeof(u8);
 			break;
 
 		default:

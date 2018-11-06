@@ -6,18 +6,18 @@ class DupStuff
 	friend std::string* cstm_strdup(const std::string& to_dup);
 
 private:			// static variables
-	static std::map<int, std::unique_ptr<int>> ___int_pool;
+	static std::map<int, std::unique_ptr<int>> __int_pool;
 	static std::map<std::string, std::unique_ptr<std::string>>
-		___str_pool;
+		__str_pool;
 
 };
 
-std::map<int, std::unique_ptr<int>> DupStuff::___int_pool;
-std::map<std::string, std::unique_ptr<std::string>> DupStuff::___str_pool;
+std::map<int, std::unique_ptr<int>> DupStuff::__int_pool;
+std::map<std::string, std::unique_ptr<std::string>> DupStuff::__str_pool;
 
 int* cstm_intdup(int to_dup)
 {
-	auto& pool = DupStuff::___int_pool;
+	auto& pool = DupStuff::__int_pool;
 
 	if (pool.count(to_dup) == 0)
 	{
@@ -32,7 +32,7 @@ int* cstm_intdup(int to_dup)
 
 std::string* cstm_strdup(const std::string& to_dup)
 {
-	auto& pool = DupStuff::___str_pool;
+	auto& pool = DupStuff::__str_pool;
 
 	if (pool.count(to_dup) == 0)
 	{
